@@ -48,3 +48,92 @@ body {}
         </div>
     </div>
 </section>
+
+<!-- About section -->
+ <section class="section bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="about-box">
+                    <h3>About DineMate</h3>
+                    <p>DineMate is a modern reservation platform designed for restaurants like Old Canberra Inn.</p>
+                    <p>Book tables online, avoid waiting times, and enjoy seamless dining experiences.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+ </section>
+
+ <!-- Popular Dishes-->
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Popular Dishes </h2>
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="menu-card">
+                    <img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092">
+                                  <div class="menu-body">
+                        <div class="menu-title">Grilled Steak</div>
+                        <p class="menu-desc">Premium grilled steak with herb butter.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="menu-card">
+                    <img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe">
+                    <div class="menu-body">
+                        <div class="menu-title">Italian Pasta</div>
+                        <p class="menu-desc">Authentic pasta with creamy parmesan sauce.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="menu-card">
+                    <img src="https://images.unsplash.com/photo-1600891964092-4316c288032e">
+                    <div class="menu-body">
+                        <div class="menu-title">Signature Burger</div>
+                        <p class="menu-desc">Chef special burger with smoked cheddar.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Typing Animation -->
+<script>
+const words = ["Like Never Before", "Without Waiting", "In Seconds"];
+let wordIndex = 0;
+let charIndex = 0;
+const typedText = document.querySelector(".typed-text");
+
+function typeEffect() {
+    if (charIndex < words[wordIndex].length) {
+        typedText.textContent += words[wordIndex].charAt(charIndex);
+        charIndex++;
+        setTimeout(typeEffect, 70);
+    } else {
+        setTimeout(eraseEffect, 1500);
+    }
+}
+
+function eraseEffect() {
+    if (charIndex > 0) {
+        typedText.textContent = words[wordIndex].substring(0, charIndex-1);
+        charIndex--;
+        setTimeout(eraseEffect, 40);
+    } else {
+        wordIndex = (wordIndex + 1) % words.length;
+        setTimeout(typeEffect, 200);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(typeEffect, 500);
+});
+</script>
+
+<?php include "includes/footer.php"; ?>
