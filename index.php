@@ -477,11 +477,11 @@ Chef special burger with smoked cheddar.
 
 <div class="review-card">
 
-<img src="https://randomuser.me/api/portraits/women/45.jpg" class="review-img">
+<img src="https://randomuser.me/api/portraits/men/73.jpg" class="review-img">
 
 <p>"Absolutely amazing dining experience!"</p>
 
-<h6>Sarah Mitchell</h6>
+<h6>jenish sorathiya</h6>
 
 </div>
 
@@ -507,7 +507,7 @@ Chef special burger with smoked cheddar.
 
 <div class="review-card">
 
-<img src="https://randomuser.me/api/portraits/women/65.jpg" class="review-img">
+<img src="https://randomuser.me/api/portraits/men/45.jpg" class="review-img">
 
 <p>"Best online restaurant booking experience."</p>
 
