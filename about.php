@@ -46,6 +46,12 @@
     border-radius: 14px;
     padding: 40px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+
+}
+
+.about-img {
+    border-radius: 14px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
 }
 
 </style>
