@@ -39,6 +39,13 @@
     border-radius: 30px;
     font-weight: 600;
 }
+.btn-contact:hover {
+    background: #e0a800;
+}
+.map {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
 </style>
 
 <section class="contact-hero">
