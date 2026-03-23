@@ -46,6 +46,7 @@
     border-radius: 14px;
     overflow: hidden;
     box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+}
 </style>
 
 <section class="contact-hero">
