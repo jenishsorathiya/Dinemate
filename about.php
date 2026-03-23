@@ -1,6 +1,53 @@
 <?php include "includes/header.php"; ?>
 
 <style>
+.about-hero {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                url("https://images.unsplash.com/photo-1559339352-11d035aa65de");
+    background-size: cover;
+    background-position: center;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    margin-top: 90px;
+}
+.about-hero h1{
+    front-weight: 700;
+}  
+
+.section {
+    padding: 70px 0;
+}
+
+.feature-card{
+    background: white;
+    border-radius: 14px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    transition: 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-6px);
+}
+
+.feature-icon {
+    font-size: 40px;
+    color: #f4b400;
+    margin-bottom: 15px;
+}
+
+.story-card {
+    background: white;
+    border-radius: 14px;
+    padding: 40px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
 </style>
 
 <section class="about-hero">
