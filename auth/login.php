@@ -45,5 +45,35 @@
                     Continue with Apple
                 </button>
             </div>
+            <div class="text-center mt-3">
+                Don't have an account? 
+                <a href="register.php">Create Account</a>
+            </div>
+        </div>
+        
+        <div class="auth-right">
+            <div class="auth-overlay"></div>
+            <div class="auth-right-content">
+                <h3>Reserve in Seconds</h3>
+                <p>Modern dining starts here.</p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<script>
+function togglePassword() {
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+}
+
+function googleLogin() {
+    alert("Google OAuth integration coming soon!");
+}
+
+function appleLogin() {
+    alert("Apple Login integration coming soon!");
+}
+</script>
 </body>
 </html>
