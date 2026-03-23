@@ -37,3 +37,38 @@ body {
     color: #555;
     margin-bottom: 30px;
 }
+.auth-left input{
+    border-radius: 50px;
+    padding: 12px w0px;
+}
+
+.auth-left .btn-main{
+    background: #f4b400;
+    border: none;
+    border-radius: 50px;
+    padding : 12px;
+    width: 100%;
+    font-weight: 600;
+}
+
+.auth-left .btn-main:hover {
+    background: #d39e00;
+}
+.auth-right {
+    flex: 1;
+    background: url('../images/restaurant.jpg') center/cover no-repeat;
+    position: relative;
+}
+
+.auth-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+}
+
+.auth-right-content{
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    color: white;
+}
