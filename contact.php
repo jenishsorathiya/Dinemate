@@ -1,6 +1,44 @@
-<?php include :"include/header.php"; ?>
+<?php include "includes/header.php"; ?>
 
 <style>
+    .contact-hero {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                url("https://images.unsplash.com/photo-1559339352-11d035aa65de");
+    background-size: cover;
+    background-position: center;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    margin-top: 90px;
+}
+.section {
+    padding: 70px 0;
+}
+.contact-card {
+    background: white;
+    padding: 35px;
+    border-radius: 14px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+.form-control {
+    border-radius: 10px;
+    padding: 12px;
+}
+.contact-icon {
+    font-size: 28px;
+    color: #f4b400;
+    margin-right: 10px;
+}
+.btn-contact {
+    background: #f4b400;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-weight: 600;
+}
 </style>
 
 <section class="contact-hero">
