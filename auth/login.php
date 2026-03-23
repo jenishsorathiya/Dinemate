@@ -25,5 +25,25 @@
                 <div class="mb-3">
                     <input type="email" name="email" class="form-control" placeholder="Email Address" required>
                 </div>
+                 <div class="mb-3 password-wrapper">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+                    <span class="eye-icon" onclick="togglePassword()">👁</span>
+                </div>
+                
+                <button class="btn btn-main w-100">Login</button>
+            </form>
+            
+            <div class="divider">OR</div>
+            
+            <div class="d-grid gap-2 mb-3">
+                <button class="social-btn" onclick="googleLogin()">
+                    <img src="https://img.icons8.com/color/20/google-logo.png" alt="google">
+                    Continue with Google
+                </button>
+                <button class="social-btn" onclick="appleLogin()">
+                    <i class="fab fa-apple"></i>
+                    Continue with Apple
+                </button>
+            </div>
 </body>
 </html>
