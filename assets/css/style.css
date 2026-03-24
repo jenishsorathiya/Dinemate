@@ -1,0 +1,74 @@
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f6f1e9, #f4d58d);
+}
+
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 1200px;
+    background: #fff;
+    border-radius: 30px;
+    overflow: hidden;
+    display: flex;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+}
+
+.auth-left {
+    flex: 1;
+    padding: 60px;
+    background: linear-gradient(135deg, #f4e2b9, #f4d58d);
+}
+
+.auth-left h2 {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.auth-left p {
+    color: #555;
+    margin-bottom: 30px;
+}
+.auth-left input{
+    border-radius: 50px;
+    padding: 12px w0px;
+}
+
+.auth-left .btn-main{
+    background: #f4b400;
+    border: none;
+    border-radius: 50px;
+    padding : 12px;
+    width: 100%;
+    font-weight: 600;
+}
+
+.auth-left .btn-main:hover {
+    background: #d39e00;
+}
+.auth-right {
+    flex: 1;
+    background: url('../images/restaurant.jpg') center/cover no-repeat;
+    position: relative;
+}
+
+.auth-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+}
+
+.auth-right-content{
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    color: white;
+}

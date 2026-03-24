@@ -53,20 +53,7 @@ if (session_status() === PHP_SESSION_NONE) {
         .btn-book:hover {
             background: #e0a800;
             transform: scale(1.05);
-        }
-        .btn-logout {
-        border: 1px solid white;
-        color: white;
-        padding: 8px 18px;
-        border-radius: 25px;
-        transition: 0.3s;
-        text-decoration: none;
-        }
-
-        .btn-logout:hover {
-        background: white;
-        color: black;
-        }        
+       }
     </style>
 </head>
 <body>
@@ -81,24 +68,9 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="nav-links d-flex align-items-center">
                 <a href="index.php">Home</a>
                 <a href="about.php">About</a>
-                <a href="contact.php">Contact</a>
-                <?php if(isset($_SESSION['user_id'])): ?>
-                    <!-- Logged In User Links -->
-                    <a href="bookings/my-bookings.php">My Bookings</a>
-                    <a href="bookings/book-table.php" class="btn btn-book ms-3">
-                        <i class="fa fa-calendar-check"></i> Book Table
-                    </a>
-                    <a href="auth/logout.php" class="btn btn-logout ms-3">
-                        Logout
-                    </a>
-                <?php else: ?>
-                    <!-- Guest Links -->
-                    <a href="auth/login.php">Login</a>
-                    <a href="auth/register.php" class="btn btn-book ms-3">
-                        Register
-                    </a>
-                <?php endif; ?>                
+                 <a href="contact.php">Contact</a>
             </div>
         </div>
     </div>
 </nav>
+</body>
