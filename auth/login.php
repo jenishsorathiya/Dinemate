@@ -29,7 +29,148 @@ body {
     align-items: center;
     justify-content: center;
 }
+.auth-box {
+    width: 100%;
+    max-width: 1000px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    animation: fadeIn 0.8s ease;
+}
 
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(20px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+.auth-left {
+    flex: 1;
+    padding: 50px;
+}
+
+.auth-left h2 {
+    font-weight: 600;
+}
+
+.auth-right {
+    flex: 1;
+    background: url('https://images.unsplash.com/photo-1552566626-52f8b828add9') center/cover no-repeat;
+    position: relative;
+}
+
+.auth-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+}
+
+.auth-right-content {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    color: white;
+}
+.form-control {
+    border-radius: 50px;
+    padding: 12px 20px;
+    border: none;
+    background: #f7f7f7;
+    transition: 0.3s;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 3px #f4b400;
+    background: white;
+}
+
+.btn-main {
+    background: #f4b400;
+    border: none;
+    border-radius: 50px;
+    padding: 12px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-main:hover {
+    background: #d39e00;
+    transform: scale(1.03);
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.eye-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.6;
+}
+
+.eye-icon:hover {
+    opacity: 1;
+}
+
+.divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background: #ddd;
+}
+
+.divider::before {
+    left: 0;
+}
+
+.divider::after {
+    right: 0;
+}
+
+.social-btn {
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: white;
+    transition: 0.3s;
+    font-weight: 500;
+}
+
+.social-btn:hover {
+    background: #f5f5f5;
+    transform: translateY(-2px);
+}
+
+.alert {
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+a {
+    color: #f4b400;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+</style>
 
 </head>
 <body>
