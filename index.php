@@ -309,7 +309,7 @@ margin-bottom:15px;
 
 <h3>About DineMate</h3>
 
-<p>DineMate is a modern reservation platform designed for restaurants like Old Canberra Inn.</p>
+<p>DineMate is a modern reservation platform designed for Old Canberra Inn.</p>
 
 <p>Book tables online, avoid waiting times, and enjoy seamless dining experiences.</p>
 
