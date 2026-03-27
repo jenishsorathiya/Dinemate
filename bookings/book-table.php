@@ -119,3 +119,48 @@ required
 min="<?= date('Y-m-d') ?>"
 >
 
+</div>
+
+<div class="col-md-6 mb-4">
+
+<label class="form-label">
+<i class="fa fa-users"></i> Number of Guests
+</label>
+
+<input
+type="number"
+name="number_of_guests"
+class="form-control modern-input"
+min="1"
+required
+>
+
+</div>
+
+
+<div class="col-md-6 mb-4">
+
+<label class="form-label">
+<i class="fa fa-chair"></i> Select Table
+</label>
+
+<select
+name="table_id"
+class="form-control modern-input"
+required
+>
+
+<option value="">-- Choose Table --</option>
+
+<?php foreach($tables as $table): ?>
+
+<option value="<?= $table['table_id'] ?>">
+
+Table <?= $table['table_number'] ?> (Capacity: <?= $table['capacity'] ?>)
+
+</option>
+
+<?php endforeach; ?>
+
+</select>
+
