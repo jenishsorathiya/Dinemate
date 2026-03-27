@@ -87,3 +87,34 @@ transition:0.3s;
 background:#e0a800;
 transform:scale(1.05);
 }
+
+</style>
+
+<div class="container booking-container">
+
+<div class="booking-card">
+
+<h3 class="booking-title text-center">
+
+<i class="fa fa-calendar-check text-warning"></i>
+Book a Table
+
+</h3>
+
+<form action="process-booking.php" method="POST">
+
+<div class="row">
+
+<div class="col-md-6 mb-4">
+
+<label class="form-label">
+<i class="fa fa-calendar"></i> Select Date
+</label>
+
+<input
+type="date"
+name="booking_date"
+class="form-control modern-input"
+required
+min="<?= date('Y-m-d') ?>"
+>
