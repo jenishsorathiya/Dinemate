@@ -1,9 +1,9 @@
 <?php
 require_once "../config/db.php";
 require_once "../includes/session-check.php";
-require_once "../includes/functions.php";
+require_once "../includes/functions ().php";
 
-if(!isCustomer()){
+if(! isCustomer()){
     header("Location: ../auth/login.php");
     exit();
 }
@@ -163,4 +163,40 @@ Table <?= $table['table_number'] ?> (Capacity: <?= $table['capacity'] ?>)
 <?php endforeach; ?>
 
 </select>
+
+</div>
+
+
+<div class="col-12 mb-4">
+
+<label class="form-label">
+<i class="fa fa-note-sticky"></i> Special Request
+</label>
+
+<textarea
+name="special_request"
+class="form-control modern-input"
+rows="3"
+placeholder="Birthday celebration, window seat, etc."
+></textarea>
+
+</div>
+
+</div>
+
+
+<button class="btn btn-book w-100">
+
+<i class="fa fa-check"></i>
+Confirm Booking
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<?php include "../includes/footer.php"; ?>
 
