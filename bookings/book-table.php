@@ -58,3 +58,32 @@ transition:0.2s;
 border-color:#ffb703;
 box-shadow:0 0 0 3px rgba(244,180,0,0.2);
 }
+
+.modern-input:focus{
+border-color:#f4b400;
+box-shadow:0 0 0 3px rgba(244,180,0,0.2);
+}
+
+/* LABEL */
+
+.form-label{
+font-weight:500;
+margin-bottom:6px;
+}
+
+/* BUTTON */
+
+.btn-book{
+background:#f4b400;
+border:none;
+padding:14px;
+border-radius:40px;
+font-weight:600;
+font-size:16px;
+transition:0.3s;
+}
+
+.btn-book:hover{
+background:#e0a800;
+transform:scale(1.05);
+}
