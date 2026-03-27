@@ -34,3 +34,27 @@ transition:0.3s;
 max-width:700px;
 margin:auto;
 }
+.booking-card:hover{
+transform:translateY(-3px);
+}
+
+/* TITLE */
+
+.booking-title{
+font-weight:600;
+margin-bottom:25px;
+}
+
+/* INPUTS */
+
+.modern-input{
+border-radius:10px;
+padding:12px;
+border:1px solid #e5e7eb;
+transition:0.2s;
+}
+
+.modern-input:focus{
+border-color:#ffb703;
+box-shadow:0 0 0 3px rgba(244,180,0,0.2);
+}
