@@ -15,5 +15,22 @@ $tables = $pdo->query("SELECT * FROM restaurant_tables WHERE status='available' 
 <?php include "../includes/header.php"; ?>
 
 <style>
-    
 
+/* PAGE SPACING */
+
+.booking-container{
+margin-top:120px;
+margin-bottom:80px;
+}
+
+/* BOOKING CARD */
+
+.booking-card{
+background:white;
+border-radius:16px;
+padding:40px;
+box-shadow:0 25px 60px rgba(0,0,0,0.08);
+transition:0.3s;
+max-width:700px;
+margin:auto;
+}
