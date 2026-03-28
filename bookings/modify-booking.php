@@ -191,3 +191,124 @@ padding:10px 20px;
 }
 
 </style>
+
+<div class="container modify-wrapper">
+
+<div class="modify-card">
+
+<h3 class="modify-title text-center">
+<i class="fa fa-pen-to-square text-warning"></i>
+Modify Booking
+</h3>
+
+<?php if($error): ?>
+<div class="alert alert-danger"><?= $error ?></div>
+<?php endif; ?>
+
+<?php if($success): ?>
+<div class="alert alert-success"><?= $success ?></div>
+<?php endif; ?>
+
+<form method="POST">
+
+<div class="row">
+
+<div class="col-md-6 mb-4">
+
+<label class="form-label">
+<i class="fa fa-calendar"></i> Select Date
+</label>
+
+<input type="date"
+name="booking_date"
+class="form-control modern-input"
+value="<?= $booking['booking_date'] ?>"
+required>
+
+</div>
+
+<div class="col-md-6 mb-4">
+
+<label class="form-label">
+<i class="fa fa-clock"></i> Select Time
+</label>
+
+<input type="time"
+name="booking_time"
+class="form-control modern-input"
+value="<?= $booking['booking_time'] ?>"
+required>
+
+</div>
+
+<div class="col-md-6 mb-4">
+
+<label class="form-label">
+<i class="fa fa-users"></i> Number of Guests
+</label>
+
+<input type="number"
+name="number_of_guests"
+class="form-control modern-input"
+value="<?= $booking['number_of_guests'] ?>"
+required
+min="1">
+
+</div>
+
+<div class="col-md-6 mb-4">
+
+<label class="form-label">
+<i class="fa fa-chair"></i> Select Table
+</label>
+
+<select name="table_id" class="form-control modern-input" required>
+
+<?php foreach($tables as $table): ?>
+
+<option value="<?= $table['table_id'] ?>"
+<?= ($booking['table_id'] == $table['table_id']) ? 'selected' : '' ?>>
+
+Table <?= $table['table_number'] ?> (Capacity: <?= $table['capacity'] ?>)
+
+</option>
+
+<?php endforeach; ?>
+
+</select>
+
+</div>
+
+<div class="col-12 mb-4">
+
+<label class="form-label">
+<i class="fa fa-note-sticky"></i> Special Request
+</label>
+
+<textarea name="special_request"
+class="form-control modern-input"
+rows="3"><?= $booking['special_request'] ?></textarea>
+
+</div>
+
+</div>
+
+<button class="btn btn-update w-100">
+<i class="fa fa-save"></i> Update Booking
+</button>
+
+</form>
+
+<div class="text-center mt-4">
+
+<a href="my-bookings.php" class="btn btn-secondary btn-back">
+Back to My Bookings
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+<?php include "../includes/footer.php"; ?>
