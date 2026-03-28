@@ -311,4 +311,4 @@ Back to My Bookings
 
 </div>
 
-<?php include "../includes/footer.php"; ?>
+<?php include "../includes/footer.php"; ?> 
