@@ -69,4 +69,4 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 AND booking_time = ?
                 AND booking_id != ?
                 AND status IN ('pending','confirmed')
-            ");
+            "); 
