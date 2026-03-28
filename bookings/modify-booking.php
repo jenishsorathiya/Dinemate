@@ -3,7 +3,7 @@ require_once "../config/db.php";
 require_once "../includes/session-check.php";
 require_once "../includes/functions.php";
 
-if(!isCustomer()){
+if(! isCustomer()){
     header("Location: ../auth/login.php");
     exit();
 }
@@ -70,3 +70,37 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 AND booking_id != ?
                 AND status IN ('pending','confirmed')
             "); 
+
+             $stmt->execute([$table_id, $date, $time, $booking_id]);
+
+            
+            if($stmt->rowCount() > 0){
+                $error = "This table is already booked for that time.";
+            }
+            else {
+
+         /* 3️⃣ Update Booking */
+                $stmt = $pdo->prepare("
+                UPDATE bookings
+                SET table_id=?, booking_date=?, booking_time=?,
+                    number_of_guests=?, special_request=?
+                WHERE booking_id=? AND user_id=?
+                ");
+
+                $stmt->execute([
+                    $table_id,
+                    $date,
+                    $time,
+                    $guests,
+                    $special,
+                    $booking_id,
+                    $_SESSION['user_id']
+                ]);
+
+                $success = "Booking updated successfully.";
+
+                /* Refresh updated data */
+                $stmt = $pdo->prepare("
+                SELECT * FROM bookings 
+                WHERE booking_id = ?
+                ");
