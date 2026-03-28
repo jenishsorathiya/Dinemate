@@ -104,3 +104,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 SELECT * FROM bookings 
                 WHERE booking_id = ?
                 ");
+                
+                $stmt->execute([$booking_id]);
+                $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+            }
+        }
+    }
+}
+?>
+
+<?php include "../includes/header.php"; ?>
