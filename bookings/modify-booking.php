@@ -104,7 +104,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 SELECT * FROM bookings 
                 WHERE booking_id = ?
                 ");
-                
+
                 $stmt->execute([$booking_id]);
                 $booking = $stmt->fetch(PDO::FETCH_ASSOC);
             }
@@ -114,3 +114,80 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 ?>
 
 <?php include "../includes/header.php"; ?>
+
+<style>
+
+/* PAGE SPACING */
+
+.modify-wrapper{
+margin-top:120px;
+margin-bottom:80px;
+}
+
+/* CARD */
+
+.modify-card{
+background:white;
+border-radius:18px;
+padding:40px;
+box-shadow:0 25px 60px rgba(0,0,0,0.08);
+transition:0.3s;
+}
+
+.modify-card:hover{
+transform:translateY(-3px);
+}
+
+/* TITLE */
+
+.modify-title{
+font-weight:600;
+margin-bottom:25px;
+}
+
+/* LABEL */
+
+.form-label{
+font-weight:500;
+margin-bottom:6px;
+}
+
+/* INPUT */
+
+.modern-input{
+border-radius:10px;
+padding:12px;
+border:1px solid #e5e7eb;
+transition:0.2s;
+}
+
+.modern-input:focus{
+border-color:#f4b400;
+box-shadow:0 0 0 3px rgba(244,180,0,0.2);
+}
+
+/* BUTTON */
+
+.btn-update{
+background:#f4b400;
+border:none;
+padding:14px;
+border-radius:40px;
+font-weight:600;
+font-size:16px;
+transition:0.3s;
+}
+
+.btn-update:hover{
+background:#e0a800;
+transform:scale(1.02);
+}
+
+/* BACK BUTTON */
+
+.btn-back{
+border-radius:30px;
+padding:10px 20px;
+}
+
+</style>
