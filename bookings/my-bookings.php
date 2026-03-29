@@ -160,3 +160,26 @@ Table <?= $b['table_number'] ?>
 
 </div>
 
+<div class="booking-details">
+
+<p>
+<i class="fa fa-calendar"></i>
+<strong>Date:</strong>
+<?= $b['booking_date'] ?>
+</p>
+
+<p>
+<i class="fa fa-clock"></i>
+<strong>Time:</strong>
+<?= date("h:i A",strtotime($b['booking_time'])) ?>
+</p>
+
+<p>
+<i class="fa fa-users"></i>
+<strong>Guests:</strong>
+<?= $b['number_of_guests'] ?>
+</p>
+
+</div>
+
+
