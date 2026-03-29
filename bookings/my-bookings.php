@@ -129,3 +129,34 @@ font-size:13px;
 }
 
 </style>
+
+
+<div class="container bookings-wrapper">
+
+<h3 class="text-center mb-5">
+
+<i class="fa fa-calendar-check text-warning"></i>
+My Reservations
+
+</h3>
+
+<?php if($bookings): ?>
+
+<div class="booking-grid">
+
+<?php foreach($bookings as $b): ?>
+
+<div class="booking-card">
+
+<div class="booking-header">
+
+<div class="table-badge">
+Table <?= $b['table_number'] ?>
+</div>
+
+<div class="status confirmed">
+<?= ucfirst($b['status']) ?>
+</div>
+
+</div>
+
