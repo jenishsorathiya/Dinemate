@@ -46,4 +46,17 @@ if($stmt->rowCount() > 0){
     die("This table is already booked for the selected time.");
 }
 
+/* Insert Booking */
+$stmt = $pdo->prepare("
+INSERT INTO bookings 
+(user_id, table_id, booking_date, booking_time, number_of_guests, special_request, status)
+VALUES (?, ?, ?, ?, ?, ?, 'confirmed')
+");
+
+$stmt->execute([$user_id, $table_id, $date, $time, $guests, $special]);
+
+$booking_id = $pdo->lastInsertId();
+
+redirect("booking-confirmation.php?id=" . $booking_id);
+?>
 
