@@ -1,7 +1,7 @@
 <?php
 require_once "../config/db.php";
 require_once "../includes/session-check.php";
-require_once "../includes/functions ().php";
+require_once "../includes/functions.php";
 
 if(! isCustomer()){
     header("Location: ../auth/login.php");
@@ -59,10 +59,6 @@ border-color:#ffb703;
 box-shadow:0 0 0 3px rgba(244,180,0,0.2);
 }
 
-.modern-input:focus{
-border-color:#f4b400;
-box-shadow:0 0 0 3px rgba(244,180,0,0.2);
-}
 
 /* LABEL */
 
@@ -86,6 +82,39 @@ transition:0.3s;
 .btn-book:hover{
 background:#e0a800;
 transform:scale(1.05);
+}
+
+.table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.table-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    background: #fff;
+    transition: 0.2s;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.table-card.selected {
+    border-color: #f4b400;
+    box-shadow: 0 0 0 3px rgba(244,180,0,0.28);
+}
+
+.table-card.unavailable {
+    border-color: #ccc;
+    background: #f8f9fa;
+    color: #999;
+    cursor: not-allowed;
 }
 
 </style>
@@ -138,32 +167,29 @@ required
 </div>
 
 
-<div class="col-md-6 mb-4">
+<div class="col-12 mb-4">
+    <label class="form-label">
+        <i class="fa fa-chair"></i> Select Table
+    </label>
 
-<label class="form-label">
-<i class="fa fa-chair"></i> Select Table
-</label>
+    <input type="hidden" name="table_id" id="selected_table_id" required>
 
-<select
-name="table_id"
-class="form-control modern-input"
-required
->
+    <div class="table-grid" id="table_grid">
+        <?php foreach ($tables as $table): ?>
+            <div class="table-card" data-table-id="<?= $table['table_id'] ?>" data-table-number="<?= $table['table_number'] ?>" data-capacity="<?= $table['capacity'] ?>">
+                <h5 class="mb-1">Table <?= $table['table_number'] ?></h5>
+                <small>Capacity: <?= $table['capacity'] ?></small>
+                <span class="badge bg-success mt-2">Available</span>
+            </div>
+        <?php endforeach; ?>
 
-<option value="">-- Choose Table --</option>
-
-<?php foreach($tables as $table): ?>
-
-<option value="<?= $table['table_id'] ?>">
-
-Table <?= $table['table_number'] ?> (Capacity: <?= $table['capacity'] ?>)
-
-</option>
-
-<?php endforeach; ?>
-
-</select>
-
+        <?php if (empty($tables)): ?>
+            <div class="table-card unavailable">
+                <strong>No tables available</strong>
+                <small>Please try another date.</small>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 
@@ -197,6 +223,28 @@ Confirm Booking
 </div>
 
 </div>
+
+<script>
+    const tableCards = document.querySelectorAll('.table-card:not(.unavailable)');
+    const selectedTableInput = document.getElementById('selected_table_id');
+
+    tableCards.forEach(card => {
+        card.addEventListener('click', () => {
+            tableCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+
+            selectedTableInput.value = card.getAttribute('data-table-id');
+        });
+    });
+
+    // Optional: prevent form submit without table selection (for older browsers)
+    document.querySelector('form').addEventListener('submit', function (e) {
+        if (!selectedTableInput.value) {
+            e.preventDefault();
+            alert('Please select a table before confirming booking.');
+        }
+    });
+</script>
 
 <?php include "../includes/footer.php"; ?>
 
