@@ -39,7 +39,7 @@ $stmt = $pdo->prepare("
     AND booking_date = ? 
     AND booking_time = ?
     AND status IN ('pending','confirmed')
-");
+"); 
 $stmt->execute([$table_id, $date, $time]);
 
 if($stmt->rowCount() > 0){
