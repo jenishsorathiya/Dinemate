@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Log database error securely (don't expose to user)
         error_log("Admin login database error: " . $e->getMessage());
         $_SESSION['admin_error'] = "An error occurred. Please try again later.";
-        header("Location: admin-login.php");
+        header("Location: /Dinemate/admin/bookings-management.php");
         exit;
     }
 } else {
