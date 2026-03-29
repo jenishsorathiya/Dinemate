@@ -39,6 +39,7 @@ body {
     overflow: hidden;
     box-shadow: 0 25px 60px rgba(0,0,0,0.15);
     animation: fadeIn 0.8s ease;
+    align-items: stretch;
 }
 
 @keyframes fadeIn {
@@ -48,7 +49,12 @@ body {
 
 .auth-left {
     flex: 1;
-    padding: 50px;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;  
+    max-width: 480px;          
+    margin: auto;
 }
 
 .auth-left h2 {
@@ -85,7 +91,9 @@ body {
     box-shadow: 0 0 0 3px #f4b400;
     background: white;
 }
-
+.form {
+    width:100%;
+}
 .btn-main {
     background: #f4b400;
     border: none;
@@ -143,12 +151,16 @@ body {
 }
 
 .social-btn {
-    border-radius: 50px;
+   border-radius: 50px;
     border: 1px solid #ccc;
     padding: 10px;
     background: white;
     transition: 0.3s;
     font-weight: 500;
+    display: flex;            
+    align-items: center;       
+    justify-content: center;   
+    gap: 10px;  
 }
 
 .social-btn:hover {
@@ -175,6 +187,9 @@ a:hover {
 </head>
 <body>
 <div class="auth-wrapper">
+    <div class="auth-box">
+        <div class="auth-left"> 
+            <div class="auth-content">
      <h2 class="mb-3">Welcome Back</h2>
             <p class="mb-4">Login to manage your reservations.</p>
             
@@ -211,6 +226,7 @@ a:hover {
             <div class="text-center mt-3">
                 Don't have an account? 
                 <a href="register.php">Create Account</a>
+            </div>
             </div>
         </div>
         

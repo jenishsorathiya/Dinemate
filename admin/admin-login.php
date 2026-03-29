@@ -134,7 +134,7 @@ body {
 }    
 </style>
 </head>
-
+<body>
 <div class="admin-container">
     <div class="admin-left">
         <h2>Admin Login</h2>
