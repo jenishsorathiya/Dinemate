@@ -1,4 +1,6 @@
-<?php session_start(); ?>
+<?php 
+session_start(); 
+?>
 
 <!DOCTYPE html>
 <html>
@@ -6,8 +8,6 @@
 <title>DineMate | Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <style>
 body {
@@ -38,8 +38,6 @@ body {
     display: flex;
     overflow: hidden;
     box-shadow: 0 25px 60px rgba(0,0,0,0.15);
-    animation: fadeIn 0.8s ease;
-    align-items: stretch;
 }
 
 @keyframes fadeIn {
@@ -49,12 +47,7 @@ body {
 
 .auth-left {
     flex: 1;
-    padding: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;  
-    max-width: 480px;          
-    margin: auto;
+    padding: 50px;
 }
 
 .auth-left h2 {
@@ -82,17 +75,6 @@ body {
 .form-control {
     border-radius: 50px;
     padding: 12px 20px;
-    border: none;
-    background: #f7f7f7;
-    transition: 0.3s;
-}
-
-.form-control:focus {
-    box-shadow: 0 0 0 3px #f4b400;
-    background: white;
-}
-.form {
-    width:100%;
 }
 .btn-main {
     background: #f4b400;
@@ -111,7 +93,13 @@ body {
 .password-wrapper {
     position: relative;
 }
-
+.toggle-password {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
 .eye-icon {
     position: absolute;
     right: 20px;
@@ -129,25 +117,6 @@ body {
 .divider {
     text-align: center;
     margin: 20px 0;
-    position: relative;
-}
-
-.divider::before,
-.divider::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 45%;
-    height: 1px;
-    background: #ddd;
-}
-
-.divider::before {
-    left: 0;
-}
-
-.divider::after {
-    right: 0;
 }
 
 .social-btn {
@@ -168,20 +137,6 @@ body {
     transform: translateY(-2px);
 }
 
-.alert {
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
-a {
-    color: #f4b400;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-a:hover {
-    text-decoration: underline;
-}
 </style>
 
 </head>
@@ -189,8 +144,8 @@ a:hover {
 <div class="auth-wrapper">
     <div class="auth-box">
         <div class="auth-left"> 
-            <div class="auth-content">
-     <h2 class="mb-3">Welcome Back</h2>
+            
+            <h2 class="mb-3">Welcome Back</h2>
             <p class="mb-4">Login to manage your reservations.</p>
             
             <?php if(isset($_SESSION['error'])): ?>
@@ -199,7 +154,7 @@ a:hover {
                 </div>
             <?php endif; ?>
             
-            <form method="POST" action="process-login.php">
+            <form method="POST" action="process-login.php" class="form">
                 <div class="mb-3">
                     <input type="email" name="email" class="form-control" placeholder="Email Address" required>
                 </div>
@@ -219,14 +174,13 @@ a:hover {
                     Continue with Google
                 </button>
                 <button class="social-btn" onclick="appleLogin()">
-                    <i class="fab fa-apple"></i>
+                    <img src="https://img.icons8.com/ios-filled/20/000000/mac-os.png">
                     Continue with Apple
                 </button>
             </div>
             <div class="text-center mt-3">
                 Don't have an account? 
                 <a href="register.php">Create Account</a>
-            </div>
             </div>
         </div>
         
