@@ -19,4 +19,31 @@ if(empty($date) || empty($time) || empty($guests) || empty($table_id)){
     die("All fields are required.");
 }
 
+/*  Capacity Check */
+$stmt = $pdo->prepare("SELECT capacity FROM restaurant_tables WHERE table_id = ?");
+$stmt->execute([$table_id]);
+$table = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if(!$table){
+    die("Invalid table.");
+}
+
+if($guests > $table['capacity']){
+    die("Selected table cannot accommodate that many guests.");
+}
+
+/* Conflict Check */
+$stmt = $pdo->prepare("
+    SELECT * FROM bookings 
+    WHERE table_id = ? 
+    AND booking_date = ? 
+    AND booking_time = ?
+    AND status IN ('pending','confirmed')
+");
+$stmt->execute([$table_id, $date, $time]);
+
+if($stmt->rowCount() > 0){
+    die("This table is already booked for the selected time.");
+}
+
 
