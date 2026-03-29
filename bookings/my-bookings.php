@@ -55,3 +55,77 @@ overflow:hidden;
 .booking-card:hover{
 transform:translateY(-5px);
 }
+
+/* HEADER */
+
+.booking-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:15px;
+}
+
+/* TABLE BADGE */
+
+.table-badge{
+background:#f4b400;
+color:black;
+padding:6px 14px;
+border-radius:30px;
+font-weight:600;
+font-size:14px;
+}
+
+/* STATUS */
+
+.status{
+font-size:13px;
+padding:6px 10px;
+border-radius:20px;
+font-weight:600;
+}
+
+.status.confirmed{
+background:#22c55e;
+color:white;
+}
+
+/* DETAILS */
+
+.booking-details{
+margin-top:10px;
+}
+
+.booking-details p{
+margin-bottom:6px;
+font-size:14px;
+color:#444;
+}
+
+/* ACTION BUTTONS */
+
+.booking-actions{
+margin-top:15px;
+display:flex;
+gap:10px;
+}
+
+.btn-edit{
+background:#3b82f6;
+color:white;
+border:none;
+padding:6px 14px;
+border-radius:8px;
+font-size:13px;
+}
+
+.btn-cancel{
+background:#ef4444;
+color:white;
+border:none;
+padding:6px 14px;
+border-radius:8px;
+font-size:13px;
+}
+
+</style>
