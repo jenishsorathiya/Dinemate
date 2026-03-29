@@ -182,4 +182,39 @@ Table <?= $b['table_number'] ?>
 
 </div>
 
+<div class="booking-actions">
+
+<a href="modify-booking.php?id=<?= $b['booking_id'] ?>" class="btn-edit">
+Edit
+</a>
+
+<a href="cancel-booking.php?id=<?= $b['booking_id'] ?>" class="btn-cancel">
+Cancel
+</a>
+
+</div>
+
+</div>
+
+<?php endforeach; ?>
+
+</div>
+
+<?php else: ?>
+
+<div class="text-center">
+
+<p>No reservations found.</p>
+
+<a href="book-table.php" class="btn btn-warning">
+Book Your First Table
+</a>
+
+</div>
+
+<?php endif; ?>
+
+</div>
+
+<?php include "../includes/footer.php"; ?>
 
