@@ -68,6 +68,7 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="nav-links d-flex align-items-center">
                 <a href="index.php">Home</a>
                 <a href="about.php">About</a>
+                <a href="menu.php">Menu</a>
                  <a href="contact.php">Contact</a>
                                 <?php if(isset($_SESSION['user_id'])): ?>
                     <!-- Logged In User Links -->
