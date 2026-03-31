@@ -39,37 +39,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     try {
-        // Query database for admin user using prepared statement
-        $stmt = $pdo->prepare("SELECT user_id, email, password, role, name FROM users WHERE email = ? AND role = 'admin' LIMIT 1");
+        // Query database for user by email
+        $stmt = $pdo->prepare("SELECT user_id, email, password, role, name FROM users WHERE email = ? LIMIT 1");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Verify user exists, is admin, and password is correct using password_verify()
-        if ($user) {
-            // Try password_verify first (for hashed passwords)
-            $password_valid = password_verify($password, $user['password']);
-
-            // Fallback to direct comparison for plain text passwords (legacy)
-            if (!$password_valid && $password === $user['password']) {
-                $password_valid = true;
-            }
-
-            if ($password_valid) {
-                // Set session variables for admin
-                $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['name'] = $user['name'];
-                $_SESSION['email'] = $user['email'];
-                $_SESSION['logged_in'] = true;
-                $_SESSION['admin_logged_in'] = true;
-
-                // Optional: Log successful admin login (for audit trail)
-                // logAdminLogin($user['user_id'], 'success');
-
-                header("Location: bookings-management.php");
-                exit;
-            }
+        if (!$user || $user['role'] !== 'admin') {
+            // Do not reveal whether email exists
+            $_SESSION['admin_error'] = "Invalid email or password";
+            header("Location: admin-login.php");
+            exit;
         }
+
+        // Verify password using password_verify (preferred) + optional plain text fallback
+        $password_valid = password_verify($password, $user['password']);
+        if (!$password_valid && $password === $user['password']) {
+            $password_valid = true;
+        }
+
+        if ($password_valid) {
+            // Set session variables for admin
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['role'] = $user['role'];
+            $_SESSION['name'] = $user['name'];
+            $_SESSION['email'] = $user['email'];
+            $_SESSION['logged_in'] = true;
+            $_SESSION['admin_logged_in'] = true;
+
+            // Optional: Log successful admin login (for audit trail)
+            // logAdminLogin($user['user_id'], 'success');
+
+            header("Location: dashboard.php");
+            exit;
+        }
+
 
         // Invalid credentials or not an admin
         $_SESSION['admin_error'] = "Invalid email or password";

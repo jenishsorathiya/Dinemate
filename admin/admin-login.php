@@ -1,12 +1,34 @@
 <?php
+require_once "../config/db.php";
+require_once "../includes/functions.php";
 session_start();
 
-// Check if already logged in as admin
-if(isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
-    header("Location: dashboard.php");
-    exit();
-}
 $error = "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+$email = sanitize($_POST['email']);
+$password = $_POST['password'];
+
+$stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='admin'");
+$stmt->execute([$email]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($user && $password === $user['password']) {
+
+    $_SESSION['user_id'] = $user['user_id'];
+    $_SESSION['role'] = $user['role'];
+
+    header("Location: dashboard.php");
+    exit;
+
+} else {
+    $error = "Invalid admin credentials.";
+}
+
+} else {
+$error = "Admin account not found.";
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -135,44 +157,66 @@ body {
 </style>
 </head>
 <body>
-<div class="admin-container">
-    <div class="admin-left">
-        <h2>Admin Login</h2>
-        <p>Access the DineMate management dashboard.</p>
-        
-        <?php if(isset($_SESSION['admin_error'])): ?>
-            <div class="alert alert-danger"><?= $_SESSION['admin_error']; unset($_SESSION['admin_error']); ?></div>
-        <?php endif; ?>
-        
-        <form method="POST" action="process-admin-login.php">
-            <div class="mb-3">
-                <input type="email" name="email" class="form-control" placeholder="Admin Email" required>
-            </div>
 
-            <div class="mb-4 password-wrapper">
-                <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
-                <span class="eye" onclick="togglePassword()">👁</span>
-            </div>
-            
-            <button class="btn btn-login w-100">Login</button>
-        </form>
-    </div>
-    
-    <div class="admin-right">
-        <div class="admin-overlay"></div>
-        <div class="admin-text">
-            <h3>DineMate Admin</h3>
-            <p>Manage reservations, tables and customers efficiently.</p>
-        </div>
-    </div>
+<div class="admin-container">
+
+<div class="admin-left">
+
+<h2>Admin Login</h2>
+<p>Access the DineMate management dashboard.</p>
+
+<?php if($error): ?>
+<div class="alert alert-danger"><?= $error ?></div>
+<?php endif; ?>
+
+<form method="POST">
+
+<div class="mb-3">
+<input type="email" name="email" class="form-control" placeholder="Admin Email" required>
+</div>
+
+<div class="mb-4 password-wrapper">
+
+<input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+
+<span class="eye" onclick="togglePassword()">👁</span>
+
+</div>
+
+<button class="btn btn-login w-100">Login</button>
+
+</form>
+
+</div>
+
+
+<div class="admin-right">
+
+<div class="admin-overlay"></div>
+
+<div class="admin-text">
+<h3>DineMate Admin</h3>
+<p>Manage reservations, tables and customers efficiently.</p>
+</div>
+
+</div>
+
 </div>
 
 <script>
-function togglePassword() {
-    const pass = document.getElementById("password");
-    pass.type = pass.type === "password" ? "text" : "password";
+
+function togglePassword(){
+
+const pass=document.getElementById("password");
+
+if(pass.type==="password"){
+pass.type="text";
+}else{
+pass.type="password";
 }
+
+}
+
 </script>
 
 </body>
-</html>
