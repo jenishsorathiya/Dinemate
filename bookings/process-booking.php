@@ -3,6 +3,22 @@ require_once "../config/db.php";
 require_once "../includes/session-check.php";
 require_once "../includes/functions.php";
 
+// Ensure start_time and end_time columns exist
+try {
+    $result = $pdo->query("DESCRIBE bookings");
+    $columns = $result->fetchAll(PDO::FETCH_COLUMN, 0);
+    
+    if (!in_array('start_time', $columns)) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN start_time TIME NOT NULL DEFAULT '12:00:00'");
+    }
+    
+    if (!in_array('end_time', $columns)) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN end_time TIME NOT NULL DEFAULT '13:00:00'");
+    }
+} catch(PDOException $e) {
+    error_log('Migration error: ' . $e->getMessage());
+}
+
 if($_SERVER["REQUEST_METHOD"] !== "POST"){
     redirect("book-table.php");
 }

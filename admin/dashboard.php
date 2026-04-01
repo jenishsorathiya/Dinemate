@@ -363,6 +363,9 @@ array_multisort($days, $totals);
     <a href="dashboard.php" class="active">
         <i class="fa fa-chart-line"></i> Dashboard
     </a>
+    <a href="timeline/new-dashboard.php">
+        <i class="fa fa-calendar-days"></i> Timeline
+    </a>
     <a href="menu-management.php">
         <i class="fa fa-utensils"></i> Menu Management
     </a>
