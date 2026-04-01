@@ -629,6 +629,37 @@ $bookingsJson = json_encode($bookings);
             color: #111827;
         }
 
+        .booking-modal-danger {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .booking-modal-danger:hover {
+            background: #b91c1c;
+        }
+
+        .booking-modal-danger-small {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .booking-modal-danger-small:hover {
+            background: #fecaca;
+        }
+
+        .booking-detail-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 6px;
+        }
+
         .booking-detail-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1279,11 +1310,13 @@ $bookingsJson = json_encode($bookings);
                 <h5><i class="fa fa-clipboard-list"></i> Booking Details</h5>
                 <div class="booking-meta-chip" id="bookingDetailsMeta"></div>
             </div>
-            <button type="button" class="booking-modal-close" id="closeBookingDetailsModalBtn" aria-label="Close">&times;</button>
         </div>
         <div class="modal-error" id="bookingDetailsError"></div>
         <form id="bookingDetailsForm">
             <input type="hidden" id="bookingDetailsId">
+            <div class="booking-detail-topbar">
+                <button type="button" class="booking-modal-danger-small" id="cancelBookingActionBtn">Cancel Booking</button>
+            </div>
             <div class="booking-detail-grid">
                 <div class="modal-form-group full-width">
                     <label for="bookingDetailsName">Name</label>
@@ -1495,6 +1528,7 @@ $bookingsJson = json_encode($bookings);
         const modal = document.getElementById('bookingDetailsModal');
         const closeBtn = document.getElementById('closeBookingDetailsModalBtn');
         const cancelBtn = document.getElementById('cancelBookingDetailsBtn');
+        const cancelBookingActionBtn = document.getElementById('cancelBookingActionBtn');
         const form = document.getElementById('bookingDetailsForm');
         const errorBox = document.getElementById('bookingDetailsError');
         const saveBtn = document.getElementById('saveBookingDetailsBtn');
@@ -1507,8 +1541,61 @@ $bookingsJson = json_encode($bookings);
             errorBox.style.display = 'none';
         }
 
-        closeBtn.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
+        if(closeBtn) {
+            closeBtn.addEventListener('click', closeModal);
+        }
+        if(cancelBtn) {
+            cancelBtn.addEventListener('click', closeModal);
+        }
+        cancelBookingActionBtn.addEventListener('click', function() {
+            const bookingId = document.getElementById('bookingDetailsId').value;
+            if(!bookingId) {
+                return;
+            }
+
+            const booking = BOOKING_DATA.find(item => item.booking_id == bookingId);
+            const bookingName = booking ? booking.customer_name : 'this booking';
+            if(!window.confirm(`Cancel ${bookingName}?`)) {
+                return;
+            }
+
+            errorBox.style.display = 'none';
+            cancelBookingActionBtn.disabled = true;
+            cancelBookingActionBtn.textContent = 'Cancelling...';
+
+            fetch('cancel-booking.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    booking_id: bookingId,
+                })
+            })
+            .then(async response => {
+                const data = await response.json();
+                if(!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to cancel booking');
+                }
+                return data;
+            })
+            .then(data => {
+                const bookingIdx = BOOKING_DATA.findIndex(item => item.booking_id == data.booking_id);
+                if(bookingIdx !== -1) {
+                    BOOKING_DATA.splice(bookingIdx, 1);
+                }
+                renderTimeline();
+                closeModal();
+            })
+            .catch(error => {
+                errorBox.textContent = error.message;
+                errorBox.style.display = 'block';
+            })
+            .finally(() => {
+                cancelBookingActionBtn.disabled = false;
+                cancelBookingActionBtn.textContent = 'Cancel Booking';
+            });
+        });
         modal.addEventListener('click', function(e) {
             if(e.target === modal) {
                 closeModal();
