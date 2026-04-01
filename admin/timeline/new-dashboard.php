@@ -37,6 +37,30 @@ $stmt = $pdo->prepare("
 $stmt->execute([$selectedDate]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$bookingStats = [
+    'total_bookings' => count($bookings),
+    'total_people' => 0,
+    'lunch_bookings' => 0,
+    'lunch_people' => 0,
+    'dinner_bookings' => 0,
+    'dinner_people' => 0,
+];
+
+foreach ($bookings as $statBooking) {
+    $guestCount = (int) ($statBooking['number_of_guests'] ?? 0);
+    $startTime = isset($statBooking['start_time']) ? substr((string) $statBooking['start_time'], 0, 8) : '';
+
+    $bookingStats['total_people'] += $guestCount;
+
+    if ($startTime >= '12:00:00' && $startTime < '17:00:00') {
+        $bookingStats['lunch_bookings']++;
+        $bookingStats['lunch_people'] += $guestCount;
+    } elseif ($startTime >= '17:00:00') {
+        $bookingStats['dinner_bookings']++;
+        $bookingStats['dinner_people'] += $guestCount;
+    }
+}
+
 foreach ($bookings as &$booking) {
     $assignedTableIds = [];
     if (!empty($booking['assigned_table_ids'])) {
@@ -271,23 +295,121 @@ $bookingsJson = json_encode($bookings);
             flex: 1;
         }
 
-        .booking-item {
-            margin-bottom: 10px;
-            padding: 10px;
+        .booking-list-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .booking-list-tab {
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            background: #f9fafb;
+            color: #374151;
+            border-radius: 10px;
+            padding: 9px 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .booking-list-tab.active {
+            background: #111827;
+            border-color: #111827;
+            color: #ffffff;
+        }
+
+        .booking-item {
+            margin-bottom: 8px;
+            padding: 8px 9px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
             background: #f9fafb;
             cursor: grab;
         }
 
-        .booking-item strong {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 2px;
+        .booking-item-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-width: 0;
         }
 
-        .booking-item small {
+        .booking-item-top-left,
+        .booking-item-top-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .booking-item-top-right {
+            flex-shrink: 0;
+        }
+
+        .booking-item-time {
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+            white-space: nowrap;
+        }
+
+        .booking-item-name {
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #111827;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+            display: block;
+        }
+
+        .booking-item-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .booking-item-bottom-right {
             color: #6b7280;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .booking-item-meta {
+            color: #6b7280;
+            font-size: 11px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .booking-item-table {
+            color: #374151;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .booking-item-note-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #4f46e5;
+            font-size: 9px;
+            flex-shrink: 0;
         }
 
         .booking-item.dragging {
@@ -320,6 +442,46 @@ $bookingsJson = json_encode($bookings);
         .add-booking-button:hover {
             background: #1f2937;
             transform: translateY(-1px);
+        }
+
+        .stats-card {
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .stats-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .stats-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #eef2f7;
+        }
+
+        .stats-item-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .stats-item-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            line-height: 1.35;
         }
 
         .modal-backdrop-custom {
@@ -746,7 +908,7 @@ $bookingsJson = json_encode($bookings);
             position: absolute;
             top: 4px;
             min-height: 32px;
-            padding: 8px 12px;
+            padding: 5px 8px;
             border-radius: 4px;
             cursor: grab;
             transition: box-shadow 0.2s;
@@ -765,10 +927,10 @@ $bookingsJson = json_encode($bookings);
         }
 
         .booking-content {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
-            align-items: center;
-            column-gap: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1px;
             height: 100%;
             min-height: 0;
             overflow: hidden;
@@ -777,26 +939,42 @@ $bookingsJson = json_encode($bookings);
             pointer-events: auto;
         }
 
-        .booking-left,
-        .booking-middle,
-        .booking-right-meta {
+        .booking-top,
+        .booking-top-left,
+        .booking-top-right,
+        .booking-name-row {
             min-width: 0;
         }
 
-        .booking-left {
+        .booking-top {
             display: flex;
-            justify-content: flex-start;
-            overflow: hidden;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            min-width: 0;
         }
 
-        .booking-middle {
+        .booking-top-left,
+        .booking-top-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .booking-top-right {
+            flex-shrink: 0;
+        }
+
+        .booking-name-row {
             display: flex;
-            justify-content: center;
-            overflow: hidden;
+            align-items: center;
+            min-width: 0;
         }
 
         .booking-title,
-        .booking-time-text {
+        .booking-time-text,
+        .booking-name-text {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -804,38 +982,32 @@ $bookingsJson = json_encode($bookings);
         }
 
         .booking-time-text {
-            font-size: 10px;
+            font-size: 8px;
+            font-weight: 700;
             opacity: 0.95;
-            text-align: center;
+            text-align: left;
         }
 
         .booking-meta-inline {
-            font-size: 10px;
+            font-size: 8px;
+            font-weight: 700;
             opacity: 0.9;
             white-space: nowrap;
             flex-shrink: 0;
         }
 
-        .booking-title {
-            flex: 1 1 auto;
-        }
-
-        .booking-right-meta {
-            display: inline-flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 8px;
-            min-width: 0;
-            flex-shrink: 0;
-            padding-left: 4px;
+        .booking-name-text {
+            font-size: 9px;
+            font-weight: 700;
+            line-height: 1.1;
         }
 
         .booking-note-btn {
             border: none;
             background: rgba(255, 255, 255, 0.18);
             color: inherit;
-            width: 18px;
-            height: 18px;
+            width: 12px;
+            height: 12px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
@@ -850,7 +1022,7 @@ $bookingsJson = json_encode($bookings);
         }
 
         .booking-note-btn i {
-            font-size: 9px;
+            font-size: 7px;
         }
 
         .resize-handle {
@@ -998,8 +1170,27 @@ $bookingsJson = json_encode($bookings);
             <div class="left-panel">
                 <!-- BOOKINGS LIST -->
                 <div class="tables-section">
-                    <h6>Unassigned Bookings</h6>
+                    <div class="booking-list-tabs">
+                        <button type="button" class="booking-list-tab active" id="standbyTabBtn" onclick="switchBookingListTab('standby')">Standby</button>
+                        <button type="button" class="booking-list-tab" id="bookingsTabBtn" onclick="switchBookingListTab('bookings')">Bookings</button>
+                    </div>
                     <div class="booking-list" id="bookingList"></div>
+                    <div class="stats-card">
+                        <div class="stats-list">
+                            <div class="stats-item">
+                                <span class="stats-item-label">Total</span>
+                                <span class="stats-item-value"><?php echo $bookingStats['total_bookings']; ?> bookings, <?php echo $bookingStats['total_people']; ?>px</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-item-label">Lunch</span>
+                                <span class="stats-item-value"><?php echo $bookingStats['lunch_bookings']; ?> bookings, <?php echo $bookingStats['lunch_people']; ?>px</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-item-label">Dinner</span>
+                                <span class="stats-item-value"><?php echo $bookingStats['dinner_bookings']; ?> bookings, <?php echo $bookingStats['dinner_people']; ?>px</span>
+                            </div>
+                        </div>
+                    </div>
                     <button type="button" class="add-booking-button" id="openBookingModalBtn">
                         <i class="fa fa-plus"></i>
                         Add a Booking
@@ -1151,6 +1342,7 @@ $bookingsJson = json_encode($bookings);
     const INTERVAL_MINS = 30;
     const CELL_WIDTH = 80;
     const ROW_HEIGHT = 40;
+    let activeBookingListTab = 'standby';
 
     // Initialize timeline on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -1471,28 +1663,74 @@ $bookingsJson = json_encode($bookings);
         document.body.classList.add('modal-open');
     }
 
+    function switchBookingListTab(tabName) {
+        activeBookingListTab = tabName === 'bookings' ? 'bookings' : 'standby';
+
+        const standbyTabBtn = document.getElementById('standbyTabBtn');
+        const bookingsTabBtn = document.getElementById('bookingsTabBtn');
+
+        if(standbyTabBtn) {
+            standbyTabBtn.classList.toggle('active', activeBookingListTab === 'standby');
+        }
+        if(bookingsTabBtn) {
+            bookingsTabBtn.classList.toggle('active', activeBookingListTab === 'bookings');
+        }
+
+        populateBookingList();
+    }
+
     function populateBookingList() {
         const bookingList = document.getElementById('bookingList');
         if(!bookingList) return;
 
-        const unassignedBookings = BOOKING_DATA.filter(booking => getAssignedTableIds(booking).length === 0);
+        const standbyBookings = BOOKING_DATA
+            .filter(booking => getAssignedTableIds(booking).length === 0)
+            .sort((left, right) => `${left.start_time}`.localeCompare(`${right.start_time}`));
 
-        if(unassignedBookings.length === 0) {
-            bookingList.innerHTML = '<p>No unassigned bookings for this date.</p>';
+        const assignedBookings = BOOKING_DATA
+            .filter(booking => getAssignedTableIds(booking).length > 0)
+            .sort((left, right) => `${left.start_time}`.localeCompare(`${right.start_time}`));
+
+        const isStandbyTab = activeBookingListTab === 'standby';
+        const visibleBookings = isStandbyTab ? standbyBookings : assignedBookings;
+        const emptyMessage = isStandbyTab
+            ? 'No unassigned bookings for this date.'
+            : 'No assigned bookings for this date.';
+
+        if(visibleBookings.length === 0) {
+            bookingList.innerHTML = `<p>${emptyMessage}</p>`;
             return;
         }
 
-        bookingList.innerHTML = unassignedBookings.map(booking => {
-            const timeRange = `${booking.start_time.substring(0,5)} - ${booking.end_time.substring(0,5)}`;
-            const specialRequest = booking.special_request
-                ? `<small>${booking.special_request}</small>`
+        bookingList.innerHTML = visibleBookings.map(booking => {
+            const startTime = booking.start_time.substring(0,5);
+            const noteIcon = booking.special_request
+                ? `<span class="booking-item-note-icon" title="${booking.special_request.replace(/"/g, '&quot;')}"><i class="fa-solid fa-note-sticky"></i></span>`
                 : '';
+            const tableNumbers = getAssignedTableNumbers(booking);
+            const rightSideText = isStandbyTab
+                ? `<span class="booking-item-meta">P${booking.number_of_guests}</span>`
+                : `<span class="booking-item-table">${tableNumbers.map(tableNumber => `T${tableNumber}`).join(', ')}</span>`;
+            const bottomRowRight = isStandbyTab
+                ? ''
+                : `<span class="booking-item-bottom-right">P${booking.number_of_guests}</span>`;
+            const draggableAttributes = isStandbyTab ? 'draggable="true"' : 'draggable="false"';
+            const draggableClass = isStandbyTab ? ' draggable-booking' : '';
             return `
-                <div class="booking-item draggable-booking" draggable="true" data-booking-id="${booking.booking_id}" onclick="handleBookingClick(event, ${booking.booking_id})">
-                    <strong>${booking.customer_name}</strong>
-                    <small>${timeRange}</small><br>
-                    <small>${booking.number_of_guests} guests</small><br>
-                    ${specialRequest}
+                <div class="booking-item${draggableClass}" ${draggableAttributes} data-booking-id="${booking.booking_id}" onclick="handleBookingClick(event, ${booking.booking_id})">
+                    <div class="booking-item-top">
+                        <span class="booking-item-top-left">
+                            <span class="booking-item-time">${startTime}</span>
+                            ${noteIcon}
+                        </span>
+                        <span class="booking-item-top-right">
+                            ${rightSideText}
+                        </span>
+                    </div>
+                    <div class="booking-item-bottom">
+                        <span class="booking-item-name">${booking.customer_name}</span>
+                        ${bottomRowRight}
+                    </div>
                 </div>
             `;
         }).join('');
@@ -1648,23 +1886,23 @@ $bookingsJson = json_encode($bookings);
 
         const leftPosition = startIdx * CELL_WIDTH;
         const width = Math.max(numSlots * CELL_WIDTH, CELL_WIDTH);
-        const topPosition = startRowIndex * ROW_HEIGHT + 4;
-        const height = rowSpan * ROW_HEIGHT - 8;
+        const topPosition = startRowIndex * ROW_HEIGHT;
+        const height = rowSpan * ROW_HEIGHT;
 
         const statusClass = booking.status === 'confirmed' ? 'success' : (booking.status === 'pending' ? 'pending' : 'info');
         const rescheduledClass = requestedStart !== bookingStart ? 'rescheduled' : '';
-        const guestCountText = `${booking.number_of_guests}px`;
-        const visibleTimeText = `${bookingStart} - ${bookingEnd}`;
+        const guestCountText = `P${booking.number_of_guests}`;
+        const visibleTimeText = `${bookingStart}`;
         const hasSpecialNote = booking.special_request && booking.special_request.trim() !== '';
-        const showTime = width >= 150;
-        const showGuestCount = width >= 210;
-        const showNoteButton = hasSpecialNote && width >= 245;
+        const showTime = width >= 88;
+        const showGuestCount = width >= 132;
+        const showNoteButton = hasSpecialNote && width >= 156;
         const noteButtonHtml = showNoteButton
             ? `<button type="button" class="booking-note-btn" title="${booking.special_request.replace(/"/g, '&quot;')}" onclick="event.stopPropagation(); openBookingDetails(${booking.booking_id});" draggable="false"><i class="fa-solid fa-note-sticky"></i></button>`
             : '';
         const titleText = rescheduledClass
-            ? `${booking.customer_name} | ${guestCountText} | ${visibleTimeText} | Requested ${requestedStart} - ${requestedEnd} | Scheduled ${bookingStart} - ${bookingEnd}`
-            : `${booking.customer_name} | ${guestCountText} | ${visibleTimeText}`;
+            ? `${booking.customer_name} | ${guestCountText} | ${bookingStart} - ${bookingEnd} | Requested ${requestedStart} - ${requestedEnd} | Scheduled ${bookingStart} - ${bookingEnd}`
+            : `${booking.customer_name} | ${guestCountText} | ${bookingStart} - ${bookingEnd}`;
 
         return `<div class="booking-block ${statusClass} ${rescheduledClass}"
                     draggable="true"
@@ -1682,14 +1920,18 @@ $bookingsJson = json_encode($bookings);
             <div class="resize-handle top-handle"></div>
             <div class="resize-handle left-handle"></div>
             <div class="booking-content">
-                <span class="booking-left">
-                    <span class="booking-title">${booking.customer_name}</span>
-                </span>
-                ${showTime ? `<span class="booking-middle"><span class="booking-time-text">${visibleTimeText}</span></span>` : '<span class="booking-middle"></span>'}
-                <span class="booking-right-meta">
-                    ${showGuestCount ? `<span class="booking-meta-inline">${guestCountText}</span>` : ''}
-                    ${noteButtonHtml}
-                </span>
+                <div class="booking-top">
+                    <span class="booking-top-left">
+                        ${showTime ? `<span class="booking-time-text">${visibleTimeText}</span>` : ''}
+                        ${noteButtonHtml}
+                    </span>
+                    <span class="booking-top-right">
+                        ${showGuestCount ? `<span class="booking-meta-inline">${guestCountText}</span>` : ''}
+                    </span>
+                </div>
+                <div class="booking-name-row">
+                    <span class="booking-name-text">${booking.customer_name}</span>
+                </div>
             </div>
             <div class="resize-handle right-handle"></div>
             <div class="resize-handle bottom-handle"></div>
@@ -1938,8 +2180,8 @@ $bookingsJson = json_encode($bookings);
             const tableIndexMap = getTableIndexMap();
             const topIndex = tableIndexMap[String(newAssignedTableIds[0])];
             if(topIndex !== undefined) {
-                resizeData.bookingEl.style.top = `${topIndex * ROW_HEIGHT + 4}px`;
-                resizeData.bookingEl.style.height = `${newAssignedTableIds.length * ROW_HEIGHT - 8}px`;
+                resizeData.bookingEl.style.top = `${topIndex * ROW_HEIGHT}px`;
+                resizeData.bookingEl.style.height = `${newAssignedTableIds.length * ROW_HEIGHT}px`;
                 resizeData.bookingEl.dataset.rowSpan = String(newAssignedTableIds.length);
             }
         }
