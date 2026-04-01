@@ -322,18 +322,22 @@ $bookingsJson = json_encode($bookings);
 
         .booking-item {
             margin-bottom: 8px;
-            padding: 8px 9px;
+            min-height: var(--timeline-row-height);
+            padding: 5px 8px;
             border: 1px solid #e5e7eb;
-            border-radius: 10px;
+            border-radius: 8px;
             background: #f9fafb;
             cursor: grab;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .booking-item-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 6px;
             min-width: 0;
         }
 
@@ -341,7 +345,7 @@ $bookingsJson = json_encode($bookings);
         .booking-item-top-right {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             min-width: 0;
         }
 
@@ -350,15 +354,15 @@ $bookingsJson = json_encode($bookings);
         }
 
         .booking-item-time {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
             color: #111827;
             white-space: nowrap;
         }
 
         .booking-item-name {
-            margin-top: 4px;
-            font-size: 11px;
+            margin-top: 1px;
+            font-size: 10px;
             font-weight: 600;
             color: #111827;
             overflow: hidden;
@@ -372,13 +376,13 @@ $bookingsJson = json_encode($bookings);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 6px;
             min-width: 0;
         }
 
         .booking-item-bottom-right {
             color: #6b7280;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             white-space: nowrap;
             flex-shrink: 0;
@@ -386,14 +390,14 @@ $bookingsJson = json_encode($bookings);
 
         .booking-item-meta {
             color: #6b7280;
-            font-size: 11px;
+            font-size: 10px;
             white-space: nowrap;
             flex-shrink: 0;
         }
 
         .booking-item-table {
             color: #374151;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             white-space: nowrap;
             flex-shrink: 0;
@@ -403,12 +407,12 @@ $bookingsJson = json_encode($bookings);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 15px;
-            height: 15px;
+            width: 12px;
+            height: 12px;
             border-radius: 999px;
             background: #eef2ff;
             color: #4f46e5;
-            font-size: 9px;
+            font-size: 7px;
             flex-shrink: 0;
         }
 
@@ -991,14 +995,14 @@ $bookingsJson = json_encode($bookings);
         }
 
         .booking-time-text {
-            font-size: 8px;
+            font-size: 10px;
             font-weight: 700;
             opacity: 0.95;
             text-align: left;
         }
 
         .booking-meta-inline {
-            font-size: 8px;
+            font-size: 10px;
             font-weight: 700;
             opacity: 0.9;
             white-space: nowrap;
@@ -1006,7 +1010,7 @@ $bookingsJson = json_encode($bookings);
         }
 
         .booking-name-text {
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 700;
             line-height: 1.1;
         }
