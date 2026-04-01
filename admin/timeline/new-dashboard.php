@@ -478,10 +478,19 @@ $bookingsJson = json_encode($bookings);
         }
 
         .stats-item-value {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
             font-size: 14px;
             font-weight: 700;
             color: #111827;
             line-height: 1.35;
+        }
+
+        .stats-item-bookings,
+        .stats-item-people {
+            white-space: nowrap;
         }
 
         .modal-backdrop-custom {
@@ -1183,15 +1192,15 @@ $bookingsJson = json_encode($bookings);
                         <div class="stats-list">
                             <div class="stats-item">
                                 <span class="stats-item-label">Total</span>
-                                <span class="stats-item-value"><?php echo $bookingStats['total_bookings']; ?> bookings, <?php echo $bookingStats['total_people']; ?>px</span>
+                                <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['total_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['total_people']; ?></span></span>
                             </div>
                             <div class="stats-item">
                                 <span class="stats-item-label">Lunch</span>
-                                <span class="stats-item-value"><?php echo $bookingStats['lunch_bookings']; ?> bookings, <?php echo $bookingStats['lunch_people']; ?>px</span>
+                                <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['lunch_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['lunch_people']; ?></span></span>
                             </div>
                             <div class="stats-item">
                                 <span class="stats-item-label">Dinner</span>
-                                <span class="stats-item-value"><?php echo $bookingStats['dinner_bookings']; ?> bookings, <?php echo $bookingStats['dinner_people']; ?>px</span>
+                                <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['dinner_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['dinner_people']; ?></span></span>
                             </div>
                         </div>
                     </div>
@@ -1707,7 +1716,7 @@ $bookingsJson = json_encode($bookings);
         }
 
         bookingList.innerHTML = visibleBookings.map(booking => {
-            const startTime = booking.start_time.substring(0,5);
+            const startTime = formatDisplayTime(booking.start_time);
             const noteIcon = booking.special_request
                 ? `<span class="booking-item-note-icon" title="${booking.special_request.replace(/"/g, '&quot;')}"><i class="fa-solid fa-note-sticky"></i></span>`
                 : '';
@@ -1793,8 +1802,27 @@ $bookingsJson = json_encode($bookings);
         }, 0);
     }
 
+    function formatDisplayTime(timeValue) {
+        if(!timeValue) {
+            return '';
+        }
+
+        const timePart = String(timeValue).substring(0, 5);
+        const [hourString, minuteString] = timePart.split(':');
+        const hour = Number(hourString);
+        const minute = Number(minuteString);
+
+        if(Number.isNaN(hour) || Number.isNaN(minute)) {
+            return timePart;
+        }
+
+        const suffix = hour >= 12 ? 'PM' : 'AM';
+        const normalizedHour = hour % 12 || 12;
+        return `${normalizedHour}:${String(minute).padStart(2, '0')}${suffix}`;
+    }
+
     function formatTimeRange(startTime, endTime) {
-        return `${startTime.substring(0,5)} - ${endTime.substring(0,5)}`;
+        return `${formatDisplayTime(startTime)} - ${formatDisplayTime(endTime)}`;
     }
 
     function confirmScheduledTimeChange(booking, newStartTime, newEndTime) {
@@ -1833,7 +1861,7 @@ $bookingsJson = json_encode($bookings);
         // Render time headings (x-axis)
         const timeHeader = document.getElementById('timeHeader');
         timeHeader.innerHTML = timeSlots.map(time => 
-            `<div class="time-slot">${time}</div>`
+            `<div class="time-slot">${formatDisplayTime(time)}</div>`
         ).join('');
 
         // Render table labels (y-axis)
@@ -1886,6 +1914,10 @@ $bookingsJson = json_encode($bookings);
         const bookingEnd = booking.end_time.substring(0, 5);
         const requestedStart = getRequestedStartTime(booking).substring(0, 5);
         const requestedEnd = getRequestedEndTime(booking).substring(0, 5);
+        const bookingStartLabel = formatDisplayTime(booking.start_time);
+        const bookingEndLabel = formatDisplayTime(booking.end_time);
+        const requestedStartLabel = formatDisplayTime(getRequestedStartTime(booking));
+        const requestedEndLabel = formatDisplayTime(getRequestedEndTime(booking));
         const assignedTableIds = getAssignedTableIds(booking);
         const assignedTableNumbers = getAssignedTableNumbers(booking);
         const startIdx = timeSlots.indexOf(bookingStart);
@@ -1909,7 +1941,7 @@ $bookingsJson = json_encode($bookings);
         const overCapacityClass = getAssignedCapacity(booking) < Number(booking.number_of_guests || 0) ? 'over-capacity' : '';
         const rescheduledClass = requestedStart !== bookingStart ? 'rescheduled' : '';
         const guestCountText = `P${booking.number_of_guests}`;
-        const visibleTimeText = `${bookingStart}`;
+        const visibleTimeText = bookingStartLabel;
         const hasSpecialNote = booking.special_request && booking.special_request.trim() !== '';
         const showTime = width >= 88;
         const showGuestCount = width >= 132;
@@ -1918,8 +1950,8 @@ $bookingsJson = json_encode($bookings);
             ? `<button type="button" class="booking-note-btn" title="${booking.special_request.replace(/"/g, '&quot;')}" onclick="event.stopPropagation(); openBookingDetails(${booking.booking_id});" draggable="false"><i class="fa-solid fa-note-sticky"></i></button>`
             : '';
         const titleText = rescheduledClass
-            ? `${booking.customer_name} | ${guestCountText} | ${bookingStart} - ${bookingEnd} | Requested ${requestedStart} - ${requestedEnd} | Scheduled ${bookingStart} - ${bookingEnd}`
-            : `${booking.customer_name} | ${guestCountText} | ${bookingStart} - ${bookingEnd}`;
+            ? `${booking.customer_name} | ${guestCountText} | ${bookingStartLabel} - ${bookingEndLabel} | Requested ${requestedStartLabel} - ${requestedEndLabel} | Scheduled ${bookingStartLabel} - ${bookingEndLabel}`
+            : `${booking.customer_name} | ${guestCountText} | ${bookingStartLabel} - ${bookingEndLabel}`;
 
         return `<div class="booking-block ${statusClass} ${overCapacityClass} ${rescheduledClass}"
                     draggable="true"
