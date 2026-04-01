@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/config/db.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/functions.php";
 
 // Check if user is admin
 if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -11,12 +12,14 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 // Get all tables
 $tables = $pdo->query("SELECT table_id, table_number, capacity FROM restaurant_tables ORDER BY table_number ASC")->fetchAll(PDO::FETCH_ASSOC);
 
+ensureBookingRequestColumns($pdo);
+
 // Get selected date (default to today)
 $selectedDate = $_GET['date'] ?? date('Y-m-d');
 
 // Get bookings for selected date
 $stmt = $pdo->prepare("
-    SELECT b.*, u.name as customer_name, t.table_number
+    SELECT b.*, COALESCE(b.customer_name_override, u.name) as customer_name, t.table_number
     FROM bookings b
     JOIN users u ON b.user_id = u.user_id
     LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
@@ -402,6 +405,34 @@ $bookingsJson = json_encode($bookings);
         .booking-modal-submit {
             background: #f4b400;
             color: #111827;
+        }
+
+        .booking-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .booking-detail-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .booking-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #f3f4f6;
+            color: #374151;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 520px) {
+            .booking-detail-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .add-table-row {
@@ -835,6 +866,56 @@ $bookingsJson = json_encode($bookings);
     </div>
 </div>
 
+<div class="modal-backdrop-custom" id="bookingDetailsModal">
+    <div class="booking-modal-card">
+        <div class="booking-modal-header">
+            <div>
+                <h5><i class="fa fa-clipboard-list"></i> Booking Details</h5>
+                <div class="booking-meta-chip" id="bookingDetailsMeta"></div>
+            </div>
+            <button type="button" class="booking-modal-close" id="closeBookingDetailsModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-error" id="bookingDetailsError"></div>
+        <form id="bookingDetailsForm">
+            <input type="hidden" id="bookingDetailsId">
+            <div class="booking-detail-grid">
+                <div class="modal-form-group full-width">
+                    <label for="bookingDetailsName">Name</label>
+                    <input type="text" id="bookingDetailsName" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="bookingRequestedStart">Requested Start</label>
+                    <input type="time" id="bookingRequestedStart" min="10:00" max="21:30" step="1800" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="bookingRequestedEnd">Requested End</label>
+                    <input type="time" id="bookingRequestedEnd" min="10:30" max="22:00" step="1800" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="bookingAssignedStart">Assigned Start</label>
+                    <input type="time" id="bookingAssignedStart" min="10:00" max="21:30" step="1800" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="bookingAssignedEnd">Assigned End</label>
+                    <input type="time" id="bookingAssignedEnd" min="10:30" max="22:00" step="1800" required>
+                </div>
+                <div class="modal-form-group full-width">
+                    <label for="bookingDetailsGuests">Number of People</label>
+                    <input type="number" id="bookingDetailsGuests" min="1" required>
+                </div>
+                <div class="modal-form-group full-width">
+                    <label for="bookingDetailsNotes">Notes</label>
+                    <textarea id="bookingDetailsNotes" placeholder="Optional notes"></textarea>
+                </div>
+            </div>
+            <div class="booking-modal-actions">
+                <button type="button" class="booking-modal-cancel" id="cancelBookingDetailsBtn">Close</button>
+                <button type="submit" class="booking-modal-submit" id="saveBookingDetailsBtn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     const BOOKING_DATA = <?php echo $bookingsJson; ?>;
     const TABLES = <?php echo json_encode($tables); ?>;
@@ -846,6 +927,7 @@ $bookingsJson = json_encode($bookings);
     // Initialize timeline on page load
     document.addEventListener('DOMContentLoaded', function() {
         bindBookingModal();
+        bindBookingDetailsModal();
         renderTimeline();
         setCurrentTimeLine();
 
@@ -971,6 +1053,105 @@ $bookingsJson = json_encode($bookings);
         });
     }
 
+    function bindBookingDetailsModal() {
+        const modal = document.getElementById('bookingDetailsModal');
+        const closeBtn = document.getElementById('closeBookingDetailsModalBtn');
+        const cancelBtn = document.getElementById('cancelBookingDetailsBtn');
+        const form = document.getElementById('bookingDetailsForm');
+        const errorBox = document.getElementById('bookingDetailsError');
+        const saveBtn = document.getElementById('saveBookingDetailsBtn');
+
+        if(!modal || !form) return;
+
+        function closeModal() {
+            modal.classList.remove('open');
+            document.body.classList.remove('modal-open');
+            errorBox.style.display = 'none';
+        }
+
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) {
+                closeModal();
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const payload = {
+                booking_id: document.getElementById('bookingDetailsId').value,
+                customer_name: document.getElementById('bookingDetailsName').value.trim(),
+                requested_start_time: document.getElementById('bookingRequestedStart').value,
+                requested_end_time: document.getElementById('bookingRequestedEnd').value,
+                start_time: document.getElementById('bookingAssignedStart').value,
+                end_time: document.getElementById('bookingAssignedEnd').value,
+                number_of_guests: document.getElementById('bookingDetailsGuests').value,
+                special_request: document.getElementById('bookingDetailsNotes').value.trim(),
+            };
+
+            errorBox.style.display = 'none';
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            fetch('update-booking-details.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => {
+                const data = await response.json();
+                if(!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to update booking');
+                }
+                return data;
+            })
+            .then(data => {
+                const bookingIdx = BOOKING_DATA.findIndex(booking => booking.booking_id == data.booking.booking_id);
+                if(bookingIdx !== -1) {
+                    BOOKING_DATA[bookingIdx] = {
+                        ...BOOKING_DATA[bookingIdx],
+                        ...data.booking,
+                    };
+                }
+                renderTimeline();
+                closeModal();
+            })
+            .catch(error => {
+                errorBox.textContent = error.message;
+                errorBox.style.display = 'block';
+            })
+            .finally(() => {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+            });
+        });
+    }
+
+    function openBookingDetails(bookingId) {
+        const booking = BOOKING_DATA.find(item => item.booking_id == bookingId);
+        if(!booking) return;
+
+        const modal = document.getElementById('bookingDetailsModal');
+        document.getElementById('bookingDetailsId').value = booking.booking_id;
+        document.getElementById('bookingDetailsName').value = booking.customer_name || '';
+        document.getElementById('bookingRequestedStart').value = getRequestedStartTime(booking).substring(0, 5);
+        document.getElementById('bookingRequestedEnd').value = getRequestedEndTime(booking).substring(0, 5);
+        document.getElementById('bookingAssignedStart').value = booking.start_time.substring(0, 5);
+        document.getElementById('bookingAssignedEnd').value = booking.end_time.substring(0, 5);
+        document.getElementById('bookingDetailsGuests').value = booking.number_of_guests;
+        document.getElementById('bookingDetailsNotes').value = booking.special_request || '';
+        document.getElementById('bookingDetailsMeta').textContent = `${booking.booking_date} • ${booking.table_number ? 'Table ' + booking.table_number : 'Unassigned'} • ${booking.status}`;
+
+        const errorBox = document.getElementById('bookingDetailsError');
+        errorBox.style.display = 'none';
+        modal.classList.add('open');
+        document.body.classList.add('modal-open');
+    }
+
     function populateBookingList() {
         const bookingList = document.getElementById('bookingList');
         if(!bookingList) return;
@@ -988,7 +1169,7 @@ $bookingsJson = json_encode($bookings);
                 ? `<small>${booking.special_request}</small>`
                 : '';
             return `
-                <div class="booking-item draggable-booking" draggable="true" data-booking-id="${booking.booking_id}">
+                <div class="booking-item draggable-booking" draggable="true" data-booking-id="${booking.booking_id}" onclick="handleBookingClick(event, ${booking.booking_id})">
                     <strong>${booking.customer_name}</strong>
                     <small>${timeRange}</small><br>
                     <small>${booking.number_of_guests} guests</small><br>
@@ -1127,6 +1308,7 @@ $bookingsJson = json_encode($bookings);
                     data-time="${booking.start_time}"
                     data-duration="${durationMins}"
                     data-customer="${booking.customer_name}"
+                onclick="handleBookingClick(event, ${booking.booking_id})"
                     style="left: ${leftPosition}px; top: ${topPosition}px; width: ${width}px; height: ${height}px;"
                     title="${titleText}">
             <div class="resize-handle left-handle"></div>
@@ -1158,11 +1340,26 @@ $bookingsJson = json_encode($bookings);
     let draggedBooking = null;
     let resizing = null;
     let resizeData = null;
+    let suppressBookingClick = false;
+
+    function handleBookingClick(event, bookingId) {
+        if(suppressBookingClick) {
+            suppressBookingClick = false;
+            return;
+        }
+
+        if(event.target.closest('.resize-handle')) {
+            return;
+        }
+
+        openBookingDetails(bookingId);
+    }
 
     function handleDragStart(e) {
         draggedBooking = this;
         this.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
+        suppressBookingClick = true;
     }
 
     function handleDragEnd(e) {
@@ -1257,6 +1454,7 @@ $bookingsJson = json_encode($bookings);
     function handleResizeStart(direction, bookingEl, e) {
         e.stopPropagation();
         e.preventDefault();
+        suppressBookingClick = true;
 
         resizing = direction;
         const bookingId = bookingEl.dataset.bookingId;

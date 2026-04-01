@@ -113,12 +113,19 @@ function ensureBookingRequestColumns($pdo) {
     $requestedEndStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'requested_end_time'");
     $requestedEndExists = $requestedEndStmt->rowCount() > 0;
 
+    $nameOverrideStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'customer_name_override'");
+    $nameOverrideExists = $nameOverrideStmt->rowCount() > 0;
+
     if (!$requestedStartExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN requested_start_time TIME DEFAULT NULL AFTER end_time");
     }
 
     if (!$requestedEndExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN requested_end_time TIME DEFAULT NULL AFTER requested_start_time");
+    }
+
+    if (!$nameOverrideExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN customer_name_override VARCHAR(100) DEFAULT NULL AFTER user_id");
     }
 
     if ($startTimeExists) {
