@@ -19,7 +19,7 @@ $stmt = $pdo->prepare("
     SELECT b.*, u.name as customer_name, t.table_number
     FROM bookings b
     JOIN users u ON b.user_id = u.user_id
-    JOIN restaurant_tables t ON b.table_id = t.table_id
+    LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
     WHERE b.booking_date = ? AND b.status IN ('pending', 'confirmed')
     ORDER BY b.start_time ASC
 ");
@@ -145,7 +145,6 @@ $bookingsJson = json_encode($bookings);
             padding: 20px 30px;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
@@ -156,12 +155,15 @@ $bookingsJson = json_encode($bookings);
             color: #1f2937;
         }
 
-        .nav-buttons {
+        .calendar-nav {
             display: flex;
             gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
         }
 
-        .nav-buttons button {
+        .calendar-nav button,
+        .today-button {
             background: #f4b400;
             border: none;
             padding: 8px 15px;
@@ -171,8 +173,17 @@ $bookingsJson = json_encode($bookings);
             transition: 0.3s;
         }
 
-        .nav-buttons button:hover {
+        .calendar-nav button:hover,
+        .today-button:hover {
             background: #e0a800;
+        }
+
+        .calendar-nav button {
+            width: 42px;
+            min-width: 42px;
+            padding: 8px 0;
+            font-size: 18px;
+            line-height: 1;
         }
 
         /* CONTENT AREA */
@@ -211,6 +222,7 @@ $bookingsJson = json_encode($bookings);
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             background: #f9fafb;
+            cursor: grab;
         }
 
         .booking-item strong {
@@ -221,6 +233,10 @@ $bookingsJson = json_encode($bookings);
 
         .booking-item small {
             color: #6b7280;
+        }
+
+        .booking-item.dragging {
+            opacity: 0.6;
         }
 
         .add-table-row {
@@ -254,7 +270,7 @@ $bookingsJson = json_encode($bookings);
         }
 
         .calendar {
-            width: 100%;
+            flex: 1;
         }
 
         .calendar input {
@@ -263,6 +279,10 @@ $bookingsJson = json_encode($bookings);
             border: 1px solid #d1d5db;
             border-radius: 6px;
             font-size: 14px;
+        }
+
+        .today-button {
+            width: 100%;
         }
 
         /* TABLES LIST */
@@ -563,11 +583,6 @@ $bookingsJson = json_encode($bookings);
         <!-- HEADER -->
         <div class="header">
             <h2><i class="fa fa-calendar-days"></i> Booking Timeline</h2>
-            <div class="nav-buttons">
-                <button onclick="previousDay()"><i class="fa fa-chevron-left"></i> Prev</button>
-                <button onclick="todayDate()">Today</button>
-                <button onclick="nextDay()">Next <i class="fa fa-chevron-right"></i></button>
-            </div>
         </div>
 
         <!-- CONTENT -->
@@ -577,14 +592,19 @@ $bookingsJson = json_encode($bookings);
                 <!-- CALENDAR -->
                 <div class="calendar-section">
                     <h6>Select Date</h6>
-                    <div class="calendar">
-                        <input type="date" id="dateInput" value="<?php echo $selectedDate; ?>" onchange="changeDate()">
+                    <div class="calendar-nav">
+                        <button type="button" onclick="previousDay()" aria-label="Previous day">&lt;</button>
+                        <div class="calendar">
+                            <input type="date" id="dateInput" value="<?php echo $selectedDate; ?>" onchange="changeDate()">
+                        </div>
+                        <button type="button" onclick="nextDay()" aria-label="Next day">&gt;</button>
                     </div>
+                    <button type="button" class="today-button" onclick="todayDate()">Today</button>
                 </div>
 
                 <!-- BOOKINGS LIST -->
                 <div class="tables-section">
-                    <h6>Bookings Today</h6>
+                    <h6>Unassigned Bookings</h6>
                     <div class="booking-list" id="bookingList"></div>
                 </div>
             </div>
@@ -662,18 +682,24 @@ $bookingsJson = json_encode($bookings);
         const bookingList = document.getElementById('bookingList');
         if(!bookingList) return;
 
-        if(BOOKING_DATA.length === 0) {
-            bookingList.innerHTML = '<p>No bookings for this date.</p>';
+        const unassignedBookings = BOOKING_DATA.filter(booking => booking.table_id === null || booking.table_id === undefined || booking.table_id === '');
+
+        if(unassignedBookings.length === 0) {
+            bookingList.innerHTML = '<p>No unassigned bookings for this date.</p>';
             return;
         }
 
-        bookingList.innerHTML = BOOKING_DATA.map(booking => {
+        bookingList.innerHTML = unassignedBookings.map(booking => {
             const timeRange = `${booking.start_time.substring(0,5)} - ${booking.end_time.substring(0,5)}`;
+            const specialRequest = booking.special_request
+                ? `<small>${booking.special_request}</small>`
+                : '';
             return `
-                <div class="booking-item">
-                    <strong>${booking.customer_name} (T${booking.table_number})</strong>
+                <div class="booking-item draggable-booking" draggable="true" data-booking-id="${booking.booking_id}">
+                    <strong>${booking.customer_name}</strong>
                     <small>${timeRange}</small><br>
-                    <small>${booking.number_of_guests} guests</small>
+                    <small>${booking.number_of_guests} guests</small><br>
+                    ${specialRequest}
                 </div>
             `;
         }).join('');
@@ -715,7 +741,7 @@ $bookingsJson = json_encode($bookings);
         let gridHTML = '';
         
         TABLES.forEach(table => {
-            const tableBookings = BOOKING_DATA.filter(b => b.table_id === table.table_id);
+            const tableBookings = BOOKING_DATA.filter(b => b.table_id !== null && b.table_id !== undefined && String(b.table_id) === String(table.table_id));
 
             let rowHTML = `<div class="table-row" data-table-id="${table.table_id}">`;
             
@@ -785,7 +811,7 @@ $bookingsJson = json_encode($bookings);
 
     // Drag handlers
     function bindBookingDragHandlers() {
-        const bookings = document.querySelectorAll('.booking-block');
+        const bookings = document.querySelectorAll('.booking-block, .draggable-booking');
         bookings.forEach(booking => {
             booking.addEventListener('dragstart', handleDragStart);
             booking.addEventListener('dragend', handleDragEnd);
@@ -875,7 +901,10 @@ $bookingsJson = json_encode($bookings);
                 // Update the booking in memory
                 const bookingIdx = BOOKING_DATA.findIndex(b => b.booking_id == bookingId);
                 if(bookingIdx !== -1) {
-                    BOOKING_DATA[bookingIdx].table_id = parseInt(targetTableId);
+                    const targetTable = TABLES.find(table => String(table.table_id) === String(targetTableId));
+                    BOOKING_DATA[bookingIdx].table_id = String(targetTableId);
+                    BOOKING_DATA[bookingIdx].table_number = targetTable ? targetTable.table_number : null;
+                    BOOKING_DATA[bookingIdx].status = data.status || 'confirmed';
                     BOOKING_DATA[bookingIdx].start_time = newStartTime;
                     BOOKING_DATA[bookingIdx].end_time = newEndTime;
                 }

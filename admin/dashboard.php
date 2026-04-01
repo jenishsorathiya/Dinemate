@@ -20,7 +20,7 @@ $stmt = $pdo->query("
     SELECT b.*, u.name, t.table_number 
     FROM bookings b
     JOIN users u ON b.user_id = u.user_id
-    JOIN restaurant_tables t ON b.table_id = t.table_id
+    LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
     ORDER BY b.created_at DESC
     LIMIT 5
 ");
@@ -462,9 +462,9 @@ array_multisort($days, $totals);
                         <?php foreach($recentBookings as $booking): ?>
                         <tr>
                             <td><?= htmlspecialchars($booking['name']) ?></td>
-                            <td>Table <?= $booking['table_number'] ?></td>
+                            <td><?= $booking['table_number'] ? 'Table ' . htmlspecialchars($booking['table_number']) : 'Unassigned' ?></td>
                             <td><?= $booking['booking_date'] ?></td>
-                            <td><?= date('h:i A', strtotime($booking['booking_time'])) ?></td>
+                            <td><?= date('h:i A', strtotime($booking['start_time'])) ?> - <?= date('h:i A', strtotime($booking['end_time'])) ?></td>
                             <td><?= $booking['number_of_guests'] ?></td>
                         </tr>
                         <?php endforeach; ?>

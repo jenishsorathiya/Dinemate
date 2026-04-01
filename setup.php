@@ -65,7 +65,7 @@
             <strong>Test Booking System</strong>
             <div class="button-group">
                 <a href="bookings/book-table.php" class="btn btn-success btn-action" target="_blank">
-                    📅 Book a Table
+                    📅 Book a Reservation
                 </a>
                 <a href="bookings/my-bookings.php" class="btn btn-info btn-action" target="_blank">
                     📋 View My Bookings
@@ -81,9 +81,6 @@
                 <a href="diagnose.php" class="btn btn-warning btn-action" target="_blank">
                     🔍 Run Diagnostics
                 </a>
-                <a href="debug-booking.php" class="btn btn-warning btn-action" target="_blank">
-                    🐛 Debug Console
-                </a>
             </div>
         </div>
         
@@ -92,7 +89,7 @@
         <h3>🔧 Troubleshooting</h3>
         
         <div class="alert-box info-box">
-            <h5>❓ Book Table page shows errors or no tables</h5>
+            <h5>❓ Reservation page shows errors</h5>
             <ul>
                 <li>Run <strong>Auto-Fix</strong> first</li>
                 <li>Check that restaurant tables are added to the database</li>
@@ -111,19 +108,10 @@
         </div>
         
         <div class="alert-box info-box">
-            <h5>❓ Availability check not working when selecting date/time</h5>
+            <h5>❓ Unassigned bookings are not appearing in the admin timeline</h5>
             <ul>
-                <li>Open browser Developer Tools (F12)</li>
-                <li>Go to Network tab, select a date/time and check API response</li>
-                <li>Run <strong>Debug Console</strong> to test the availability endpoint</li>
-                <li>Check that <code>start_time</code> and <code>end_time</code> columns exist in bookings</li>
-            </ul>
-        </div>
-        
-        <div class="alert-box info-box">
-            <h5>❓ Cannot see which tables are booked</h5>
-            <ul>
-                <li>Verify that bookings have <code>start_time</code> and <code>end_time</code> values (Run Auto-Fix)</li>
+                <li>Verify that bookings have <code>start_time</code>, <code>end_time</code>, and <code>status</code> values (Run Auto-Fix)</li>
+                <li>Confirm new customer bookings are being created with <code>table_id = NULL</code></li>
                 <li>Check browser console for JavaScript errors</li>
                 <li>Try clearing cache and refreshing</li>
                 <li>Run <strong>Diagnostics</strong> to see sample booking data</li>
@@ -139,18 +127,18 @@
             <ul class="check-list">
                 <li>Restaurant hours: 10:00 AM - 10:00 PM</li>
                 <li>Booking duration: 60-180 minutes</li>
-                <li>Table capacity check</li>
-                <li>Overlap detection (prevents double-booking)</li>
+                <li>Guest-count capacity check</li>
+                <li>Special request capture</li>
             </ul>
         </div>
         
         <div class="step">
-            <strong>Time Slot System:</strong>
+            <strong>Assignment Workflow:</strong>
             <ul class="check-list">
                 <li>Start time and end time for each booking</li>
-                <li>Automatic conflict detection</li>
-                <li>Real-time availability checking via AJAX</li>
-                <li>Visual table status (available in light gray, booked in red)</li>
+                <li>Customers submit unassigned booking requests</li>
+                <li>Admins drag pending bookings onto the timeline</li>
+                <li>Assignment confirms the booking and attaches a table</li>
             </ul>
         </div>
         
@@ -180,7 +168,7 @@ status (VARCHAR)
             <ul class="check-list">
                 <li>Fixed my-bookings.php using wrong field name (booking_time → start_time + end_time)</li>
                 <li>Added auto-migration for missing database columns</li>
-                <li>Enhanced error handling in availability checking</li>
+                <li>Switched customer bookings to pending unassigned requests</li>
                 <li>Added comprehensive diagnostics and auto-fix tools</li>
                 <li>Improved form validation and error messages</li>
             </ul>

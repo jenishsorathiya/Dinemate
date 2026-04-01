@@ -26,13 +26,29 @@ $new_end_time = $data['end_time'];
 
 try {
     // Get current booking
-    $stmt = $pdo->prepare("SELECT * FROM bookings WHERE booking_id = ? AND user_id IN (SELECT user_id FROM users WHERE user_id = (SELECT user_id FROM bookings WHERE booking_id = ?))");
-    $stmt->execute([$booking_id, $booking_id]);
+    $stmt = $pdo->prepare("SELECT * FROM bookings WHERE booking_id = ?");
+    $stmt->execute([$booking_id]);
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if(!$booking) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Booking not found']);
+        exit();
+    }
+
+    if($new_table_id < 1) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'A valid table is required']);
+        exit();
+    }
+
+    $tableStmt = $pdo->prepare("SELECT table_number FROM restaurant_tables WHERE table_id = ?");
+    $tableStmt->execute([$new_table_id]);
+    $table = $tableStmt->fetch(PDO::FETCH_ASSOC);
+
+    if(!$table) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Target table not found']);
         exit();
     }
 
@@ -74,7 +90,7 @@ try {
     // Update booking
     $updateStmt = $pdo->prepare("
         UPDATE bookings 
-        SET table_id = ?, start_time = ?, end_time = ?
+        SET table_id = ?, start_time = ?, end_time = ?, status = 'confirmed'
         WHERE booking_id = ?
     ");
     
@@ -85,6 +101,8 @@ try {
         'message' => 'Booking updated successfully',
         'booking_id' => $booking_id,
         'table_id' => $new_table_id,
+        'table_number' => $table['table_number'],
+        'status' => 'confirmed',
         'start_time' => $new_start_time,
         'end_time' => $new_end_time
     ]);

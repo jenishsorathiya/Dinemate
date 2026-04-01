@@ -116,14 +116,7 @@ try {
         $fixed[] = "✓ includes/session-check.php exists";
     }
     
-    // 8. Verify check-availability.php exists
-    if (!file_exists('bookings/check-availability.php')) {
-        $errors[] = "✗ Missing bookings/check-availability.php";
-    } else {
-        $fixed[] = "✓ bookings/check-availability.php exists";
-    }
-    
-    // 9. Verify process-booking.php exists
+    // 8. Verify process-booking.php exists
     if (!file_exists('bookings/process-booking.php')) {
         $errors[] = "✗ Missing bookings/process-booking.php";
     } else {
@@ -182,7 +175,7 @@ try {
         <hr>
         <h3>Next Steps:</h3>
         <ol>
-            <li>Visit <a href="bookings/book-table.php">Book a Table</a> - Try booking a table</li>
+            <li>Visit <a href="bookings/book-table.php">Book a Reservation</a> - Try creating a pending booking</li>
             <li>Visit <a href="bookings/my-bookings.php">My Bookings</a> - View your bookings</li>
             <li>If issues persist, visit <a href="diagnose.php">Diagnostics</a> page</li>
         </ol>

@@ -11,7 +11,7 @@ exit();
 $stmt = $pdo->prepare("
 SELECT b.*, t.table_number
 FROM bookings b
-JOIN restaurant_tables t
+LEFT JOIN restaurant_tables t
 ON b.table_id = t.table_id
 WHERE b.user_id = ?
 ORDER BY b.booking_date DESC
@@ -90,6 +90,11 @@ background:#22c55e;
 color:white;
 }
 
+.status.pending{
+background:#f4b400;
+color:#111827;
+}
+
 /* DETAILS */
 
 .booking-details{
@@ -151,10 +156,10 @@ My Reservations
 <div class="booking-header">
 
 <div class="table-badge">
-Table <?= $b['table_number'] ?>
+<?= $b['table_number'] ? 'Table ' . htmlspecialchars($b['table_number']) : 'Table assignment pending' ?>
 </div>
 
-<div class="status confirmed">
+<div class="status <?= htmlspecialchars($b['status']) ?>">
 <?= ucfirst($b['status']) ?>
 </div>
 
@@ -179,6 +184,14 @@ Table <?= $b['table_number'] ?>
 <strong>Guests:</strong>
 <?= $b['number_of_guests'] ?>
 </p>
+
+<?php if(!empty($b['special_request'])): ?>
+<p>
+<i class="fa fa-note-sticky"></i>
+<strong>Note:</strong>
+<?= htmlspecialchars($b['special_request']) ?>
+</p>
+<?php endif; ?>
 
 </div>
 

@@ -14,6 +14,9 @@ try {
     
     $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'special_request'");
     $specialRequestExists = $result->rowCount() > 0;
+
+    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'table_id'");
+    $tableIdColumn = $result->fetch(PDO::FETCH_ASSOC);
     
     if (!$startTimeExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN start_time TIME NOT NULL DEFAULT '12:00:00' AFTER booking_date");
@@ -28,6 +31,11 @@ try {
     if (!$specialRequestExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN special_request TEXT DEFAULT NULL");
         error_log("Added special_request column to bookings table");
+    }
+
+    if ($tableIdColumn && $tableIdColumn['Null'] !== 'YES') {
+        $pdo->exec("ALTER TABLE bookings MODIFY COLUMN table_id {$tableIdColumn['Type']} NULL");
+        error_log("Updated table_id column to allow NULL values");
     }
 } catch(PDOException $e) {
     error_log('Column migration error: ' . $e->getMessage());
@@ -45,8 +53,7 @@ $date = sanitize($_POST['booking_date']);
 $start_time = sanitize($_POST['start_time']);
 $end_time = sanitize($_POST['end_time']);
 $guests = intval($_POST['number_of_guests']);
-$table_id = intval($_POST['table_id']);
-$special = sanitize($_POST['special_request']);
+$special = isset($_POST['special_request']) ? sanitize($_POST['special_request']) : '';
 
 // Restaurant hours configuration (should match frontend)
 $restaurantOpen = '10:00';
@@ -55,8 +62,13 @@ $minDuration = 60; // minutes
 $maxDuration = 180; // minutes
 
 // Validate all required fields
-if(empty($date) || empty($start_time) || empty($end_time) || empty($guests) || empty($table_id)){
+if(empty($date) || empty($start_time) || empty($end_time) || empty($guests)){
     $_SESSION['error'] = 'All fields are required.';
+    redirect("book-table.php");
+}
+
+if($guests < 1){
+    $_SESSION['error'] = 'Number of guests must be at least 1.';
     redirect("book-table.php");
 }
 
@@ -96,51 +108,12 @@ if($durationMinutes > $maxDuration){
     redirect("book-table.php");
 }
 
-/* ============ VALIDATION: Table Capacity ============ */
-$stmt = $pdo->prepare("SELECT capacity FROM restaurant_tables WHERE table_id = ?");
-$stmt->execute([$table_id]);
-$table = $stmt->fetch(PDO::FETCH_ASSOC);
+/* ============ VALIDATION: Restaurant Capacity ============ */
+$capacityStmt = $pdo->prepare("SELECT COUNT(*) FROM restaurant_tables WHERE status = 'available' AND capacity >= ?");
+$capacityStmt->execute([$guests]);
 
-if(!$table){
-    $_SESSION['error'] = 'Invalid table selected.';
-    redirect("book-table.php");
-}
-
-if($guests > $table['capacity']){
-    $_SESSION['error'] = 'Selected table cannot accommodate ' . $guests . ' guests. Maximum capacity is ' . $table['capacity'] . '.';
-    redirect("book-table.php");
-}
-
-/* ============ VALIDATION: Check for Overlapping Bookings ============ */
-// SQL Query to detect overlapping time slots for the same table on the same date
-$stmt = $pdo->prepare("
-    SELECT COUNT(*) as overlap_count 
-    FROM bookings 
-    WHERE table_id = ? 
-    AND booking_date = ? 
-    AND status IN ('pending', 'confirmed')
-    AND (
-        (start_time < ? AND end_time > ?)
-        OR (start_time >= ? AND start_time < ?)
-        OR (end_time > ? AND end_time <= ?)
-    )
-");
-
-$stmt->execute([
-    $table_id, 
-    $date,
-    $end_time,   // Check if existing start_time < new end_time
-    $start_time, // AND existing end_time > new start_time
-    $start_time, // OR existing start_time >= new start_time
-    $end_time,   // AND existing start_time < new end_time
-    $start_time, // OR existing end_time > new start_time
-    $end_time    // AND existing end_time <= new end_time
-]);
-
-$result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if($result['overlap_count'] > 0){
-    $_SESSION['error'] = 'This table is already booked for the selected time slot. Please choose a different time, table, or date to complete your reservation.';
+if((int)$capacityStmt->fetchColumn() === 0){
+    $_SESSION['error'] = 'We do not currently have a table that can accommodate that many guests.';
     redirect("book-table.php");
 }
 
@@ -148,13 +121,12 @@ if($result['overlap_count'] > 0){
 $stmt = $pdo->prepare("
     INSERT INTO bookings 
     (user_id, table_id, booking_date, start_time, end_time, number_of_guests, special_request, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')
+    VALUES (?, NULL, ?, ?, ?, ?, ?, 'pending')
 ");
 
 try {
     $stmt->execute([
         $user_id, 
-        $table_id, 
         $date, 
         $start_time, 
         $end_time, 

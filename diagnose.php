@@ -101,16 +101,13 @@ try {
     $diagnostics['bookings_data'] = ['status' => 'ERROR', 'message' => $e->getMessage()];
 }
 
-// 5. Test check-availability.php endpoint
-$testDate = date('Y-m-d', strtotime('+5 days'));
-
-// 6. Validate my-bookings.php query
+// 5. Validate my-bookings.php query
 try {
     $testUserId = 1; // Assuming user 1 exists
     $stmt = $pdo->prepare("
         SELECT b.*, t.table_number
         FROM bookings b
-        JOIN restaurant_tables t
+        LEFT JOIN restaurant_tables t
         ON b.table_id = t.table_id
         WHERE b.user_id = ?
         ORDER BY b.booking_date DESC
@@ -176,9 +173,9 @@ try {
         <h3>Next Steps:</h3>
         <ul>
             <li>If database errors exist, check <code>config/db.php</code></li>
-            <li>If columns are missing, visit <code>http://localhost/dinemate/debug-booking.php</code> to run migrations</li>
+            <li>If columns are missing, run <code>auto-fix.php</code> to repair the schema</li>
             <li>If queries fail, check MySQL user permissions</li>
-            <li>Visit <code>bookings/book-table.php</code> and check browser console (F12) for JavaScript errors</li>
+            <li>Visit <code>bookings/book-table.php</code> and <code>admin/timeline/new-dashboard.php</code> to test the pending-booking flow</li>
         </ul>
     </div>
 </body>

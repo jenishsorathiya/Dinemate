@@ -12,7 +12,7 @@ $booking_id = intval($_GET['id']);
 $stmt = $pdo->prepare("
 SELECT b.*, t.table_number 
 FROM bookings b
-JOIN restaurant_tables t ON b.table_id = t.table_id
+LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
 WHERE b.booking_id = ? AND b.user_id = ?
 ");
 $stmt->execute([$booking_id, $_SESSION['user_id']]);
@@ -21,6 +21,9 @@ $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 if(!$booking){
     die("Booking not found.");
 }
+
+$tableLabel = $booking['table_number'] ? 'Table ' . $booking['table_number'] : 'To be assigned by staff';
+$statusLabel = ucfirst($booking['status'] ?? 'pending');
 ?>
 
 <?php include "../includes/header.php"; ?>
@@ -117,11 +120,11 @@ background:#e0a800;
 </div>
 
 <h3 class="text-success mt-2">
-Reservation Confirmed
+Reservation Request Submitted
 </h3>
 
 <p class="text-muted">
-Your table has been successfully booked.
+Your request has been saved. A table will be assigned by the admin team.
 </p>
 
 <!-- Reservation Ticket -->
@@ -130,11 +133,13 @@ Your table has been successfully booked.
 
 <div class="ticket-info">
 
-<p><strong>Table:</strong> <?= $booking['table_number'] ?></p>
+<p><strong>Table:</strong> <?= htmlspecialchars($tableLabel) ?></p>
+
+<p><strong>Status:</strong> <?= htmlspecialchars($statusLabel) ?></p>
 
 <p><strong>Date:</strong> <?= $booking['booking_date'] ?></p>
 
-<p><strong>Time:</strong> <?= date("h:i A",strtotime($booking['booking_time'])) ?></p>
+<p><strong>Time:</strong> <?= date("h:i A",strtotime($booking['start_time'])) ?> - <?= date("h:i A",strtotime($booking['end_time'])) ?></p>
 
 <p><strong>Guests:</strong> <?= $booking['number_of_guests'] ?></p>
 
@@ -169,11 +174,13 @@ origin:{ y:0.6 }
 
 const qrData = `
 Reservation
-Table: <?= $booking['table_number'] ?>
+Table: <?= addslashes($tableLabel) ?>
+
+Status: <?= addslashes($statusLabel) ?>
 
 Date: <?= $booking['booking_date'] ?>
 
-Time: <?= $booking['booking_time'] ?>
+Time: <?= $booking['start_time'] ?> - <?= $booking['end_time'] ?>
 
 Guests: <?= $booking['number_of_guests'] ?>
 `;
