@@ -16,6 +16,8 @@ ensureBookingRequestColumns($pdo);
 
 // Get selected date (default to today)
 $selectedDate = $_GET['date'] ?? date('Y-m-d');
+$selectedDayName = date('l', strtotime($selectedDate));
+$isCurrentDate = ($selectedDate === date('Y-m-d'));
 
 // Get bookings for selected date
 $stmt = $pdo->prepare("
@@ -787,7 +789,7 @@ $bookingsJson = json_encode($bookings);
             <div class="left-panel">
                 <!-- CALENDAR -->
                 <div class="calendar-section">
-                    <h6>Select Date</h6>
+                    <h6><?php echo htmlspecialchars($selectedDayName); ?></h6>
                     <div class="calendar-nav">
                         <button type="button" onclick="previousDay()" aria-label="Previous day">&lt;</button>
                         <div class="calendar">
@@ -795,7 +797,9 @@ $bookingsJson = json_encode($bookings);
                         </div>
                         <button type="button" onclick="nextDay()" aria-label="Next day">&gt;</button>
                     </div>
-                    <button type="button" class="today-button" onclick="todayDate()">Today</button>
+                    <?php if(!$isCurrentDate): ?>
+                    <button type="button" class="today-button" onclick="todayDate()">Switch to Current Date</button>
+                    <?php endif; ?>
                 </div>
 
                 <!-- BOOKINGS LIST -->
