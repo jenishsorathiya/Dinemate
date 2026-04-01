@@ -12,15 +12,12 @@ if (session_status() === PHP_SESSION_NONE) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         .navbar-modern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(8px);
-            padding: 18px 50px;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 999;
-            transition: 0.4s;
+            transition: 0.3s;
+            position: relative;
         }
         .navbar-modern.scrolled {
             background: #0f172a;
@@ -31,29 +28,56 @@ if (session_status() === PHP_SESSION_NONE) {
             font-size: 28px;
             color: #f4b400;
             text-decoration: none;
+            font-weight: bold;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0;
         }
         .nav-links a {
-            color: black;
-            margin-left: 25px;
+            color: #333;
+            margin-left: 20px;
             text-decoration: none;
             font-weight: 500;
             transition: 0.3s;
+            display: inline-block;
         }
         .nav-links a:hover {
             color: #f4b400;
         }
         .btn-book {
             background: #f4b400;
+            color: black;
             border: none;
             padding: 10px 20px;
             border-radius: 30px;
             font-weight: 600;
             transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
         }
         .btn-book:hover {
             background: #e0a800;
             transform: scale(1.05);
-       }
+            color: black;
+        }
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-logout:hover {
+            background: #c82333;
+            transform: scale(1.05);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -61,28 +85,28 @@ if (session_status() === PHP_SESSION_NONE) {
 <nav class="navbar navbar-modern navbar-expand-lg">
     <div class="container-fluid">
         <a class="logo" href="index.php">DineMate</a>
-        <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navMenu">
-            <div class="nav-links d-flex align-items-center">
+            <div class="nav-links">
                 <a href="index.php">Home</a>
                 <a href="about.php">About</a>
                 <a href="menu.php">Menu</a>
-                 <a href="contact.php">Contact</a>
-                                <?php if(isset($_SESSION['user_id'])): ?>
+                <a href="contact.php">Contact</a>
+                <?php if(isset($_SESSION['user_id'])): ?>
                     <!-- Logged In User Links -->
                     <a href="bookings/my-bookings.php">My Bookings</a>
-                    <a href="bookings/book-table.php" class="btn btn-book ms-3">
+                    <a href="bookings/book-table.php" class="btn btn-book">
                         <i class="fa fa-calendar-check"></i> Book Table
                     </a>
-                    <a href="auth/logout.php" class="btn btn-logout ms-3">
+                    <a href="auth/logout.php" class="btn btn-logout">
                         Logout
                     </a>
                 <?php else: ?>
                     <!-- Guest Links -->
                     <a href="auth/login.php">Login</a>
-                    <a href="auth/register.php" class="btn btn-book ms-3">
+                    <a href="auth/register.php" class="btn btn-book">
                         Register
                     </a>
                 <?php endif; ?>
@@ -90,4 +114,3 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </nav>
-</body>
