@@ -519,18 +519,7 @@ id="number-of-guests"
 <div class="restaurant-layout" id="table_grid">
     <div class="table-grid">
     <?php 
-    if (!empty($tables)) {
-        foreach ($tables as $table) {
-            displayTableCard($table);
-        }
-    } else {
-        echo '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-            <p style="font-size: 18px; color: #999;">No tables available</p>
-            <p style="color: #ccc;">Please try another date.</p>
-        </div>';
-    }
-    
-    // Helper function to display table card as circle
+    // Helper function to display table card
     function displayTableCard($table) {
         $tableId = $table['table_id'];
         $tableNum = $table['table_number'];
@@ -569,6 +558,18 @@ id="number-of-guests"
             </div>
         </div>
         <?php
+    }
+    
+    // Now call the function in the loop
+    if (!empty($tables)) {
+        foreach ($tables as $table) {
+            displayTableCard($table);
+        }
+    } else {
+        echo '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <p style="font-size: 18px; color: #999;">No tables available</p>
+            <p style="color: #ccc;">Please try another date.</p>
+        </div>';
     }
     ?>
     </div>
@@ -618,6 +619,28 @@ function formatTimeDisplay(time) {
     return `${displayHour}:${minutes} ${period}`;
 }
 
+// Show availability error message to user
+function showAvailabilityError(message) {
+    let errorDiv = document.getElementById('availability-error');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.id = 'availability-error';
+        errorDiv.style.cssText = 'padding: 12px; margin: 15px 0; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; display: block;';
+        const tableGrid = document.getElementById('table_grid');
+        tableGrid.parentNode.insertBefore(errorDiv, tableGrid);
+    }
+    errorDiv.textContent = '❌ ' + message;
+    errorDiv.style.display = 'block';
+}
+
+// Hide availability error message
+function hideAvailabilityError() {
+    const errorDiv = document.getElementById('availability-error');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
 // Check table availability for selected date and time
 function checkTableAvailability() {
     const date = document.getElementById('booking-date').value;
@@ -635,16 +658,24 @@ function checkTableAvailability() {
     
     // Call AJAX endpoint
     fetch(`check-availability.php?date=${date}&start_time=${startTime}&end_time=${endTime}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Availability response:', data);
             if (data.success) {
                 updateTableAvailability(data);
+                hideAvailabilityError();
             } else {
-                console.error('Availability check failed:', data.error);
+                showAvailabilityError(data.error || 'Failed to check availability');
             }
         })
         .catch(error => {
             console.error('Error checking availability:', error);
+            showAvailabilityError(`Network error: ${error.message}`);
         })
         .finally(() => {
             tableGrid.style.opacity = '1';

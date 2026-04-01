@@ -5,18 +5,34 @@ require_once "../includes/functions.php";
 
 // Ensure start_time and end_time columns exist
 try {
-    $result = $pdo->query("DESCRIBE bookings");
-    $columns = $result->fetchAll(PDO::FETCH_COLUMN, 0);
+    // First, try to query the columns
+    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
+    $startTimeExists = $result->rowCount() > 0;
     
-    if (!in_array('start_time', $columns)) {
-        $pdo->exec("ALTER TABLE bookings ADD COLUMN start_time TIME NOT NULL DEFAULT '12:00:00'");
+    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'end_time'");
+    $endTimeExists = $result->rowCount() > 0;
+    
+    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'special_request'");
+    $specialRequestExists = $result->rowCount() > 0;
+    
+    if (!$startTimeExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN start_time TIME NOT NULL DEFAULT '12:00:00' AFTER booking_date");
+        error_log("Added start_time column to bookings table");
     }
     
-    if (!in_array('end_time', $columns)) {
-        $pdo->exec("ALTER TABLE bookings ADD COLUMN end_time TIME NOT NULL DEFAULT '13:00:00'");
+    if (!$endTimeExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN end_time TIME NOT NULL DEFAULT '13:00:00' AFTER start_time");
+        error_log("Added end_time column to bookings table");
+    }
+    
+    if (!$specialRequestExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN special_request TEXT DEFAULT NULL");
+        error_log("Added special_request column to bookings table");
     }
 } catch(PDOException $e) {
-    error_log('Migration error: ' . $e->getMessage());
+    error_log('Column migration error: ' . $e->getMessage());
+    $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+    redirect("book-table.php");
 }
 
 if($_SERVER["REQUEST_METHOD"] !== "POST"){
