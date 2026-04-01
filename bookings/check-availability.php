@@ -13,7 +13,10 @@ header('Content-Type: application/json');
 // Validate inputs
 if (empty($_GET['date']) || empty($_GET['start_time']) || empty($_GET['end_time'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Missing required parameters']);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Missing required parameters: date, start_time, end_time'
+    ]);
     exit;
 }
 
@@ -22,15 +25,47 @@ $startTime = date('H:i:s', strtotime($_GET['start_time']));
 $endTime = date('H:i:s', strtotime($_GET['end_time']));
 
 try {
+    // Verify that start_time and end_time columns exist
+    $checkColumns = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
+    if ($checkColumns->rowCount() === 0) {
+        // Column doesn't exist - try to add it
+        try {
+            $pdo->exec("ALTER TABLE bookings ADD COLUMN start_time TIME DEFAULT NULL");
+        } catch (Exception $e) {
+            // Column might already exist, continue anyway
+        }
+    }
+    
+    $checkColumns = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'end_time'");
+    if ($checkColumns->rowCount() === 0) {
+        // Column doesn't exist - try to add it
+        try {
+            $pdo->exec("ALTER TABLE bookings ADD COLUMN end_time TIME DEFAULT NULL");
+        } catch (Exception $e) {
+            // Column might already exist, continue anyway
+        }
+    }
+    
     // Get all available tables
     $stmt = $pdo->query("SELECT * FROM restaurant_tables WHERE status='available' ORDER BY capacity ASC");
     $allTables = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (empty($allTables)) {
+        echo json_encode([
+            'success' => true,
+            'availableTables' => [],
+            'bookedTables' => [],
+            'availableCount' => 0,
+            'bookedCount' => 0
+        ]);
+        exit;
+    }
     
     $availableTables = [];
     $bookedTables = [];
     
     foreach ($allTables as $table) {
-        // Check for conflicts
+        // Check for conflicts with explicit column existence check
         $conflictStmt = $pdo->prepare("
             SELECT COUNT(*) as conflict_count
             FROM bookings 
@@ -56,13 +91,12 @@ try {
         ]);
         
         $result = $conflictStmt->fetch(PDO::FETCH_ASSOC);
-        $hasConflict = $result['conflict_count'] > 0;
+        $hasConflict = ($result && isset($result['conflict_count']) && $result['conflict_count'] > 0);
         
         $tableInfo = [
             'table_id' => $table['table_id'],
             'table_number' => $table['table_number'],
-            'capacity' => $table['capacity'],
-            'available' => !$hasConflict
+            'capacity' => $table['capacity']
         ];
         
         if ($hasConflict) {
@@ -78,6 +112,7 @@ try {
                     OR (start_time >= ? AND start_time < ?)
                     OR (end_time > ? AND end_time <= ?)
                 )
+                ORDER BY start_time ASC
             ");
             
             $bookingStmt->execute([
@@ -108,7 +143,11 @@ try {
     ]);
     
 } catch(Exception $e) {
+    error_log('Availability check error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Database error: ' . $e->getMessage()
+    ]);
 }
 ?>
