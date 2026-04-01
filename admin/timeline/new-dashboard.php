@@ -13,6 +13,7 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $tables = $pdo->query("SELECT table_id, table_number, capacity FROM restaurant_tables ORDER BY table_number ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 ensureBookingRequestColumns($pdo);
+ensureBookingTableAssignmentsTable($pdo);
 
 // Get selected date (default to today)
 $selectedDate = $_GET['date'] ?? date('Y-m-d');
@@ -21,15 +22,37 @@ $isCurrentDate = ($selectedDate === date('Y-m-d'));
 
 // Get bookings for selected date
 $stmt = $pdo->prepare("
-    SELECT b.*, COALESCE(b.customer_name_override, u.name) as customer_name, t.table_number
+    SELECT b.*, COALESCE(b.customer_name_override, u.name) as customer_name,
+           GROUP_CONCAT(DISTINCT bta.table_id ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ',') AS assigned_table_ids,
+           GROUP_CONCAT(DISTINCT rt.table_number ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ',') AS assigned_table_numbers
     FROM bookings b
     JOIN users u ON b.user_id = u.user_id
-    LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
+    LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
+    LEFT JOIN restaurant_tables rt ON bta.table_id = rt.table_id
     WHERE b.booking_date = ? AND b.status IN ('pending', 'confirmed')
+    GROUP BY b.booking_id
     ORDER BY b.start_time ASC
 ");
 $stmt->execute([$selectedDate]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($bookings as &$booking) {
+    $assignedTableIds = [];
+    if (!empty($booking['assigned_table_ids'])) {
+        $assignedTableIds = array_values(array_filter(array_map('intval', explode(',', $booking['assigned_table_ids']))));
+    }
+
+    $assignedTableNumbers = [];
+    if (!empty($booking['assigned_table_numbers'])) {
+        $assignedTableNumbers = array_values(array_filter(array_map('trim', explode(',', $booking['assigned_table_numbers'])), 'strlen'));
+    }
+
+    $booking['assigned_table_ids'] = $assignedTableIds;
+    $booking['assigned_table_numbers'] = $assignedTableNumbers;
+    $booking['table_id'] = !empty($assignedTableIds) ? $assignedTableIds[0] : null;
+    $booking['table_number'] = !empty($assignedTableNumbers) ? $assignedTableNumbers[0] : null;
+}
+unset($booking);
 
 // Convert bookings to JS array
 $bookingsJson = json_encode($bookings);
@@ -155,6 +178,8 @@ $bookingsJson = json_encode($bookings);
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            gap: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
@@ -164,11 +189,31 @@ $bookingsJson = json_encode($bookings);
             color: #1f2937;
         }
 
+        .header-title,
+        .header-actions-spacer {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+        .header-actions-spacer {
+            display: block;
+        }
+
+        .header-center-controls {
+            flex: 0 1 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
         .calendar-nav {
             display: flex;
             gap: 10px;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 0;
         }
 
         .calendar-nav button,
@@ -213,16 +258,10 @@ $bookingsJson = json_encode($bookings);
             position: relative;
         }
 
-        /* CALENDAR */
-        .calendar-section {
-            padding: 20px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
         .booking-list {
             padding: 15px;
             overflow-y: auto;
-            max-height: calc(100vh - 340px);
+            max-height: calc(100vh - 265px);
             flex: 1;
         }
 
@@ -431,6 +470,16 @@ $bookingsJson = json_encode($bookings);
             font-weight: 600;
         }
 
+        .table-label.clickable {
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .table-label.clickable:hover {
+            background: #fff8db;
+            color: #b45309;
+        }
+
         @media (max-width: 520px) {
             .booking-detail-grid {
                 grid-template-columns: 1fr;
@@ -461,9 +510,9 @@ $bookingsJson = json_encode($bookings);
             background: #1d4ed8;
         }
 
-        .calendar-section h6 {
+        .header-day-label {
             font-weight: 600;
-            margin-bottom: 15px;
+            margin: 0;
             color: #1f2937;
         }
 
@@ -480,7 +529,29 @@ $bookingsJson = json_encode($bookings);
         }
 
         .today-button {
-            width: 100%;
+            width: auto;
+            min-width: 210px;
+        }
+
+        @media (max-width: 1100px) {
+            .header {
+                flex-wrap: wrap;
+            }
+
+            .header-title,
+            .header-actions-spacer,
+            .header-center-controls {
+                flex: 1 1 100%;
+            }
+
+            .header-title,
+            .header-center-controls {
+                align-items: flex-start;
+            }
+
+            .header-actions-spacer {
+                display: none;
+            }
         }
 
         /* TABLES LIST */
@@ -627,7 +698,8 @@ $bookingsJson = json_encode($bookings);
             flex: 1;
             min-width: max-content;
             background: #fff;
-            overflow: hidden;
+            overflow: visible;
+            position: relative;
         }
 
         .table-row {
@@ -635,7 +707,6 @@ $bookingsJson = json_encode($bookings);
             position: relative;
             height: var(--timeline-row-height);
             border-bottom: 1px solid #e5e7eb;
-            overflow: hidden;
             min-width: max-content;
         }
 
@@ -659,8 +730,8 @@ $bookingsJson = json_encode($bookings);
         .booking-block {
             position: absolute;
             top: 4px;
-            height: 32px;
-            padding: 4px;
+            min-height: 32px;
+            padding: 8px 12px;
             border-radius: 4px;
             cursor: grab;
             transition: box-shadow 0.2s;
@@ -669,23 +740,112 @@ $bookingsJson = json_encode($bookings);
             color: white;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
             user-select: none;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             z-index: 20;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             justify-content: space-between;
+            flex-direction: column;
+        }
+
+        .booking-content {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
+            align-items: center;
+            column-gap: 14px;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 22;
+            pointer-events: auto;
+        }
+
+        .booking-left,
+        .booking-middle,
+        .booking-right-meta {
+            min-width: 0;
+        }
+
+        .booking-left {
+            display: flex;
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+
+        .booking-middle {
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .booking-title,
+        .booking-time-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .booking-time-text {
+            font-size: 10px;
+            opacity: 0.95;
+            text-align: center;
+        }
+
+        .booking-meta-inline {
+            font-size: 10px;
+            opacity: 0.9;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .booking-title {
+            flex: 1 1 auto;
+        }
+
+        .booking-right-meta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            min-width: 0;
+            flex-shrink: 0;
+            padding-left: 4px;
+        }
+
+        .booking-note-btn {
+            border: none;
+            background: rgba(255, 255, 255, 0.18);
+            color: inherit;
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .booking-note-btn:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        .booking-note-btn i {
+            font-size: 9px;
         }
 
         .resize-handle {
-            width: 10px;
+            width: 8px;
             height: 100%;
             cursor: ew-resize;
             position: absolute;
             top: 0;
             z-index: 21;
-            background: rgba(255,255,255,0.3);
+            background: transparent;
         }
 
         .left-handle {
@@ -694,6 +854,24 @@ $bookingsJson = json_encode($bookings);
 
         .right-handle {
             right: 0;
+        }
+
+        .top-handle,
+        .bottom-handle {
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 8px;
+            cursor: ns-resize;
+        }
+
+        .top-handle {
+            top: 0;
+        }
+
+        .bottom-handle {
+            top: auto;
+            bottom: 0;
         }
 
         .booking-block:hover {
@@ -780,28 +958,29 @@ $bookingsJson = json_encode($bookings);
     <div class="main-content">
         <!-- HEADER -->
         <div class="header">
-            <h2><i class="fa fa-calendar-days"></i> Booking Timeline</h2>
+            <div class="header-title">
+                <h2><i class="fa fa-calendar-days"></i> Booking Timeline</h2>
+            </div>
+            <div class="header-center-controls">
+                <h6 class="header-day-label"><?php echo htmlspecialchars($selectedDayName); ?></h6>
+                <div class="calendar-nav">
+                    <button type="button" onclick="previousDay()" aria-label="Previous day">&lt;</button>
+                    <div class="calendar">
+                        <input type="date" id="dateInput" value="<?php echo $selectedDate; ?>" onchange="changeDate()">
+                    </div>
+                    <button type="button" onclick="nextDay()" aria-label="Next day">&gt;</button>
+                </div>
+                <?php if(!$isCurrentDate): ?>
+                <button type="button" class="today-button" onclick="todayDate()">Switch to Current Date</button>
+                <?php endif; ?>
+            </div>
+            <div class="header-actions-spacer" aria-hidden="true"></div>
         </div>
 
         <!-- CONTENT -->
         <div class="content">
             <!-- LEFT PANEL -->
             <div class="left-panel">
-                <!-- CALENDAR -->
-                <div class="calendar-section">
-                    <h6><?php echo htmlspecialchars($selectedDayName); ?></h6>
-                    <div class="calendar-nav">
-                        <button type="button" onclick="previousDay()" aria-label="Previous day">&lt;</button>
-                        <div class="calendar">
-                            <input type="date" id="dateInput" value="<?php echo $selectedDate; ?>" onchange="changeDate()">
-                        </div>
-                        <button type="button" onclick="nextDay()" aria-label="Next day">&gt;</button>
-                    </div>
-                    <?php if(!$isCurrentDate): ?>
-                    <button type="button" class="today-button" onclick="todayDate()">Switch to Current Date</button>
-                    <?php endif; ?>
-                </div>
-
                 <!-- BOOKINGS LIST -->
                 <div class="tables-section">
                     <h6>Unassigned Bookings</h6>
@@ -920,6 +1099,34 @@ $bookingsJson = json_encode($bookings);
     </div>
 </div>
 
+<div class="modal-backdrop-custom" id="tableDetailsModal">
+    <div class="booking-modal-card">
+        <div class="booking-modal-header">
+            <div>
+                <h5><i class="fa fa-chair"></i> Table Details</h5>
+                <div class="booking-meta-chip" id="tableDetailsMeta"></div>
+            </div>
+            <button type="button" class="booking-modal-close" id="closeTableDetailsModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-error" id="tableDetailsError"></div>
+        <form id="tableDetailsForm">
+            <input type="hidden" id="tableDetailsId">
+            <div class="modal-form-group">
+                <label for="tableDetailsNumber">Table</label>
+                <input type="text" id="tableDetailsNumber" readonly>
+            </div>
+            <div class="modal-form-group">
+                <label for="tableDetailsCapacity">Capacity</label>
+                <input type="number" id="tableDetailsCapacity" min="1" required>
+            </div>
+            <div class="booking-modal-actions">
+                <button type="button" class="booking-modal-cancel" id="cancelTableDetailsBtn">Close</button>
+                <button type="submit" class="booking-modal-submit" id="saveTableDetailsBtn">Save Capacity</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     const BOOKING_DATA = <?php echo $bookingsJson; ?>;
     const TABLES = <?php echo json_encode($tables); ?>;
@@ -927,11 +1134,14 @@ $bookingsJson = json_encode($bookings);
     const START_HOUR = 10; // 10 AM
     const END_HOUR = 23;   // 11 PM
     const INTERVAL_MINS = 30;
+    const CELL_WIDTH = 80;
+    const ROW_HEIGHT = 40;
 
     // Initialize timeline on page load
     document.addEventListener('DOMContentLoaded', function() {
         bindBookingModal();
         bindBookingDetailsModal();
+        bindTableDetailsModal();
         renderTimeline();
         setCurrentTimeLine();
 
@@ -1135,9 +1345,99 @@ $bookingsJson = json_encode($bookings);
         });
     }
 
+    function bindTableDetailsModal() {
+        const modal = document.getElementById('tableDetailsModal');
+        const closeBtn = document.getElementById('closeTableDetailsModalBtn');
+        const cancelBtn = document.getElementById('cancelTableDetailsBtn');
+        const form = document.getElementById('tableDetailsForm');
+        const errorBox = document.getElementById('tableDetailsError');
+        const saveBtn = document.getElementById('saveTableDetailsBtn');
+
+        if(!modal || !form) return;
+
+        function closeModal() {
+            modal.classList.remove('open');
+            document.body.classList.remove('modal-open');
+            errorBox.style.display = 'none';
+        }
+
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) {
+                closeModal();
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const payload = {
+                table_id: document.getElementById('tableDetailsId').value,
+                capacity: document.getElementById('tableDetailsCapacity').value,
+            };
+
+            errorBox.style.display = 'none';
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            fetch('update-table.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => {
+                const data = await response.json();
+                if(!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to update table');
+                }
+                return data;
+            })
+            .then(data => {
+                const tableIdx = TABLES.findIndex(table => String(table.table_id) === String(data.table.table_id));
+                if(tableIdx !== -1) {
+                    TABLES[tableIdx] = {
+                        ...TABLES[tableIdx],
+                        ...data.table,
+                    };
+                }
+                renderTimeline();
+                closeModal();
+            })
+            .catch(error => {
+                errorBox.textContent = error.message;
+                errorBox.style.display = 'block';
+            })
+            .finally(() => {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Capacity';
+            });
+        });
+    }
+
+    function openTableDetails(tableId) {
+        const table = TABLES.find(item => String(item.table_id) === String(tableId));
+        if(!table) return;
+
+        document.getElementById('tableDetailsId').value = table.table_id;
+        document.getElementById('tableDetailsNumber').value = `T${table.table_number}`;
+        document.getElementById('tableDetailsCapacity').value = table.capacity;
+        document.getElementById('tableDetailsMeta').textContent = `Current capacity: ${table.capacity} seats`;
+        document.getElementById('tableDetailsError').style.display = 'none';
+        document.getElementById('tableDetailsModal').classList.add('open');
+        document.body.classList.add('modal-open');
+    }
+
     function openBookingDetails(bookingId) {
         const booking = BOOKING_DATA.find(item => item.booking_id == bookingId);
         if(!booking) return;
+
+        const assignedTableNumbers = getAssignedTableNumbers(booking);
+        const tableLabel = assignedTableNumbers.length
+            ? `Tables ${assignedTableNumbers.join(', ')}`
+            : 'Unassigned';
 
         const modal = document.getElementById('bookingDetailsModal');
         document.getElementById('bookingDetailsId').value = booking.booking_id;
@@ -1148,7 +1448,7 @@ $bookingsJson = json_encode($bookings);
         document.getElementById('bookingAssignedEnd').value = booking.end_time.substring(0, 5);
         document.getElementById('bookingDetailsGuests').value = booking.number_of_guests;
         document.getElementById('bookingDetailsNotes').value = booking.special_request || '';
-        document.getElementById('bookingDetailsMeta').textContent = `${booking.booking_date} • ${booking.table_number ? 'Table ' + booking.table_number : 'Unassigned'} • ${booking.status}`;
+        document.getElementById('bookingDetailsMeta').textContent = `${booking.booking_date} • ${tableLabel} • ${booking.status}`;
 
         const errorBox = document.getElementById('bookingDetailsError');
         errorBox.style.display = 'none';
@@ -1160,7 +1460,7 @@ $bookingsJson = json_encode($bookings);
         const bookingList = document.getElementById('bookingList');
         if(!bookingList) return;
 
-        const unassignedBookings = BOOKING_DATA.filter(booking => booking.table_id === null || booking.table_id === undefined || booking.table_id === '');
+        const unassignedBookings = BOOKING_DATA.filter(booking => getAssignedTableIds(booking).length === 0);
 
         if(unassignedBookings.length === 0) {
             bookingList.innerHTML = '<p>No unassigned bookings for this date.</p>';
@@ -1189,6 +1489,39 @@ $bookingsJson = json_encode($bookings);
 
     function getRequestedEndTime(booking) {
         return booking.requested_end_time || booking.end_time;
+    }
+
+    function getAssignedTableIds(booking) {
+        if(Array.isArray(booking.assigned_table_ids)) {
+            return booking.assigned_table_ids.map(Number).filter(Boolean);
+        }
+        if(booking.table_id !== null && booking.table_id !== undefined && booking.table_id !== '') {
+            return [Number(booking.table_id)];
+        }
+        return [];
+    }
+
+    function getAssignedTableNumbers(booking) {
+        if(Array.isArray(booking.assigned_table_numbers) && booking.assigned_table_numbers.length) {
+            return booking.assigned_table_numbers;
+        }
+        if(booking.table_number !== null && booking.table_number !== undefined && booking.table_number !== '') {
+            return [String(booking.table_number)];
+        }
+        return [];
+    }
+
+    function getTableIndexMap() {
+        return TABLES.reduce((map, table, index) => {
+            map[String(table.table_id)] = index;
+            return map;
+        }, {});
+    }
+
+    function getBookingSpanTableIds(startTableId, spanCount) {
+        const startIndex = TABLES.findIndex(table => String(table.table_id) === String(startTableId));
+        if(startIndex === -1) return [];
+        return TABLES.slice(startIndex, startIndex + spanCount).map(table => Number(table.table_id));
     }
 
     function formatTimeRange(startTime, endTime) {
@@ -1226,6 +1559,7 @@ $bookingsJson = json_encode($bookings);
     // Render the entire timeline
     function renderTimeline() {
         const timeSlots = getTimeSlots();
+        const tableIndexMap = getTableIndexMap();
 
         // Render time headings (x-axis)
         const timeHeader = document.getElementById('timeHeader');
@@ -1236,7 +1570,7 @@ $bookingsJson = json_encode($bookings);
         // Render table labels (y-axis)
         const tableLabels = document.getElementById('tableLabels');
         tableLabels.innerHTML = TABLES.map(table => 
-            `<div class="table-label">T${table.table_number}</div>`
+            `<div class="table-label clickable" onclick="openTableDetails(${table.table_id})" title="Edit table capacity">T${table.table_number}</div>`
         ).join('') + `<div class="table-label add-table-row"><button class="add-table-inline-btn" id="addTableBtn" title="Add table">+</button></div>`;
 
         // Populate booking list on left
@@ -1245,10 +1579,9 @@ $bookingsJson = json_encode($bookings);
         // Render timeline rows for each table
         const timelineGrid = document.getElementById('timelineGrid');
         let gridHTML = '';
+        let bookingHTML = '';
         
         TABLES.forEach(table => {
-            const tableBookings = BOOKING_DATA.filter(b => b.table_id !== null && b.table_id !== undefined && String(b.table_id) === String(table.table_id));
-
             let rowHTML = `<div class="table-row" data-table-id="${table.table_id}">`;
             
             timeSlots.forEach(time => {
@@ -1259,15 +1592,17 @@ $bookingsJson = json_encode($bookings);
                     ondragover="handleDragOver(event)"></div>`;
             });
             
-            tableBookings.forEach(booking => {
-                rowHTML += renderBooking(booking, timeSlots);
-            });
-            
             rowHTML += '</div>';
             gridHTML += rowHTML;
         });
 
+        bookingHTML = BOOKING_DATA
+            .filter(booking => getAssignedTableIds(booking).length > 0)
+            .map(booking => renderBooking(booking, timeSlots, tableIndexMap))
+            .join('');
+
         gridHTML += `<div class="table-row add-table-row" aria-hidden="true">${timeSlots.map(() => `<div class="time-cell"></div>`).join('')}</div>`;
+        gridHTML += bookingHTML;
         
         timelineGrid.innerHTML = gridHTML;
 
@@ -1277,48 +1612,72 @@ $bookingsJson = json_encode($bookings);
     }
 
     // Render a single booking block
-    function renderBooking(booking, timeSlots) {
+    function renderBooking(booking, timeSlots, tableIndexMap) {
         const bookingStart = booking.start_time.substring(0, 5); // Convert HH:MM:SS to HH:MM
         const bookingEnd = booking.end_time.substring(0, 5);
         const requestedStart = getRequestedStartTime(booking).substring(0, 5);
         const requestedEnd = getRequestedEndTime(booking).substring(0, 5);
+        const assignedTableIds = getAssignedTableIds(booking);
+        const assignedTableNumbers = getAssignedTableNumbers(booking);
         const startIdx = timeSlots.indexOf(bookingStart);
+        const firstAssignedTableId = assignedTableIds[0];
+        const startRowIndex = tableIndexMap[String(firstAssignedTableId)];
 
-        if(startIdx === -1) return '';
+        if(startIdx === -1 || startRowIndex === undefined) return '';
 
         const startDate = new Date(`2000-01-01 ${booking.start_time}`);
         const endDate = new Date(`2000-01-01 ${booking.end_time}`);
         const durationMins = (endDate - startDate) / (1000 * 60);
         const numSlots = Math.max(1, Math.ceil(durationMins / INTERVAL_MINS));
+        const rowSpan = Math.max(1, assignedTableIds.length);
 
-        const rowHeight = 40;
-        const CELL_WIDTH = 80;
         const leftPosition = startIdx * CELL_WIDTH;
         const width = Math.max(numSlots * CELL_WIDTH, CELL_WIDTH);
-        const topPosition = 4;
-        const height = rowHeight - 8;
+        const topPosition = startRowIndex * ROW_HEIGHT + 4;
+        const height = rowSpan * ROW_HEIGHT - 8;
 
         const statusClass = booking.status === 'confirmed' ? 'success' : (booking.status === 'pending' ? 'pending' : 'info');
-        const rescheduledClass = (requestedStart !== bookingStart || requestedEnd !== bookingEnd) ? 'rescheduled' : '';
+        const rescheduledClass = requestedStart !== bookingStart ? 'rescheduled' : '';
+        const guestCountText = `${booking.number_of_guests}px`;
+        const visibleTimeText = `${bookingStart} - ${bookingEnd}`;
+        const hasSpecialNote = booking.special_request && booking.special_request.trim() !== '';
+        const showTime = width >= 150;
+        const showGuestCount = width >= 210;
+        const showNoteButton = hasSpecialNote && width >= 245;
+        const noteButtonHtml = showNoteButton
+            ? `<button type="button" class="booking-note-btn" title="${booking.special_request.replace(/"/g, '&quot;')}" onclick="event.stopPropagation(); openBookingDetails(${booking.booking_id});" draggable="false"><i class="fa-solid fa-note-sticky"></i></button>`
+            : '';
         const titleText = rescheduledClass
-            ? `${booking.customer_name} | Requested ${requestedStart} - ${requestedEnd} | Scheduled ${bookingStart} - ${bookingEnd}`
-            : `${booking.customer_name} - ${bookingStart} to ${bookingEnd}`;
+            ? `${booking.customer_name} | ${guestCountText} | ${visibleTimeText} | Requested ${requestedStart} - ${requestedEnd} | Scheduled ${bookingStart} - ${bookingEnd}`
+            : `${booking.customer_name} | ${guestCountText} | ${visibleTimeText}`;
 
         return `<div class="booking-block ${statusClass} ${rescheduledClass}"
                     draggable="true"
                     data-booking-id="${booking.booking_id}"
-                    data-table-id="${booking.table_id}"
-                    data-table-number="T${booking.table_number}"
+                    data-table-id="${booking.table_id ?? ''}"
+                    data-table-ids="${assignedTableIds.join(',')}"
+                    data-table-number="${assignedTableNumbers.length ? 'T' + assignedTableNumbers[0] : ''}"
                     data-time="${booking.start_time}"
                     data-duration="${durationMins}"
                     data-customer="${booking.customer_name}"
-                onclick="handleBookingClick(event, ${booking.booking_id})"
+                    data-row-span="${rowSpan}"
+                    onclick="handleBookingClick(event, ${booking.booking_id})"
                     style="left: ${leftPosition}px; top: ${topPosition}px; width: ${width}px; height: ${height}px;"
                     title="${titleText}">
+            <div class="resize-handle top-handle"></div>
             <div class="resize-handle left-handle"></div>
-            <span style="font-size: 11px;">${booking.customer_name}</span><br>
-            <span style="font-size: 10px; opacity: 0.85;">${bookingStart} - ${bookingEnd}</span>
+            <div class="booking-content">
+                <span class="booking-left">
+                    <span class="booking-title">${booking.customer_name}</span>
+                </span>
+                ${showTime ? `<span class="booking-middle"><span class="booking-time-text">${visibleTimeText}</span></span>` : '<span class="booking-middle"></span>'}
+                <span class="booking-right-meta">
+                    ${showGuestCount ? `<span class="booking-meta-inline">${guestCountText}</span>` : ''}
+                    ${noteButtonHtml}
+                </span>
+            </div>
             <div class="resize-handle right-handle"></div>
+            <div class="resize-handle bottom-handle"></div>
         </div>`;
     }
 
@@ -1331,12 +1690,20 @@ $bookingsJson = json_encode($bookings);
 
             const leftHandle = booking.querySelector('.left-handle');
             const rightHandle = booking.querySelector('.right-handle');
+            const topHandle = booking.querySelector('.top-handle');
+            const bottomHandle = booking.querySelector('.bottom-handle');
 
             if(leftHandle) {
                 leftHandle.addEventListener('mousedown', handleResizeStart.bind(null, 'left', booking));
             }
             if(rightHandle) {
                 rightHandle.addEventListener('mousedown', handleResizeStart.bind(null, 'right', booking));
+            }
+            if(topHandle) {
+                topHandle.addEventListener('mousedown', handleResizeStart.bind(null, 'top', booking));
+            }
+            if(bottomHandle) {
+                bottomHandle.addEventListener('mousedown', handleResizeStart.bind(null, 'bottom', booking));
             }
         });
     }
@@ -1396,6 +1763,14 @@ $bookingsJson = json_encode($bookings);
         const booking = BOOKING_DATA.find(b => b.booking_id == bookingId);
         if(!booking) return;
 
+        const currentAssignedTableIds = getAssignedTableIds(booking);
+        const rowSpan = Math.max(1, currentAssignedTableIds.length || Number(draggedBooking.dataset.rowSpan) || 1);
+        const nextTableIds = getBookingSpanTableIds(targetTableId, rowSpan);
+        if(nextTableIds.length !== rowSpan) {
+            alert('Not enough adjacent tables to keep this booking span.');
+            return;
+        }
+
         const startDate = new Date(`2000-01-01 ${booking.start_time}`);
         const endDate = new Date(`2000-01-01 ${booking.end_time}`);
         const durationMins = (endDate - startDate) / (1000 * 60);
@@ -1422,6 +1797,7 @@ $bookingsJson = json_encode($bookings);
             body: JSON.stringify({
                 booking_id: bookingId,
                 table_id: targetTableId,
+                table_ids: nextTableIds,
                 start_time: newStartTime,
                 end_time: newEndTime
             })
@@ -1433,9 +1809,10 @@ $bookingsJson = json_encode($bookings);
                 // Update the booking in memory
                 const bookingIdx = BOOKING_DATA.findIndex(b => b.booking_id == bookingId);
                 if(bookingIdx !== -1) {
-                    const targetTable = TABLES.find(table => String(table.table_id) === String(targetTableId));
-                    BOOKING_DATA[bookingIdx].table_id = String(targetTableId);
-                    BOOKING_DATA[bookingIdx].table_number = targetTable ? targetTable.table_number : null;
+                    BOOKING_DATA[bookingIdx].table_id = data.table_id !== null ? Number(data.table_id) : null;
+                    BOOKING_DATA[bookingIdx].table_number = data.table_number || null;
+                    BOOKING_DATA[bookingIdx].assigned_table_ids = Array.isArray(data.table_ids) ? data.table_ids.map(Number) : [];
+                    BOOKING_DATA[bookingIdx].assigned_table_numbers = Array.isArray(data.table_numbers) ? data.table_numbers : [];
                     BOOKING_DATA[bookingIdx].status = data.status || 'confirmed';
                     BOOKING_DATA[bookingIdx].start_time = newStartTime;
                     BOOKING_DATA[bookingIdx].end_time = newEndTime;
@@ -1468,6 +1845,7 @@ $bookingsJson = json_encode($bookings);
         const startTime = booking.start_time;
         const endTime = booking.end_time;
         const durationMins = (new Date(`2000-01-01 ${endTime}`) - new Date(`2000-01-01 ${startTime}`)) / (1000*60);
+        const assignedTableIds = getAssignedTableIds(booking);
 
         resizeData = {
             bookingId,
@@ -1475,9 +1853,13 @@ $bookingsJson = json_encode($bookings);
             startTime,
             endTime,
             durationMins,
+            assignedTableIds,
             originalLeft: parseInt(bookingEl.style.left, 10),
+            originalTop: parseInt(bookingEl.style.top, 10),
+            originalHeight: parseInt(bookingEl.style.height, 10),
             originalWidth: parseInt(bookingEl.style.width, 10),
-            startX: e.clientX
+            startX: e.clientX,
+            startY: e.clientY
         };
 
         document.addEventListener('mousemove', handleResizing);
@@ -1488,11 +1870,13 @@ $bookingsJson = json_encode($bookings);
         if(!resizeData) return;
 
         const deltaX = e.clientX - resizeData.startX;
-        const slotWidth = 80;
-        const deltaSlots = Math.round(deltaX / slotWidth);
+        const deltaY = e.clientY - resizeData.startY;
+        const deltaSlots = Math.round(deltaX / CELL_WIDTH);
+        const deltaRows = Math.round(deltaY / ROW_HEIGHT);
 
         let newStart = resizeData.startTime;
         let newEnd = resizeData.endTime;
+        let newAssignedTableIds = resizeData.assignedTableIds.slice();
 
         if(resizing === 'left') {
             const baseDate = new Date(`2000-01-01 ${resizeData.startTime}`);
@@ -1506,18 +1890,48 @@ $bookingsJson = json_encode($bookings);
             if(baseDate > new Date(`2000-01-01 ${resizeData.startTime}`) && baseDate <= new Date(`2000-01-01 ${END_HOUR.toString().padStart(2,'0')}:00:00`)) {
                 newEnd = `${String(baseDate.getHours()).padStart(2,'0')}:${String(baseDate.getMinutes()).padStart(2,'0')}:00`;
             }
+        } else if(resizing === 'top' || resizing === 'bottom') {
+            const tableIndexMap = getTableIndexMap();
+            const currentTopIndex = tableIndexMap[String(resizeData.assignedTableIds[0])];
+            const currentBottomIndex = currentTopIndex + resizeData.assignedTableIds.length - 1;
+
+            if(currentTopIndex !== undefined) {
+                let nextTopIndex = currentTopIndex;
+                let nextBottomIndex = currentBottomIndex;
+
+                if(resizing === 'top') {
+                    nextTopIndex = Math.max(0, Math.min(currentBottomIndex, currentTopIndex + deltaRows));
+                } else {
+                    nextBottomIndex = Math.min(TABLES.length - 1, Math.max(currentTopIndex, currentBottomIndex + deltaRows));
+                }
+
+                if(nextBottomIndex >= nextTopIndex) {
+                    newAssignedTableIds = TABLES.slice(nextTopIndex, nextBottomIndex + 1).map(table => Number(table.table_id));
+                }
+            }
         }
 
         // Quick visual change before save
         const startIdx = getTimeSlots().indexOf(newStart.substring(0,5));
         const endIdx = getTimeSlots().indexOf(newEnd.substring(0,5));
         if(startIdx >= 0 && endIdx > startIdx) {
-            resizeData.bookingEl.style.left = `${startIdx * slotWidth}px`;
-            resizeData.bookingEl.style.width = `${(endIdx - startIdx) * slotWidth}px`;
+            resizeData.bookingEl.style.left = `${startIdx * CELL_WIDTH}px`;
+            resizeData.bookingEl.style.width = `${(endIdx - startIdx) * CELL_WIDTH}px`;
+        }
+
+        if(newAssignedTableIds.length) {
+            const tableIndexMap = getTableIndexMap();
+            const topIndex = tableIndexMap[String(newAssignedTableIds[0])];
+            if(topIndex !== undefined) {
+                resizeData.bookingEl.style.top = `${topIndex * ROW_HEIGHT + 4}px`;
+                resizeData.bookingEl.style.height = `${newAssignedTableIds.length * ROW_HEIGHT - 8}px`;
+                resizeData.bookingEl.dataset.rowSpan = String(newAssignedTableIds.length);
+            }
         }
 
         resizeData.editStartTime = newStart;
         resizeData.editEndTime = newEnd;
+        resizeData.editTableIds = newAssignedTableIds;
     }
 
     function handleResizeEnd() {
@@ -1537,7 +1951,9 @@ $bookingsJson = json_encode($bookings);
 
         const newStartTime = editStartTime;
         const newEndTime = editEndTime;
-        const tableId = booking.table_id;
+        const tableIds = resizeData.editTableIds && resizeData.editTableIds.length
+            ? resizeData.editTableIds
+            : getAssignedTableIds(booking);
 
         if(!confirmScheduledTimeChange(booking, newStartTime, newEndTime)) {
             renderTimeline();
@@ -1553,7 +1969,8 @@ $bookingsJson = json_encode($bookings);
             },
             body: JSON.stringify({
                 booking_id: bookingId,
-                table_id: tableId,
+                table_id: tableIds[0] || null,
+                table_ids: tableIds,
                 start_time: newStartTime,
                 end_time: newEndTime
             })
@@ -1563,6 +1980,10 @@ $bookingsJson = json_encode($bookings);
             if(data.success) {
                 booking.start_time = newStartTime;
                 booking.end_time = newEndTime;
+                booking.table_id = data.table_id !== null ? Number(data.table_id) : null;
+                booking.table_number = data.table_number || null;
+                booking.assigned_table_ids = Array.isArray(data.table_ids) ? data.table_ids.map(Number) : [];
+                booking.assigned_table_numbers = Array.isArray(data.table_numbers) ? data.table_numbers : [];
                 renderTimeline();
             } else {
                 alert('Not updated: ' + (data.error || 'Conflict or invalid'));                

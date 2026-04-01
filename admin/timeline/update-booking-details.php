@@ -12,6 +12,7 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 ensureBookingRequestColumns($pdo);
+ensureBookingTableAssignmentsTable($pdo);
 
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -82,16 +83,8 @@ if($assignedTimeError) {
     exit();
 }
 
-$capacityStmt = $pdo->prepare("SELECT COUNT(*) FROM restaurant_tables WHERE status = 'available' AND capacity >= ?");
-$capacityStmt->execute([$guestCount]);
-if((int)$capacityStmt->fetchColumn() === 0) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'No available table can accommodate that many guests']);
-    exit();
-}
-
 try {
-    $stmt = $pdo->prepare("SELECT b.*, u.name AS user_name, t.table_number FROM bookings b JOIN users u ON b.user_id = u.user_id LEFT JOIN restaurant_tables t ON b.table_id = t.table_id WHERE b.booking_id = ?");
+    $stmt = $pdo->prepare("SELECT b.*, u.name AS user_name FROM bookings b JOIN users u ON b.user_id = u.user_id WHERE b.booking_id = ?");
     $stmt->execute([$bookingId]);
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -101,37 +94,61 @@ try {
         exit();
     }
 
-    if(!empty($booking['table_id'])) {
+    $assignedTablesStmt = $pdo->prepare("SELECT rt.table_id, rt.table_number, rt.capacity FROM booking_table_assignments bta INNER JOIN restaurant_tables rt ON rt.table_id = bta.table_id WHERE bta.booking_id = ? ORDER BY rt.table_number + 0, rt.table_number");
+    $assignedTablesStmt->execute([$bookingId]);
+    $assignedTables = $assignedTablesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $assignedTableIds = array_map(static function ($tableRow) {
+        return (int)$tableRow['table_id'];
+    }, $assignedTables);
+    $assignedTableNumbers = array_map(static function ($tableRow) {
+        return (string)$tableRow['table_number'];
+    }, $assignedTables);
+    $assignedCapacity = array_sum(array_map(static function ($tableRow) {
+        return (int)$tableRow['capacity'];
+    }, $assignedTables));
+
+    if(!empty($assignedTableIds) && $assignedCapacity < $guestCount) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Guest count exceeds the assigned table capacity']);
+        exit();
+    }
+
+    if(!empty($assignedTableIds)) {
         $conflictStmt = $pdo->prepare("
             SELECT COUNT(*) as conflict_count
-            FROM bookings
-            WHERE table_id = ?
-            AND booking_date = ?
-            AND booking_id != ?
-            AND status IN ('pending', 'confirmed')
+            FROM booking_table_assignments bta
+            INNER JOIN bookings b ON b.booking_id = bta.booking_id
+            WHERE bta.table_id = ?
+            AND b.booking_date = ?
+            AND b.booking_id != ?
+            AND b.status IN ('pending', 'confirmed')
             AND (
-                (start_time < ? AND end_time > ?)
-                OR (start_time >= ? AND start_time < ?)
-                OR (end_time > ? AND end_time <= ?)
+                (b.start_time < ? AND b.end_time > ?)
+                OR (b.start_time >= ? AND b.start_time < ?)
+                OR (b.end_time > ? AND b.end_time <= ?)
             )
         ");
-        $conflictStmt->execute([
-            $booking['table_id'],
-            $booking['booking_date'],
-            $bookingId,
-            $assignedEndTime,
-            $assignedStartTime,
-            $assignedStartTime,
-            $assignedEndTime,
-            $assignedStartTime,
-            $assignedEndTime,
-        ]);
 
-        $conflict = $conflictStmt->fetch(PDO::FETCH_ASSOC);
-        if((int)$conflict['conflict_count'] > 0) {
-            http_response_code(409);
-            echo json_encode(['success' => false, 'error' => 'Assigned time conflicts with another booking at this table']);
-            exit();
+        foreach($assignedTableIds as $assignedTableId) {
+            $conflictStmt->execute([
+                $assignedTableId,
+                $booking['booking_date'],
+                $bookingId,
+                $assignedEndTime,
+                $assignedStartTime,
+                $assignedStartTime,
+                $assignedEndTime,
+                $assignedStartTime,
+                $assignedEndTime,
+            ]);
+
+            $conflict = $conflictStmt->fetch(PDO::FETCH_ASSOC);
+            if((int)$conflict['conflict_count'] > 0) {
+                http_response_code(409);
+                echo json_encode(['success' => false, 'error' => 'Assigned time conflicts with another booking at one of the assigned tables']);
+                exit();
+            }
         }
     }
 
@@ -163,7 +180,9 @@ try {
             'booking_id' => $bookingId,
             'user_id' => (int)$booking['user_id'],
             'table_id' => $booking['table_id'] !== null ? (int)$booking['table_id'] : null,
-            'table_number' => $booking['table_number'],
+            'table_number' => $assignedTableNumbers[0] ?? null,
+            'assigned_table_ids' => $assignedTableIds,
+            'assigned_table_numbers' => $assignedTableNumbers,
             'booking_date' => $booking['booking_date'],
             'start_time' => $assignedStartTime,
             'end_time' => $assignedEndTime,

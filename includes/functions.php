@@ -137,6 +137,51 @@ function ensureBookingRequestColumns($pdo) {
     }
 }
 
+function ensureBookingTableAssignmentsTable($pdo) {
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS booking_table_assignments (
+            booking_id INT NOT NULL,
+            table_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (booking_id, table_id),
+            KEY idx_bta_table_id (table_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    $pdo->exec("
+        INSERT IGNORE INTO booking_table_assignments (booking_id, table_id)
+        SELECT booking_id, table_id
+        FROM bookings
+        WHERE table_id IS NOT NULL
+    ");
+}
+
+function syncBookingTableAssignments($pdo, $bookingId, $tableIds) {
+    $normalizedIds = [];
+    foreach ($tableIds as $tableId) {
+        $tableId = (int)$tableId;
+        if ($tableId > 0 && !in_array($tableId, $normalizedIds, true)) {
+            $normalizedIds[] = $tableId;
+        }
+    }
+
+    $deleteStmt = $pdo->prepare("DELETE FROM booking_table_assignments WHERE booking_id = ?");
+    $deleteStmt->execute([$bookingId]);
+
+    if (!empty($normalizedIds)) {
+        $insertStmt = $pdo->prepare("INSERT INTO booking_table_assignments (booking_id, table_id) VALUES (?, ?)");
+        foreach ($normalizedIds as $tableId) {
+            $insertStmt->execute([$bookingId, $tableId]);
+        }
+    }
+
+    $primaryTableId = !empty($normalizedIds) ? $normalizedIds[0] : null;
+    $updateStmt = $pdo->prepare("UPDATE bookings SET table_id = ? WHERE booking_id = ?");
+    $updateStmt->execute([$primaryTableId, $bookingId]);
+
+    return $normalizedIds;
+}
+
 // Logout function
 function logout() {
     $_SESSION = array();
