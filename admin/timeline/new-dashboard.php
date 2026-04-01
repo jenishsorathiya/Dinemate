@@ -19,6 +19,7 @@ ensureBookingTableAssignmentsTable($pdo);
 $selectedDate = $_GET['date'] ?? date('Y-m-d');
 $selectedDayName = date('l', strtotime($selectedDate));
 $isCurrentDate = ($selectedDate === date('Y-m-d'));
+$selectedDayLabel = $isCurrentDate ? 'Today' : $selectedDayName;
 
 // Get bookings for selected date
 $stmt = $pdo->prepare("
@@ -202,16 +203,20 @@ $bookingsJson = json_encode($bookings);
         .header-center-controls {
             flex: 0 1 auto;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             min-width: 0;
+            padding: 8px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            background: #f9fafb;
         }
 
         .calendar-nav {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
             margin-bottom: 0;
         }
@@ -220,11 +225,12 @@ $bookingsJson = json_encode($bookings);
         .today-button {
             background: #f4b400;
             border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
+            padding: 8px 14px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             transition: 0.3s;
+            white-space: nowrap;
         }
 
         .calendar-nav button:hover,
@@ -233,8 +239,8 @@ $bookingsJson = json_encode($bookings);
         }
 
         .calendar-nav button {
-            width: 42px;
-            min-width: 42px;
+            width: 38px;
+            min-width: 38px;
             padding: 8px 0;
             font-size: 18px;
             line-height: 1;
@@ -514,6 +520,8 @@ $bookingsJson = json_encode($bookings);
             font-weight: 600;
             margin: 0;
             color: #1f2937;
+            font-size: 15px;
+            white-space: nowrap;
         }
 
         .calendar {
@@ -530,7 +538,9 @@ $bookingsJson = json_encode($bookings);
 
         .today-button {
             width: auto;
-            min-width: 210px;
+            min-width: 0;
+            padding: 8px 12px;
+            font-size: 14px;
         }
 
         @media (max-width: 1100px) {
@@ -547,6 +557,11 @@ $bookingsJson = json_encode($bookings);
             .header-title,
             .header-center-controls {
                 align-items: flex-start;
+            }
+
+            .header-center-controls {
+                flex-wrap: wrap;
+                border-radius: 18px;
             }
 
             .header-actions-spacer {
@@ -962,7 +977,7 @@ $bookingsJson = json_encode($bookings);
                 <h2><i class="fa fa-calendar-days"></i> Booking Timeline</h2>
             </div>
             <div class="header-center-controls">
-                <h6 class="header-day-label"><?php echo htmlspecialchars($selectedDayName); ?></h6>
+                <h6 class="header-day-label"><?php echo htmlspecialchars($selectedDayLabel); ?></h6>
                 <div class="calendar-nav">
                     <button type="button" onclick="previousDay()" aria-label="Previous day">&lt;</button>
                     <div class="calendar">
