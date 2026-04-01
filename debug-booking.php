@@ -247,3 +247,5 @@ ini_set('display_errors', 1);
     </script>
 </body>
 </html>
+<?php
+?>
