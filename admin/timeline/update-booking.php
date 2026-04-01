@@ -1,8 +1,11 @@
 <?php
 require_once "../../config/db.php";
 require_once "../../includes/session-check.php";
+require_once "../../includes/functions.php";
 
 header('Content-Type: application/json');
+
+ensureBookingRequestColumns($pdo);
 
 // Check if user is admin
 if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {

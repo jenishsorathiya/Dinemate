@@ -50,6 +50,10 @@ $bookingsJson = json_encode($bookings);
             background: #f5f7fb;
         }
 
+        body.modal-open {
+            overflow: hidden;
+        }
+
         .container-fluid {
             display: flex;
             height: 100vh;
@@ -271,12 +275,13 @@ $bookingsJson = json_encode($bookings);
         .modal-backdrop-custom {
             position: fixed;
             inset: 0;
-            background: rgba(17, 24, 39, 0.55);
+            background: rgba(17, 24, 39, 0.62);
             display: none;
             align-items: center;
             justify-content: center;
             padding: 20px;
             z-index: 2000;
+            backdrop-filter: blur(6px);
         }
 
         .modal-backdrop-custom.open {
@@ -286,9 +291,18 @@ $bookingsJson = json_encode($bookings);
         .booking-modal-card {
             width: min(100%, 460px);
             background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
-            padding: 24px;
+            border-radius: 22px;
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.28);
+            padding: 26px;
+            border: 1px solid rgba(229, 231, 235, 0.9);
+            transform: translateY(18px) scale(0.98);
+            opacity: 0;
+            transition: transform 0.22s ease, opacity 0.22s ease;
+        }
+
+        .modal-backdrop-custom.open .booking-modal-card {
+            transform: translateY(0) scale(1);
+            opacity: 1;
         }
 
         .booking-modal-header {
@@ -296,6 +310,8 @@ $bookingsJson = json_encode($bookings);
             align-items: center;
             justify-content: space-between;
             margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .booking-modal-header h5 {
@@ -306,11 +322,20 @@ $bookingsJson = json_encode($bookings);
 
         .booking-modal-close {
             border: none;
-            background: transparent;
-            font-size: 26px;
+            background: #f3f4f6;
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            font-size: 22px;
             line-height: 1;
             color: #6b7280;
             cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .booking-modal-close:hover {
+            background: #e5e7eb;
+            color: #111827;
         }
 
         .modal-form-group {
@@ -660,6 +685,11 @@ $bookingsJson = json_encode($bookings);
             background: linear-gradient(135deg, #3b82f6, #2563eb);
         }
 
+        .booking-block.rescheduled {
+            outline: 2px dashed rgba(255,255,255,0.7);
+            outline-offset: -2px;
+        }
+
         .current-time-line {
             position: absolute;
             width: 2px;
@@ -834,6 +864,7 @@ $bookingsJson = json_encode($bookings);
 
         function openModal() {
             modal.classList.add('open');
+            document.body.classList.add('modal-open');
             errorBox.style.display = 'none';
             form.reset();
             document.getElementById('adminBookingDate').value = SELECTED_DATE;
@@ -845,6 +876,7 @@ $bookingsJson = json_encode($bookings);
 
         function closeModal() {
             modal.classList.remove('open');
+            document.body.classList.remove('modal-open');
             errorBox.style.display = 'none';
         }
 
@@ -966,6 +998,34 @@ $bookingsJson = json_encode($bookings);
         }).join('');
     }
 
+    function getRequestedStartTime(booking) {
+        return booking.requested_start_time || booking.start_time;
+    }
+
+    function getRequestedEndTime(booking) {
+        return booking.requested_end_time || booking.end_time;
+    }
+
+    function formatTimeRange(startTime, endTime) {
+        return `${startTime.substring(0,5)} - ${endTime.substring(0,5)}`;
+    }
+
+    function confirmScheduledTimeChange(booking, newStartTime, newEndTime) {
+        const currentStart = booking.start_time.substring(0, 5);
+        const nextStart = newStartTime.substring(0, 5);
+
+        if(currentStart === nextStart) {
+            return true;
+        }
+
+        const currentRange = formatTimeRange(booking.start_time, booking.end_time);
+        const newRange = formatTimeRange(newStartTime, newEndTime);
+        const requestedRange = formatTimeRange(getRequestedStartTime(booking), getRequestedEndTime(booking));
+        return window.confirm(
+            `Change scheduled time for ${booking.customer_name}?\n\nRequested time: ${requestedRange}\nCurrent scheduled time: ${currentRange}\nNew scheduled time: ${newRange}`
+        );
+    }
+
     // Generate time slots (30-minute intervals)
     function getTimeSlots() {
         const slots = [];
@@ -1035,6 +1095,8 @@ $bookingsJson = json_encode($bookings);
     function renderBooking(booking, timeSlots) {
         const bookingStart = booking.start_time.substring(0, 5); // Convert HH:MM:SS to HH:MM
         const bookingEnd = booking.end_time.substring(0, 5);
+        const requestedStart = getRequestedStartTime(booking).substring(0, 5);
+        const requestedEnd = getRequestedEndTime(booking).substring(0, 5);
         const startIdx = timeSlots.indexOf(bookingStart);
 
         if(startIdx === -1) return '';
@@ -1052,8 +1114,12 @@ $bookingsJson = json_encode($bookings);
         const height = rowHeight - 8;
 
         const statusClass = booking.status === 'confirmed' ? 'success' : (booking.status === 'pending' ? 'pending' : 'info');
+        const rescheduledClass = (requestedStart !== bookingStart || requestedEnd !== bookingEnd) ? 'rescheduled' : '';
+        const titleText = rescheduledClass
+            ? `${booking.customer_name} | Requested ${requestedStart} - ${requestedEnd} | Scheduled ${bookingStart} - ${bookingEnd}`
+            : `${booking.customer_name} - ${bookingStart} to ${bookingEnd}`;
 
-        return `<div class="booking-block ${statusClass}"
+        return `<div class="booking-block ${statusClass} ${rescheduledClass}"
                     draggable="true"
                     data-booking-id="${booking.booking_id}"
                     data-table-id="${booking.table_id}"
@@ -1062,7 +1128,7 @@ $bookingsJson = json_encode($bookings);
                     data-duration="${durationMins}"
                     data-customer="${booking.customer_name}"
                     style="left: ${leftPosition}px; top: ${topPosition}px; width: ${width}px; height: ${height}px;"
-                    title="${booking.customer_name} - ${bookingStart} to ${bookingEnd}">
+                    title="${titleText}">
             <div class="resize-handle left-handle"></div>
             <span style="font-size: 11px;">${booking.customer_name}</span><br>
             <span style="font-size: 10px; opacity: 0.85;">${bookingStart} - ${bookingEnd}</span>
@@ -1138,6 +1204,10 @@ $bookingsJson = json_encode($bookings);
         const newEndDate = new Date(`2000-01-01 ${newStartTime}`);
         newEndDate.setMinutes(newEndDate.getMinutes() + durationMins);
         const newEndTime = String(newEndDate.getHours()).padStart(2, '0') + ':' + String(newEndDate.getMinutes()).padStart(2, '0') + ':00';
+
+        if(!confirmScheduledTimeChange(booking, newStartTime, newEndTime)) {
+            return;
+        }
 
         // Show loading state
         draggedBooking.style.opacity = '0.5';
@@ -1266,6 +1336,13 @@ $bookingsJson = json_encode($bookings);
         const newStartTime = editStartTime;
         const newEndTime = editEndTime;
         const tableId = booking.table_id;
+
+        if(!confirmScheduledTimeChange(booking, newStartTime, newEndTime)) {
+            renderTimeline();
+            resizing = null;
+            resizeData = null;
+            return;
+        }
 
         fetch('update-booking.php', {
             method: 'POST',

@@ -100,6 +100,36 @@ function displayFlashMessage() {
     }
 }
 
+function ensureBookingRequestColumns($pdo) {
+    $startTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
+    $startTimeExists = $startTimeStmt->rowCount() > 0;
+
+    $endTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'end_time'");
+    $endTimeExists = $endTimeStmt->rowCount() > 0;
+
+    $requestedStartStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'requested_start_time'");
+    $requestedStartExists = $requestedStartStmt->rowCount() > 0;
+
+    $requestedEndStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'requested_end_time'");
+    $requestedEndExists = $requestedEndStmt->rowCount() > 0;
+
+    if (!$requestedStartExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN requested_start_time TIME DEFAULT NULL AFTER end_time");
+    }
+
+    if (!$requestedEndExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN requested_end_time TIME DEFAULT NULL AFTER requested_start_time");
+    }
+
+    if ($startTimeExists) {
+        $pdo->exec("UPDATE bookings SET requested_start_time = start_time WHERE requested_start_time IS NULL AND start_time IS NOT NULL");
+    }
+
+    if ($endTimeExists) {
+        $pdo->exec("UPDATE bookings SET requested_end_time = end_time WHERE requested_end_time IS NULL AND end_time IS NOT NULL");
+    }
+}
+
 // Logout function
 function logout() {
     $_SESSION = array();

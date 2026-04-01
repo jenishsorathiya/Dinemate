@@ -5,6 +5,8 @@ require_once "../includes/functions.php";
 
 // Ensure start_time and end_time columns exist
 try {
+    ensureBookingRequestColumns($pdo);
+
     // First, try to query the columns
     $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
     $startTimeExists = $result->rowCount() > 0;
@@ -120,8 +122,8 @@ if((int)$capacityStmt->fetchColumn() === 0){
 /* ============ INSERT BOOKING ============ */
 $stmt = $pdo->prepare("
     INSERT INTO bookings 
-    (user_id, table_id, booking_date, start_time, end_time, number_of_guests, special_request, status)
-    VALUES (?, NULL, ?, ?, ?, ?, ?, 'pending')
+    (user_id, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status)
+    VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')
 ");
 
 try {
@@ -130,6 +132,8 @@ try {
         $date, 
         $start_time, 
         $end_time, 
+        $start_time,
+        $end_time,
         $guests, 
         $special
     ]);

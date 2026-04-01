@@ -3,6 +3,8 @@ require_once "../config/db.php";
 require_once "../includes/session-check.php";
 require_once "../includes/functions.php";
 
+ensureBookingRequestColumns($pdo);
+
 if(! isCustomer()){
     header("Location: ../auth/login.php");
     exit();
@@ -72,6 +74,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                     booking_date = ?,
                     start_time = ?,
                     end_time = ?,
+                    requested_start_time = ?,
+                    requested_end_time = ?,
                     number_of_guests = ?,
                     special_request = ?,
                     status = 'pending'
@@ -80,6 +84,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
                 $stmt->execute([
                     $date,
+                    $start_time,
+                    $end_time,
                     $start_time,
                     $end_time,
                     $guests,

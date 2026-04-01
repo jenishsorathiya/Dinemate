@@ -1,8 +1,11 @@
 <?php
 require_once "../../config/db.php";
 require_once "../../includes/session-check.php";
+require_once "../../includes/functions.php";
 
 header('Content-Type: application/json');
+
+ensureBookingRequestColumns($pdo);
 
 if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     http_response_code(403);
@@ -74,10 +77,12 @@ try {
         ];
     }
 
-    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, table_id, booking_date, start_time, end_time, number_of_guests, special_request, status) VALUES (?, NULL, ?, ?, ?, ?, ?, 'pending')");
+    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')");
     $bookingStmt->execute([
         $user['user_id'],
         $bookingDate,
+        $startTime,
+        $endTime,
         $startTime,
         $endTime,
         $guestCount,
@@ -97,6 +102,8 @@ try {
             'booking_date' => $bookingDate,
             'start_time' => $startTime,
             'end_time' => $endTime,
+            'requested_start_time' => $startTime,
+            'requested_end_time' => $endTime,
             'number_of_guests' => $guestCount,
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
             'status' => 'pending',
