@@ -519,18 +519,7 @@ id="number-of-guests"
 <div class="restaurant-layout" id="table_grid">
     <div class="table-grid">
     <?php 
-    if (!empty($tables)) {
-        foreach ($tables as $table) {
-            displayTableCard($table);
-        }
-    } else {
-        echo '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-            <p style="font-size: 18px; color: #999;">No tables available</p>
-            <p style="color: #ccc;">Please try another date.</p>
-        </div>';
-    }
-    
-    // Helper function to display table card as circle
+    // Helper function to display table card
     function displayTableCard($table) {
         $tableId = $table['table_id'];
         $tableNum = $table['table_number'];
@@ -569,6 +558,18 @@ id="number-of-guests"
             </div>
         </div>
         <?php
+    }
+    
+    // Now call the function in the loop
+    if (!empty($tables)) {
+        foreach ($tables as $table) {
+            displayTableCard($table);
+        }
+    } else {
+        echo '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <p style="font-size: 18px; color: #999;">No tables available</p>
+            <p style="color: #ccc;">Please try another date.</p>
+        </div>';
     }
     ?>
     </div>
