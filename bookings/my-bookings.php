@@ -171,7 +171,7 @@ Table <?= $b['table_number'] ?>
 <p>
 <i class="fa fa-clock"></i>
 <strong>Time:</strong>
-<?= date("h:i A",strtotime($b['booking_time'])) ?>
+<?= date("h:i A",strtotime($b['start_time'])) ?>  -  <?= date("h:i A",strtotime($b['end_time'])) ?>
 </p>
 
 <p>

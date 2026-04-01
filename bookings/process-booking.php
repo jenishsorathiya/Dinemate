@@ -12,6 +12,9 @@ try {
     $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'end_time'");
     $endTimeExists = $result->rowCount() > 0;
     
+    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'special_request'");
+    $specialRequestExists = $result->rowCount() > 0;
+    
     if (!$startTimeExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN start_time TIME NOT NULL DEFAULT '12:00:00' AFTER booking_date");
         error_log("Added start_time column to bookings table");
@@ -20,6 +23,11 @@ try {
     if (!$endTimeExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN end_time TIME NOT NULL DEFAULT '13:00:00' AFTER start_time");
         error_log("Added end_time column to bookings table");
+    }
+    
+    if (!$specialRequestExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN special_request TEXT DEFAULT NULL");
+        error_log("Added special_request column to bookings table");
     }
 } catch(PDOException $e) {
     error_log('Column migration error: ' . $e->getMessage());
