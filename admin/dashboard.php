@@ -212,6 +212,7 @@ $tableOverview = fetchRows(
             <div class="brand-sub">Admin dashboard</div>
 
             <a href="dashboard.php" class="side-link active"><i class="fa fa-chart-line me-2"></i> Dashboard</a>
+            <a href="menu-management.php" class="side-link"><i class="fa fa-utensils me-2"></i> Menu Management</a>
             <a href="../bookings/book-table.php" class="side-link"><i class="fa fa-calendar-check me-2"></i> Booking page</a>
             <a href="../index.php" class="side-link"><i class="fa fa-house me-2"></i> Main website</a>
             <a href="../auth/logout.php" class="side-link"><i class="fa fa-right-from-bracket me-2"></i> Logout</a>

@@ -1,5 +1,16 @@
 <?php
 include 'includes/header.php';
+include 'config/db.php';
+
+// Fetch menu items grouped by category
+$categories = ['Small Plates', 'Large Plates', 'House Specials', 'Burgers', 'Sides', 'Kiddies', 'Desserts'];
+$menuItems = [];
+
+foreach ($categories as $category) {
+    $stmt = $pdo->prepare("SELECT * FROM menu_items WHERE category = ? AND is_available = 1 ORDER BY name");
+    $stmt->execute([$category]);
+    $menuItems[$category] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 
 <div class="menu-container">
@@ -8,365 +19,65 @@ include 'includes/header.php';
         <p>Experience fine dining at The Old Canberra Inn</p>
     </div>
 
-    <!-- SMALL PLATES -->
-    <section class="menu-section">
-        <h2 class="section-title">Small Plates</h2>
-        <div class="menu-cards">
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Hand Cut Chips</h3>
-                    <span class="price">$11</span>
-                </div>
-                <p class="description">w/ roasted capsicum aioli</p>
-                <span class="badge">GF</span>
-            </div>
+    <?php foreach ($menuItems as $category => $items): ?>
+        <?php if (!empty($items)): ?>
+            <section class="menu-section">
+                <h2 class="section-title"><?php echo $category; ?></h2>
+                <?php if ($category === 'Burgers'): ?>
+                    <p class="section-subtitle">Served on a milk bun with a choice of chips or salad</p>
+                <?php elseif ($category === 'Sides'): ?>
+                    <p class="section-subtitle">All $11 as Small Plates</p>
+                <?php elseif ($category === 'Kiddies'): ?>
+                    <p class="section-subtitle">Served with your choice of chips or salad</p>
+                <?php endif; ?>
 
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Sweet Potato Fries</h3>
-                    <span class="price">$13</span>
-                </div>
-                <p class="description">w/ aioli</p>
-                <span class="badge">V, GF</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Corn Chips</h3>
-                    <span class="price">$9</span>
-                </div>
-                <p class="description">w/ corn salsa & guacamole</p>
-                <span class="badge">V</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Lamb & Mint Sausage Rolls</h3>
-                    <span class="price">$16</span>
-                </div>
-                <p class="description">w/ smoky BBQ sauce</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Crumbed Halloumi</h3>
-                    <span class="price">$16</span>
-                </div>
-                <p class="description">w/ aioli</p>
-                <span class="badge">V</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Mushroom Arancini</h3>
-                    <span class="price">$16</span>
-                </div>
-                <p class="description">w/ aioli</p>
-                <span class="badge">V</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Eggplant Parmigiana</h3>
-                    <span class="price">$17</span>
-                </div>
-                <p class="description"></p>
-                <span class="badge">V</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Lamb Kofta Meatballs</h3>
-                    <span class="price">$19</span>
-                </div>
-                <p class="description">w/ maple hummus & flatbread</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Half Kilo Free-Range Chicken Wings</h3>
-                    <span class="price">$19</span>
-                </div>
-                <p class="description">w/ choice of sauce</p>
-                <span class="badge">GF</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- LARGE PLATES -->
-    <section class="menu-section">
-        <h2 class="section-title">Large Plates</h2>
-        <div class="menu-cards">
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Spicy Bean Chilli Nachos</h3>
-                    <span class="price">$22</span>
-                </div>
-                <p class="description"></p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Chilli Beef Nachos</h3>
-                    <span class="price">$25</span>
-                </div>
-                <p class="description"></p>
-            </div>
-
-            <div class="menu-card featured">
-                <div class="card-header">
-                    <h3>300g Rump</h3>
-                    <span class="price">$35</span>
-                </div>
-                <p class="description">Served with your choice of two sides</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>220g Eye Fillet</h3>
-                    <span class="price">$44</span>
-                </div>
-                <p class="description">Served with your choice of two sides</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>330g Scotch Fillet</h3>
-                    <span class="price">$46</span>
-                </div>
-                <p class="description">Served with your choice of two sides</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Free Range Chicken Schnitzel</h3>
-                    <span class="price">$28</span>
-                </div>
-                <p class="description"></p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Free Range Chicken Parmigiana</h3>
-                    <span class="price">$31</span>
-                </div>
-                <p class="description">w/ free range ham</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Dill & Beer Battered Fresh Fish of the Day</h3>
-                    <span class="price">$29</span>
-                </div>
-                <p class="description">w/ homemade tartar sauce</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Pan Fried Barramundi</h3>
-                    <span class="price">$37</span>
-                </div>
-                <p class="description">w/ cajun & paprika butter</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Vegetarian Lasagne</h3>
-                    <span class="price">$24</span>
-                </div>
-                <p class="description">w/ grilled eggplant, capsicum, zucchini, spinach, fresh ricotta & basil</p>
-                <span class="badge">V</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Eggplant Parmigiana</h3>
-                    <span class="price">$24</span>
-                </div>
-                <p class="description"></p>
-                <span class="badge">V</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- HOUSE SPECIALS -->
-    <section class="menu-section">
-        <h2 class="section-title">House Specials</h2>
-        <div class="menu-cards">
-            <div class="menu-card featured">
-                <div class="card-header">
-                    <h3>Vegan Curry of The Day</h3>
-                    <span class="price">$21</span>
-                </div>
-                <p class="description">w/ basmati rice & toasted flatbread</p>
-                <span class="badge">V</span>
-            </div>
-
-            <div class="menu-card featured">
-                <div class="card-header">
-                    <h3>House Smoked BBQ Pack</h3>
-                    <span class="price">$43</span>
-                </div>
-                <p class="description">Beef Rib, Free Range Jerks Pulled Pork, Lamb Merguez w/ mac & cheese & chipotle slaw, bourbon bbq sauce</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Chargrilled Kangaroo Striploin</h3>
-                    <span class="price">$29</span>
-                </div>
-                <p class="description">w/ mixed leaves, kipfler potatoes, sliced gherkins, beetroot jam, davidson's plum dressing</p>
-                <span class="badge">GF</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- BURGERS -->
-    <section class="menu-section">
-        <h2 class="section-title">Burgers</h2>
-        <p class="section-subtitle">Served on a milk bun with a choice of chips or salad</p>
-        <div class="menu-cards">
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Beef Burger</h3>
-                    <span class="price">$25</span>
-                </div>
-                <p class="description">w/ beetroot, swiss cheese, onion & tomato jam, butter lettuce, house pickles & aioli</p>
-                <span class="badge">GF option +$3</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Halloumi Burger</h3>
-                    <span class="price">$23</span>
-                </div>
-                <p class="description">w/ aioli, beetroot relish, butter lettuce, & onion tomato jam</p>
-                <span class="badge">V</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Southern Fried Chicken Burger</h3>
-                    <span class="price">$25</span>
-                </div>
-                <p class="description">w/ coleslaw, pickles, american mustard, ketchup & diced spanish onion</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Cheeseburger</h3>
-                    <span class="price">$24</span>
-                </div>
-                <p class="description">w/ house pickles, american mustard, ketchup & diced spanish onion</p>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Vegan Burger</h3>
-                    <span class="price">$23</span>
-                </div>
-                <p class="description">w/ roasted open mushroom, pulled jackfruit & chipotle slaw</p>
-                <span class="badge">V</span>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>House Pulled Pork Burger</h3>
-                    <span class="price">$26</span>
-                </div>
-                <p class="description">w/ bourbon bbq sauce, swiss cheese & apple slaw</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- SIDES -->
-    <section class="menu-section">
-        <h2 class="section-title">Sides</h2>
-        <p class="section-subtitle">All $11 as Small Plates</p>
-        <div class="sides-grid">
-            <div class="side-item">
-                <h4>Garlic Bread</h4>
-            </div>
-            <div class="side-item">
-                <h4>Green Beans</h4>
-            </div>
-            <div class="side-item">
-                <h4>Hand Cut Chips</h4>
-            </div>
-            <div class="side-item">
-                <h4>Mixed Green Salad</h4>
-            </div>
-            <div class="side-item">
-                <h4>Garlic Mash</h4>
-            </div>
-            <div class="side-item">
-                <h4>Jamaican Green Apple Slaw</h4>
-            </div>
-            <div class="side-item">
-                <h4>Mac & Cheese</h4>
-            </div>
-            <div class="side-item">
-                <h4>Grilled Corn w/ Jalapeno Butter</h4>
-            </div>
-        </div>
-        <p class="sauces-note"><strong>Sauces:</strong> Mushroom, Peppercorn, Gravy, Chimichurri, Café De Paris Butter</p>
-    </section>
-
-    <!-- KIDDIES -->
-    <section class="menu-section">
-        <h2 class="section-title">Kiddies – All $12</h2>
-        <p class="section-subtitle">Served with your choice of chips or salad</p>
-        <div class="menu-cards">
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Cheeseburger</h3>
-                    <span class="price">$12</span>
-                </div>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Homemade Free-Range Chicken Schnitzel</h3>
-                    <span class="price">$12</span>
-                </div>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Battered Fresh Fish Of The Day</h3>
-                    <span class="price">$12</span>
-                </div>
-            </div>
-
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Vegetarian Lasagne</h3>
-                    <span class="price">$12</span>
-                </div>
-                <span class="badge">V</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- DESSERTS -->
-    <section class="menu-section">
-        <h2 class="section-title">Dessert – $13</h2>
-        <div class="menu-cards">
-            <div class="menu-card">
-                <div class="card-header">
-                    <h3>Sticky Date Pudding</h3>
-                    <span class="price">$13</span>
-                </div>
-                <p class="description">w/ butterscotch sauce & ice cream</p>
-            </div>
-        </div>
-    </section>
+                <?php if ($category === 'Sides'): ?>
+                    <div class="sides-grid">
+                        <?php foreach ($items as $item): ?>
+                            <div class="side-item">
+                                <h4><?php echo htmlspecialchars($item['name']); ?></h4>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="sauces-note"><strong>Sauces:</strong> Mushroom, Peppercorn, Gravy, Chimichurri, Café De Paris Butter</p>
+                <?php else: ?>
+                    <div class="menu-cards">
+                        <?php foreach ($items as $item): ?>
+                            <div class="menu-card <?php echo ($category === 'House Specials') ? 'featured' : ''; ?>">
+                                <?php if (!empty($item['image'])): ?>
+                                    <div class="card-image">
+                                        <img src="<?php echo $item['image']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                    </div>
+                                <?php endif; ?>
+                                <div class="card-content">
+                                    <div class="card-header">
+                                        <h3><?php echo htmlspecialchars($item['name']); ?></h3>
+                                        <span class="price">$<?php echo number_format($item['price'], 2); ?></span>
+                                    </div>
+                                    <?php if (!empty($item['description'])): ?>
+                                        <p class="description"><?php echo htmlspecialchars($item['description']); ?></p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($item['dietary_info'])): ?>
+                                        <span class="badge"><?php echo htmlspecialchars($item['dietary_info']); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
+    <?php endforeach; ?>
 
     <!-- LEGEND -->
     <div class="menu-legend">
         <p><span class="badge-info">V</span> Vegan | <span class="badge-info">GF</span> Gluten Free</p>
     </div>
 </div>
+
+<?php
+include 'includes/footer.php';
+?>
 
 <style>
 .menu-container {
@@ -440,12 +151,11 @@ include 'includes/header.php';
 
 .menu-card {
     background: white;
-    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
     border-left: 4px solid #d4af37;
-    position: relative;
+    overflow: hidden;
 }
 
 .menu-card:hover {
@@ -456,6 +166,26 @@ include 'includes/header.php';
 .menu-card.featured {
     border-left-color: #8b7355;
     background: #faf8f3;
+}
+
+.card-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.menu-card:hover .card-image img {
+    transform: scale(1.05);
+}
+
+.card-content {
+    padding: 20px;
 }
 
 .card-header {
@@ -560,7 +290,4 @@ include 'includes/header.php';
     }
 }
 </style>
-
-<?php
-include 'includes/footer.php';
-?>
+           
