@@ -84,12 +84,6 @@ try {
         $totalCapacity += (int) $tableMap[$tableId]['capacity'];
     }
 
-    if ((int) $booking['number_of_guests'] > $totalCapacity) {
-        http_response_code(409);
-        echo json_encode(['success' => false, 'error' => 'Guest count exceeds the selected table capacity']);
-        exit();
-    }
-
     // Check for conflicts at new location
     $conflictStmt = $pdo->prepare(" 
         SELECT COUNT(*) as conflict_count
@@ -150,6 +144,8 @@ try {
         'table_number' => $tableNumbers[0] ?? null,
         'table_ids' => $new_table_ids,
         'table_numbers' => $tableNumbers,
+        'total_capacity' => $totalCapacity,
+        'over_capacity' => ((int) $booking['number_of_guests'] > $totalCapacity),
         'status' => 'confirmed',
         'start_time' => $new_start_time,
         'end_time' => $new_end_time

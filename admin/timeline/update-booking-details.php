@@ -108,12 +108,6 @@ try {
         return (int)$tableRow['capacity'];
     }, $assignedTables));
 
-    if(!empty($assignedTableIds) && $assignedCapacity < $guestCount) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Guest count exceeds the assigned table capacity']);
-        exit();
-    }
-
     if(!empty($assignedTableIds)) {
         $conflictStmt = $pdo->prepare("
             SELECT COUNT(*) as conflict_count

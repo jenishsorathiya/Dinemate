@@ -1083,6 +1083,10 @@ $bookingsJson = json_encode($bookings);
             background: linear-gradient(135deg, #3b82f6, #2563eb);
         }
 
+        .booking-block.over-capacity {
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+        }
+
         .booking-block.rescheduled {
             outline: 2px dashed rgba(255,255,255,0.7);
             outline-offset: -2px;
@@ -1777,6 +1781,18 @@ $bookingsJson = json_encode($bookings);
         return TABLES.slice(startIndex, startIndex + spanCount).map(table => Number(table.table_id));
     }
 
+    function getAssignedCapacity(booking) {
+        const assignedTableIds = getAssignedTableIds(booking);
+        if(!assignedTableIds.length) {
+            return 0;
+        }
+
+        return assignedTableIds.reduce((total, tableId) => {
+            const table = TABLES.find(item => String(item.table_id) === String(tableId));
+            return total + (table ? Number(table.capacity || 0) : 0);
+        }, 0);
+    }
+
     function formatTimeRange(startTime, endTime) {
         return `${startTime.substring(0,5)} - ${endTime.substring(0,5)}`;
     }
@@ -1890,6 +1906,7 @@ $bookingsJson = json_encode($bookings);
         const height = rowSpan * ROW_HEIGHT;
 
         const statusClass = booking.status === 'confirmed' ? 'success' : (booking.status === 'pending' ? 'pending' : 'info');
+        const overCapacityClass = getAssignedCapacity(booking) < Number(booking.number_of_guests || 0) ? 'over-capacity' : '';
         const rescheduledClass = requestedStart !== bookingStart ? 'rescheduled' : '';
         const guestCountText = `P${booking.number_of_guests}`;
         const visibleTimeText = `${bookingStart}`;
@@ -1904,7 +1921,7 @@ $bookingsJson = json_encode($bookings);
             ? `${booking.customer_name} | ${guestCountText} | ${bookingStart} - ${bookingEnd} | Requested ${requestedStart} - ${requestedEnd} | Scheduled ${bookingStart} - ${bookingEnd}`
             : `${booking.customer_name} | ${guestCountText} | ${bookingStart} - ${bookingEnd}`;
 
-        return `<div class="booking-block ${statusClass} ${rescheduledClass}"
+        return `<div class="booking-block ${statusClass} ${overCapacityClass} ${rescheduledClass}"
                     draggable="true"
                     data-booking-id="${booking.booking_id}"
                     data-table-id="${booking.table_id ?? ''}"
