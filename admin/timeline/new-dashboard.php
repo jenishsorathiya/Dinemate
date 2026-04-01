@@ -1197,7 +1197,7 @@ $bookingsJson = json_encode($bookings);
                 <h2><i class="fa fa-calendar-days"></i> Booking Timeline</h2>
             </div>
             <div class="header-center-controls">
-                <h6 class="header-day-label"><?php echo htmlspecialchars($selectedDayLabel); ?></h6>
+                <h6 class="header-day-label" id="headerDayLabel"><?php echo htmlspecialchars($selectedDayLabel); ?></h6>
                 <div class="calendar-nav">
                     <button type="button" onclick="previousDay()" aria-label="Previous day">&lt;</button>
                     <div class="calendar">
@@ -1205,9 +1205,7 @@ $bookingsJson = json_encode($bookings);
                     </div>
                     <button type="button" onclick="nextDay()" aria-label="Next day">&gt;</button>
                 </div>
-                <?php if(!$isCurrentDate): ?>
-                <button type="button" class="today-button" onclick="todayDate()">Switch to Current Date</button>
-                <?php endif; ?>
+                <button type="button" class="today-button" id="todayButton" onclick="todayDate()"<?php echo $isCurrentDate ? ' style="display:none;"' : ''; ?>>Switch to Current Date</button>
             </div>
             <div class="header-actions-spacer" aria-hidden="true"></div>
         </div>
@@ -1396,6 +1394,11 @@ $bookingsJson = json_encode($bookings);
 
     // Initialize timeline on page load
     document.addEventListener('DOMContentLoaded', function() {
+        if (redirectToLocalCurrentDateIfNeeded()) {
+            return;
+        }
+
+        syncCurrentDateState();
         bindBookingModal();
         bindBookingDetailsModal();
         bindTableDetailsModal();
@@ -2398,20 +2401,66 @@ $bookingsJson = json_encode($bookings);
     }
 
     // Navigation functions
+    function parseLocalDate(dateString) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
+    function formatLocalDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function getDayLabel(dateString) {
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const date = parseLocalDate(dateString);
+        const today = formatLocalDate(new Date());
+        return dateString === today ? 'Today' : dayNames[date.getDay()];
+    }
+
+    function syncCurrentDateState() {
+        const headerDayLabel = document.getElementById('headerDayLabel');
+        const todayButton = document.getElementById('todayButton');
+
+        if (headerDayLabel) {
+            headerDayLabel.textContent = getDayLabel(SELECTED_DATE);
+        }
+
+        if (todayButton) {
+            todayButton.style.display = SELECTED_DATE === formatLocalDate(new Date()) ? 'none' : '';
+        }
+    }
+
+    function redirectToLocalCurrentDateIfNeeded() {
+        const url = new URL(window.location.href);
+        const hasExplicitDate = url.searchParams.has('date');
+        const localCurrentDate = formatLocalDate(new Date());
+
+        if (!hasExplicitDate && SELECTED_DATE !== localCurrentDate) {
+            url.searchParams.set('date', localCurrentDate);
+            window.location.replace(url.toString());
+            return true;
+        }
+
+        return false;
+    }
+
     function previousDay() {
-        const date = new Date(SELECTED_DATE);
+        const date = parseLocalDate(SELECTED_DATE);
         date.setDate(date.getDate() - 1);
-        window.location.href = `?date=${date.toISOString().split('T')[0]}`;
+        window.location.href = `?date=${formatLocalDate(date)}`;
     }
 
     function nextDay() {
-        const date = new Date(SELECTED_DATE);
+        const date = parseLocalDate(SELECTED_DATE);
         date.setDate(date.getDate() + 1);
-        window.location.href = `?date=${date.toISOString().split('T')[0]}`;
+        window.location.href = `?date=${formatLocalDate(date)}`;
     }
 
     function todayDate() {
-        const today = new Date().toISOString().split('T')[0];
+        const today = formatLocalDate(new Date());
         window.location.href = `?date=${today}`;
     }
 
