@@ -213,7 +213,8 @@ $bookingsJson = json_encode($bookings);
         .booking-list {
             padding: 15px;
             overflow-y: auto;
-            max-height: calc(100vh - 250px);
+            max-height: calc(100vh - 340px);
+            flex: 1;
         }
 
         .booking-item {
@@ -237,6 +238,145 @@ $bookingsJson = json_encode($bookings);
 
         .booking-item.dragging {
             opacity: 0.6;
+        }
+
+        .tables-section {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .add-booking-button {
+            width: 100%;
+            margin-top: auto;
+            border: none;
+            border-radius: 12px;
+            background: #111827;
+            color: #fff;
+            padding: 14px 16px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .add-booking-button:hover {
+            background: #1f2937;
+            transform: translateY(-1px);
+        }
+
+        .modal-backdrop-custom {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
+        }
+
+        .modal-backdrop-custom.open {
+            display: flex;
+        }
+
+        .booking-modal-card {
+            width: min(100%, 460px);
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+            padding: 24px;
+        }
+
+        .booking-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .booking-modal-header h5 {
+            margin: 0;
+            font-size: 22px;
+            color: #111827;
+        }
+
+        .booking-modal-close {
+            border: none;
+            background: transparent;
+            font-size: 26px;
+            line-height: 1;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .modal-form-group {
+            margin-bottom: 14px;
+        }
+
+        .modal-form-group label {
+            display: block;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+
+        .modal-form-group input,
+        .modal-form-group textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font: inherit;
+        }
+
+        .modal-form-group textarea {
+            min-height: 96px;
+            resize: vertical;
+        }
+
+        .modal-helper-text {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .modal-error {
+            display: none;
+            margin-bottom: 14px;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-size: 14px;
+        }
+
+        .booking-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .booking-modal-actions button {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .booking-modal-cancel {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .booking-modal-submit {
+            background: #f4b400;
+            color: #111827;
         }
 
         .add-table-row {
@@ -286,11 +426,6 @@ $bookingsJson = json_encode($bookings);
         }
 
         /* TABLES LIST */
-        .tables-section {
-            padding: 20px;
-            flex: 1;
-        }
-
         .tables-section h6 {
             font-weight: 600;
             margin-bottom: 15px;
@@ -606,6 +741,10 @@ $bookingsJson = json_encode($bookings);
                 <div class="tables-section">
                     <h6>Unassigned Bookings</h6>
                     <div class="booking-list" id="bookingList"></div>
+                    <button type="button" class="add-booking-button" id="openBookingModalBtn">
+                        <i class="fa fa-plus"></i>
+                        Add a Booking
+                    </button>
                 </div>
             </div>
 
@@ -629,6 +768,43 @@ $bookingsJson = json_encode($bookings);
     </div>
 </div>
 
+<div class="modal-backdrop-custom" id="bookingModal">
+    <div class="booking-modal-card">
+        <div class="booking-modal-header">
+            <h5><i class="fa fa-calendar-plus"></i> Add a Booking</h5>
+            <button type="button" class="booking-modal-close" id="closeBookingModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-error" id="bookingModalError"></div>
+        <form id="adminBookingForm">
+            <div class="modal-form-group">
+                <label for="adminBookingName">Name</label>
+                <input type="text" id="adminBookingName" required>
+            </div>
+            <div class="modal-form-group">
+                <label for="adminBookingDate">Date</label>
+                <input type="date" id="adminBookingDate" value="<?php echo htmlspecialchars($selectedDate); ?>" required>
+            </div>
+            <div class="modal-form-group">
+                <label for="adminBookingTime">Time</label>
+                <input type="time" id="adminBookingTime" min="10:00" max="21:00" step="1800" value="12:00" required>
+                <div class="modal-helper-text">Admin-created bookings are added as a 60-minute pending booking on the selected date.</div>
+            </div>
+            <div class="modal-form-group">
+                <label for="adminBookingGuests">Number of People</label>
+                <input type="number" id="adminBookingGuests" min="1" required>
+            </div>
+            <div class="modal-form-group">
+                <label for="adminBookingNotes">Notes</label>
+                <textarea id="adminBookingNotes" placeholder="Optional notes"></textarea>
+            </div>
+            <div class="booking-modal-actions">
+                <button type="button" class="booking-modal-cancel" id="cancelBookingModalBtn">Cancel</button>
+                <button type="submit" class="booking-modal-submit" id="submitAdminBookingBtn">Create Booking</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     const BOOKING_DATA = <?php echo $bookingsJson; ?>;
     const TABLES = <?php echo json_encode($tables); ?>;
@@ -639,10 +815,95 @@ $bookingsJson = json_encode($bookings);
 
     // Initialize timeline on page load
     document.addEventListener('DOMContentLoaded', function() {
+        bindBookingModal();
         renderTimeline();
         setCurrentTimeLine();
 
     });
+
+    function bindBookingModal() {
+        const modal = document.getElementById('bookingModal');
+        const openBtn = document.getElementById('openBookingModalBtn');
+        const closeBtn = document.getElementById('closeBookingModalBtn');
+        const cancelBtn = document.getElementById('cancelBookingModalBtn');
+        const form = document.getElementById('adminBookingForm');
+        const errorBox = document.getElementById('bookingModalError');
+        const submitBtn = document.getElementById('submitAdminBookingBtn');
+
+        if(!modal || !openBtn || !form) return;
+
+        function openModal() {
+            modal.classList.add('open');
+            errorBox.style.display = 'none';
+            form.reset();
+            document.getElementById('adminBookingDate').value = SELECTED_DATE;
+            document.getElementById('adminBookingTime').value = '12:00';
+            requestAnimationFrame(() => {
+                document.getElementById('adminBookingName').focus();
+            });
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            errorBox.style.display = 'none';
+        }
+
+        openBtn.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) {
+                closeModal();
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const payload = {
+                name: document.getElementById('adminBookingName').value.trim(),
+                booking_date: document.getElementById('adminBookingDate').value,
+                start_time: document.getElementById('adminBookingTime').value,
+                number_of_guests: document.getElementById('adminBookingGuests').value,
+                special_request: document.getElementById('adminBookingNotes').value.trim(),
+            };
+
+            errorBox.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+
+            fetch('create-booking.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => {
+                const data = await response.json();
+                if(!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to create booking');
+                }
+                return data;
+            })
+            .then(data => {
+                if(data.booking.booking_date === SELECTED_DATE) {
+                    BOOKING_DATA.push(data.booking);
+                    renderTimeline();
+                }
+                closeModal();
+            })
+            .catch(error => {
+                errorBox.textContent = error.message;
+                errorBox.style.display = 'block';
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Booking';
+            });
+        });
+    }
 
     function bindAddTableButton() {
         const addTableBtn = document.getElementById('addTableBtn');
