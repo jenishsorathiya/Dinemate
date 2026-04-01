@@ -57,28 +57,72 @@ $bookingsJson = json_encode($bookings);
 
         /* SIDEBAR */
         .sidebar {
-            width: 260px;
+            width: 88px;
             background: #111827;
             color: white;
             padding: 20px;
             overflow-y: auto;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transition: width 0.25s ease;
+            overflow-x: hidden;
+            flex-shrink: 0;
+        }
+
+        .sidebar:hover {
+            width: 260px;
         }
 
         .sidebar h4 {
             color: #f4b400;
             margin-bottom: 30px;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            white-space: nowrap;
         }
 
         .sidebar a {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 12px 15px;
             color: #ddd;
             text-decoration: none;
             border-radius: 8px;
             margin-bottom: 8px;
-            transition: 0.3s;
+            transition: background 0.2s ease, color 0.2s ease, justify-content 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .sidebar:hover a {
+            justify-content: flex-start;
+        }
+
+        .sidebar h4 i,
+        .sidebar a i {
+            width: 24px;
+            min-width: 24px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .brand-label,
+        .nav-label {
+            opacity: 0;
+            max-width: 0;
+            overflow: hidden;
+            transition: opacity 0.2s ease, max-width 0.25s ease;
+        }
+
+        .sidebar:hover .brand-label,
+        .sidebar:hover .nav-label {
+            opacity: 1;
+            max-width: 180px;
+        }
+
+        .sidebar:not(:hover) h4 {
+            justify-content: center;
         }
 
         .sidebar a:hover,
@@ -496,21 +540,21 @@ $bookingsJson = json_encode($bookings);
 <div class="container-fluid">
     <!-- SIDEBAR -->
     <div class="sidebar">
-        <h4><i class="fa fa-utensils"></i> DineMate</h4>
+        <h4><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></h4>
         <a href="../dashboard.php">
-            <i class="fa fa-chart-line"></i> Dashboard
+            <i class="fa fa-chart-line"></i><span class="nav-label">Dashboard</span>
         </a>
         <a href="new-dashboard.php" class="active">
-            <i class="fa fa-calendar-days"></i> Timeline
+            <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
         </a>
         <a href="../menu-management.php">
-            <i class="fa fa-utensils"></i> Menu Management
+            <i class="fa fa-utensils"></i><span class="nav-label">Menu Management</span>
         </a>
         <a href="../manage-bookings.php">
-            <i class="fa fa-calendar-check"></i> Bookings
+            <i class="fa fa-calendar-check"></i><span class="nav-label">Bookings</span>
         </a>
         <a href="../../auth/logout.php">
-            <i class="fa fa-sign-out-alt"></i> Logout
+            <i class="fa fa-sign-out-alt"></i><span class="nav-label">Logout</span>
         </a>
     </div>
 
