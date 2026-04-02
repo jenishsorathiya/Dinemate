@@ -168,14 +168,16 @@ $bookingsJson = json_encode($bookings);
         .nav-label {
             opacity: 0;
             max-width: 0;
+            margin-left: 0;
             overflow: hidden;
-            transition: opacity 0.2s ease, max-width 0.25s ease;
+            transition: opacity 0.2s ease, max-width 0.25s ease, margin-left 0.25s ease;
         }
 
         .sidebar:hover .brand-label,
         .sidebar:hover .nav-label {
             opacity: 1;
             max-width: 180px;
+            margin-left: 12px;
         }
 
         .sidebar:not(:hover) h4 {
@@ -1173,16 +1175,16 @@ $bookingsJson = json_encode($bookings);
     <div class="sidebar">
         <h4><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></h4>
         <a href="../dashboard.php">
-            <i class="fa fa-chart-line"></i><span class="nav-label">Dashboard</span>
+            <i class="fa fa-chart-line"></i><span class="nav-label">Analytics</span>
         </a>
         <a href="new-dashboard.php" class="active">
             <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
         </a>
         <a href="../menu-management.php">
-            <i class="fa fa-utensils"></i><span class="nav-label">Menu Management</span>
+            <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>
         </a>
-        <a href="../manage-bookings.php">
-            <i class="fa fa-calendar-check"></i><span class="nav-label">Bookings</span>
+        <a href="../manage-users.php">
+            <i class="fa fa-users"></i><span class="nav-label">Users</span>
         </a>
         <a href="../../auth/logout.php">
             <i class="fa fa-sign-out-alt"></i><span class="nav-label">Logout</span>

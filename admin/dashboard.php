@@ -93,6 +93,11 @@ array_multisort($days, $totals);
             background: #f4f6f9;
             transition: 0.3s;
         }
+
+        .admin-layout {
+            display: flex;
+            height: 100vh;
+        }
         
         body.dark-mode {
             background: #111827;
@@ -101,15 +106,19 @@ array_multisort($days, $totals);
         
         /* SIDEBAR */
         .sidebar {
-            width: 260px;
-            height: 100vh;
-            position: fixed;
+            width: 88px;
             background: #111827;
             color: white;
-            padding: 25px;
-            left: 0;
-            top: 0;
-            z-index: 100;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex-shrink: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transition: width 0.25s ease;
+        }
+
+        .sidebar:hover {
+            width: 260px;
         }
         
         body.dark-mode .sidebar {
@@ -118,38 +127,75 @@ array_multisort($days, $totals);
         
         .sidebar h4 {
             color: #f4b400;
-            margin-bottom: 35px;
+            margin-bottom: 30px;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            white-space: nowrap;
         }
         
         .sidebar a {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 12px 15px;
             color: #ddd;
             text-decoration: none;
             border-radius: 8px;
             margin-bottom: 8px;
-            transition: 0.3s;
+            transition: background 0.2s ease, color 0.2s ease, justify-content 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .sidebar:hover a {
+            justify-content: flex-start;
         }
         
+        .sidebar h4 i,
         .sidebar a i {
-            margin-right: 10px;
             width: 24px;
+            min-width: 24px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .brand-label,
+        .nav-label {
+            opacity: 0;
+            max-width: 0;
+            margin-left: 0;
+            overflow: hidden;
+            transition: opacity 0.2s ease, max-width 0.25s ease, margin-left 0.25s ease;
+        }
+
+        .sidebar:hover .brand-label,
+        .sidebar:hover .nav-label {
+            opacity: 1;
+            max-width: 180px;
+            margin-left: 12px;
+        }
+
+        .sidebar:not(:hover) h4 {
+            justify-content: center;
         }
         
-        .sidebar a:hover {
-            background: #1f2937;
-            color: #f4b400;
-        }
-        
+        .sidebar a:hover,
         .sidebar a.active {
             background: #f4b400;
             color: #111827;
         }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
         
         /* TOPBAR */
         .topbar {
-            margin-left: 260px;
             height: 70px;
             background: white;
             display: flex;
@@ -157,11 +203,7 @@ array_multisort($days, $totals);
             justify-content: space-between;
             padding: 0 30px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            position: fixed;
-            right: 0;
-            left: 260px;
-            top: 0;
-            z-index: 99;
+            flex-shrink: 0;
         }
         
         body.dark-mode .topbar {
@@ -171,8 +213,9 @@ array_multisort($days, $totals);
         
         /* MAIN CONTENT */
         .main {
-            margin-left: 260px;
-            padding: 90px 30px 30px 30px;
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
         }
         
         /* STAT CARDS */
@@ -357,58 +400,55 @@ array_multisort($days, $totals);
 </head>
 <body>
 
+<div class="admin-layout">
+
 <!-- SIDEBAR -->
 <div class="sidebar">
-    <h4><i class="fa fa-utensils"></i> DineMate</h4>
+    <h4><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></h4>
     <a href="dashboard.php" class="active">
-        <i class="fa fa-chart-line"></i> Dashboard
+        <i class="fa fa-chart-line"></i><span class="nav-label">Analytics</span>
     </a>
     <a href="timeline/new-dashboard.php">
-        <i class="fa fa-calendar-days"></i> Timeline
+        <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
     </a>
     <a href="menu-management.php">
-        <i class="fa fa-utensils"></i> Menu Management
-    </a>
-    <a href="manage-bookings.php">
-        <i class="fa fa-calendar-check"></i> Bookings
-    </a>
-    <a href="manage-tables.php">
-        <i class="fa fa-chair"></i> Tables
+        <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>
     </a>
     <a href="manage-users.php">
-        <i class="fa fa-users"></i> Users
+        <i class="fa fa-users"></i><span class="nav-label">Users</span>
     </a>
     <a href="../auth/logout.php">
-        <i class="fa fa-sign-out-alt"></i> Logout
+        <i class="fa fa-sign-out-alt"></i><span class="nav-label">Logout</span>
     </a>
 </div>
 
-<!-- TOPBAR -->
-<div class="topbar">
-    <div class="welcome-section">
-        <h5 class="mb-0">Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>!</h5>
-        <small><?= date('l, F j, Y') ?></small>
-    </div>
-    <div>
-        <button onclick="toggleDarkMode()" class="dark-mode-toggle">
-            <i class="fa fa-moon"></i>
-        </button>
-        <span class="ms-3 position-relative">
-            <i class="fa fa-bell"></i>
-            <?php if($todayBookings > 0): ?>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                <?= $todayBookings ?>
+<div class="main-content">
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="welcome-section">
+            <h5 class="mb-0">Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>!</h5>
+            <small><?= date('l, F j, Y') ?></small>
+        </div>
+        <div>
+            <button onclick="toggleDarkMode()" class="dark-mode-toggle">
+                <i class="fa fa-moon"></i>
+            </button>
+            <span class="ms-3 position-relative">
+                <i class="fa fa-bell"></i>
+                <?php if($todayBookings > 0): ?>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    <?= $todayBookings ?>
+                </span>
+                <?php endif; ?>
             </span>
-            <?php endif; ?>
-        </span>
-        <span class="ms-3">
-            <i class="fa fa-user-circle"></i> <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>
-        </span>
+            <span class="ms-3">
+                <i class="fa fa-user-circle"></i> <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>
+            </span>
+        </div>
     </div>
-</div>
 
-<!-- MAIN CONTENT -->
-<div class="main">
+    <!-- MAIN CONTENT -->
+    <div class="main">
     
     <!-- STATS CARDS -->
     <div class="row g-4 mb-4">
@@ -494,6 +534,8 @@ array_multisort($days, $totals);
             </div>
         </div>
     </div>
+    </div>
+</div>
 </div>
 
 <script>
