@@ -330,8 +330,11 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             flex-direction: column;
             gap: 0;
             margin-bottom: 14px;
-            padding: 10px 6px 12px 6px;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 14px;
+            border: 1px solid #e6ebf2;
+            border-radius: 14px;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
         }
 
         .timeline-date-card {
@@ -408,19 +411,23 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             display: flex;
             flex: 1;
             overflow: hidden;
-            padding-top: 12px;
+            gap: 16px;
+            padding: 16px;
+            min-height: 0;
         }
 
         /* LEFT PANEL - CALENDAR & TABLES */
         .left-panel {
             width: 260px;
             background: white;
-            border-top: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
+            border: 1px solid #e6ebf2;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             position: relative;
+            flex-shrink: 0;
         }
 
         .booking-list {
@@ -428,6 +435,16 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             overflow-y: auto;
             flex: 1;
             min-height: 0;
+        }
+
+        .booking-list-empty {
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.5;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            color: #6b7280;
+            letter-spacing: 0.01em;
         }
 
         .booking-list-tabs {
@@ -556,7 +573,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         }
 
         .tables-section {
-            padding: 0 16px 16px 16px;
+            padding: 16px 16px 16px 16px;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -656,7 +673,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             margin-top: auto;
             padding-top: 8px;
             border-top: 1px solid #e5e7eb;
-            background: white;
+            background: #ffffff;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -997,7 +1014,10 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             flex-direction: column;
             overflow: hidden;
             background: white;
-            border-top: 1px solid #e5e7eb;
+            border: 1px solid #e6ebf2;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            min-width: 0;
         }
 
         .timeline-scroll-wrapper {
@@ -1984,7 +2004,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             : 'No assigned bookings for this date.';
 
         if(visibleBookings.length === 0) {
-            bookingList.innerHTML = `<p>${emptyMessage}</p>`;
+            bookingList.innerHTML = `<p class="booking-list-empty">${emptyMessage}</p>`;
             return;
         }
 
