@@ -75,6 +75,11 @@ for($i = 6; $i >= 0; $i--) {
 }
 // Sort by date
 array_multisort($days, $totals);
+
+$adminPageTitle = 'Analytics';
+$adminPageIcon = 'fa-chart-line';
+$adminNotificationCount = (int) $todayBookings;
+$adminProfileName = $_SESSION['name'] ?? 'Admin';
 ?>
 
 <!DOCTYPE html>
@@ -196,7 +201,7 @@ array_multisort($days, $totals);
         
         /* TOPBAR */
         .topbar {
-            height: 70px;
+            min-height: 78px;
             background: white;
             display: flex;
             align-items: center;
@@ -204,11 +209,138 @@ array_multisort($days, $totals);
             padding: 0 30px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
             flex-shrink: 0;
+            gap: 20px;
+        }
+
+        .topbar-left,
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-left {
+            min-width: 0;
+        }
+
+        .topbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #f4b400;
+            font-size: 28px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .topbar-brand-label {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .topbar-page {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            color: #111827;
+        }
+
+        .topbar-page i {
+            color: #111827;
+            font-size: 20px;
+        }
+
+        .topbar-page-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+            white-space: nowrap;
+        }
+
+        .topbar-right {
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .topbar-icon-button {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 14px;
+            background: #f9fafb;
+            color: #111827;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .topbar-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .topbar-profile {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px 6px 6px;
+            border-radius: 16px;
+            background: #f9fafb;
+        }
+
+        .topbar-profile-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            background: #111827;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .topbar-profile-name {
+            color: #374151;
+            font-weight: 600;
         }
         
         body.dark-mode .topbar {
             background: #1f2937;
             color: white;
+        }
+
+        body.dark-mode .topbar-page,
+        body.dark-mode .topbar-page-title,
+        body.dark-mode .topbar-page i,
+        body.dark-mode .topbar-profile-name {
+            color: white;
+        }
+
+        body.dark-mode .topbar-icon-button,
+        body.dark-mode .topbar-profile {
+            background: #111827;
+            color: white;
+        }
+
+        body.dark-mode .topbar-profile-icon {
+            background: #f4b400;
+            color: #111827;
         }
         
         /* MAIN CONTENT */
@@ -383,18 +515,22 @@ array_multisort($days, $totals);
             color: white;
         }
         
-        /* WELCOME SECTION */
-        .welcome-section {
-            margin-bottom: 30px;
-        }
-        
-        .welcome-section h2 {
-            font-size: 24px;
-            font-weight: 600;
-        }
-        
-        body.dark-mode .welcome-section p {
-            color: #9ca3af;
+        @media (max-width: 992px) {
+            .topbar {
+                padding: 16px 20px;
+                flex-wrap: wrap;
+                height: auto;
+            }
+
+            .topbar-left,
+            .topbar-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .topbar-page-title {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
@@ -423,29 +559,7 @@ array_multisort($days, $totals);
 </div>
 
 <div class="main-content">
-    <!-- TOPBAR -->
-    <div class="topbar">
-        <div class="welcome-section">
-            <h5 class="mb-0">Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>!</h5>
-            <small><?= date('l, F j, Y') ?></small>
-        </div>
-        <div>
-            <button onclick="toggleDarkMode()" class="dark-mode-toggle">
-                <i class="fa fa-moon"></i>
-            </button>
-            <span class="ms-3 position-relative">
-                <i class="fa fa-bell"></i>
-                <?php if($todayBookings > 0): ?>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    <?= $todayBookings ?>
-                </span>
-                <?php endif; ?>
-            </span>
-            <span class="ms-3">
-                <i class="fa fa-user-circle"></i> <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>
-            </span>
-        </div>
-    </div>
+    <?php include __DIR__ . '/admin-topbar.php'; ?>
 
     <!-- MAIN CONTENT -->
     <div class="main">

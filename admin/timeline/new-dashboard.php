@@ -20,6 +20,9 @@ $selectedDate = $_GET['date'] ?? date('Y-m-d');
 $selectedDayName = date('l', strtotime($selectedDate));
 $isCurrentDate = ($selectedDate === date('Y-m-d'));
 $selectedDayLabel = $isCurrentDate ? 'Today' : $selectedDayName;
+$selectedDateDisplay = date('j F, Y', strtotime($selectedDate));
+$selectedYearDisplay = date('Y', strtotime($selectedDate));
+$selectedShortDateDisplay = date('D, M d', strtotime($selectedDate));
 
 // Get bookings for selected date
 $stmt = $pdo->prepare("
@@ -81,6 +84,11 @@ unset($booking);
 
 // Convert bookings to JS array
 $bookingsJson = json_encode($bookings);
+
+$adminPageTitle = 'Timeline';
+$adminPageIcon = 'fa-calendar-days';
+$adminNotificationCount = (int) $bookingStats['total_bookings'];
+$adminProfileName = $_SESSION['name'] ?? 'Admin';
 ?>
 
 <!DOCTYPE html>
@@ -112,7 +120,6 @@ $bookingsJson = json_encode($bookings);
             height: 100vh;
         }
 
-        /* SIDEBAR */
         .sidebar {
             width: 88px;
             background: #111827;
@@ -190,7 +197,6 @@ $bookingsJson = json_encode($bookings);
             color: #111827;
         }
 
-        /* MAIN CONTENT */
         .main-content {
             flex: 1;
             display: flex;
@@ -198,10 +204,10 @@ $bookingsJson = json_encode($bookings);
             overflow: hidden;
         }
 
-        /* HEADER */
-        .header {
+        .topbar {
             background: white;
-            padding: 20px 30px;
+            min-height: 78px;
+            padding: 0 30px;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
@@ -210,66 +216,191 @@ $bookingsJson = json_encode($bookings);
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .header h2 {
-            margin: 0;
-            font-weight: 600;
-            color: #1f2937;
+        .topbar-left,
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
-        .header-title,
-        .header-actions-spacer {
-            flex: 1 1 0;
+        .topbar-left {
             min-width: 0;
         }
 
-        .header-actions-spacer {
-            display: block;
-        }
-
-        .header-center-controls {
-            flex: 0 1 auto;
-            display: flex;
-            flex-direction: row;
+        .topbar-brand {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
-            min-width: 0;
-            padding: 8px 14px;
-            border: 1px solid #e5e7eb;
-            border-radius: 999px;
-            background: #f9fafb;
-        }
-
-        .calendar-nav {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 0;
-        }
-
-        .calendar-nav button,
-        .today-button {
-            background: #f4b400;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
+            gap: 10px;
+            color: #f4b400;
+            font-size: 28px;
+            font-weight: 700;
             white-space: nowrap;
         }
 
-        .calendar-nav button:hover,
-        .today-button:hover {
-            background: #e0a800;
-        }
-
-        .calendar-nav button {
-            width: 38px;
-            min-width: 38px;
-            padding: 8px 0;
+        .topbar-brand-label {
             font-size: 18px;
             line-height: 1;
+        }
+
+        .topbar-page {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            color: #111827;
+        }
+
+        .topbar-page i {
+            color: #111827;
+            font-size: 20px;
+        }
+
+        .topbar-page-title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            white-space: nowrap;
+        }
+
+        .topbar-right {
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .topbar-icon-button {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 14px;
+            background: #f9fafb;
+            color: #111827;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .topbar-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .topbar-profile {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px 6px 6px;
+            border-radius: 16px;
+            background: #f9fafb;
+        }
+
+        .topbar-profile-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            background: #111827;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .topbar-profile-name {
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .timeline-panel-tools {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 14px;
+            padding: 10px 6px 12px 6px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .timeline-date-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-areas:
+                'year action'
+                'date nav';
+            gap: 4px 14px;
+            align-items: end;
+        }
+
+        .timeline-date-year {
+            grid-area: year;
+            color: #6b7280;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0;
+            min-width: 0;
+        }
+
+        .timeline-date-primary {
+            grid-area: date;
+            color: #1f2937;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .timeline-date-nav-row {
+            grid-area: nav;
+            display: inline-flex;
+            align-items: center;
+            justify-self: end;
+            gap: 8px;
+        }
+
+        .timeline-date-nav,
+        .timeline-date-picker-trigger {
+            border: none;
+            background: transparent;
+            color: #374151;
+            width: 14px;
+            min-width: 14px;
+            height: 14px;
+            padding: 0;
+            font-size: 13px;
+            line-height: 1;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .timeline-date-picker-trigger i {
+            font-size: 13px;
+            line-height: 1;
+        }
+
+        .timeline-date-nav:hover,
+        .timeline-date-picker-trigger:hover {
+            color: #111827;
+        }
+
+        .calendar {
+            display: none;
         }
 
         /* CONTENT AREA */
@@ -277,24 +408,26 @@ $bookingsJson = json_encode($bookings);
             display: flex;
             flex: 1;
             overflow: hidden;
+            padding-top: 12px;
         }
 
         /* LEFT PANEL - CALENDAR & TABLES */
         .left-panel {
             width: 260px;
             background: white;
+            border-top: 1px solid #e5e7eb;
             border-right: 1px solid #e5e7eb;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow: hidden;
             position: relative;
         }
 
         .booking-list {
-            padding: 15px;
+            padding: 12px 14px;
             overflow-y: auto;
-            max-height: calc(100vh - 265px);
             flex: 1;
+            min-height: 0;
         }
 
         .booking-list-tabs {
@@ -423,26 +556,27 @@ $bookingsJson = json_encode($bookings);
         }
 
         .tables-section {
-            padding: 20px;
+            padding: 0 16px 16px 16px;
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
 
         .add-booking-button {
             width: 100%;
-            margin-top: auto;
             border: none;
             border-radius: 12px;
             background: #111827;
             color: #fff;
-            padding: 14px 16px;
+            padding: 9px 12px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 6px;
             transition: background 0.2s ease, transform 0.2s ease;
+            font-size: 12px;
         }
 
         .add-booking-button:hover {
@@ -451,52 +585,81 @@ $bookingsJson = json_encode($bookings);
         }
 
         .stats-card {
-            margin-top: 16px;
-            padding: 16px;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            margin-top: 12px;
+            padding: 0;
+            border: 1px solid #e6ebf2;
+            border-radius: 14px;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+            overflow: hidden;
         }
 
         .stats-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 0;
         }
 
         .stats-item {
             display: flex;
-            flex-direction: column;
-            gap: 2px;
+            align-items: center;
+            gap: 8px;
             padding: 10px 12px;
-            border-radius: 12px;
             background: #ffffff;
-            border: 1px solid #eef2f7;
+            border-bottom: 1px solid #e8edf4;
+        }
+
+        .stats-item:last-child {
+            border-bottom: none;
         }
 
         .stats-item-label {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 700;
-            color: #6b7280;
+            color: #7a8597;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
+            width: 52px;
+            flex-shrink: 0;
         }
 
         .stats-item-value {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            font-size: 14px;
+            gap: 8px;
+            font-size: 12px;
             font-weight: 700;
             color: #111827;
-            line-height: 1.35;
+            line-height: 1.2;
+            flex: 1;
+            min-width: 0;
         }
 
         .stats-item-bookings,
         .stats-item-people {
             white-space: nowrap;
+        }
+
+        .stats-item-bookings {
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stats-item-people {
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .left-panel-footer {
+            margin-top: auto;
+            padding-top: 8px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .modal-backdrop-custom {
@@ -724,56 +887,69 @@ $bookingsJson = json_encode($bookings);
             background: #1d4ed8;
         }
 
-        .header-day-label {
-            font-weight: 600;
-            margin: 0;
-            color: #1f2937;
-            font-size: 15px;
-            white-space: nowrap;
-        }
-
-        .calendar {
-            flex: 1;
-        }
-
         .calendar input {
             width: 100%;
-            padding: 8px;
+            padding: 7px 10px;
             border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            background: white;
         }
 
         .today-button {
+            grid-area: action;
+            justify-self: end;
+            align-self: end;
+            border: none;
+            background: transparent;
             width: auto;
             min-width: 0;
-            padding: 8px 12px;
-            font-size: 14px;
+            padding: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .today-button.is-hidden {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .today-button:hover {
+            color: #111827;
         }
 
         @media (max-width: 1100px) {
-            .header {
+            .topbar {
                 flex-wrap: wrap;
             }
 
-            .header-title,
-            .header-actions-spacer,
-            .header-center-controls {
+            .topbar-left,
+            .topbar-right {
                 flex: 1 1 100%;
             }
 
-            .header-title,
-            .header-center-controls {
-                align-items: flex-start;
+            .topbar-left,
+            .topbar-right {
+                justify-content: space-between;
             }
 
-            .header-center-controls {
-                flex-wrap: wrap;
-                border-radius: 18px;
+            .timeline-date-card {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    'year'
+                    'date'
+                    'action'
+                    'nav';
+                gap: 6px;
             }
 
-            .header-actions-spacer {
-                display: none;
+            .today-button,
+            .timeline-date-nav-row {
+                justify-self: start;
             }
         }
 
@@ -821,6 +997,7 @@ $bookingsJson = json_encode($bookings);
             flex-direction: column;
             overflow: hidden;
             background: white;
+            border-top: 1px solid #e5e7eb;
         }
 
         .timeline-scroll-wrapper {
@@ -1193,24 +1370,7 @@ $bookingsJson = json_encode($bookings);
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
-        <!-- HEADER -->
-        <div class="header">
-            <div class="header-title">
-                <h2><i class="fa fa-calendar-days"></i> Booking Timeline</h2>
-            </div>
-            <div class="header-center-controls">
-                <h6 class="header-day-label" id="headerDayLabel"><?php echo htmlspecialchars($selectedDayLabel); ?></h6>
-                <div class="calendar-nav">
-                    <button type="button" onclick="previousDay()" aria-label="Previous day">&lt;</button>
-                    <div class="calendar">
-                        <input type="date" id="dateInput" value="<?php echo $selectedDate; ?>" onchange="changeDate()">
-                    </div>
-                    <button type="button" onclick="nextDay()" aria-label="Next day">&gt;</button>
-                </div>
-                <button type="button" class="today-button" id="todayButton" onclick="todayDate()"<?php echo $isCurrentDate ? ' style="display:none;"' : ''; ?>>Switch to Current Date</button>
-            </div>
-            <div class="header-actions-spacer" aria-hidden="true"></div>
-        </div>
+        <?php include __DIR__ . '/../admin-topbar.php'; ?>
 
         <!-- CONTENT -->
         <div class="content">
@@ -1218,31 +1378,48 @@ $bookingsJson = json_encode($bookings);
             <div class="left-panel">
                 <!-- BOOKINGS LIST -->
                 <div class="tables-section">
+                    <div class="timeline-panel-tools">
+                        <div class="timeline-date-card">
+                            <div class="timeline-date-year" id="timelineDateYear"><?php echo htmlspecialchars($selectedYearDisplay); ?></div>
+                            <div class="timeline-date-primary" id="timelineDatePrimary"><?php echo htmlspecialchars($selectedShortDateDisplay); ?></div>
+                            <button type="button" class="today-button<?php echo $isCurrentDate ? ' is-hidden' : ''; ?>" id="todayButton" onclick="todayDate()">View Today</button>
+                            <div class="timeline-date-nav-row">
+                                <button type="button" class="timeline-date-nav" onclick="previousDay()" aria-label="Previous day"><i class="fa fa-chevron-left"></i></button>
+                                <button type="button" class="timeline-date-picker-trigger" onclick="openTimelineDatePicker()" aria-label="Select date"><i class="fa fa-calendar-alt"></i></button>
+                                <button type="button" class="timeline-date-nav" onclick="nextDay()" aria-label="Next day"><i class="fa fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="calendar">
+                            <input type="date" id="dateInput" value="<?php echo $selectedDate; ?>" onchange="changeDate()">
+                        </div>
+                    </div>
                     <div class="booking-list-tabs">
                         <button type="button" class="booking-list-tab active" id="standbyTabBtn" onclick="switchBookingListTab('standby')">Standby</button>
                         <button type="button" class="booking-list-tab" id="bookingsTabBtn" onclick="switchBookingListTab('bookings')">Bookings</button>
                     </div>
                     <div class="booking-list" id="bookingList"></div>
-                    <div class="stats-card">
-                        <div class="stats-list">
-                            <div class="stats-item">
-                                <span class="stats-item-label">Total</span>
-                                <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['total_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['total_people']; ?></span></span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="stats-item-label">Lunch</span>
-                                <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['lunch_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['lunch_people']; ?></span></span>
-                            </div>
-                            <div class="stats-item">
-                                <span class="stats-item-label">Dinner</span>
-                                <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['dinner_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['dinner_people']; ?></span></span>
+                    <div class="left-panel-footer">
+                        <div class="stats-card">
+                            <div class="stats-list">
+                                <div class="stats-item">
+                                    <span class="stats-item-label">Total</span>
+                                    <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['total_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['total_people']; ?></span></span>
+                                </div>
+                                <div class="stats-item">
+                                    <span class="stats-item-label">Lunch</span>
+                                    <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['lunch_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['lunch_people']; ?></span></span>
+                                </div>
+                                <div class="stats-item">
+                                    <span class="stats-item-label">Dinner</span>
+                                    <span class="stats-item-value"><span class="stats-item-bookings"><?php echo $bookingStats['dinner_bookings']; ?> Bookings</span><span class="stats-item-people">P<?php echo $bookingStats['dinner_people']; ?></span></span>
+                                </div>
                             </div>
                         </div>
+                        <button type="button" class="add-booking-button" id="openBookingModalBtn">
+                            <i class="fa fa-plus"></i>
+                            Add a Booking
+                        </button>
                     </div>
-                    <button type="button" class="add-booking-button" id="openBookingModalBtn">
-                        <i class="fa fa-plus"></i>
-                        Add a Booking
-                    </button>
                 </div>
             </div>
 
@@ -2418,20 +2595,44 @@ $bookingsJson = json_encode($bookings);
     function getDayLabel(dateString) {
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const date = parseLocalDate(dateString);
-        const today = formatLocalDate(new Date());
-        return dateString === today ? 'Today' : dayNames[date.getDay()];
+        return dayNames[date.getDay()];
+    }
+
+    function formatShortDisplayDate(dateString) {
+        const date = parseLocalDate(dateString);
+        const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${weekdayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function openTimelineDatePicker() {
+        const dateInput = document.getElementById('dateInput');
+        if(!dateInput) return;
+
+        if(typeof dateInput.showPicker === 'function') {
+            dateInput.showPicker();
+            return;
+        }
+
+        dateInput.focus();
+        dateInput.click();
     }
 
     function syncCurrentDateState() {
-        const headerDayLabel = document.getElementById('headerDayLabel');
+        const timelineDateYear = document.getElementById('timelineDateYear');
+        const timelineDatePrimary = document.getElementById('timelineDatePrimary');
         const todayButton = document.getElementById('todayButton');
 
-        if (headerDayLabel) {
-            headerDayLabel.textContent = getDayLabel(SELECTED_DATE);
+        if (timelineDateYear) {
+            timelineDateYear.textContent = parseLocalDate(SELECTED_DATE).getFullYear();
+        }
+
+        if (timelineDatePrimary) {
+            timelineDatePrimary.textContent = formatShortDisplayDate(SELECTED_DATE);
         }
 
         if (todayButton) {
-            todayButton.style.display = SELECTED_DATE === formatLocalDate(new Date()) ? 'none' : '';
+            todayButton.classList.toggle('is-hidden', SELECTED_DATE === formatLocalDate(new Date()));
         }
     }
 
