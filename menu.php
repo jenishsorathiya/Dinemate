@@ -84,7 +84,7 @@ include 'includes/footer.php';
     max-width: 1200px;
     margin: 0 auto;
     padding: 40px 20px;
-    background-color: #f5f5f5;
+    background-color: transparent;
 }
 
 .menu-header {
@@ -151,10 +151,11 @@ include 'includes/footer.php';
 
 .menu-card {
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e7ecf3;
+    border-radius: 18px;
+    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
     transition: all 0.3s ease;
-    border-left: 4px solid #d4af37;
+    border-left: 1px solid #e7ecf3;
     overflow: hidden;
 }
 
@@ -240,9 +241,9 @@ include 'includes/footer.php';
 .side-item {
     background: white;
     padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-left: 4px solid #d4af37;
+    border: 1px solid #e7ecf3;
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(15,23,42,0.06);
 }
 
 .side-item h4 {

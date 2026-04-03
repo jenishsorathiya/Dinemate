@@ -1,0 +1,89 @@
+Use a modern minimal SaaS dashboard style across the whole website.
+
+Design direction:
+- clean, soft, professional, premium, and highly readable
+- similar to modern booking dashboards / admin panels
+- not flashy, not overly decorative, not heavy gradients
+- focus on clarity, spacing, and hierarchy
+- use a neutral light background with white cards and subtle borders/shadows
+
+Typography:
+- use Inter as the main font everywhere
+- fallback: sans-serif
+- page titles should be bold and clear
+- section headings should be semibold
+- body text should be clean and readable
+- small labels should use uppercase with slight letter spacing for a dashboard feel
+
+Typography scale:
+- page title: 28px, 700
+- section title: 20px, 600
+- card title: 16px, 600
+- body text: 14px to 16px, 400 to 500
+- small labels / meta text: 12px, uppercase, letter spacing
+
+Color style:
+- main page background: very light grey / off-white
+- cards and panels: white
+- primary text: dark navy / near-black
+- secondary text: muted grey
+- borders: very soft light grey
+- use soft functional accent colors for statuses only
+
+Status colors:
+- pending: soft orange background with darker orange text
+- confirmed: soft green background with darker green text
+- standby / unassigned: soft yellow background with darker yellow-brown text
+- conflicts / errors: soft red or pink background with darker red text
+- info / neutral badges: light grey background with dark grey text
+
+Cards / boxes:
+- all main sections should be inside rounded white cards
+- border radius should be soft and modern, around 14px to 18px
+- use subtle borders and light shadows
+- avoid harsh outlines
+- cards should have generous padding and breathing room
+- every major section should feel like a separate modular card
+
+Buttons:
+- rounded corners
+- clear visual hierarchy
+- primary buttons should use dark navy / near-black background with white text
+- secondary buttons should be white or light grey with dark text and soft border
+- warning / action buttons like assign should use soft yellow styling
+- danger buttons like reject / cancel should use soft red styling
+- buttons should feel modern and clean, not glossy
+
+Spacing and layout:
+- use a spacious grid layout
+- keep consistent gaps between cards and sections
+- card padding around 18px to 24px
+- section gaps around 24px to 32px
+- keep alignment neat and consistent
+- use whitespace to make the UI feel premium
+
+Tables and list items:
+- use clean rows with soft separators
+- keep rows compact but not cramped
+- use badges/chips for statuses
+- action buttons should align cleanly to the right
+- text hierarchy should make guest name, time, and party size easy to scan quickly
+
+Inputs and forms:
+- modern rounded inputs
+- light borders
+- white background
+- clear label above each field
+- generous padding inside inputs
+- compact and consistent sizing
+- focus states should be subtle and polished
+
+Overall visual language:
+- soft rounded cards
+- subtle elevation
+- calm neutral background
+- strong typography hierarchy
+- minimal but polished
+- professional booking/product dashboard feel
+- consistent across public pages, customer pages, and admin pages
+

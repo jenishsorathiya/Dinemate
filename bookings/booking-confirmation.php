@@ -66,9 +66,10 @@ margin-bottom:80px;
 
 .confirm-card{
 background:white;
-border-radius:18px;
-padding:40px;
-box-shadow:0 25px 60px rgba(0,0,0,0.08);
+border:1px solid #e7ecf3;
+border-radius:20px;
+padding:36px;
+box-shadow:0 18px 42px rgba(15,23,42,0.08);
 text-align:center;
 max-width:700px;
 margin:auto;
@@ -91,8 +92,9 @@ animation:pop 0.6s ease;
 /* Reservation ticket */
 
 .ticket{
-background:#f8f9fa;
-border-radius:12px;
+background:#f8fafc;
+border:1px solid #e7ecf3;
+border-radius:16px;
 padding:20px;
 margin-top:25px;
 display:flex;
@@ -113,23 +115,25 @@ font-size:15px;
 .qr-box{
 padding:10px;
 background:white;
-border-radius:10px;
-box-shadow:0 5px 15px rgba(0,0,0,0.1);
+border:1px solid #e7ecf3;
+border-radius:14px;
+box-shadow:0 10px 24px rgba(15,23,42,0.06);
 }
 
 /* Button */
 
 .btn-bookings{
-background:#f4b400;
-border:none;
+background:#1d2840;
+border:1px solid #1d2840;
+color:#ffffff;
 padding:14px;
-border-radius:40px;
+border-radius:12px;
 font-weight:600;
 margin-top:25px;
 }
 
 .btn-bookings:hover{
-background:#e0a800;
+background:#141d31;
 }
 
 </style>

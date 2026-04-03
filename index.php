@@ -6,7 +6,7 @@
 <style>
 
 body{
-font-family:'Poppins',sans-serif;
+font-family:'Inter',sans-serif;
 background:#f8f9fa;
 margin:0;
 }
@@ -32,7 +32,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:linear-gradient(120deg,rgba(0,0,0,0.7),rgba(0,0,0,0.3));
+background:linear-gradient(120deg,rgba(18,32,51,0.76),rgba(18,32,51,0.42));
 }
 
 .hero-content{
@@ -132,8 +132,9 @@ font-size:15px;
 .feature-card{
 background:white;
 padding:30px;
-border-radius:14px;
-box-shadow:0 10px 30px rgba(0,0,0,0.1);
+border:1px solid #e7ecf3;
+border-radius:18px;
+box-shadow:0 16px 36px rgba(15,23,42,0.06);
 text-align:center;
 transition:0.3s;
 }
@@ -153,8 +154,9 @@ margin-bottom:15px;
 .about-box{
 background:white;
 padding:100px;
-border-radius:14px;
-box-shadow:0 10px 30px rgba(0,0,0,0.1);
+border:1px solid #e7ecf3;
+border-radius:18px;
+box-shadow:0 16px 36px rgba(15,23,42,0.06);
 }
 
 /* TABLE AVAILABILITY */
@@ -167,10 +169,11 @@ gap:20px;
 
 .table-card{
 background:white;
-border-radius:14px;
+border:1px solid #e7ecf3;
+border-radius:18px;
 padding:25px;
 text-align:center;
-box-shadow:0 15px 30px rgba(0,0,0,0.1);
+box-shadow:0 16px 36px rgba(15,23,42,0.06);
 transition:0.3s;
 }
 
@@ -190,10 +193,11 @@ margin-bottom:10px;
 
 .review-card{
 background:white;
-border-radius:14px;
+border:1px solid #e7ecf3;
+border-radius:18px;
 padding:30px;
 text-align:center;
-box-shadow:0 10px 25px rgba(0,0,0,0.1);
+box-shadow:0 16px 36px rgba(15,23,42,0.06);
 }
 
 .review-img{

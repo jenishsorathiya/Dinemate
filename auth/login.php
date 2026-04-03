@@ -8,19 +8,14 @@ session_start();
 <title>DineMate | Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="../assets/css/dashboard-theme.css" rel="stylesheet">
 
 <style>
 body {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(-45deg, #f4d58d, #f6f1e9, #e9edc9, #f4b400);
-    background-size: 400% 400%;
-    animation: gradientBG 12s ease infinite;
-}
-@keyframes gradientBG {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
+    font-family: 'Inter', sans-serif;
+    background: #f5f7fb;
 }
 
 .auth-wrapper {
@@ -28,30 +23,34 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 28px;
 }
 .auth-box {
     width: 100%;
-    max-width: 1000px;
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(15px);
-    border-radius: 25px;
+    max-width: 1080px;
+    background: #ffffff;
+    border: 1px solid #e7ecf3;
+    border-radius: 20px;
     display: flex;
     overflow: hidden;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
-}
-
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(20px);}
-    to {opacity:1; transform:translateY(0);}
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
 }
 
 .auth-left {
     flex: 1;
-    padding: 50px;
+    padding: 56px;
 }
 
 .auth-left h2 {
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 700;
+    color: #162033;
+    margin-bottom: 10px;
+}
+
+.auth-left p,
+.auth-left .text-muted {
+    color: #69758b !important;
 }
 
 .auth-right {
@@ -63,7 +62,7 @@ body {
 .auth-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: linear-gradient(180deg, rgba(22, 32, 51, 0.22), rgba(22, 32, 51, 0.62));
 }
 
 .auth-right-content {
@@ -73,21 +72,23 @@ body {
     color: white;
 }
 .form-control {
-    border-radius: 50px;
-    padding: 12px 20px;
+    border-radius: 12px;
+    padding: 13px 14px;
 }
 .btn-main {
-    background: #f4b400;
-    border: none;
-    border-radius: 50px;
+    background: #1d2840;
+    border: 1px solid #1d2840;
+    border-radius: 12px;
     padding: 12px;
     font-weight: 600;
-    transition: 0.3s;
+    color: #ffffff;
+    transition: 0.18s ease;
 }
 
 .btn-main:hover {
-    background: #d39e00;
-    transform: scale(1.03);
+    background: #141d31;
+    border-color: #141d31;
+    transform: translateY(-1px);
 }
 
 .password-wrapper {
@@ -121,9 +122,9 @@ body {
 }
 
 .social-btn {
-   border-radius: 50px;
-    border: 1px solid #ccc;
-    padding: 10px;
+    border-radius: 12px;
+     border: 1px solid #d9e1ec;
+     padding: 10px 12px;
     background: white;
     transition: 0.3s;
     font-weight: 500;
@@ -134,8 +135,22 @@ body {
 }
 
 .social-btn:hover {
-    background: #f5f5f5;
+    background: #f8fafc;
     transform: translateY(-2px);
+}
+
+@media (max-width: 991px) {
+    .auth-box {
+        flex-direction: column;
+    }
+
+    .auth-right {
+        min-height: 240px;
+    }
+
+    .auth-left {
+        padding: 28px;
+    }
 }
 
 </style>

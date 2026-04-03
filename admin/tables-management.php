@@ -48,6 +48,8 @@ $adminPageTitle = 'Tables Management';
 $adminPageIcon = 'fa-chair';
 $adminNotificationCount = $bookedTablesToday;
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
+$adminSidebarActive = 'tables';
+$adminSidebarPathPrefix = '';
 ?>
 <!DOCTYPE html>
 <html>
@@ -56,83 +58,18 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DineMate - Tables Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/dashboard-theme.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: #f5f7fb;
         }
         .admin-layout {
             display: flex;
             min-height: 100vh;
-        }
-        .sidebar {
-            width: 88px;
-            background: #111827;
-            color: white;
-            padding: 20px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            flex-shrink: 0;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            transition: width 0.25s ease;
-        }
-        .sidebar:hover {
-            width: 260px;
-        }
-        .sidebar h4 {
-            color: #f4b400;
-            margin-bottom: 30px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            white-space: nowrap;
-        }
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 15px;
-            color: #ddd;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: background 0.2s ease, color 0.2s ease, justify-content 0.2s ease;
-            white-space: nowrap;
-        }
-        .sidebar:hover a {
-            justify-content: flex-start;
-        }
-        .sidebar h4 i,
-        .sidebar a i {
-            width: 24px;
-            min-width: 24px;
-            text-align: center;
-            font-size: 20px;
-        }
-        .brand-label,
-        .nav-label {
-            opacity: 0;
-            max-width: 0;
-            margin-left: 0;
-            overflow: hidden;
-            transition: opacity 0.2s ease, max-width 0.25s ease, margin-left 0.25s ease;
-        }
-        .sidebar:hover .brand-label,
-        .sidebar:hover .nav-label {
-            opacity: 1;
-            max-width: 180px;
-            margin-left: 12px;
-        }
-        .sidebar:not(:hover) h4 {
-            justify-content: center;
-        }
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: #f4b400;
-            color: #111827;
         }
         .main-content {
             flex: 1;
@@ -152,8 +89,9 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         .stat-card,
         .area-card {
             background: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e7ecf3;
+            border-radius: 18px;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
         }
         .hero-card {
             padding: 28px;
@@ -266,30 +204,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 </head>
 <body>
 <div class="admin-layout">
-    <div class="sidebar">
-        <h4><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></h4>
-        <a href="dashboard.php">
-            <i class="fa fa-chart-line"></i><span class="nav-label">Analytics</span>
-        </a>
-        <a href="timeline/new-dashboard.php">
-            <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
-        </a>
-        <a href="bookings-management.php">
-            <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
-        </a>
-        <a href="tables-management.php" class="active">
-            <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
-        </a>
-        <a href="menu-management.php">
-            <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>
-        </a>
-        <a href="manage-users.php">
-            <i class="fa fa-users"></i><span class="nav-label">Users</span>
-        </a>
-        <a href="../auth/logout.php">
-            <i class="fa fa-sign-out-alt"></i><span class="nav-label">Logout</span>
-        </a>
-    </div>
+    <?php include __DIR__ . '/admin-sidebar.php'; ?>
 
     <div class="main-content">
         <?php include __DIR__ . '/admin-topbar.php'; ?>

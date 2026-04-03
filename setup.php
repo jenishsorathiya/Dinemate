@@ -11,22 +11,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DineMate - Quick Start Guide</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/dashboard-theme.css" rel="stylesheet">
     <style>
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
-        .container { background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 40px; max-width: 900px; }
-        h1 { color: #667eea; margin-bottom: 30px; }
-        h3 { color: #764ba2; margin-top: 30px; margin-bottom: 20px; }
-        .step { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 10px; border-left: 4px solid #667eea; }
-        .step-number { display: inline-block; background: #667eea; color: white; width: 35px; height: 35px; border-radius: 50%; text-align: center; line-height: 35px; font-weight: bold; margin-right: 15px; }
+        body { background: #f5f7fb; min-height: 100vh; padding: 40px 20px; font-family: 'Inter', sans-serif; }
+        .container { background: #ffffff; border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08); padding: 40px; max-width: 960px; }
+        h1 { color: #162033; margin-bottom: 18px; }
+        h3 { color: #162033; margin-top: 30px; margin-bottom: 18px; font-size: 20px; font-weight: 600; }
+        .step { background: #ffffff; border: 1px solid #e7ecf3; padding: 20px; margin: 15px 0; border-radius: 18px; box-shadow: 0 12px 28px rgba(15,23,42,0.05); }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; background: #1d2840; color: white; width: 35px; height: 35px; border-radius: 999px; font-weight: 700; margin-right: 15px; }
         .btn-action { padding: 10px 25px; margin: 10px 5px 10px 0; font-weight: 600; }
         .check-list { list-style: none; padding: 0; }
         .check-list li { padding: 8px 0; }
         .check-list li:before { content: "✓ "; color: #28a745; font-weight: bold; margin-right: 10px; }
         .code-block { background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; margin: 10px 0; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; }
-        .alert-box { border-radius: 10px; padding: 15px; margin: 15px 0; }
-        .success-box { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-        .error-box { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
-        .info-box { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .alert-box { border-radius: 16px; padding: 15px; margin: 15px 0; }
+        .success-box { background: #e6f7ee; border: 1px solid #ccefdc; color: #1d7a53; }
+        .error-box { background: #ffe7ea; border: 1px solid #ffd1d7; color: #c13f56; }
+        .info-box { background: #f8fafc; border: 1px solid #e7ecf3; color: #556176; }
         .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
     </style>
 </head>

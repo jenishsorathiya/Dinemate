@@ -47,13 +47,15 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
 ?>
 <style>
     .topbar {
-        min-height: 78px;
-        background: #ffffff;
+        min-height: 74px;
+        background: rgba(255, 255, 255, 0.94);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 30px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        padding: 0 24px;
+        border-bottom: 1px solid #e7ecf3;
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+        backdrop-filter: blur(10px);
         flex-shrink: 0;
         gap: 20px;
     }
@@ -82,18 +84,18 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         align-items: center;
         gap: 10px;
         min-width: 0;
-        color: #111827;
+        color: #162033;
     }
 
     .topbar-page i {
-        color: #111827;
-        font-size: 20px;
+        color: #162033;
+        font-size: 18px;
     }
 
     .topbar-page-title {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 700;
-        color: #111827;
+        color: #162033;
         white-space: nowrap;
     }
 
@@ -106,14 +108,14 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         position: relative;
         width: 44px;
         height: 44px;
-        border: none;
+        border: 1px solid #e7ecf3;
         border-radius: 14px;
-        background: #f9fafb;
-        color: #111827;
+        background: #ffffff;
+        color: #162033;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
+        font-size: 16px;
     }
 
     .topbar-badge {
@@ -124,7 +126,7 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         height: 20px;
         padding: 0 6px;
         border-radius: 999px;
-        background: #ef4444;
+        background: #f15b67;
         color: #ffffff;
         font-size: 11px;
         font-weight: 700;
@@ -139,14 +141,15 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         gap: 10px;
         padding: 6px 10px 6px 6px;
         border-radius: 16px;
-        background: #f9fafb;
+        border: 1px solid #e7ecf3;
+        background: #ffffff;
     }
 
     .topbar-profile-icon {
         width: 32px;
         height: 32px;
         border-radius: 999px;
-        background: #111827;
+        background: #1d2840;
         color: #ffffff;
         display: inline-flex;
         align-items: center;
@@ -155,7 +158,7 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     }
 
     .topbar-profile-name {
-        color: #374151;
+        color: #445066;
         font-weight: 600;
     }
 
@@ -169,9 +172,9 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     }
 
     .topbar-action-button {
-        border: none;
-        background: #f9fafb;
-        color: #374151;
+        border: 1px solid #e7ecf3;
+        background: #ffffff;
+        color: #445066;
         border-radius: 16px;
         min-height: 42px;
         padding: 0 14px;
@@ -188,14 +191,15 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     }
 
     .topbar-action-button:hover {
-        background: #f3f4f6;
+        background: #f8fafc;
         transform: translateY(-1px);
     }
 
     .topbar-action-button.has-pending {
-        background: linear-gradient(135deg, #fff1f2, #ffe4e6);
-        color: #be123c;
-        box-shadow: inset 0 0 0 1px rgba(244, 63, 94, 0.16);
+        background: #fff0f2;
+        color: #c13f56;
+        border-color: #ffd5db;
+        box-shadow: none;
     }
 
     .topbar-action-badge {
@@ -206,14 +210,14 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         height: 20px;
         padding: 0 6px;
         border-radius: 999px;
-        background: #111827;
+        background: #1d2840;
         color: #ffffff;
         font-size: 11px;
         font-weight: 700;
     }
 
     .topbar-action-button.has-pending .topbar-action-badge {
-        background: #e11d48;
+        background: #f15b67;
     }
 
     .topbar-pending-panel {
@@ -222,9 +226,9 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         right: 0;
         width: min(350px, 82vw);
         background: #ffffff;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e7ecf3;
         border-radius: 16px;
-        box-shadow: 0 22px 50px rgba(15, 23, 42, 0.18);
+        box-shadow: 0 24px 54px rgba(15, 23, 42, 0.12);
         padding: 14px;
         display: none;
         z-index: 1100;
@@ -241,7 +245,7 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     .topbar-pending-title {
         font-size: 13px;
         font-weight: 700;
-        color: #111827;
+        color: #162033;
         letter-spacing: 0.01em;
     }
 
@@ -256,7 +260,7 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     .topbar-pending-item {
         display: block;
         border: 1px solid #eef2f7;
-        background: #f8fafc;
+        background: #fbfcfe;
         border-radius: 12px;
         padding: 10px 12px;
         text-decoration: none;
@@ -269,7 +273,7 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     }
 
     .topbar-pending-item:hover {
-        border-color: #cbd5e1;
+        border-color: #d9e1ec;
         background: #ffffff;
         transform: translateY(-1px);
     }
@@ -285,26 +289,26 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     .topbar-pending-item-name {
         font-size: 13px;
         font-weight: 600;
-        color: #111827;
+        color: #162033;
     }
 
     .topbar-pending-item-time {
         font-size: 12px;
         font-weight: 600;
-        color: #475569;
+        color: #5a667d;
         white-space: nowrap;
     }
 
     .topbar-pending-item-meta {
         font-size: 12px;
-        color: #64748b;
+        color: #69758b;
         line-height: 1.4;
     }
 
     .topbar-pending-empty {
         font-size: 12px;
         font-weight: 600;
-        color: #64748b;
+        color: #69758b;
         padding: 12px 6px;
         text-align: center;
     }

@@ -59,14 +59,16 @@ if (!$profile) {
     max-width: 760px;
     margin: 0 auto;
     background: #ffffff;
-    border-radius: 22px;
-    padding: 36px;
-    box-shadow: 0 22px 50px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e7ecf3;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
 }
 
 .profile-card h3 {
     margin-bottom: 24px;
     font-weight: 700;
+    color: #162033;
 }
 
 .profile-card .form-label {
@@ -79,11 +81,11 @@ if (!$profile) {
 }
 
 .profile-save-btn {
-    background: #f4b400;
-    border: none;
-    color: #111827;
+    background: #1d2840;
+    border: 1px solid #1d2840;
+    color: #ffffff;
     padding: 12px 18px;
-    border-radius: 999px;
+    border-radius: 12px;
     font-weight: 700;
 }
 </style>

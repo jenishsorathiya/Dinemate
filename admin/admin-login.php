@@ -36,13 +36,14 @@ $error = "Admin account not found.";
 <title>DineMate Admin Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="../assets/css/dashboard-theme.css" rel="stylesheet">
 
 <style>
 body {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    font-family: 'Inter', sans-serif;
+    background: #f5f7fb;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -53,59 +54,58 @@ body {
     width: 100%;
     max-width: 1050px;
     display: flex;
-    border-radius: 18px;
+    border-radius: 20px;
     overflow: hidden;
     background: white;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.35);
-    animation: fadeIn 0.8s ease;
-}
-
-@keyframes fadeIn {
-    from {opacity: 0; transform: translateY(20px);}
-    to {opacity: 1; transform: translateY(0);}
+    border: 1px solid #e7ecf3;
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
 }
 
 .admin-left {
     flex: 1;
-    padding: 60px;
+    padding: 56px;
 }
 
 .admin-left h2 {
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 700;
+    color: #162033;
     margin-bottom: 8px;
 }
 
 .admin-left p {
-    color: #666;
+    color: #69758b;
     margin-bottom: 30px;
 }
 
 .form-control {
-    border-radius: 40px;
-    padding: 14px 20px;
-    border: 1px solid #e5e7eb;
-    background: #f4f4f4;
+    border-radius: 12px;
+    padding: 13px 14px;
+    border: 1px solid #d9e1ec;
+    background: #ffffff;
     transition: 0.3s;
 }
 
 .form-control:focus {
     background: white;
-    box-shadow: 0 0 0 3px #f4b400;
-    border-color: #f4b400;
+    box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
+    border-color: #bdc9da;
 }
 
 .btn-login {
-    background: #f4b400;
-    border: none;
-    border-radius: 40px;
+    background: #1d2840;
+    border: 1px solid #1d2840;
+    color: #ffffff;
+    border-radius: 12px;
     padding: 14px;
     font-weight: 600;
-    transition: 0.3s;
+    transition: 0.18s ease;
 }
 
 .btn-login:hover {
-    background: #e0a800;
-    transform: scale(1.03);
+    background: #141d31;
+    border-color: #141d31;
+    transform: translateY(-1px);
 }
 
 .password-wrapper {
@@ -135,7 +135,22 @@ body {
 .admin-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: linear-gradient(180deg, rgba(22, 32, 51, 0.22), rgba(22, 32, 51, 0.68));
+}
+
+@media (max-width: 991px) {
+    .admin-container {
+        flex-direction: column;
+        margin: 20px;
+    }
+
+    .admin-left {
+        padding: 28px;
+    }
+
+    .admin-right {
+        min-height: 240px;
+    }
 }
 
 .admin-text {

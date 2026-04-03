@@ -150,32 +150,8 @@ $todayBookings = $todayBookingsStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
 $todayCapacity = (int) $pdo->query("SELECT COALESCE(SUM(capacity), 0) FROM restaurant_tables")->fetchColumn();
 
-$todayFlow = [
-    'now' => [],
-    'next' => [],
-    'later' => [],
-];
-
 $todayDate = date('Y-m-d');
 $nowTimestamp = time();
-$nextWindowTimestamp = strtotime('+2 hours', $nowTimestamp);
-
-foreach ($todayBookings as $booking) {
-    $startTimestamp = strtotime($todayDate . ' ' . substr((string) $booking['start_time'], 0, 8));
-    $endTimestamp = strtotime($todayDate . ' ' . substr((string) $booking['end_time'], 0, 8));
-
-    if ($endTimestamp <= $nowTimestamp) {
-        continue;
-    }
-
-    if ($startTimestamp <= $nowTimestamp && $endTimestamp > $nowTimestamp) {
-        $todayFlow['now'][] = $booking;
-    } elseif ($startTimestamp > $nowTimestamp && $startTimestamp <= $nextWindowTimestamp) {
-        $todayFlow['next'][] = $booking;
-    } else {
-        $todayFlow['later'][] = $booking;
-    }
-}
 
 $serviceLoadRows = [];
 if ($todayCapacity > 0) {
@@ -225,6 +201,8 @@ $adminPageTitle = 'Bookings Management';
 $adminPageIcon = 'fa-clipboard-list';
 $adminNotificationCount = $pendingRequestsCount;
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
+$adminSidebarActive = 'bookings';
+$adminSidebarPathPrefix = '';
 ?>
 <!DOCTYPE html>
 <html>
@@ -233,94 +211,40 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DineMate - Bookings Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/dashboard-theme.css" rel="stylesheet">
     <style>
+        :root {
+            --page-bg: #f6f8fc;
+            --surface: rgba(255, 255, 255, 0.94);
+            --surface-strong: #ffffff;
+            --surface-muted: #f8fafc;
+            --border-soft: #e6ebf4;
+            --border-strong: #d9e1ee;
+            --text-main: #1b2640;
+            --text-muted: #63708a;
+            --shadow-soft: 0 18px 38px rgba(52, 72, 105, 0.10);
+            --shadow-card: 0 10px 24px rgba(52, 72, 105, 0.08);
+            --accent-gold: #f6b100;
+            --accent-gold-soft: #fff3cf;
+            --accent-red: #f15b67;
+            --accent-red-soft: #ffe7ea;
+            --accent-green: #1f9d74;
+            --accent-green-soft: #dff7ee;
+            --accent-navy: #1f2d4d;
+        }
+
         body {
             margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background: #f5f7fb;
+            font-family: 'Inter', sans-serif;
+            background: var(--page-bg);
+            color: var(--text-main);
         }
 
         .admin-layout {
             display: flex;
             min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 88px;
-            background: #111827;
-            color: white;
-            padding: 20px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            flex-shrink: 0;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            transition: width 0.25s ease;
-        }
-
-        .sidebar:hover {
-            width: 260px;
-        }
-
-        .sidebar h4 {
-            color: #f4b400;
-            margin-bottom: 30px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            white-space: nowrap;
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 15px;
-            color: #ddd;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: background 0.2s ease, color 0.2s ease, justify-content 0.2s ease;
-            white-space: nowrap;
-        }
-
-        .sidebar:hover a {
-            justify-content: flex-start;
-        }
-
-        .sidebar h4 i,
-        .sidebar a i {
-            width: 24px;
-            min-width: 24px;
-            text-align: center;
-            font-size: 20px;
-        }
-
-        .brand-label,
-        .nav-label {
-            opacity: 0;
-            max-width: 0;
-            margin-left: 0;
-            overflow: hidden;
-            transition: opacity 0.2s ease, max-width 0.25s ease, margin-left 0.25s ease;
-        }
-
-        .sidebar:hover .brand-label,
-        .sidebar:hover .nav-label {
-            opacity: 1;
-            max-width: 180px;
-            margin-left: 12px;
-        }
-
-        .sidebar:not(:hover) h4 {
-            justify-content: center;
-        }
-
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: #f4b400;
-            color: #111827;
         }
 
         .main-content {
@@ -334,192 +258,269 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         .page-shell {
             flex: 1;
             overflow-y: auto;
-            padding: 28px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 28px;
+            gap: 18px;
+            max-width: 1320px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         .section-block {
             display: grid;
-            gap: 18px;
+            gap: 16px;
         }
 
         .section-header h1,
         .section-header h2 {
             margin: 0;
-            color: #111827;
+            color: var(--text-main);
             font-weight: 700;
         }
 
         .section-header h1 {
-            font-size: 34px;
+            font-size: 22px;
+            line-height: 1.15;
         }
 
         .section-header h2 {
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .section-header p {
             margin: 8px 0 0;
-            color: #64748b;
-            line-height: 1.6;
-            max-width: 760px;
+            color: var(--text-muted);
+            line-height: 1.55;
+            max-width: 780px;
+            font-size: 15px;
+        }
+
+        .hero-card {
+            padding: 6px 0 2px;
         }
 
         .attention-grid,
-        .workflow-grid,
-        .flow-grid {
+        .workflow-grid {
             display: grid;
-            gap: 18px;
+            gap: 16px;
         }
 
         .attention-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
-        .workflow-grid,
-        .flow-grid {
+        .workflow-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
+        .workflow-grid {
+            align-items: start;
+        }
+
         .card-surface {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 24px;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            background: var(--surface);
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            box-shadow: var(--shadow-soft);
         }
 
         .attention-card {
-            padding: 22px;
+            padding: 16px 18px;
+            min-height: 108px;
         }
 
         .attention-label {
-            color: #64748b;
+            color: var(--text-muted);
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .attention-value {
-            font-size: 38px;
+            font-size: 18px;
             line-height: 1;
             font-weight: 700;
-            color: #111827;
-            margin-bottom: 10px;
+            color: var(--text-main);
+            margin-bottom: 8px;
         }
 
         .attention-note {
-            color: #64748b;
-            line-height: 1.55;
+            color: var(--text-muted);
+            line-height: 1.5;
             margin: 0;
+            font-size: 13px;
         }
 
         .attention-card.is-alert {
-            background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
-            border-color: rgba(249, 115, 22, 0.2);
+            background: linear-gradient(180deg, rgba(255, 247, 231, 0.95) 0%, rgba(255, 255, 255, 0.97) 100%);
         }
 
         .attention-card.is-warning {
-            background: linear-gradient(180deg, #fff1f2 0%, #ffffff 100%);
-            border-color: rgba(225, 29, 72, 0.16);
+            background: linear-gradient(180deg, rgba(255, 242, 244, 0.94) 0%, rgba(255, 255, 255, 0.97) 100%);
         }
 
         .panel-card {
-            padding: 22px;
+            padding: 14px;
             display: grid;
-            gap: 18px;
+            gap: 14px;
         }
 
         .panel-top {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
-            gap: 14px;
+            gap: 12px;
+            padding: 2px 2px 0;
         }
 
         .panel-top h3 {
             margin: 0;
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 700;
-            color: #111827;
+            color: var(--text-main);
         }
 
-        .panel-top p {
-            margin: 6px 0 0;
-            color: #64748b;
-            font-size: 14px;
+        .panel-tools {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 14px;
+            border: 1px solid var(--border-soft);
+            background: rgba(255, 255, 255, 0.88);
+            padding: 8px 12px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .panel-filter .dots {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .panel-filter .dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #ffc130;
+            display: block;
         }
 
         .panel-count {
-            min-width: 44px;
-            height: 44px;
-            padding: 0 12px;
+            min-width: 34px;
+            height: 34px;
+            padding: 0 10px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: #111827;
+            background: var(--accent-navy);
             color: #ffffff;
-            font-size: 15px;
+            font-size: 12px;
             font-weight: 700;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
         }
 
-        .workflow-list,
-        .flow-list {
-            display: grid;
-            gap: 12px;
-        }
-
-        .workflow-item,
-        .flow-item {
-            border: 1px solid #e5e7eb;
+        .queue-shell {
             border-radius: 18px;
-            padding: 16px;
-            background: #fcfcfd;
+            border: 1px solid var(--border-soft);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 255, 0.94));
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
         }
 
-        .workflow-item-top,
-        .flow-item-top {
+        .workflow-list {
+            display: grid;
+            gap: 0;
+        }
+
+        .workflow-item {
+            padding: 16px 18px;
+            background: var(--surface-strong);
+            display: grid;
+            gap: 14px;
+        }
+
+        .workflow-item + .workflow-item {
+            border-top: 1px solid var(--border-soft);
+        }
+
+        .workflow-main {
+            min-width: 0;
+        }
+
+        .workflow-item-top {
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
-        .workflow-item-name,
-        .flow-item-name {
-            font-size: 17px;
+        .workflow-item-name {
+            font-size: 16px;
             font-weight: 700;
-            color: #111827;
+            color: var(--text-main);
             margin: 0;
         }
 
-        .workflow-item-meta,
-        .flow-item-meta {
-            color: #64748b;
-            font-size: 13px;
+        .workflow-item-meta {
+            color: var(--text-muted);
+            font-size: 12px;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .workflow-notes,
-        .flow-notes {
+        .workflow-meta-accent {
+            color: #5d6a85;
+            font-weight: 600;
+        }
+
+        .workflow-notes {
             margin: 0;
-            color: #475569;
-            font-size: 13px;
-            line-height: 1.5;
+            color: #56627c;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .workflow-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .workflow-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .workflow-hint i {
+            color: var(--accent-gold);
         }
 
         .workflow-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 14px;
+            gap: 8px;
+            margin-top: 0;
+            justify-content: flex-end;
         }
 
         .inline-form {
@@ -532,11 +533,11 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             align-items: center;
             justify-content: center;
             border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 13px;
+            padding: 9px 14px;
+            font-size: 12px;
             font-weight: 700;
             text-decoration: none;
-            border: none;
+            border: 1px solid transparent;
             transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
         }
 
@@ -546,27 +547,29 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         }
 
         .btn-workflow.is-confirm {
-            background: #111827;
+            background: var(--accent-navy);
             color: #ffffff;
         }
 
         .btn-workflow.is-reject {
-            background: #fee2e2;
-            color: #b91c1c;
+            background: var(--accent-red-soft);
+            border-color: #ffd1d7;
+            color: #cc4157;
         }
 
         .btn-link-workflow {
-            background: #fff8d6;
-            color: #8a5a00;
+            background: #f9fbff;
+            border-color: var(--border-soft);
+            color: #50607c;
         }
 
         .status-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 999px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -574,24 +577,53 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         }
 
         .status-pill.pending {
-            background: #fff7ed;
-            color: #c2410c;
+            background: var(--accent-gold-soft);
+            color: #976800;
         }
 
         .status-pill.confirmed {
-            background: #ecfdf5;
-            color: #047857;
+            background: var(--accent-green-soft);
+            color: #177755;
         }
 
         .service-load-card {
-            padding: 22px;
+            padding: 18px 18px 20px;
             display: grid;
-            gap: 16px;
+            gap: 14px;
+        }
+
+        .service-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .service-top h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .service-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 14px;
+            border: 1px solid var(--border-soft);
+            background: rgba(255, 255, 255, 0.86);
+            padding: 9px 13px;
+            color: #4f5f7b;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
         }
 
         .load-meta {
-            color: #64748b;
-            font-size: 14px;
+            color: var(--text-muted);
+            font-size: 13px;
             margin: 0;
         }
 
@@ -610,57 +642,46 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         .load-time {
             font-size: 13px;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-main);
         }
 
         .load-bar-track {
             width: 100%;
-            height: 14px;
+            height: 10px;
             border-radius: 999px;
-            background: #e5e7eb;
+            background: #e7edf7;
             overflow: hidden;
         }
 
         .load-bar-fill {
             height: 100%;
             border-radius: 999px;
-            background: linear-gradient(90deg, #f4b400, #f59e0b);
+            background: linear-gradient(90deg, #ffb000, #ffc73a);
         }
 
         .load-bar-fill.is-warning {
-            background: linear-gradient(90deg, #ef4444, #e11d48);
+            background: linear-gradient(90deg, #f15b67, #df3d5d);
         }
 
         .load-value {
             font-size: 13px;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-main);
             white-space: nowrap;
         }
 
         .load-value.is-warning {
-            color: #be123c;
-        }
-
-        .flow-column {
-            display: grid;
-            gap: 12px;
-        }
-
-        .flow-column h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 700;
-            color: #111827;
+            color: #c13d56;
         }
 
         .empty-state {
-            padding: 20px;
-            border: 1px dashed #cbd5e1;
+            padding: 16px 18px;
+            border: 1px dashed var(--border-strong);
             border-radius: 18px;
-            text-align: center;
-            color: #64748b;
-            background: #ffffff;
+            text-align: left;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
         }
 
         .alert {
@@ -670,9 +691,12 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
         @media (max-width: 1180px) {
             .attention-grid,
-            .workflow-grid,
-            .flow-grid {
+            .workflow-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .workflow-actions {
+                justify-content: flex-start;
             }
         }
 
@@ -682,11 +706,11 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             }
 
             .page-shell {
-                padding: 20px;
+                padding: 16px;
             }
 
             .section-header h1 {
-                font-size: 28px;
+                font-size: 20px;
             }
         }
 
@@ -695,41 +719,24 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 grid-template-columns: 1fr;
             }
 
+            .workflow-footer,
+            .service-top,
             .workflow-item-top,
-            .flow-item-top,
             .panel-top {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .panel-tools {
+                width: 100%;
+                justify-content: space-between;
             }
         }
     </style>
 </head>
 <body>
 <div class="admin-layout">
-    <div class="sidebar">
-        <h4><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></h4>
-        <a href="dashboard.php">
-            <i class="fa fa-chart-line"></i><span class="nav-label">Analytics</span>
-        </a>
-        <a href="timeline/new-dashboard.php">
-            <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
-        </a>
-        <a href="bookings-management.php" class="active">
-            <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
-        </a>
-        <a href="tables-management.php">
-            <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
-        </a>
-        <a href="menu-management.php">
-            <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>
-        </a>
-        <a href="manage-users.php">
-            <i class="fa fa-users"></i><span class="nav-label">Users</span>
-        </a>
-        <a href="../auth/logout.php">
-            <i class="fa fa-sign-out-alt"></i><span class="nav-label">Logout</span>
-        </a>
-    </div>
+    <?php include __DIR__ . '/admin-sidebar.php'; ?>
 
     <div class="main-content">
         <?php include __DIR__ . '/admin-topbar.php'; ?>
@@ -742,129 +749,141 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             <?php endif; ?>
 
             <section class="section-block">
-                <div class="section-header">
-                    <h1>What needs attention</h1>
-                    <p>Use these counts to decide what staff should resolve first: unconfirmed demand, confirmed bookings still waiting on tables, and future overlap risk.</p>
+                <div class="hero-card">
+                    <div class="section-header">
+                        <h1>Bookings Management</h1>
+                        <p>Manage pending requests, assign tables, and keep track of today's reservations.</p>
+                    </div>
                 </div>
+
                 <div class="attention-grid">
                     <div class="card-surface attention-card is-alert">
                         <div class="attention-label">Pending Requests</div>
                         <div class="attention-value"><?php echo $pendingRequestsCount; ?></div>
-                        <p class="attention-note">Bookings still waiting for staff confirmation.</p>
+                        <p class="attention-note">Bookings waiting for a confirmation decision.</p>
                     </div>
                     <div class="card-surface attention-card">
                         <div class="attention-label">Unassigned Confirmed</div>
                         <div class="attention-value"><?php echo $unassignedConfirmedCount; ?></div>
-                        <p class="attention-note">Confirmed bookings that still need a table assignment.</p>
+                        <p class="attention-note">Confirmed guests that still need a table.</p>
                     </div>
                     <div class="card-surface attention-card is-warning">
                         <div class="attention-label">Overlapping / Conflicts</div>
                         <div class="attention-value"><?php echo $conflictPairsCount; ?></div>
-                        <p class="attention-note">Assigned table overlaps detected across upcoming service windows.</p>
+                        <p class="attention-note">Potential clashes in table assignments today.</p>
                     </div>
                 </div>
             </section>
 
             <section class="section-block">
-                <div class="section-header">
-                    <h2>Action Panels</h2>
-                    <p>These are the real workflows staff need most: clearing the pending queue, then getting confirmed bookings out of standby and onto tables.</p>
-                </div>
                 <div class="workflow-grid">
                     <section class="card-surface panel-card">
                         <div class="panel-top">
-                            <div>
-                                <h3>Pending Queue</h3>
-                                <p>Review incoming requests and either confirm them, reject them, or open the day in the timeline to edit details.</p>
+                            <h3>Pending Queue</h3>
+                            <div class="panel-tools">
+                               
+                                <span class="panel-count"><?php echo count($pendingQueue); ?></span>
                             </div>
-                            <span class="panel-count"><?php echo count($pendingQueue); ?></span>
                         </div>
 
                         <?php if (!empty($pendingQueue)): ?>
-                            <div class="workflow-list">
+                            <div class="queue-shell">
+                                <div class="workflow-list">
                                 <?php foreach ($pendingQueue as $booking): ?>
                                     <article class="workflow-item">
-                                        <div class="workflow-item-top">
-                                            <div>
+                                        <div class="workflow-main">
+                                            <div class="workflow-item-top">
                                                 <h4 class="workflow-item-name"><?php echo htmlspecialchars($booking['customer_name'], ENT_QUOTES, 'UTF-8'); ?></h4>
-                                                <div class="workflow-item-meta">
-                                                    <span><?php echo htmlspecialchars(date('D, j M', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span>P<?php echo (int) $booking['number_of_guests']; ?></span>
-                                                </div>
+                                                <span class="status-pill pending">Pending</span>
                                             </div>
-                                            <span class="status-pill pending">Pending</span>
+                                            <div class="workflow-item-meta">
+                                                <span><?php echo htmlspecialchars(date('D, j M', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span class="workflow-meta-accent">P<?php echo (int) $booking['number_of_guests']; ?></span>
+                                            </div>
                                         </div>
-                                        <p class="workflow-notes"><?php echo htmlspecialchars(trim((string) ($booking['special_request'] ?? '')) !== '' ? $booking['special_request'] : 'No notes added.', ENT_QUOTES, 'UTF-8'); ?></p>
-                                        <div class="workflow-actions">
-                                            <form method="POST" class="inline-form">
-                                                <input type="hidden" name="action" value="confirm_pending">
-                                                <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
-                                                <button type="submit" class="btn-workflow is-confirm">Confirm</button>
-                                            </form>
-                                            <form method="POST" class="inline-form" onsubmit="return confirm('Reject this pending booking?');">
-                                                <input type="hidden" name="action" value="reject_pending">
-                                                <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
-                                                <button type="submit" class="btn-workflow is-reject">Reject</button>
-                                            </form>
-                                            <a class="btn-link-workflow" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList">Edit</a>
+                                        <div class="workflow-footer">
+                                            <div>
+                                                <div class="workflow-hint"><i class="fa-solid fa-circle"></i><span>Needs review</span></div>
+                                                <p class="workflow-notes"><?php echo htmlspecialchars(trim((string) ($booking['special_request'] ?? '')) !== '' ? $booking['special_request'] : 'No notes added.', ENT_QUOTES, 'UTF-8'); ?></p>
+                                            </div>
+                                            <div class="workflow-actions">
+                                                <form method="POST" class="inline-form">
+                                                    <input type="hidden" name="action" value="confirm_pending">
+                                                    <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
+                                                    <button type="submit" class="btn-workflow is-confirm">Confirm</button>
+                                                </form>
+                                                <form method="POST" class="inline-form" onsubmit="return confirm('Reject this pending booking?');">
+                                                    <input type="hidden" name="action" value="reject_pending">
+                                                    <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
+                                                    <button type="submit" class="btn-workflow is-reject">Reject</button>
+                                                </form>
+                                                <a class="btn-link-workflow" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList">Edit</a>
+                                            </div>
                                         </div>
                                     </article>
                                 <?php endforeach; ?>
+                                </div>
                             </div>
                         <?php else: ?>
-                            <div class="empty-state">No pending requests are waiting right now.</div>
+                            <div class="empty-state">All bookings confirmed. No pending bookings right now.</div>
                         <?php endif; ?>
                     </section>
 
                     <section class="card-surface panel-card">
                         <div class="panel-top">
-                            <div>
-                                <h3>Standby</h3>
-                                <p>These bookings are confirmed, but they still have no table. Move them into the timeline and assign a table before service catches up.</p>
+                            <h3>Standby Queue</h3>
+                            <div class="panel-tools">
+                                
+                                <span class="panel-count"><?php echo count($standbyQueue); ?></span>
                             </div>
-                            <span class="panel-count"><?php echo count($standbyQueue); ?></span>
                         </div>
 
                         <?php if (!empty($standbyQueue)): ?>
-                            <div class="workflow-list">
+                            <div class="queue-shell">
+                                <div class="workflow-list">
                                 <?php foreach ($standbyQueue as $booking): ?>
                                     <article class="workflow-item">
-                                        <div class="workflow-item-top">
-                                            <div>
+                                        <div class="workflow-main">
+                                            <div class="workflow-item-top">
                                                 <h4 class="workflow-item-name"><?php echo htmlspecialchars($booking['customer_name'], ENT_QUOTES, 'UTF-8'); ?></h4>
-                                                <div class="workflow-item-meta">
-                                                    <span><?php echo htmlspecialchars(date('D, j M', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span>P<?php echo (int) $booking['number_of_guests']; ?></span>
-                                                </div>
+                                                <span class="status-pill confirmed">Confirmed</span>
                                             </div>
-                                            <span class="status-pill confirmed">Confirmed</span>
+                                            <div class="workflow-item-meta">
+                                                <span><?php echo htmlspecialchars(date('D, j M', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span class="workflow-meta-accent">P<?php echo (int) $booking['number_of_guests']; ?></span>
+                                            </div>
                                         </div>
-                                        <p class="workflow-notes"><?php echo htmlspecialchars(trim((string) ($booking['special_request'] ?? '')) !== '' ? $booking['special_request'] : 'No notes added.', ENT_QUOTES, 'UTF-8'); ?></p>
-                                        <div class="workflow-actions">
-                                            <a class="btn-link-workflow" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#timelineGrid">Assign Table</a>
+                                        <div class="workflow-footer">
+                                            <div>
+                                                <div class="workflow-hint"><i class="fa-solid fa-circle"></i><span>Waiting for assignment</span></div>
+                                                <p class="workflow-notes"><?php echo htmlspecialchars(trim((string) ($booking['special_request'] ?? '')) !== '' ? $booking['special_request'] : 'No notes added.', ENT_QUOTES, 'UTF-8'); ?></p>
+                                            </div>
+                                            <div class="workflow-actions">
+                                                <a class="btn-workflow is-confirm" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#timelineGrid">Assign Table</a>
+                                                <a class="btn-link-workflow" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList">View</a>
+                                            </div>
                                         </div>
                                     </article>
                                 <?php endforeach; ?>
+                                </div>
                             </div>
                         <?php else: ?>
-                            <div class="empty-state">No confirmed bookings are waiting for a table assignment.</div>
+                            <div class="empty-state">All bookings have been assigned.</div>
                         <?php endif; ?>
                     </section>
                 </div>
             </section>
 
             <section class="section-block">
-                <div class="section-header">
-                    <h2>Today's Flow</h2>
-                    <p>Keep service grounded in what is active now, what is arriving next, and how full the room is getting across the next booking windows.</p>
-                </div>
-
                 <section class="card-surface service-load-card">
-                    <div>
-                        <h3 class="mb-2">Service Load Bar</h3>
-                        <p class="load-meta">Calculated from today's pending and confirmed guest counts against total available seating capacity of <?php echo $todayCapacity; ?> seats.</p>
+                    <div class="service-top">
+                        <div>
+                            <h3>Service Load Bar</h3>
+                            <p class="load-meta">Calculated from today's pending and confirmed guest counts against total available seating capacity of <?php echo $todayCapacity; ?> seats.</p>
+                        </div>
+                        <a class="service-link" href="timeline/new-dashboard.php#timelineGrid">Jump to Timeline Grid <i class="fa-solid fa-chevron-right"></i></a>
                     </div>
 
                     <?php if (!empty($serviceLoadRows)): ?>
@@ -883,86 +902,6 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                         <div class="empty-state">No service load data is available for the remaining booking windows today.</div>
                     <?php endif; ?>
                 </section>
-
-                <div class="flow-grid">
-                    <section class="flow-column">
-                        <h3>Now</h3>
-                        <?php if (!empty($todayFlow['now'])): ?>
-                            <div class="flow-list">
-                                <?php foreach ($todayFlow['now'] as $booking): ?>
-                                    <article class="card-surface flow-item">
-                                        <div class="flow-item-top">
-                                            <div>
-                                                <h4 class="flow-item-name"><?php echo htmlspecialchars($booking['customer_name'], ENT_QUOTES, 'UTF-8'); ?></h4>
-                                                <div class="flow-item-meta">
-                                                    <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span>P<?php echo (int) $booking['number_of_guests']; ?></span>
-                                                    <span><?php echo htmlspecialchars($booking['assigned_table_numbers'] ? 'T' . $booking['assigned_table_numbers'] : 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></span>
-                                                </div>
-                                            </div>
-                                            <span class="status-pill <?php echo htmlspecialchars($booking['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($booking['status'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                        </div>
-                                        <p class="flow-notes"><?php echo htmlspecialchars(trim((string) ($booking['special_request'] ?? '')) !== '' ? $booking['special_request'] : 'No notes added.', ENT_QUOTES, 'UTF-8'); ?></p>
-                                    </article>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="empty-state">No bookings are active in the current service window.</div>
-                        <?php endif; ?>
-                    </section>
-
-                    <section class="flow-column">
-                        <h3>Next 1-2 Hours</h3>
-                        <?php if (!empty($todayFlow['next'])): ?>
-                            <div class="flow-list">
-                                <?php foreach ($todayFlow['next'] as $booking): ?>
-                                    <article class="card-surface flow-item">
-                                        <div class="flow-item-top">
-                                            <div>
-                                                <h4 class="flow-item-name"><?php echo htmlspecialchars($booking['customer_name'], ENT_QUOTES, 'UTF-8'); ?></h4>
-                                                <div class="flow-item-meta">
-                                                    <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span>P<?php echo (int) $booking['number_of_guests']; ?></span>
-                                                    <span><?php echo htmlspecialchars($booking['assigned_table_numbers'] ? 'T' . $booking['assigned_table_numbers'] : 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></span>
-                                                </div>
-                                            </div>
-                                            <span class="status-pill <?php echo htmlspecialchars($booking['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($booking['status'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                        </div>
-                                        <p class="flow-notes"><?php echo htmlspecialchars(trim((string) ($booking['special_request'] ?? '')) !== '' ? $booking['special_request'] : 'No notes added.', ENT_QUOTES, 'UTF-8'); ?></p>
-                                    </article>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="empty-state">No bookings are due in the next two hours.</div>
-                        <?php endif; ?>
-                    </section>
-
-                    <section class="flow-column">
-                        <h3>Later</h3>
-                        <?php if (!empty($todayFlow['later'])): ?>
-                            <div class="flow-list">
-                                <?php foreach ($todayFlow['later'] as $booking): ?>
-                                    <article class="card-surface flow-item">
-                                        <div class="flow-item-top">
-                                            <div>
-                                                <h4 class="flow-item-name"><?php echo htmlspecialchars($booking['customer_name'], ENT_QUOTES, 'UTF-8'); ?></h4>
-                                                <div class="flow-item-meta">
-                                                    <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span>P<?php echo (int) $booking['number_of_guests']; ?></span>
-                                                    <span><?php echo htmlspecialchars($booking['assigned_table_numbers'] ? 'T' . $booking['assigned_table_numbers'] : 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></span>
-                                                </div>
-                                            </div>
-                                            <span class="status-pill <?php echo htmlspecialchars($booking['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($booking['status'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                        </div>
-                                        <p class="flow-notes"><?php echo htmlspecialchars(trim((string) ($booking['special_request'] ?? '')) !== '' ? $booking['special_request'] : 'No notes added.', ENT_QUOTES, 'UTF-8'); ?></p>
-                                    </article>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="empty-state">No later bookings remain for today.</div>
-                        <?php endif; ?>
-                    </section>
-                </div>
             </section>
         </div>
     </div>

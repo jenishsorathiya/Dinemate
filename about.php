@@ -24,10 +24,11 @@
 
 .feature-card{
     background: white;
-    border-radius: 14px;
+    border: 1px solid #e7ecf3;
+    border-radius: 18px;
     padding: 30px;
     text-align: center;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
     transition: 0.3s;
 }
 
@@ -43,15 +44,16 @@
 
 .story-card {
     background: white;
-    border-radius: 14px;
+    border: 1px solid #e7ecf3;
+    border-radius: 18px;
     padding: 40px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
 
 }
 
 .about-img {
-    border-radius: 14px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    border-radius: 18px;
+    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
 }
 
 </style>

@@ -121,9 +121,10 @@ margin-bottom:80px;
 
 .modify-card{
 background:white;
-border-radius:18px;
-padding:40px;
-box-shadow:0 25px 60px rgba(0,0,0,0.08);
+border:1px solid #e7ecf3;
+border-radius:20px;
+padding:34px;
+box-shadow:0 18px 42px rgba(15,23,42,0.08);
 transition:0.3s;
 }
 
@@ -134,8 +135,9 @@ transform:translateY(-3px);
 /* TITLE */
 
 .modify-title{
-font-weight:600;
+font-weight:700;
 margin-bottom:25px;
+color:#162033;
 }
 
 /* LABEL */
@@ -148,39 +150,41 @@ margin-bottom:6px;
 /* INPUT */
 
 .modern-input{
-border-radius:10px;
-padding:12px;
-border:1px solid #e5e7eb;
+border-radius:12px;
+padding:12px 14px;
+border:1px solid #d9e1ec;
 transition:0.2s;
 }
 
 .modern-input:focus{
-border-color:#f4b400;
-box-shadow:0 0 0 3px rgba(244,180,0,0.2);
+border-color:#bdc9da;
+box-shadow:0 0 0 4px rgba(29,40,64,0.12);
 }
 
 /* BUTTON */
 
 .btn-update{
-background:#f4b400;
-border:none;
+background:#1d2840;
+border:1px solid #1d2840;
+color:#ffffff;
 padding:14px;
-border-radius:40px;
+border-radius:12px;
 font-weight:600;
 font-size:16px;
 transition:0.3s;
 }
 
 .btn-update:hover{
-background:#e0a800;
-transform:scale(1.02);
+background:#141d31;
+border-color:#141d31;
+transform:translateY(-1px);
 }
 
 /* BACK BUTTON */
 
 .btn-back{
-border-radius:30px;
-padding:10px 20px;
+border-radius:12px;
+padding:10px 18px;
 }
 
 </style>

@@ -80,10 +80,10 @@ $phoneCountryOptions = [
 }
 
 .booking-stage {
-    background: linear-gradient(180deg, #fffef7 0%, #ffffff 100%);
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 28px;
-    box-shadow: 0 28px 70px rgba(15, 23, 42, 0.08);
+    background: #ffffff;
+    border: 1px solid #e7ecf3;
+    border-radius: 20px;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
     padding: 28px;
 }
 
@@ -103,15 +103,15 @@ $phoneCountryOptions = [
 
 .booking-heading h2 {
     margin: 0;
-    font-size: 32px;
+    font-size: 28px;
     line-height: 1.05;
     font-weight: 700;
-    color: #1f2937;
+    color: #162033;
 }
 
 .booking-heading p {
     margin: 10px 0 0;
-    color: #6b7280;
+    color: #69758b;
     font-size: 15px;
     max-width: 560px;
 }
@@ -171,10 +171,10 @@ $phoneCountryOptions = [
 
 .booking-calendar-panel {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 24px;
+    border: 1px solid #e7ecf3;
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
 }
 
 .booking-calendar-top {
@@ -184,12 +184,13 @@ $phoneCountryOptions = [
 }
 
 .booking-selected-date {
-    background: linear-gradient(180deg, #ffd60a 0%, #f4b400 100%);
-    color: #111827;
+    background: #f8fafc;
+    color: #162033;
     padding: 22px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    border-right: 1px solid #e7ecf3;
 }
 
 .booking-selected-year {
@@ -222,18 +223,18 @@ $phoneCountryOptions = [
 }
 
 .booking-calendar-title {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
-    color: #111827;
+    color: #162033;
 }
 
 .booking-calendar-nav {
     width: 42px;
     height: 42px;
-    border: none;
-    background: #f8fafc;
-    border-radius: 999px;
-    color: #64748b;
+    border: 1px solid #e7ecf3;
+    background: #ffffff;
+    border-radius: 12px;
+    color: #69758b;
     font-size: 17px;
     display: inline-flex;
     align-items: center;
@@ -242,8 +243,8 @@ $phoneCountryOptions = [
 }
 
 .booking-calendar-nav:hover {
-    background: #f1f5f9;
-    color: #111827;
+    background: #f8fafc;
+    color: #162033;
 }
 
 .booking-weekdays,
@@ -273,19 +274,19 @@ $phoneCountryOptions = [
 }
 
 .booking-day:hover:not(:disabled) {
-    background: #fff8d6;
-    color: #111827;
+    background: #f8fafc;
+    color: #162033;
     transform: translateY(-1px);
 }
 
 .booking-day.is-selected {
-    background: #8b1e5c;
+    background: #1d2840;
     color: #ffffff;
-    box-shadow: 0 12px 22px rgba(139, 30, 92, 0.24);
+    box-shadow: 0 12px 22px rgba(29, 40, 64, 0.22);
 }
 
 .booking-day.is-today:not(.is-selected) {
-    box-shadow: inset 0 0 0 2px #f4b400;
+    box-shadow: inset 0 0 0 2px #d3dceb;
 }
 
 .booking-day.is-muted,
@@ -302,17 +303,17 @@ $phoneCountryOptions = [
 .booking-account-card {
     width: min(100%, 360px);
     background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 18px;
+    border: 1px solid #e7ecf3;
+    border-radius: 16px;
     padding: 14px 16px;
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
 }
 
 .booking-account-card.is-benefits {
     width: 100%;
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 14px 16px;
-    background: linear-gradient(180deg, #fffdf6 0%, #ffffff 100%);
+    background: #ffffff;
 }
 
 .booking-account-copy {
@@ -356,7 +357,7 @@ $phoneCountryOptions = [
 }
 
 .booking-mini-link {
-    color: #2563eb;
+    color: #1d2840;
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
@@ -373,8 +374,8 @@ $phoneCountryOptions = [
     min-width: 92px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: #f3f4f6;
-    color: #1f2937;
+    background: #f8fafc;
+    color: #162033;
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
@@ -387,7 +388,7 @@ $phoneCountryOptions = [
 }
 
 .booking-mini-btn.is-primary {
-    background: linear-gradient(135deg, #b97aa5 0%, #a85583 100%);
+    background: #1d2840;
     color: #ffffff;
 }
 
@@ -447,10 +448,10 @@ $phoneCountryOptions = [
 
 .booking-step-card {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 24px;
+    border: 1px solid #e7ecf3;
+    border-radius: 18px;
     padding: 24px;
-    box-shadow: 0 20px 44px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
 }
 
 .booking-step-card[hidden] {
@@ -467,9 +468,9 @@ $phoneCountryOptions = [
 
 .booking-step-header h3 {
     margin: 0;
-    font-size: 30px;
+    font-size: 20px;
     font-weight: 700;
-    color: #111827;
+    color: #162033;
 }
 
 .booking-step-header p {
@@ -484,8 +485,8 @@ $phoneCountryOptions = [
     gap: 8px;
     padding: 9px 14px;
     border-radius: 999px;
-    background: #f8fafc;
-    color: #475569;
+    background: #eef2f6;
+    color: #556176;
     font-size: 12px;
     font-weight: 700;
 }
@@ -532,8 +533,8 @@ $phoneCountryOptions = [
 .booking-select:focus,
 .booking-textarea:focus {
     outline: none;
-    border-color: #f4b400;
-    box-shadow: 0 0 0 4px rgba(244, 180, 0, 0.16);
+    border-color: #bdc9da;
+    box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
 }
 
 .booking-textarea {
@@ -580,9 +581,9 @@ $phoneCountryOptions = [
 }
 
 .booking-guest-btn.is-primary {
-    background: #ffd60a;
-    color: #111827;
-    box-shadow: 0 10px 24px rgba(244, 180, 0, 0.25);
+    background: #1d2840;
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(29, 40, 64, 0.18);
 }
 
 .booking-guests-display {
@@ -606,7 +607,7 @@ $phoneCountryOptions = [
     padding: 16px;
     border-radius: 18px;
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e7ecf3;
 }
 
 .booking-summary-item {
@@ -641,7 +642,7 @@ $phoneCountryOptions = [
 .booking-btn {
     min-width: 122px;
     border: none;
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 14px 20px;
     font-size: 15px;
     font-weight: 700;
@@ -653,15 +654,16 @@ $phoneCountryOptions = [
 }
 
 .booking-btn-secondary {
-    background: #e5e7eb;
-    color: #64748b;
+    background: #ffffff;
+    border: 1px solid #d9e1ec;
+    color: #556176;
 }
 
 .booking-btn-primary {
     margin-left: auto;
-    background: linear-gradient(135deg, #b97aa5 0%, #a85583 100%);
+    background: #1d2840;
     color: #ffffff;
-    box-shadow: 0 16px 34px rgba(168, 85, 131, 0.24);
+    box-shadow: 0 16px 34px rgba(29, 40, 64, 0.18);
 }
 
 .booking-alert {

@@ -132,17 +132,20 @@ try {
 <html>
 <head>
     <title>DineMate Diagnostics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/dashboard-theme.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .diag-box { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #ccc; }
-        .status-OK { border-left-color: #4CAF50; background: #f1f8f4; }
-        .status-ERROR { border-left-color: #f44336; background: #ffebee; }
-        .status-WARNING { border-left-color: #ff9800; background: #fff3e0; }
+        body { font-family: 'Inter', sans-serif; padding: 32px 20px; background: #f5f7fb; }
+        .container { max-width: 980px; margin: 0 auto; background: #ffffff; border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }
+        .diag-box { background: white; padding: 18px; margin: 12px 0; border-radius: 16px; border: 1px solid #e7ecf3; }
+        .status-OK { border-color: #ccefdc; background: #e6f7ee; }
+        .status-ERROR { border-color: #ffd1d7; background: #ffe7ea; }
+        .status-WARNING { border-color: #f3df9a; background: #fff8d8; }
         .key { font-weight: bold; }
-        code { background: #eee; padding: 2px 5px; border-radius: 3px; }
-        h2 { color: #333; }
-        pre { background: #f0f0f0; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        code { background: #eef2f6; padding: 2px 6px; border-radius: 6px; }
+        h1, h2, h3 { color: #162033; }
+        pre { background: #f8fafc; padding: 12px; border-radius: 12px; overflow-x: auto; border: 1px solid #e7ecf3; }
     </style>
 </head>
 <body>

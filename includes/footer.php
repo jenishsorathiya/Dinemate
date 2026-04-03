@@ -73,24 +73,6 @@ if (isLoggedIn() && $footerRole === 'customer') {
 
 <style>
 .footer {
-    background: #0f172a;
-    color: #d1d5db;
-    padding: 60px 0 0 0;
-    margin-top: 80px;
-}
-.footer h4 {
-    color: #f4b400;
-    font-weight: 700;
-    margin-bottom: 15px;
-}
-.footer h5 {
-    color: white;
-    margin-bottom: 15px;
-}
-.footer p {
-    line-height: 1.7;
-}
-.footer-brand,
 .footer .col-md-4 {
     margin-bottom: 24px;
 }
@@ -98,49 +80,16 @@ if (isLoggedIn() && $footerRole === 'customer') {
     max-width: 340px;
 }
 .footer ul {
-    list-style: none;
-    padding: 0;
+.footer .container {
+    max-width: 1320px;
 }
-.footer ul li {
-    margin-bottom: 8px;
+
+.footer p {
+    line-height: 1.7;
 }
-.footer ul li a {
-    text-decoration: none;
-    color: #cbd5e1;
-    transition: 0.3s;
-}
-.footer ul li a:hover {
-    color: #f4b400;
-}
-.social-icons a {
-    color: white;
-    margin-right: 15px;
-    font-size: 20px;
-    transition: 0.3s;
-}
-.social-icons a:hover {
-    color: #f4b400;
-}
-.back-top {
-    margin-top: 20px;
-    padding: 10px 18px;
-    border: 1px solid #f4b400;
-    background: none;
-    color: white;
-    border-radius: 6px;
-    transition: 0.3s;
-}
+
 .back-top:hover {
-    background: #f4b400;
-    color: black;
-}
-.footer-bottom {
-    text-align: center;
-    background: #f4b400;
-    color: black;
-    padding: 10px;
-    margin-top: 40px;
-    font-weight: 500;
+    background: #f8fafc;
 }
 @media (max-width: 767px) {
     .footer {

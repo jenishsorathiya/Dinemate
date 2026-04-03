@@ -42,6 +42,14 @@ margin-top:120px;
 margin-bottom:80px;
 }
 
+.bookings-shell {
+background:#ffffff;
+border:1px solid #e7ecf3;
+border-radius:20px;
+padding:28px;
+box-shadow:0 18px 42px rgba(15,23,42,0.08);
+}
+
 /* CARD GRID */
 
 .booking-grid{
@@ -54,9 +62,10 @@ gap:25px;
 
 .booking-card{
 background:white;
-border-radius:16px;
-padding:25px;
-box-shadow:0 20px 50px rgba(0,0,0,0.08);
+border:1px solid #e7ecf3;
+border-radius:18px;
+padding:22px;
+box-shadow:0 12px 28px rgba(15,23,42,0.06);
 transition:0.3s;
 position:relative;
 overflow:hidden;
@@ -78,12 +87,12 @@ margin-bottom:15px;
 /* TABLE BADGE */
 
 .table-badge{
-background:#f4b400;
-color:black;
-padding:6px 14px;
-border-radius:30px;
+background:#eef2f6;
+color:#556176;
+padding:6px 12px;
+border-radius:999px;
 font-weight:600;
-font-size:14px;
+font-size:12px;
 }
 
 /* STATUS */
@@ -96,13 +105,13 @@ font-weight:600;
 }
 
 .status.confirmed{
-background:#22c55e;
-color:white;
+background:#e6f7ee;
+color:#1d7a53;
 }
 
 .status.pending{
-background:#f4b400;
-color:#111827;
+background:#fff2df;
+color:#b66a11;
 }
 
 /* DETAILS */
@@ -126,20 +135,20 @@ gap:10px;
 }
 
 .btn-edit{
-background:#3b82f6;
+background:#1d2840;
 color:white;
 border:none;
-padding:6px 14px;
-border-radius:8px;
+padding:9px 14px;
+border-radius:12px;
 font-size:13px;
 }
 
 .btn-cancel{
-background:#ef4444;
-color:white;
-border:none;
-padding:6px 14px;
-border-radius:8px;
+background:#ffe7ea;
+color:#c13f56;
+border:1px solid #ffd1d7;
+padding:9px 14px;
+border-radius:12px;
 font-size:13px;
 }
 
@@ -147,6 +156,8 @@ font-size:13px;
 
 
 <div class="container bookings-wrapper">
+
+<div class="bookings-shell">
 
 <h3 class="text-center mb-5">
 
@@ -271,6 +282,8 @@ Book Your First Table
 </div>
 
 <?php endif; ?>
+
+</div>
 
 </div>
 

@@ -132,16 +132,19 @@ try {
 <html>
 <head>
     <title>DineMate Auto-Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/dashboard-theme.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        h1 { color: #333; margin-bottom: 30px; }
+        body { font-family: 'Inter', sans-serif; padding: 32px 20px; background: #f5f7fb; }
+        .container { max-width: 860px; margin: 0 auto; background: white; padding: 32px; border-radius: 20px; border: 1px solid #e7ecf3; box-shadow: 0 18px 42px rgba(15,23,42,0.08); }
+        h1 { color: #162033; margin-bottom: 24px; }
         .section { margin: 20px 0; }
-        .fixed-item { color: #28a745; padding: 8px; margin: 5px 0; border-left: 4px solid #28a745; background: #f0f8f4; }
-        .error-item { color: #dc3545; padding: 8px; margin: 5px 0; border-left: 4px solid #dc3545; background: #fff5f5; }
-        .summary { font-size: 18px; font-weight: bold; margin: 20px 0; padding: 15px; background: #e7f3ff; border-radius: 5px; }
+        .fixed-item { color: #1d7a53; padding: 10px 12px; margin: 8px 0; border: 1px solid #ccefdc; border-radius: 12px; background: #e6f7ee; }
+        .error-item { color: #c13f56; padding: 10px 12px; margin: 8px 0; border: 1px solid #ffd1d7; border-radius: 12px; background: #ffe7ea; }
+        .summary { font-size: 18px; font-weight: bold; margin: 20px 0; padding: 15px; background: #f8fafc; border: 1px solid #e7ecf3; border-radius: 16px; }
         .success { color: #28a745; }
-        .warning { color: #ffc107; }
+        .warning { color: #8c6a06; }
         .error { color: #dc3545; }
     </style>
 </head>
