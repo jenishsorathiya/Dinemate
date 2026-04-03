@@ -8,6 +8,144 @@ requireAdmin();
 ensureTableAreasSchema($pdo);
 ensureBookingTableAssignmentsTable($pdo);
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_layout')) {
+    header('Content-Type: application/json');
+
+    $data = json_decode(file_get_contents('php://input'), true);
+    $payloadTables = isset($data['tables']) && is_array($data['tables']) ? $data['tables'] : [];
+
+    if (empty($payloadTables)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'No tables were supplied']);
+        exit();
+    }
+
+    $normalizedTables = [];
+    $tableKeys = [];
+    $areaIds = [];
+
+    foreach ($payloadTables as $tableRow) {
+        $tableId = (int)($tableRow['table_id'] ?? 0);
+        $tableNumber = trim((string)($tableRow['table_number'] ?? ''));
+        $capacity = (int)($tableRow['capacity'] ?? 0);
+        $areaId = (int)($tableRow['area_id'] ?? 0);
+        $sortOrder = (int)($tableRow['sort_order'] ?? 0);
+        $reservable = !empty($tableRow['reservable']) ? 1 : 0;
+        $layoutX = isset($tableRow['layout_x']) && $tableRow['layout_x'] !== '' ? (int)$tableRow['layout_x'] : null;
+        $layoutY = isset($tableRow['layout_y']) && $tableRow['layout_y'] !== '' ? (int)$tableRow['layout_y'] : null;
+        $tableShape = strtolower(trim((string)($tableRow['table_shape'] ?? 'auto')));
+
+        if (!in_array($tableShape, ['auto', 'circle', 'rect'], true)) {
+            $tableShape = 'auto';
+        }
+
+        if ($tableId < 1 || $tableNumber === '' || $capacity < 1 || $areaId < 1 || $sortOrder < 1) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Each table must include a valid id, table number, capacity, area, and sort order']);
+            exit();
+        }
+
+        $compoundKey = strtolower($tableNumber) . '::' . $areaId;
+        if (isset($tableKeys[$compoundKey])) {
+            http_response_code(409);
+            echo json_encode(['success' => false, 'error' => 'Duplicate table numbers were found in the same area']);
+            exit();
+        }
+
+        $tableKeys[$compoundKey] = true;
+        $areaIds[$areaId] = true;
+        $normalizedTables[] = [
+            'table_id' => $tableId,
+            'table_number' => $tableNumber,
+            'capacity' => $capacity,
+            'area_id' => $areaId,
+            'sort_order' => $sortOrder,
+            'reservable' => $reservable,
+            'layout_x' => $layoutX,
+            'layout_y' => $layoutY,
+            'table_shape' => $tableShape,
+        ];
+    }
+
+    try {
+        $tableIds = array_map(static function ($tableRow) {
+            return (int)$tableRow['table_id'];
+        }, $normalizedTables);
+        $tablePlaceholders = implode(',', array_fill(0, count($tableIds), '?'));
+        $existingTableStmt = $pdo->prepare("SELECT table_id FROM restaurant_tables WHERE table_id IN ($tablePlaceholders)");
+        $existingTableStmt->execute($tableIds);
+        $existingTableIds = array_map('intval', $existingTableStmt->fetchAll(PDO::FETCH_COLUMN));
+        sort($existingTableIds);
+
+        $expectedTableIds = $tableIds;
+        sort($expectedTableIds);
+
+        if ($existingTableIds !== $expectedTableIds) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'One or more tables no longer exist']);
+            exit();
+        }
+
+        $areaIdList = array_keys($areaIds);
+        $areaPlaceholders = implode(',', array_fill(0, count($areaIdList), '?'));
+        $areaStmt = $pdo->prepare("SELECT area_id FROM table_areas WHERE is_active = 1 AND area_id IN ($areaPlaceholders)");
+        $areaStmt->execute($areaIdList);
+        $existingAreaIds = array_map('intval', $areaStmt->fetchAll(PDO::FETCH_COLUMN));
+        sort($existingAreaIds);
+        sort($areaIdList);
+
+        if ($existingAreaIds !== $areaIdList) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'One or more selected areas are invalid']);
+            exit();
+        }
+
+        $pdo->beginTransaction();
+
+        $updateStmt = $pdo->prepare(
+            "UPDATE restaurant_tables
+             SET table_number = ?, capacity = ?, area_id = ?, sort_order = ?, reservable = ?, layout_x = ?, layout_y = ?, table_shape = ?
+             WHERE table_id = ?"
+        );
+
+        foreach ($normalizedTables as $tableRow) {
+            $duplicateStmt = $pdo->prepare("SELECT table_id FROM restaurant_tables WHERE table_number = ? AND area_id = ? AND table_id != ? LIMIT 1");
+            $duplicateStmt->execute([$tableRow['table_number'], $tableRow['area_id'], $tableRow['table_id']]);
+            if ($duplicateStmt->fetchColumn()) {
+                throw new RuntimeException('Table number already exists in one of the selected areas');
+            }
+
+            $updateStmt->execute([
+                $tableRow['table_number'],
+                $tableRow['capacity'],
+                $tableRow['area_id'],
+                $tableRow['sort_order'],
+                $tableRow['reservable'],
+                $tableRow['layout_x'],
+                $tableRow['layout_y'],
+                $tableRow['table_shape'],
+                $tableRow['table_id'],
+            ]);
+        }
+
+        $pdo->commit();
+        echo json_encode(['success' => true]);
+    } catch (RuntimeException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        http_response_code(409);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    }
+    exit();
+}
+
 $tablesStmt = $pdo->query(
     "SELECT rt.table_id,
             rt.table_number,
@@ -148,6 +286,115 @@ $adminSidebarPathPrefix = '';
             color: var(--ops-text);
         }
 
+        .sidebar {
+            width: 126px;
+            background: #ffffff;
+            color: #42506a;
+            padding: 18px 10px;
+            border-right: 1px solid #e9edf4;
+            box-shadow: 8px 0 24px rgba(15, 23, 42, 0.03);
+        }
+
+        .sidebar:hover {
+            width: 210px;
+        }
+
+        .sidebar h4 {
+            color: #0f1b34;
+            margin-bottom: 18px;
+            padding: 0 10px 14px;
+            border-bottom: 1px solid #edf1f6;
+        }
+
+        .sidebar h4 i {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: #f3f6fd;
+            color: #1f4ec9;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .sidebar a {
+            justify-content: center;
+            color: #66748e;
+            border-radius: 10px;
+            min-height: 38px;
+            padding: 9px 12px;
+            margin-bottom: 4px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .sidebar:hover a {
+            justify-content: flex-start;
+        }
+
+        .sidebar a i {
+            font-size: 15px;
+            color: #7f8ca5;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #ffbe49;
+            color: #13203a;
+            box-shadow: none;
+        }
+
+        .sidebar a:hover i,
+        .sidebar a.active i {
+            color: #13203a;
+        }
+
+        .topbar {
+            min-height: 58px;
+            padding: 10px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #eceff5;
+            box-shadow: none;
+        }
+
+        .topbar-left {
+            display: none;
+        }
+
+        .topbar-center {
+            display: none;
+        }
+
+        .topbar-right {
+            gap: 10px;
+        }
+
+        .topbar-icon-button,
+        .topbar-action-button,
+        .topbar-profile {
+            border-radius: 10px;
+            border-color: #edf1f6;
+            box-shadow: none;
+        }
+
+        .topbar-action-button.has-pending {
+            background: #fff1f3;
+            color: #d74f65;
+            border-color: #ffe0e5;
+        }
+
+        .topbar-profile {
+            padding-right: 8px;
+        }
+
+        .topbar-profile-icon {
+            width: 28px;
+            height: 28px;
+            background: #15213b;
+            font-size: 13px;
+        }
+
         .admin-layout {
             display: flex;
             min-height: 100vh;
@@ -161,7 +408,7 @@ $adminSidebarPathPrefix = '';
         }
 
         .page-shell {
-            padding: 24px;
+            padding: 20px 18px 24px;
             display: flex;
             flex-direction: column;
             gap: 18px;
@@ -202,7 +449,7 @@ $adminSidebarPathPrefix = '';
         }
 
         .page-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             margin: 0 0 4px;
             color: #1a2846;
@@ -219,6 +466,13 @@ $adminSidebarPathPrefix = '';
             gap: 10px;
             flex-wrap: wrap;
             justify-content: flex-end;
+        }
+
+        .section-note {
+            margin: 2px 0 0;
+            color: #7a879e;
+            font-size: 11px;
+            line-height: 1.4;
         }
 
         .ops-button {
@@ -279,6 +533,17 @@ $adminSidebarPathPrefix = '';
             box-shadow: none;
         }
 
+        .ops-button.add-accent {
+            background: #ffb52f;
+            border-color: #ffb52f;
+            color: #182440;
+        }
+
+        .ops-button.add-accent:hover {
+            background: #f2ab2d;
+            color: #182440;
+        }
+
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -286,10 +551,11 @@ $adminSidebarPathPrefix = '';
         }
 
         .metric-card {
-            padding: 14px 16px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
             gap: 12px;
+            min-height: 78px;
         }
 
         .metric-icon {
@@ -332,7 +598,7 @@ $adminSidebarPathPrefix = '';
         }
 
         .section-card {
-            padding: 16px;
+            padding: 14px;
         }
 
         .section-header {
@@ -359,7 +625,7 @@ $adminSidebarPathPrefix = '';
         .area-card {
             border: 1px solid var(--ops-border);
             border-radius: 14px;
-            padding: 14px 14px 10px;
+            padding: 12px;
             background: #ffffff;
             box-shadow: var(--ops-shadow-soft);
         }
@@ -367,6 +633,18 @@ $adminSidebarPathPrefix = '';
         .area-card-summary {
             margin-left: auto;
             text-align: right;
+        }
+
+        .area-menu {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            border: 1px solid #eef2f7;
+            color: #8a97ad;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
         }
 
         .area-utilization {
@@ -444,6 +722,13 @@ $adminSidebarPathPrefix = '';
             padding: 14px;
         }
 
+        .tools-caption,
+        .inventory-caption {
+            margin: -6px 0 10px;
+            font-size: 11px;
+            color: #8a97ad;
+        }
+
         .tools-card,
         .inspector-card {
             position: sticky;
@@ -515,6 +800,12 @@ $adminSidebarPathPrefix = '';
             color: #33415f;
             text-align: left;
             transition: 0.18s ease;
+        }
+
+        .section-chip i {
+            margin-left: auto;
+            color: #9aa6ba;
+            font-size: 11px;
         }
 
         .section-chip:hover,
@@ -616,6 +907,39 @@ $adminSidebarPathPrefix = '';
             justify-content: space-between;
             gap: 12px;
             margin-bottom: 12px;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 9;
+        }
+
+        .canvas-toolbar-button,
+        .canvas-zoom-button {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid #e6ebf4;
+            background: rgba(255,255,255,0.94);
+            color: #5f6d86;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
+        }
+
+        .canvas-zoom-stack {
+            position: absolute;
+            right: 12px;
+            top: 144px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 9;
         }
 
         .editor-tools {
@@ -936,6 +1260,15 @@ $adminSidebarPathPrefix = '';
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        .table-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
         }
 
         .inventory-footer {
@@ -1286,7 +1619,10 @@ $adminSidebarPathPrefix = '';
 
             <section class="ops-card section-card">
                 <div class="section-header">
-                    <h2 class="section-title">Area Overview</h2>
+                    <div>
+                        <h2 class="section-title">Area Overview</h2>
+                        <p class="section-note">Manage your venue sections and view table and seat counts.</p>
+                    </div>
                     <button type="button" class="ops-button small" id="openAddAreaButton"><i class="fa-solid fa-plus"></i> Add Area</button>
                 </div>
                 <div class="area-grid" id="areaOverviewGrid"></div>
@@ -1297,7 +1633,8 @@ $adminSidebarPathPrefix = '';
                     <div class="tools-stack">
                         <div>
                             <h3 class="stack-title">Layout Tools</h3>
-                            <button type="button" class="ops-button primary w-100" id="sidebarAddTableButton"><i class="fa-solid fa-plus"></i> Add Table to Layout</button>
+                            <p class="tools-caption">Drag tables onto the layout</p>
+                            <button type="button" class="ops-button add-accent w-100" id="sidebarAddTableButton"><i class="fa-solid fa-plus"></i> Add Table</button>
                         </div>
                         <div>
                             <h3 class="stack-title">Sections</h3>
@@ -1342,7 +1679,17 @@ $adminSidebarPathPrefix = '';
                     </div>
                     <div class="inline-message" id="layoutMessage"></div>
                     <div class="canvas-shell" id="canvasShell">
-                        <div class="layout-canvas show-grid" id="layoutCanvas"></div>
+                        <div class="layout-canvas show-grid" id="layoutCanvas">
+                            <div class="canvas-toolbar">
+                                <button type="button" class="canvas-toolbar-button" aria-label="Select tool"><i class="fa-solid fa-arrow-pointer"></i></button>
+                                <button type="button" class="canvas-toolbar-button" aria-label="Hand tool"><i class="fa-regular fa-hand"></i></button>
+                                <button type="button" class="canvas-toolbar-button" aria-label="Grid tool"><i class="fa-solid fa-grip"></i></button>
+                            </div>
+                            <div class="canvas-zoom-stack">
+                                <button type="button" class="canvas-zoom-button" id="canvasZoomIn" aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" class="canvas-zoom-button" id="canvasZoomOut" aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button>
+                            </div>
+                        </div>
                     </div>
                     <div class="canvas-tip"><i class="fa-solid fa-lightbulb"></i> Tip: Click any table to edit. Drag to move. Changes are saved when you click Save Layout.</div>
                 </div>
@@ -1394,7 +1741,10 @@ $adminSidebarPathPrefix = '';
 
             <section class="ops-card inventory-card">
                 <div class="section-header">
-                    <h2 class="section-title">Table Inventory</h2>
+                    <div>
+                        <h2 class="section-title">Table Inventory</h2>
+                        <p class="inventory-caption">View and manage all tables in your venue.</p>
+                    </div>
                 </div>
                 <div class="inventory-toolbar">
                     <div class="inventory-controls">
@@ -1402,6 +1752,7 @@ $adminSidebarPathPrefix = '';
                         <select class="filter-select" id="inventoryAreaFilter"></select>
                     </div>
                     <div class="inventory-controls">
+                        <button type="button" class="ops-button small" id="inventoryFilterButton"><i class="fa-solid fa-filter"></i> Filter</button>
                         <button type="button" class="ops-button small" id="exportInventoryButton"><i class="fa-solid fa-download"></i> Export</button>
                     </div>
                 </div>
@@ -1545,6 +1896,7 @@ let showGrid = true;
 let snapToGrid = true;
 let showLabels = true;
 let editingAreaId = null;
+let canvasScale = 1;
 
 const inventoryPageSize = 7;
 const metricsGrid = document.getElementById('metricsGrid');
@@ -1574,6 +1926,8 @@ const areaModalShell = document.getElementById('areaModalShell');
 const modalBackdrop = document.getElementById('modalBackdrop');
 const tableModalMessage = document.getElementById('tableModalMessage');
 const areaModalMessage = document.getElementById('areaModalMessage');
+const canvasZoomInButton = document.getElementById('canvasZoomIn');
+const canvasZoomOutButton = document.getElementById('canvasZoomOut');
 
 function escapeHtml(value) {
     return `${value ?? ''}`
@@ -1823,6 +2177,7 @@ function renderAreaOverview() {
                         <p class="area-meta">${totalSeats} Seats</p>
                     </div>
                     <div class="area-card-summary">
+                        <button type="button" class="area-menu" aria-label="Area options"><i class="fa-solid fa-ellipsis"></i></button>
                         <span class="area-utilization">${areaTables.length ? Math.round((placedCount / areaTables.length) * 100) : 0}% placed</span>
                     </div>
                 </div>
@@ -1843,6 +2198,7 @@ function renderSectionList() {
             <button type="button" class="section-chip${activeClass}" onclick="setSectionFilter('${section.area_id}')">
                 <span class="chip-dot" style="background:${tone.cardIconColor};"></span>
                 <span>${escapeHtml(section.name)}</span>
+                <i class="fa-regular fa-eye"></i>
             </button>
         `;
     }).join('');
@@ -1892,6 +2248,8 @@ function renderCanvas() {
 
     layoutCanvas.classList.toggle('show-grid', showGrid);
     layoutCanvas.innerHTML = `${decorMarkup}${zoneMarkup}${tableMarkup}`;
+    layoutCanvas.style.transform = `scale(${canvasScale})`;
+    layoutCanvas.style.transformOrigin = 'top left';
 
     layoutCanvas.querySelectorAll('.layout-table').forEach(button => {
         button.addEventListener('mousedown', handleTableMouseDown);
@@ -1943,7 +2301,7 @@ function renderInventory() {
             const position = getNormalizedTablePosition(table);
             return `
                 <tr>
-                    <td>${escapeHtml(formatTableLabel(table.table_number))}</td>
+                    <td><span class="table-dot" style="background:${tone.cardIconColor};"></span>${escapeHtml(formatTableLabel(table.table_number))}</td>
                     <td>${Number(table.capacity)} seats</td>
                     <td><span class="area-badge" style="background:${tone.areaBadgeBg};color:${tone.areaBadgeColor};">${escapeHtml(area ? area.name : table.area_name)}</span></td>
                     <td><span class="status-badge ${Number(table.reservable) ? 'yes' : 'no'}">${Number(table.reservable) ? 'Yes' : 'No'}</span></td>
@@ -2343,7 +2701,7 @@ async function saveLayout() {
     saveLayoutButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
     recomputeSortOrders();
     try {
-        const response = await fetch('save-table-layout.php', {
+        const response = await fetch('tables-management.php?action=save_layout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2393,6 +2751,13 @@ function resetLayout() {
 
 function fitView() {
     canvasShell.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    canvasScale = 1;
+    renderCanvas();
+}
+
+function changeCanvasZoom(direction) {
+    canvasScale = clamp(Number((canvasScale + direction).toFixed(2)), 0.8, 1.2);
+    renderCanvas();
 }
 
 function exportInventory() {
@@ -2428,7 +2793,12 @@ document.getElementById('deleteTableButton').addEventListener('click', function 
         deleteTable(selectedTableId);
     }
 });
+document.getElementById('inventoryFilterButton').addEventListener('click', function () {
+    inventoryAreaFilterSelect.focus();
+});
 document.getElementById('exportInventoryButton').addEventListener('click', exportInventory);
+canvasZoomInButton.addEventListener('click', function () { changeCanvasZoom(0.05); });
+canvasZoomOutButton.addEventListener('click', function () { changeCanvasZoom(-0.05); });
 document.getElementById('toggleGrid').addEventListener('change', function (event) {
     showGrid = event.target.checked;
     renderCanvas();
