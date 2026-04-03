@@ -73,6 +73,35 @@ h3,
     font-weight: 600;
 }
 
+.hero h1,
+.hero h2,
+.hero h3,
+.hero h4,
+.hero h5,
+.hero h6,
+.about-hero h1,
+.about-hero h2,
+.about-hero h3,
+.about-hero h4,
+.about-hero h5,
+.about-hero h6,
+.auth-right-content h1,
+.auth-right-content h2,
+.auth-right-content h3,
+.auth-right-content h4,
+.auth-right-content h5,
+.auth-right-content h6 {
+    color: #ffffff;
+    text-shadow: 0 10px 28px rgba(10, 18, 32, 0.35);
+}
+
+.hero p,
+.about-hero p,
+.auth-right-content p {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 8px 22px rgba(10, 18, 32, 0.28);
+}
+
 p,
 li,
 input,
