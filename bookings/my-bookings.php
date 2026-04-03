@@ -1,12 +1,9 @@
 <?php
 require_once "../config/db.php";
-require_once "../includes/session-check.php";
 require_once "../includes/functions.php";
+require_once "../includes/session-check.php";
 
-if(!isCustomer()){
-header("Location: ../auth/login.php");
-exit();
-}
+requireCustomer();
 
 $stmt = $pdo->prepare("
 SELECT b.*, t.table_number
@@ -17,8 +14,21 @@ WHERE b.user_id = ?
 ORDER BY b.booking_date DESC
 ");
 
-$stmt->execute([$_SESSION['user_id']]);
+$stmt->execute([getCurrentUserId()]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$today = date('Y-m-d');
+$upcomingBookings = [];
+$pastBookings = [];
+
+foreach ($bookings as $booking) {
+	$isUpcoming = ($booking['booking_date'] >= $today) && (($booking['status'] ?? '') !== 'cancelled');
+	if ($isUpcoming) {
+		$upcomingBookings[] = $booking;
+	} else {
+		$pastBookings[] = $booking;
+	}
+}
 ?>
 
 <?php include "../includes/header.php"; ?>
@@ -145,11 +155,10 @@ My Reservations
 
 </h3>
 
-<?php if($bookings): ?>
-
-<div class="booking-grid">
-
-<?php foreach($bookings as $b): ?>
+<?php if($upcomingBookings): ?>
+<h4 class="mb-4">Upcoming Bookings</h4>
+<div class="booking-grid mb-5">
+<?php foreach($upcomingBookings as $b): ?>
 
 <div class="booking-card">
 
@@ -213,7 +222,43 @@ Cancel
 
 </div>
 
-<?php else: ?>
+<?php endif; ?>
+
+<?php if($pastBookings): ?>
+<h4 class="mb-4">Past Bookings</h4>
+<div class="booking-grid">
+<?php foreach($pastBookings as $b): ?>
+
+<div class="booking-card">
+
+<div class="booking-header">
+
+<div class="table-badge">
+<?= $b['table_number'] ? 'Table ' . htmlspecialchars($b['table_number']) : 'Table assignment pending' ?>
+</div>
+
+<div class="status <?= htmlspecialchars($b['status']) ?>">
+<?= ucfirst($b['status']) ?>
+</div>
+
+</div>
+
+<div class="booking-details">
+<p><i class="fa fa-calendar"></i> <strong>Date:</strong> <?= $b['booking_date'] ?></p>
+<p><i class="fa fa-clock"></i> <strong>Time:</strong> <?= date("h:i A",strtotime($b['start_time'])) ?>  -  <?= date("h:i A",strtotime($b['end_time'])) ?></p>
+<p><i class="fa fa-users"></i> <strong>Guests:</strong> <?= $b['number_of_guests'] ?></p>
+<?php if(!empty($b['special_request'])): ?>
+<p><i class="fa fa-note-sticky"></i> <strong>Note:</strong> <?= htmlspecialchars($b['special_request']) ?></p>
+<?php endif; ?>
+</div>
+
+</div>
+
+<?php endforeach; ?>
+</div>
+<?php endif; ?>
+
+<?php if(!$upcomingBookings && !$pastBookings): ?>
 
 <div class="text-center">
 

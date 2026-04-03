@@ -7,11 +7,7 @@ header('Content-Type: application/json');
 
 ensureBookingRequestColumns($pdo);
 
-if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
-    exit();
-}
+requireAdmin(['json' => true]);
 
 $data = json_decode(file_get_contents('php://input'), true);
 

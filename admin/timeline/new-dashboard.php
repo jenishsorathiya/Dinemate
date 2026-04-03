@@ -1,15 +1,10 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/config/db.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/functions.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 
-// Check if user is admin
-if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: admin-login.php');
-    exit();
-}
+requireAdmin();
 
-// Get all tables
 ensureBookingRequestColumns($pdo);
 ensureBookingTableAssignmentsTable($pdo);
 ensureTableAreasSchema($pdo);
@@ -24,7 +19,6 @@ $tables = $pdo->query("
     ORDER BY ta.display_order ASC, ta.name ASC, rt.sort_order ASC, rt.table_number + 0, rt.table_number ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-// Get selected date (default to today)
 $selectedDate = $_GET['date'] ?? date('Y-m-d');
 $selectedDayName = date('l', strtotime($selectedDate));
 $isCurrentDate = ($selectedDate === date('Y-m-d'));
@@ -33,7 +27,6 @@ $selectedDateDisplay = date('j F, Y', strtotime($selectedDate));
 $selectedYearDisplay = date('Y', strtotime($selectedDate));
 $selectedShortDateDisplay = date('D, M d', strtotime($selectedDate));
 
-// Get bookings for selected date
 $stmt = $pdo->prepare("
     SELECT b.*, COALESCE(b.customer_name_override, b.customer_name, u.name) as customer_name,
            GROUP_CONCAT(DISTINCT bta.table_id ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ',') AS assigned_table_ids,
@@ -91,7 +84,6 @@ foreach ($bookings as &$booking) {
 }
 unset($booking);
 
-// Convert bookings to JS array
 $bookingsJson = json_encode($bookings);
 
 $adminPageTitle = 'Timeline';
@@ -211,127 +203,6 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             display: flex;
             flex-direction: column;
             overflow: hidden;
-        }
-
-        .topbar {
-            background: white;
-            min-height: 78px;
-            padding: 0 30px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .topbar-left,
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .topbar-left {
-            min-width: 0;
-        }
-
-        .topbar-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: #f4b400;
-            font-size: 28px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .topbar-brand-label {
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        .topbar-page {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
-            color: #111827;
-        }
-
-        .topbar-page i {
-            color: #111827;
-            font-size: 20px;
-        }
-
-        .topbar-page-title {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 700;
-            color: #1f2937;
-            white-space: nowrap;
-        }
-
-        .topbar-right {
-            margin-left: auto;
-            white-space: nowrap;
-        }
-
-        .topbar-icon-button {
-            position: relative;
-            width: 44px;
-            height: 44px;
-            border: none;
-            border-radius: 14px;
-            background: #f9fafb;
-            color: #111827;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .topbar-badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            min-width: 20px;
-            height: 20px;
-            padding: 0 6px;
-            border-radius: 999px;
-            background: #ef4444;
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .topbar-profile {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 10px 6px 6px;
-            border-radius: 16px;
-            background: #f9fafb;
-        }
-
-        .topbar-profile-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 999px;
-            background: #111827;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .topbar-profile-name {
-            color: #374151;
-            font-weight: 600;
         }
 
         .timeline-panel-tools {
@@ -1144,20 +1015,6 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         }
 
         @media (max-width: 1100px) {
-            .topbar {
-                flex-wrap: wrap;
-            }
-
-            .topbar-left,
-            .topbar-right {
-                flex: 1 1 100%;
-            }
-
-            .topbar-left,
-            .topbar-right {
-                justify-content: space-between;
-            }
-
             .timeline-date-card {
                 grid-template-columns: 1fr;
                 grid-template-areas:
@@ -1756,6 +1613,12 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         </a>
         <a href="new-dashboard.php" class="active">
             <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
+        </a>
+        <a href="../bookings-management.php">
+            <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
+        </a>
+        <a href="../tables-management.php">
+            <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
         </a>
         <a href="../menu-management.php">
             <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>

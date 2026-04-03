@@ -46,6 +46,119 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     : 'pending-bookings-feed.php';
 ?>
 <style>
+    .topbar {
+        min-height: 78px;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 30px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        flex-shrink: 0;
+        gap: 20px;
+    }
+
+    .topbar-left,
+    .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .topbar-left {
+        min-width: 0;
+    }
+
+    .topbar-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .topbar-page {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        color: #111827;
+    }
+
+    .topbar-page i {
+        color: #111827;
+        font-size: 20px;
+    }
+
+    .topbar-page-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #111827;
+        white-space: nowrap;
+    }
+
+    .topbar-right {
+        margin-left: auto;
+        white-space: nowrap;
+    }
+
+    .topbar-icon-button {
+        position: relative;
+        width: 44px;
+        height: 44px;
+        border: none;
+        border-radius: 14px;
+        background: #f9fafb;
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .topbar-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .topbar-profile {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px 6px 6px;
+        border-radius: 16px;
+        background: #f9fafb;
+    }
+
+    .topbar-profile-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        background: #111827;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .topbar-profile-name {
+        color: #374151;
+        font-weight: 600;
+    }
+
     .topbar-pending-launcher {
         position: relative;
     }
@@ -194,6 +307,40 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         color: #64748b;
         padding: 12px 6px;
         text-align: center;
+    }
+
+    @media (max-width: 991px) {
+        .topbar {
+            padding: 18px 20px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .topbar-left,
+        .topbar-center,
+        .topbar-right {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .topbar-center {
+            order: 3;
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .topbar-page-title {
+            font-size: 18px;
+        }
+
+        .topbar-right {
+            gap: 10px;
+        }
+
+        .topbar-profile-name {
+            display: none;
+        }
     }
 </style>
 <div class="topbar">

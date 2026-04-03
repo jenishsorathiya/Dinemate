@@ -1,13 +1,9 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/config/db.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/functions.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 
-// Check if user is admin
-if(!isAdmin()) {
-    header("Location: ../auth/login.php");
-    exit();
-}
+requireAdmin();
 
 // Get dashboard statistics
 $totalBookings = $pdo->query("SELECT COUNT(*) FROM bookings")->fetchColumn();
@@ -197,127 +193,6 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             display: flex;
             flex-direction: column;
             overflow: hidden;
-        }
-        
-        /* TOPBAR */
-        .topbar {
-            min-height: 78px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            flex-shrink: 0;
-            gap: 20px;
-        }
-
-        .topbar-left,
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .topbar-left {
-            min-width: 0;
-        }
-
-        .topbar-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: #f4b400;
-            font-size: 28px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .topbar-brand-label {
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        .topbar-page {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
-            color: #111827;
-        }
-
-        .topbar-page i {
-            color: #111827;
-            font-size: 20px;
-        }
-
-        .topbar-page-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #111827;
-            white-space: nowrap;
-        }
-
-        .topbar-right {
-            margin-left: auto;
-            white-space: nowrap;
-        }
-
-        .topbar-icon-button {
-            position: relative;
-            width: 44px;
-            height: 44px;
-            border: none;
-            border-radius: 14px;
-            background: #f9fafb;
-            color: #111827;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .topbar-badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            min-width: 20px;
-            height: 20px;
-            padding: 0 6px;
-            border-radius: 999px;
-            background: #ef4444;
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .topbar-profile {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 10px 6px 6px;
-            border-radius: 16px;
-            background: #f9fafb;
-        }
-
-        .topbar-profile-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 999px;
-            background: #111827;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .topbar-profile-name {
-            color: #374151;
-            font-weight: 600;
         }
         
         body.dark-mode .topbar {
@@ -515,23 +390,6 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             color: white;
         }
         
-        @media (max-width: 992px) {
-            .topbar {
-                padding: 16px 20px;
-                flex-wrap: wrap;
-                height: auto;
-            }
-
-            .topbar-left,
-            .topbar-right {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .topbar-page-title {
-                font-size: 18px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -546,6 +404,12 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     </a>
     <a href="timeline/new-dashboard.php">
         <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
+    </a>
+    <a href="bookings-management.php">
+        <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
+    </a>
+    <a href="tables-management.php">
+        <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
     </a>
     <a href="menu-management.php">
         <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>

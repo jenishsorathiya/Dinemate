@@ -1,129 +1,131 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
-session_start();
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/session-check.php';
 
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header('Location: admin-login.php');
-    exit();
-}
+requireAdmin();
 
-// Handle form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action'])) {
-        $action = $_POST['action'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    $action = $_POST['action'];
 
-        if ($action === 'add') {
-            // Handle image upload
-            $imagePath = '';
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = __DIR__ . '/../assets/images/menu/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-
-                $fileName = uniqid() . '_' . basename($_FILES['image']['name']);
-                $targetPath = $uploadDir . $fileName;
-
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-                    $imagePath = 'assets/images/menu/' . $fileName;
-                }
+    if ($action === 'add') {
+        $imagePath = '';
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../assets/images/menu/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
             }
 
-            // Add menu item
-            $stmt = $pdo->prepare("INSERT INTO menu_items (name, description, price, category, image, dietary_info, is_available) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([
-                $_POST['name'],
-                $_POST['description'],
-                $_POST['price'],
-                $_POST['category'],
-                $imagePath,
-                $_POST['dietary_info'],
-                isset($_POST['is_available']) ? 1 : 0
-            ]);
-        } elseif ($action === 'edit') {
-            $itemId = $_POST['id'];
+            $fileName = uniqid() . '_' . basename($_FILES['image']['name']);
+            $targetPath = $uploadDir . $fileName;
 
-            // Handle image upload for edit
-            $imagePath = $_POST['current_image'];
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = __DIR__ . '/../assets/images/menu/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-
-                $fileName = uniqid() . '_' . basename($_FILES['image']['name']);
-                $targetPath = $uploadDir . $fileName;
-
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-                    // Delete old image if exists
-                    if (!empty($_POST['current_image'])) {
-                        $oldImagePath = __DIR__ . '/../' . $_POST['current_image'];
-                        if (file_exists($oldImagePath)) {
-                            unlink($oldImagePath);
-                        }
-                    }
-                    $imagePath = 'assets/images/menu/' . $fileName;
-                }
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
+                $imagePath = 'assets/images/menu/' . $fileName;
             }
-
-            // Update menu item
-            $stmt = $pdo->prepare("UPDATE menu_items SET name=?, description=?, price=?, category=?, image=?, dietary_info=?, is_available=? WHERE id=?");
-            $stmt->execute([
-                $_POST['name'],
-                $_POST['description'],
-                $_POST['price'],
-                $_POST['category'],
-                $imagePath,
-                $_POST['dietary_info'],
-                isset($_POST['is_available']) ? 1 : 0,
-                $itemId
-            ]);
-        } elseif ($action === 'delete') {
-            $itemId = $_POST['id'];
-
-            // Get image path before deleting
-            $stmt = $pdo->prepare("SELECT image FROM menu_items WHERE id = ?");
-            $stmt->execute([$itemId]);
-            $item = $stmt->fetch();
-
-            // Delete image file if exists
-            if (!empty($item['image'])) {
-                $imagePath = __DIR__ . '/../' . $item['image'];
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
-                }
-            }
-
-            // Delete menu item
-            $stmt = $pdo->prepare("DELETE FROM menu_items WHERE id = ?");
-            $stmt->execute([$itemId]);
         }
+
+        $stmt = $pdo->prepare("INSERT INTO menu_items (name, description, price, category, image, dietary_info, is_available) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $_POST['name'] ?? '',
+            $_POST['description'] ?? '',
+            $_POST['price'] ?? 0,
+            $_POST['category'] ?? '',
+            $imagePath,
+            $_POST['dietary_info'] ?? '',
+            isset($_POST['is_available']) ? 1 : 0,
+        ]);
+    } elseif ($action === 'edit') {
+        $itemId = (int) ($_POST['id'] ?? 0);
+        $imagePath = $_POST['current_image'] ?? '';
+
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../assets/images/menu/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $fileName = uniqid() . '_' . basename($_FILES['image']['name']);
+            $targetPath = $uploadDir . $fileName;
+
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
+                if (!empty($_POST['current_image'])) {
+                    $oldImagePath = __DIR__ . '/../' . $_POST['current_image'];
+                    if (is_file($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+
+                $imagePath = 'assets/images/menu/' . $fileName;
+            }
+        }
+
+        $stmt = $pdo->prepare("UPDATE menu_items SET name = ?, description = ?, price = ?, category = ?, image = ?, dietary_info = ?, is_available = ? WHERE id = ?");
+        $stmt->execute([
+            $_POST['name'] ?? '',
+            $_POST['description'] ?? '',
+            $_POST['price'] ?? 0,
+            $_POST['category'] ?? '',
+            $imagePath,
+            $_POST['dietary_info'] ?? '',
+            isset($_POST['is_available']) ? 1 : 0,
+            $itemId,
+        ]);
+    } elseif ($action === 'delete') {
+        $itemId = (int) ($_POST['id'] ?? 0);
+
+        $imageStmt = $pdo->prepare("SELECT image FROM menu_items WHERE id = ?");
+        $imageStmt->execute([$itemId]);
+        $existingItem = $imageStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!empty($existingItem['image'])) {
+            $imageFilePath = __DIR__ . '/../' . $existingItem['image'];
+            if (is_file($imageFilePath)) {
+                unlink($imageFilePath);
+            }
+        }
+
+        $deleteStmt = $pdo->prepare("DELETE FROM menu_items WHERE id = ?");
+        $deleteStmt->execute([$itemId]);
     }
 
-    // Redirect to avoid form resubmission
     header('Location: menu-management.php');
     exit();
 }
 
-// Fetch menu items grouped by category
-$categories = ['Small Plates', 'Large Plates', 'House Specials', 'Burgers', 'Sides', 'Kiddies', 'Desserts'];
+$categories = [
+    'Entrees',
+    'Mains',
+    'Burgers',
+    'Sides',
+    'Kids',
+    'Desserts',
+    'Drinks',
+];
+
+$editItem = null;
+if (isset($_GET['edit'])) {
+    $editStmt = $pdo->prepare("SELECT * FROM menu_items WHERE id = ?");
+    $editStmt->execute([(int) $_GET['edit']]);
+    $editItem = $editStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+$menuItemsStmt = $pdo->query("SELECT * FROM menu_items ORDER BY category ASC, name ASC");
+$menuItemsRaw = $menuItemsStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 $menuItems = [];
 
 foreach ($categories as $category) {
-    $stmt = $pdo->prepare("SELECT * FROM menu_items WHERE category = ? ORDER BY name");
-    $stmt->execute([$category]);
-    $menuItems[$category] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $menuItems[$category] = [];
 }
 
-// Get item for editing if requested
-$editItem = null;
-if (isset($_GET['edit'])) {
-    $stmt = $pdo->prepare("SELECT * FROM menu_items WHERE id = ?");
-    $stmt->execute([$_GET['edit']]);
-    $editItem = $stmt->fetch(PDO::FETCH_ASSOC);
+foreach ($menuItemsRaw as $item) {
+    $category = $item['category'] ?? 'Uncategorized';
+    if (!isset($menuItems[$category])) {
+        $menuItems[$category] = [];
+    }
+    $menuItems[$category][] = $item;
 }
 
-$adminPageTitle = 'Menu';
+$adminPageTitle = 'Menu Management';
 $adminPageIcon = 'fa-utensils';
 $adminNotificationCount = 0;
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
@@ -135,18 +137,17 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     <title>Menu Management | DineMate Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
             font-family: 'Poppins', sans-serif;
-            background: #f8f9fa;
+            background: #f4f6f9;
         }
 
         .admin-layout {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         .sidebar {
@@ -232,144 +233,6 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             display: flex;
             flex-direction: column;
             overflow: hidden;
-        }
-
-        .topbar {
-            min-height: 78px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            flex-shrink: 0;
-            gap: 20px;
-        }
-
-        .topbar-left,
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .topbar-left {
-            min-width: 0;
-        }
-
-        .topbar-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: #f4b400;
-            font-size: 28px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .topbar-brand-label {
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        .topbar-page {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
-            color: #111827;
-        }
-
-        .topbar-page i {
-            color: #111827;
-            font-size: 20px;
-        }
-
-        .topbar-page-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #111827;
-            white-space: nowrap;
-        }
-
-        .topbar-right {
-            margin-left: auto;
-            white-space: nowrap;
-        }
-
-        .topbar-icon-button {
-            position: relative;
-            width: 44px;
-            height: 44px;
-            border: none;
-            border-radius: 14px;
-            background: #f9fafb;
-            color: #111827;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .topbar-badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            min-width: 20px;
-            height: 20px;
-            padding: 0 6px;
-            border-radius: 999px;
-            background: #ef4444;
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .topbar-profile {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 10px 6px 6px;
-            border-radius: 16px;
-            background: #f9fafb;
-        }
-
-        .topbar-profile-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 999px;
-            background: #111827;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .topbar-profile-name {
-            color: #374151;
-            font-weight: 600;
-        }
-
-        @media (max-width: 992px) {
-            .topbar {
-                padding: 16px 20px;
-                flex-wrap: wrap;
-                height: auto;
-            }
-
-            .topbar-left,
-            .topbar-right {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .topbar-page-title {
-                font-size: 18px;
-            }
         }
 
         .admin-container {
@@ -624,10 +487,6 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 width: 88px;
             }
 
-            .topbar {
-                padding: 0 20px;
-            }
-
             .form-row {
                 grid-template-columns: 1fr;
             }
@@ -658,6 +517,12 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         </a>
         <a href="timeline/new-dashboard.php">
             <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
+        </a>
+        <a href="bookings-management.php">
+            <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
+        </a>
+        <a href="tables-management.php">
+            <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
         </a>
         <a href="menu-management.php" class="active">
             <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>

@@ -1,5 +1,6 @@
 <?php
 require_once "../config/db.php";
+require_once "../includes/functions.php";
 session_start();
 
 // Prevent session fixation
@@ -58,18 +59,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if ($password_valid) {
-            // Set session variables for admin
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['name'] = $user['name'];
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['logged_in'] = true;
+            storeUserSession($user);
             $_SESSION['admin_logged_in'] = true;
 
             // Optional: Log successful admin login (for audit trail)
             // logAdminLogin($user['user_id'], 'success');
 
-            header("Location: dashboard.php");
+            header("Location: " . getPostLoginRedirect($user['role'] ?? null));
             exit;
         }
 

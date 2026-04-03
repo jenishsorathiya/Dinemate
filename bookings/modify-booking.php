@@ -1,14 +1,11 @@
- <?php
+<?php
 require_once "../config/db.php";
-require_once "../includes/session-check.php";
 require_once "../includes/functions.php";
+require_once "../includes/session-check.php";
 
 ensureBookingRequestColumns($pdo);
 
-if(! isCustomer()){
-    header("Location: ../auth/login.php");
-    exit();
-}
+requireCustomer();
 if(!isset($_GET['id'])){
     header("Location: my-bookings.php");
     exit();
@@ -21,7 +18,7 @@ $stmt = $pdo->prepare("
 SELECT * FROM bookings 
 WHERE booking_id = ? AND user_id = ?
 ");
-$stmt->execute([$booking_id, $_SESSION['user_id']]);
+$stmt->execute([$booking_id, getCurrentUserId()]);
 $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if(!$booking){
@@ -91,7 +88,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                     $guests,
                     $special,
                     $booking_id,
-                    $_SESSION['user_id']
+                    getCurrentUserId()
                 ]);
 
                 $success = "Booking request updated. Table assignment will be handled by staff.";

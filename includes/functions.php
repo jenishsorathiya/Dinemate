@@ -5,8 +5,56 @@ function redirect($location) {
     exit();
 }
 
+function appPath($path = '') {
+    $documentRootPath = realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: '';
+    $projectRootPath = realpath(__DIR__ . '/..') ?: '';
+    $basePath = '';
+
+    if ($documentRootPath !== '' && $projectRootPath !== '') {
+        $normalizedDocumentRoot = str_replace('\\', '/', $documentRootPath);
+        $normalizedProjectRoot = str_replace('\\', '/', $projectRootPath);
+        if (strpos($normalizedProjectRoot, $normalizedDocumentRoot) === 0) {
+            $basePath = str_replace('\\', '/', substr($normalizedProjectRoot, strlen($normalizedDocumentRoot)));
+        }
+    }
+
+    $basePath = rtrim($basePath, '/');
+    return ($basePath !== '' ? $basePath : '') . '/' . ltrim($path, '/');
+}
+
 function sanitize($data) {
     return htmlspecialchars(trim($data));
+}
+
+function storeUserSession(array $user) {
+    $_SESSION['user_id'] = $user['user_id'];
+    $_SESSION['role'] = $user['role'] ?? null;
+    $_SESSION['name'] = $user['name'] ?? 'User';
+    $_SESSION['email'] = $user['email'] ?? null;
+    $_SESSION['logged_in'] = true;
+}
+
+function consumeRedirectUrl() {
+    $redirectUrl = $_SESSION['redirect_url'] ?? null;
+    unset($_SESSION['redirect_url']);
+    return $redirectUrl;
+}
+
+function getDefaultRedirectForRole($role) {
+    if ($role === 'admin') {
+        return appPath('admin/timeline/new-dashboard.php');
+    }
+
+    return appPath('index.php');
+}
+
+function getPostLoginRedirect($role) {
+    $redirectUrl = consumeRedirectUrl();
+    if (!empty($redirectUrl)) {
+        return $redirectUrl;
+    }
+
+    return getDefaultRedirectForRole($role);
 }
 
 function isAdmin() {
@@ -43,24 +91,49 @@ function getCurrentUserRole() {
 function requireLogin() {
     if (!isLoggedIn()) {
         $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
-        redirect("/Dinemate/auth/login.php");
+        redirect(appPath('auth/login.php'));
+    }
+}
+
+function requireRole($role, array $options = []) {
+    $jsonResponse = !empty($options['json']);
+
+    if (!isLoggedIn()) {
+        if ($jsonResponse) {
+            if (!headers_sent()) {
+                header('Content-Type: application/json');
+            }
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+            exit();
+        }
+
+        $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
+        redirect(appPath('auth/login.php'));
+    }
+
+    if (getCurrentUserRole() !== $role) {
+        if ($jsonResponse) {
+            if (!headers_sent()) {
+                header('Content-Type: application/json');
+            }
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+            exit();
+        }
+
+        redirect(getDefaultRedirectForRole(getCurrentUserRole()));
     }
 }
 
 // Require admin access (redirects if not admin)
-function requireAdmin() {
-    requireLogin();
-    if (!isAdmin()) {
-        redirect("/Dinemate/auth/login.php");
-    }
+function requireAdmin(array $options = []) {
+    requireRole('admin', $options);
 }
 
 // Require customer access (redirects if not customer)
-function requireCustomer() {
-    requireLogin();
-    if (!isCustomer()) {
-        redirect("/Dinemate/auth/login.php");
-    }
+function requireCustomer(array $options = []) {
+    requireRole('customer', $options);
 }
 
 // Set flash message (temporary message that disappears after one page load)
