@@ -116,6 +116,21 @@ function ensureBookingRequestColumns($pdo) {
     $nameOverrideStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'customer_name_override'");
     $nameOverrideExists = $nameOverrideStmt->rowCount() > 0;
 
+    $customerNameStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'customer_name'");
+    $customerNameExists = $customerNameStmt->rowCount() > 0;
+
+    $customerPhoneStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'customer_phone'");
+    $customerPhoneExists = $customerPhoneStmt->rowCount() > 0;
+
+    $customerEmailStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'customer_email'");
+    $customerEmailExists = $customerEmailStmt->rowCount() > 0;
+
+    $guestTokenStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'guest_access_token'");
+    $guestTokenExists = $guestTokenStmt->rowCount() > 0;
+
+    $userIdStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'user_id'");
+    $userIdColumn = $userIdStmt->fetch(PDO::FETCH_ASSOC);
+
     if (!$requestedStartExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN requested_start_time TIME DEFAULT NULL AFTER end_time");
     }
@@ -128,6 +143,27 @@ function ensureBookingRequestColumns($pdo) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN customer_name_override VARCHAR(100) DEFAULT NULL AFTER user_id");
     }
 
+    if (!$customerNameExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN customer_name VARCHAR(100) DEFAULT NULL AFTER user_id");
+    }
+
+    if (!$customerPhoneExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN customer_phone VARCHAR(30) DEFAULT NULL AFTER customer_name");
+    }
+
+    if (!$customerEmailExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN customer_email VARCHAR(100) DEFAULT NULL AFTER customer_phone");
+    }
+
+    if (!$guestTokenExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN guest_access_token VARCHAR(64) DEFAULT NULL AFTER customer_email");
+        $pdo->exec("CREATE UNIQUE INDEX idx_bookings_guest_access_token ON bookings (guest_access_token)");
+    }
+
+    if ($userIdColumn && $userIdColumn['Null'] !== 'YES') {
+        $pdo->exec("ALTER TABLE bookings MODIFY COLUMN user_id {$userIdColumn['Type']} NULL");
+    }
+
     if ($startTimeExists) {
         $pdo->exec("UPDATE bookings SET requested_start_time = start_time WHERE requested_start_time IS NULL AND start_time IS NOT NULL");
     }
@@ -135,6 +171,39 @@ function ensureBookingRequestColumns($pdo) {
     if ($endTimeExists) {
         $pdo->exec("UPDATE bookings SET requested_end_time = end_time WHERE requested_end_time IS NULL AND end_time IS NOT NULL");
     }
+
+    $pdo->exec("
+        UPDATE bookings b
+        LEFT JOIN users u ON b.user_id = u.user_id
+        SET b.customer_name = COALESCE(NULLIF(b.customer_name, ''), NULLIF(b.customer_name_override, ''), u.name)
+        WHERE b.customer_name IS NULL OR b.customer_name = ''
+    ");
+
+    $pdo->exec("
+        UPDATE bookings b
+        LEFT JOIN users u ON b.user_id = u.user_id
+        SET b.customer_phone = COALESCE(NULLIF(b.customer_phone, ''), u.phone)
+        WHERE b.customer_phone IS NULL OR b.customer_phone = ''
+    ");
+
+    $pdo->exec("
+        UPDATE bookings b
+        LEFT JOIN users u ON b.user_id = u.user_id
+        SET b.customer_email = COALESCE(NULLIF(b.customer_email, ''), u.email)
+        WHERE b.customer_email IS NULL OR b.customer_email = ''
+    ");
+
+    $missingTokenIds = $pdo->query("SELECT booking_id FROM bookings WHERE guest_access_token IS NULL OR guest_access_token = ''")->fetchAll(PDO::FETCH_COLUMN);
+    if (!empty($missingTokenIds)) {
+        $tokenUpdateStmt = $pdo->prepare("UPDATE bookings SET guest_access_token = ? WHERE booking_id = ?");
+        foreach ($missingTokenIds as $bookingId) {
+            $tokenUpdateStmt->execute([generateGuestAccessToken(), $bookingId]);
+        }
+    }
+}
+
+function generateGuestAccessToken() {
+    return bin2hex(random_bytes(16));
 }
 
 function ensureBookingTableAssignmentsTable($pdo) {

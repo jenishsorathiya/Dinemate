@@ -17,9 +17,9 @@ $todayBookings = $pdo->query("SELECT COUNT(*) FROM bookings WHERE booking_date =
 
 // Get latest bookings
 $stmt = $pdo->query("
-    SELECT b.*, u.name, t.table_number 
+    SELECT b.*, COALESCE(b.customer_name_override, b.customer_name, u.name) AS name, t.table_number 
     FROM bookings b
-    JOIN users u ON b.user_id = u.user_id
+    LEFT JOIN users u ON b.user_id = u.user_id
     LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
     ORDER BY b.created_at DESC
     LIMIT 5

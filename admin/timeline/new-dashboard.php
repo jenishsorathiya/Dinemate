@@ -35,11 +35,11 @@ $selectedShortDateDisplay = date('D, M d', strtotime($selectedDate));
 
 // Get bookings for selected date
 $stmt = $pdo->prepare("
-    SELECT b.*, COALESCE(b.customer_name_override, u.name) as customer_name,
+    SELECT b.*, COALESCE(b.customer_name_override, b.customer_name, u.name) as customer_name,
            GROUP_CONCAT(DISTINCT bta.table_id ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ',') AS assigned_table_ids,
            GROUP_CONCAT(DISTINCT rt.table_number ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ',') AS assigned_table_numbers
     FROM bookings b
-    JOIN users u ON b.user_id = u.user_id
+    LEFT JOIN users u ON b.user_id = u.user_id
     LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
     LEFT JOIN restaurant_tables rt ON bta.table_id = rt.table_id
     WHERE b.booking_date = ? AND b.status IN ('pending', 'confirmed')
@@ -1801,6 +1801,14 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 <input type="text" id="adminBookingName" required>
             </div>
             <div class="modal-form-group">
+                <label for="adminBookingEmail">Email</label>
+                <input type="email" id="adminBookingEmail" required>
+            </div>
+            <div class="modal-form-group">
+                <label for="adminBookingPhone">Phone</label>
+                <input type="text" id="adminBookingPhone" required>
+            </div>
+            <div class="modal-form-group">
                 <label for="adminBookingDate">Date</label>
                 <input type="date" id="adminBookingDate" value="<?php echo htmlspecialchars($selectedDate); ?>" required>
             </div>
@@ -2806,6 +2814,8 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
             const payload = {
                 name: document.getElementById('adminBookingName').value.trim(),
+                customer_email: document.getElementById('adminBookingEmail').value.trim(),
+                customer_phone: document.getElementById('adminBookingPhone').value.trim(),
                 booking_date: document.getElementById('adminBookingDate').value,
                 start_time: document.getElementById('adminBookingTime').value,
                 number_of_guests: document.getElementById('adminBookingGuests').value,

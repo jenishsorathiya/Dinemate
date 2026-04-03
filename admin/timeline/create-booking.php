@@ -16,14 +16,28 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $data = json_decode(file_get_contents('php://input'), true);
 
 $name = trim($data['name'] ?? '');
+$customerEmail = trim($data['customer_email'] ?? '');
+$customerPhone = trim($data['customer_phone'] ?? '');
 $bookingDate = trim($data['booking_date'] ?? '');
 $startTimeInput = trim($data['start_time'] ?? '');
 $guestCount = (int)($data['number_of_guests'] ?? 0);
 $specialRequest = trim($data['special_request'] ?? '');
 
-if($name === '' || $bookingDate === '' || $startTimeInput === '' || $guestCount < 1) {
+if($name === '' || $customerEmail === '' || $customerPhone === '' || $bookingDate === '' || $startTimeInput === '' || $guestCount < 1) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'All required fields must be provided']);
+    exit();
+}
+
+if(!filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'A valid email address is required']);
+    exit();
+}
+
+if(!preg_match('/^[0-9\s\-\(\)\+]+$/', $customerPhone)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'A valid phone number is required']);
     exit();
 }
 
@@ -52,34 +66,12 @@ if((int)$capacityStmt->fetchColumn() === 0) {
 }
 
 try {
-    $pdo->beginTransaction();
-
-    $userStmt = $pdo->prepare("SELECT user_id, name FROM users WHERE role = 'customer' AND name = ? ORDER BY user_id ASC LIMIT 1");
-    $userStmt->execute([$name]);
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-
-    if(!$user) {
-        $emailBase = preg_replace('/[^a-z0-9]+/i', '.', strtolower($name));
-        $emailBase = trim($emailBase, '.');
-        if($emailBase === '') {
-            $emailBase = 'guest';
-        }
-
-        $generatedEmail = sprintf('%s.%s@admin-booking.local', $emailBase, uniqid());
-        $generatedPassword = password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT);
-
-        $insertUserStmt = $pdo->prepare("INSERT INTO users (name, email, phone, password, role, created_at) VALUES (?, ?, NULL, ?, 'customer', NOW())");
-        $insertUserStmt->execute([$name, $generatedEmail, $generatedPassword]);
-
-        $user = [
-            'user_id' => $pdo->lastInsertId(),
-            'name' => $name,
-        ];
-    }
-
-    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')");
+    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status) VALUES (NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')");
     $bookingStmt->execute([
-        $user['user_id'],
+        $name,
+        $customerPhone,
+        $customerEmail,
+        generateGuestAccessToken(),
         $bookingDate,
         $startTime,
         $endTime,
@@ -90,13 +82,12 @@ try {
     ]);
 
     $bookingId = $pdo->lastInsertId();
-    $pdo->commit();
 
     echo json_encode([
         'success' => true,
         'booking' => [
             'booking_id' => (int)$bookingId,
-            'user_id' => (int)$user['user_id'],
+            'user_id' => null,
             'table_id' => null,
             'table_number' => null,
             'booking_date' => $bookingDate,
@@ -107,14 +98,12 @@ try {
             'number_of_guests' => $guestCount,
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
             'status' => 'pending',
-            'customer_name' => $user['name'],
+            'customer_name' => $name,
+            'customer_phone' => $customerPhone,
+            'customer_email' => $customerEmail,
         ],
     ]);
 } catch(Throwable $e) {
-    if($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
-
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Could not create booking']);
 }

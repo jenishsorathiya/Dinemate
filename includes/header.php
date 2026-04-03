@@ -105,6 +105,9 @@ if (session_status() === PHP_SESSION_NONE) {
                     </a>
                 <?php else: ?>
                     <!-- Guest Links -->
+                    <a href="bookings/book-table.php" class="btn btn-book">
+                        <i class="fa fa-calendar-check"></i> Book Table
+                    </a>
                     <a href="auth/login.php">Login</a>
                     <a href="auth/register.php" class="btn btn-book">
                         Register

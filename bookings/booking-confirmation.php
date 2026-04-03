@@ -1,6 +1,12 @@
 <?php
 require_once "../config/db.php";
-require_once "../includes/session-check.php";
+require_once "../includes/functions.php";
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+ensureBookingRequestColumns($pdo);
 
 if(!isset($_GET['id'])){
     header("Location: book-table.php");
@@ -8,14 +14,31 @@ if(!isset($_GET['id'])){
 }
 
 $booking_id = intval($_GET['id']);
+$guest_token = trim($_GET['token'] ?? '');
 
-$stmt = $pdo->prepare("
-SELECT b.*, t.table_number 
-FROM bookings b
-LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
-WHERE b.booking_id = ? AND b.user_id = ?
-");
-$stmt->execute([$booking_id, $_SESSION['user_id']]);
+$isLoggedInCustomer = isLoggedIn() && getCurrentUserRole() === 'customer';
+
+if($isLoggedInCustomer) {
+    $stmt = $pdo->prepare("
+        SELECT b.*, t.table_number
+        FROM bookings b
+        LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
+        WHERE b.booking_id = ?
+          AND (b.user_id = ? OR b.guest_access_token = ?)
+        LIMIT 1
+    ");
+    $stmt->execute([$booking_id, getCurrentUserId(), $guest_token]);
+} else {
+    $stmt = $pdo->prepare("
+        SELECT b.*, t.table_number
+        FROM bookings b
+        LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
+        WHERE b.booking_id = ? AND b.guest_access_token = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$booking_id, $guest_token]);
+}
+
 $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if(!$booking){
@@ -137,6 +160,12 @@ Your request has been saved. A table will be assigned by the admin team.
 
 <p><strong>Status:</strong> <?= htmlspecialchars($statusLabel) ?></p>
 
+<p><strong>Name:</strong> <?= htmlspecialchars($booking['customer_name'] ?? '') ?></p>
+
+<p><strong>Email:</strong> <?= htmlspecialchars($booking['customer_email'] ?? '') ?></p>
+
+<p><strong>Phone:</strong> <?= htmlspecialchars($booking['customer_phone'] ?? '') ?></p>
+
 <p><strong>Date:</strong> <?= $booking['booking_date'] ?></p>
 
 <p><strong>Time:</strong> <?= date("h:i A",strtotime($booking['start_time'])) ?> - <?= date("h:i A",strtotime($booking['end_time'])) ?></p>
@@ -151,9 +180,15 @@ Your request has been saved. A table will be assigned by the admin team.
 
 </div>
 
+<?php if($isLoggedInCustomer): ?>
 <a href="my-bookings.php" class="btn btn-bookings w-100">
 View My Bookings
 </a>
+<?php else: ?>
+<a href="book-table.php" class="btn btn-bookings w-100">
+Book Another Reservation
+</a>
+<?php endif; ?>
 
 </div>
 

@@ -1,7 +1,10 @@
 <?php
 require_once "../config/db.php";
-require_once "../includes/session-check.php";
 require_once "../includes/functions.php";
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Ensure start_time and end_time columns exist
 try {
@@ -49,7 +52,11 @@ if($_SERVER["REQUEST_METHOD"] !== "POST"){
     redirect("book-table.php");
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = (isLoggedIn() && getCurrentUserRole() === 'customer') ? (int) $_SESSION['user_id'] : null;
+
+$customer_name = trim($_POST['customer_name'] ?? '');
+$customer_email = trim($_POST['customer_email'] ?? '');
+$customer_phone = trim($_POST['customer_phone'] ?? '');
 
 $date = sanitize($_POST['booking_date']);
 $start_time = sanitize($_POST['start_time']);
@@ -64,8 +71,33 @@ $minDuration = 60; // minutes
 $maxDuration = 180; // minutes
 
 // Validate all required fields
-if(empty($date) || empty($start_time) || empty($end_time) || empty($guests)){
+if(empty($customer_name) || empty($customer_email) || empty($customer_phone) || empty($date) || empty($start_time) || empty($end_time) || empty($guests)){
     $_SESSION['error'] = 'All fields are required.';
+    redirect("book-table.php");
+}
+
+if (strlen($customer_name) < 2 || strlen($customer_name) > 100) {
+    $_SESSION['error'] = 'Name must be between 2 and 100 characters.';
+    redirect("book-table.php");
+}
+
+if (!filter_var($customer_email, FILTER_VALIDATE_EMAIL)) {
+    $_SESSION['error'] = 'Please enter a valid email address.';
+    redirect("book-table.php");
+}
+
+if (strlen($customer_email) > 100) {
+    $_SESSION['error'] = 'Email address is too long.';
+    redirect("book-table.php");
+}
+
+if (!preg_match("/^[0-9\s\-\(\)\+]+$/", $customer_phone)) {
+    $_SESSION['error'] = 'Phone number can only contain digits, spaces, hyphens, parentheses, and plus signs.';
+    redirect("book-table.php");
+}
+
+if (strlen($customer_phone) < 8 || strlen($customer_phone) > 30) {
+    $_SESSION['error'] = 'Phone number must be between 8 and 30 characters.';
     redirect("book-table.php");
 }
 
@@ -122,13 +154,19 @@ if((int)$capacityStmt->fetchColumn() === 0){
 /* ============ INSERT BOOKING ============ */
 $stmt = $pdo->prepare("
     INSERT INTO bookings 
-    (user_id, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status)
-    VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    (user_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status)
+    VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')
 ");
 
 try {
+    $guestAccessToken = generateGuestAccessToken();
+
     $stmt->execute([
         $user_id, 
+        $customer_name,
+        $customer_phone,
+        $customer_email,
+        $guestAccessToken,
         $date, 
         $start_time, 
         $end_time, 
@@ -139,7 +177,7 @@ try {
     ]);
     
     $booking_id = $pdo->lastInsertId();
-    redirect("booking-confirmation.php?id=" . $booking_id);
+    redirect("booking-confirmation.php?id=" . $booking_id . "&token=" . urlencode($guestAccessToken));
     
 } catch(PDOException $e) {
     $_SESSION['error'] = 'Error creating booking. Please try again.';

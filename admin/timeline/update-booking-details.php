@@ -86,7 +86,7 @@ if($assignedTimeError) {
 }
 
 try {
-    $stmt = $pdo->prepare("SELECT b.*, u.name AS user_name FROM bookings b JOIN users u ON b.user_id = u.user_id WHERE b.booking_id = ?");
+    $stmt = $pdo->prepare("SELECT b.* FROM bookings b WHERE b.booking_id = ?");
     $stmt->execute([$bookingId]);
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 

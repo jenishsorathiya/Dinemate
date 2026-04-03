@@ -1,11 +1,27 @@
 <?php
 require_once "../config/db.php";
-require_once "../includes/session-check.php";
 require_once "../includes/functions.php";
 
-if(! isCustomer()){
-    header("Location: ../auth/login.php");
-    exit();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+ensureBookingRequestColumns($pdo);
+
+$prefillName = '';
+$prefillEmail = '';
+$prefillPhone = '';
+
+if(isLoggedIn() && getCurrentUserRole() === 'customer') {
+    $customerStmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE user_id = ? LIMIT 1");
+    $customerStmt->execute([getCurrentUserId()]);
+    $customer = $customerStmt->fetch(PDO::FETCH_ASSOC);
+
+    if($customer) {
+        $prefillName = (string)($customer['name'] ?? '');
+        $prefillEmail = (string)($customer['email'] ?? '');
+        $prefillPhone = (string)($customer['phone'] ?? '');
+    }
 }
 
 // Restaurant hours configuration
@@ -138,6 +154,47 @@ Book a Reservation
 </div>
 
 <form action="process-booking.php" method="POST" id="booking-form">
+
+<div class="row">
+<div class="col-md-6 mb-4">
+<label class="form-label">
+<i class="fa fa-user"></i> Full Name
+</label>
+<input
+type="text"
+name="customer_name"
+class="form-control modern-input"
+required
+value="<?= htmlspecialchars($prefillName) ?>"
+>
+</div>
+
+<div class="col-md-6 mb-4">
+<label class="form-label">
+<i class="fa fa-envelope"></i> Email Address
+</label>
+<input
+type="email"
+name="customer_email"
+class="form-control modern-input"
+required
+value="<?= htmlspecialchars($prefillEmail) ?>"
+>
+</div>
+
+<div class="col-md-6 mb-4">
+<label class="form-label">
+<i class="fa fa-phone"></i> Phone Number
+</label>
+<input
+type="text"
+name="customer_phone"
+class="form-control modern-input"
+required
+value="<?= htmlspecialchars($prefillPhone) ?>"
+>
+</div>
+</div>
 
 <!-- DATE, TIME, GUESTS ROW -->
 <div class="row">
