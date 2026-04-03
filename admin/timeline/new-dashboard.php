@@ -2094,7 +2094,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
         const totalBookedPeople = getBookedPeopleCountForArea('all');
         areaFilterBar.innerHTML = `
-            <button type="button" class="area-filter-chip${activeAreaFilter === 'all' ? ' active' : ''}" onclick="setAreaFilter('all')">All Areas<span class="area-filter-chip-count">${totalBookedPeople}</span></button>
+            <button type="button" class="area-filter-chip${activeAreaFilter === 'all' ? ' active' : ''}" onclick="setAreaFilter('all')">Full View<span class="area-filter-chip-count">${totalBookedPeople}</span></button>
             ${areaButtons}
             <button type="button" class="area-filter-chip secondary area-filter-add-btn" onclick="openAreaDetails()" aria-label="Add area" title="Add area">+</button>
         `;
