@@ -15,6 +15,14 @@ $tableId = (int)($data['table_id'] ?? 0);
 $capacity = (int)($data['capacity'] ?? 0);
 $areaId = (int)($data['area_id'] ?? 0);
 $sortOrder = (int)($data['sort_order'] ?? 0);
+$reservable = array_key_exists('reservable', $data) ? (int)!empty($data['reservable']) : 1;
+$layoutX = isset($data['layout_x']) && $data['layout_x'] !== '' ? (int)$data['layout_x'] : null;
+$layoutY = isset($data['layout_y']) && $data['layout_y'] !== '' ? (int)$data['layout_y'] : null;
+$tableShape = strtolower(trim((string)($data['table_shape'] ?? 'auto')));
+
+if(!in_array($tableShape, ['auto', 'circle', 'rect'], true)) {
+    $tableShape = 'auto';
+}
 
 if($tableId < 1 || $capacity < 1 || $areaId < 1 || $sortOrder < 1) {
     http_response_code(400);
@@ -23,6 +31,23 @@ if($tableId < 1 || $capacity < 1 || $areaId < 1 || $sortOrder < 1) {
 }
 
 try {
+    $currentTableStmt = $pdo->prepare("SELECT table_id, table_number FROM restaurant_tables WHERE table_id = ?");
+    $currentTableStmt->execute([$tableId]);
+    $currentTable = $currentTableStmt->fetch(PDO::FETCH_ASSOC);
+
+    if(!$currentTable) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Table not found']);
+        exit();
+    }
+
+    $tableNumber = isset($data['table_number']) ? trim((string)$data['table_number']) : (string)$currentTable['table_number'];
+    if($tableNumber === '') {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Table number is required']);
+        exit();
+    }
+
     $areaStmt = $pdo->prepare("SELECT area_id, name, display_order FROM table_areas WHERE area_id = ? AND is_active = 1");
     $areaStmt->execute([$areaId]);
     $area = $areaStmt->fetch(PDO::FETCH_ASSOC);
@@ -33,11 +58,19 @@ try {
         exit();
     }
 
-    $stmt = $pdo->prepare("UPDATE restaurant_tables SET capacity = ?, area_id = ?, sort_order = ? WHERE table_id = ?");
-    $stmt->execute([$capacity, $areaId, $sortOrder, $tableId]);
+    $duplicateStmt = $pdo->prepare("SELECT table_id FROM restaurant_tables WHERE table_number = ? AND area_id = ? AND table_id != ? LIMIT 1");
+    $duplicateStmt->execute([$tableNumber, $areaId, $tableId]);
+    if($duplicateStmt->fetchColumn()) {
+        http_response_code(409);
+        echo json_encode(['success' => false, 'error' => 'Table number already exists in this area']);
+        exit();
+    }
+
+    $stmt = $pdo->prepare("UPDATE restaurant_tables SET table_number = ?, capacity = ?, area_id = ?, sort_order = ?, reservable = ?, layout_x = ?, layout_y = ?, table_shape = ? WHERE table_id = ?");
+    $stmt->execute([$tableNumber, $capacity, $areaId, $sortOrder, $reservable, $layoutX, $layoutY, $tableShape, $tableId]);
 
     if($stmt->rowCount() === 0) {
-        $checkStmt = $pdo->prepare("SELECT rt.table_number, rt.capacity, rt.area_id, rt.sort_order, ta.name AS area_name, ta.display_order AS area_display_order FROM restaurant_tables rt LEFT JOIN table_areas ta ON ta.area_id = rt.area_id WHERE rt.table_id = ?");
+        $checkStmt = $pdo->prepare("SELECT rt.table_number, rt.capacity, rt.area_id, rt.sort_order, rt.reservable, rt.layout_x, rt.layout_y, rt.table_shape, ta.name AS area_name, ta.display_order AS area_display_order FROM restaurant_tables rt LEFT JOIN table_areas ta ON ta.area_id = rt.area_id WHERE rt.table_id = ?");
         $checkStmt->execute([$tableId]);
         $table = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -57,12 +90,16 @@ try {
                 'area_name' => $table['area_name'],
                 'area_display_order' => (int)$table['area_display_order'],
                 'sort_order' => (int)$table['sort_order'],
+                'reservable' => (int)$table['reservable'],
+                'layout_x' => $table['layout_x'] !== null ? (int)$table['layout_x'] : null,
+                'layout_y' => $table['layout_y'] !== null ? (int)$table['layout_y'] : null,
+                'table_shape' => $table['table_shape'] ?: 'auto',
             ]
         ]);
         exit();
     }
 
-    $tableStmt = $pdo->prepare("SELECT rt.table_number, rt.capacity, rt.area_id, rt.sort_order, ta.name AS area_name, ta.display_order AS area_display_order FROM restaurant_tables rt LEFT JOIN table_areas ta ON ta.area_id = rt.area_id WHERE rt.table_id = ?");
+    $tableStmt = $pdo->prepare("SELECT rt.table_number, rt.capacity, rt.area_id, rt.sort_order, rt.reservable, rt.layout_x, rt.layout_y, rt.table_shape, ta.name AS area_name, ta.display_order AS area_display_order FROM restaurant_tables rt LEFT JOIN table_areas ta ON ta.area_id = rt.area_id WHERE rt.table_id = ?");
     $tableStmt->execute([$tableId]);
     $table = $tableStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -76,6 +113,10 @@ try {
             'area_name' => $table['area_name'],
             'area_display_order' => (int)$table['area_display_order'],
             'sort_order' => (int)$table['sort_order'],
+            'reservable' => (int)$table['reservable'],
+            'layout_x' => $table['layout_x'] !== null ? (int)$table['layout_x'] : null,
+            'layout_y' => $table['layout_y'] !== null ? (int)$table['layout_y'] : null,
+            'table_shape' => $table['table_shape'] ?: 'auto',
         ]
     ]);
 } catch(PDOException $e) {

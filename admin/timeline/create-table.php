@@ -14,6 +14,14 @@ $data = json_decode(file_get_contents('php://input'), true);
 $isAuto = isset($data['auto']) && $data['auto'] === true;
 $requestedAreaId = (int)($data['area_id'] ?? 0);
 $requestedSortOrder = (int)($data['sort_order'] ?? 0);
+$requestedReservable = array_key_exists('reservable', $data) ? (int)!empty($data['reservable']) : 1;
+$requestedLayoutX = isset($data['layout_x']) && $data['layout_x'] !== '' ? (int)$data['layout_x'] : null;
+$requestedLayoutY = isset($data['layout_y']) && $data['layout_y'] !== '' ? (int)$data['layout_y'] : null;
+$requestedTableShape = strtolower(trim((string)($data['table_shape'] ?? 'auto')));
+
+if(!in_array($requestedTableShape, ['auto', 'circle', 'rect'], true)) {
+    $requestedTableShape = 'auto';
+}
 
 $defaultAreaStmt = $pdo->query("SELECT area_id FROM table_areas WHERE is_active = 1 ORDER BY display_order ASC, name ASC LIMIT 1");
 $defaultAreaId = (int)$defaultAreaStmt->fetchColumn();
@@ -107,8 +115,8 @@ try {
         }
     }
 
-    $insert = $pdo->prepare("INSERT INTO restaurant_tables (area_id, table_number, capacity, sort_order, status) VALUES (?, ?, ?, ?, 'available')");
-    $insert->execute([$areaId, $tableNumber, $capacity, $requestedSortOrder]);
+    $insert = $pdo->prepare("INSERT INTO restaurant_tables (area_id, table_number, capacity, sort_order, status, reservable, layout_x, layout_y, table_shape) VALUES (?, ?, ?, ?, 'available', ?, ?, ?, ?)");
+    $insert->execute([$areaId, $tableNumber, $capacity, $requestedSortOrder, $requestedReservable, $requestedLayoutX, $requestedLayoutY, $requestedTableShape]);
 
     echo json_encode([
         'success' => true,
@@ -119,6 +127,10 @@ try {
         'area_name' => $area['name'],
         'area_display_order' => (int)$area['display_order'],
         'sort_order' => $requestedSortOrder,
+        'reservable' => (int)$requestedReservable,
+        'layout_x' => $requestedLayoutX,
+        'layout_y' => $requestedLayoutY,
+        'table_shape' => $requestedTableShape,
     ]);
 } catch (PDOException $e) {
     http_response_code(500);

@@ -331,6 +331,26 @@ function ensureTableAreasSchema($pdo) {
         $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN sort_order INT NOT NULL DEFAULT 0 AFTER capacity");
     }
 
+    $reservableStmt = $pdo->query("SHOW COLUMNS FROM restaurant_tables LIKE 'reservable'");
+    if ($reservableStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN reservable TINYINT(1) NOT NULL DEFAULT 1 AFTER status");
+    }
+
+    $layoutXStmt = $pdo->query("SHOW COLUMNS FROM restaurant_tables LIKE 'layout_x'");
+    if ($layoutXStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN layout_x INT NULL DEFAULT NULL AFTER reservable");
+    }
+
+    $layoutYStmt = $pdo->query("SHOW COLUMNS FROM restaurant_tables LIKE 'layout_y'");
+    if ($layoutYStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN layout_y INT NULL DEFAULT NULL AFTER layout_x");
+    }
+
+    $tableShapeStmt = $pdo->query("SHOW COLUMNS FROM restaurant_tables LIKE 'table_shape'");
+    if ($tableShapeStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN table_shape VARCHAR(20) NOT NULL DEFAULT 'auto' AFTER layout_y");
+    }
+
     $defaultAreaStmt = $pdo->query("SELECT area_id FROM table_areas WHERE is_active = 1 ORDER BY display_order ASC, area_id ASC LIMIT 1");
     $defaultAreaId = (int) $defaultAreaStmt->fetchColumn();
 
