@@ -11,20 +11,33 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
 };
 ?>
 <style>
-    .sidebar {
+    .sidebar-shell {
         width: 96px;
+        min-width: 96px;
+        flex: 0 0 96px;
+        position: relative;
+        overflow: visible;
+        z-index: 40;
+    }
+
+    .sidebar {
+        position: sticky;
+        top: 0;
+        width: 96px;
+        min-height: 100vh;
+        height: 100vh;
         background: #162033;
         color: #ffffff;
         padding: 18px 14px;
         overflow-y: auto;
         overflow-x: hidden;
-        flex-shrink: 0;
         border-right: 1px solid rgba(255,255,255,0.06);
-        transition: width 0.25s ease;
+        transition: width 0.25s ease, box-shadow 0.25s ease;
     }
 
     .sidebar:hover {
         width: 248px;
+        box-shadow: 18px 0 32px rgba(10, 18, 34, 0.18);
     }
 
     .sidebar h4 {
@@ -90,33 +103,36 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
     }
 
     @media (max-width: 991px) {
+        .sidebar-shell,
         .sidebar {
             display: none;
         }
     }
 </style>
 
-<div class="sidebar">
-    <h4><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></h4>
-    <a href="<?php echo htmlspecialchars($adminSidebarLink('dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('dashboard'), ENT_QUOTES, 'UTF-8'); ?>">
-        <i class="fa fa-chart-line"></i><span class="nav-label">Analytics</span>
-    </a>
-    <a href="<?php echo htmlspecialchars($adminSidebarLink('timeline/new-dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('timeline'), ENT_QUOTES, 'UTF-8'); ?>">
-        <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
-    </a>
-    <a href="<?php echo htmlspecialchars($adminSidebarLink('bookings-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('bookings'), ENT_QUOTES, 'UTF-8'); ?>">
-        <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
-    </a>
-    <a href="<?php echo htmlspecialchars($adminSidebarLink('tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('tables'), ENT_QUOTES, 'UTF-8'); ?>">
-        <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
-    </a>
-    <a href="<?php echo htmlspecialchars($adminSidebarLink('menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('menu'), ENT_QUOTES, 'UTF-8'); ?>">
-        <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>
-    </a>
-    <a href="<?php echo htmlspecialchars($adminSidebarLink('manage-users.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('users'), ENT_QUOTES, 'UTF-8'); ?>">
-        <i class="fa fa-users"></i><span class="nav-label">Users</span>
-    </a>
-    <a href="<?php echo htmlspecialchars($adminSidebarLink('../auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>">
-        <i class="fa fa-sign-out-alt"></i><span class="nav-label">Logout</span>
-    </a>
+<div class="sidebar-shell">
+    <div class="sidebar">
+        <h4><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></h4>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('dashboard'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-chart-line"></i><span class="nav-label">Analytics</span>
+        </a>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('timeline/new-dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('timeline'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
+        </a>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('bookings-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('bookings'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
+        </a>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('tables'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
+        </a>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('menu'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>
+        </a>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('manage-users.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('users'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-users"></i><span class="nav-label">Users</span>
+        </a>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('../auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-sign-out-alt"></i><span class="nav-label">Logout</span>
+        </a>
+    </div>
 </div>

@@ -420,26 +420,41 @@ $adminSidebarPathPrefix = '';
         .visual-shell {
             display: flex;
             min-height: 100vh;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: clip;
         }
 
         .main-content {
             flex: 1;
             min-width: 0;
+            width: calc(100vw - 96px);
+            max-width: calc(100vw - 96px);
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
         }
 
         .visual-main {
-            width: 100%;
-            padding: 16px;
-            max-width: 1240px;
+            width: min(100%, 1180px);
+            padding: 12px;
+            max-width: 100%;
             margin: 0 auto;
+        }
+
+        .page-stack,
+        .page-stack > *,
+        .panel,
+        .metrics-grid,
+        .area-overview-grid,
+        .editor-grid,
+        .inventory-panel {
+            max-width: 100%;
         }
 
         .page-stack {
             display: grid;
-            gap: 14px;
+            gap: 12px;
             min-width: 0;
         }
 
@@ -458,7 +473,7 @@ $adminSidebarPathPrefix = '';
 
         .page-title {
             margin: 0;
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: -0.04em;
         }
@@ -466,7 +481,7 @@ $adminSidebarPathPrefix = '';
         .page-subtitle {
             margin: 6px 0 0;
             color: var(--muted);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .header-actions {
@@ -480,13 +495,13 @@ $adminSidebarPathPrefix = '';
         }
 
         .button {
-            height: 40px;
+            height: 38px;
             border-radius: 12px;
-            padding: 0 16px;
+            padding: 0 14px;
             border: 1px solid var(--line);
             background: #ffffff;
             color: var(--text);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
@@ -527,7 +542,7 @@ $adminSidebarPathPrefix = '';
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 14px;
+            gap: 12px;
             min-width: 0;
         }
 
@@ -540,19 +555,19 @@ $adminSidebarPathPrefix = '';
         }
 
         .metric-card {
-            padding: 16px 18px;
+            padding: 14px 16px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
         }
 
         .metric-icon {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 12px;
             display: grid;
             place-items: center;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         .metric-icon.lavender { background: rgba(139, 115, 238, 0.12); color: var(--lavender); }
@@ -569,7 +584,7 @@ $adminSidebarPathPrefix = '';
 
         .metric-value {
             margin: 0;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 800;
             letter-spacing: -0.04em;
         }
@@ -578,13 +593,13 @@ $adminSidebarPathPrefix = '';
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 14px;
-            padding: 16px 16px 0;
+            gap: 12px;
+            padding: 14px 14px 0;
         }
 
         .section-title {
             margin: 0;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 800;
             letter-spacing: -0.03em;
         }
@@ -596,13 +611,13 @@ $adminSidebarPathPrefix = '';
         }
 
         .area-overview-body {
-            padding: 14px 16px 16px;
+            padding: 12px 14px 14px;
         }
 
         .area-overview-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
             width: 100%;
             min-width: 0;
         }
@@ -611,10 +626,10 @@ $adminSidebarPathPrefix = '';
             border: 1px solid var(--line);
             background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
             border-radius: 16px;
-            padding: 12px;
+            padding: 10px;
             display: grid;
-            gap: 10px;
-            min-height: 138px;
+            gap: 8px;
+            min-height: 122px;
             min-width: 0;
             max-width: none;
             flex: initial;
@@ -633,24 +648,24 @@ $adminSidebarPathPrefix = '';
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            gap: 10px;
         }
 
         .area-chip {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
             font-weight: 800;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .swatch {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 10px;
             display: grid;
             place-items: center;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
         }
 
@@ -692,8 +707,8 @@ $adminSidebarPathPrefix = '';
 
         .editor-grid {
             display: grid;
-            grid-template-columns: minmax(180px, 210px) minmax(0, 1fr) minmax(220px, 260px);
-            gap: 14px;
+            grid-template-columns: minmax(164px, 190px) minmax(0, 1fr) minmax(208px, 236px);
+            gap: 12px;
             align-items: stretch;
             min-width: 0;
         }
@@ -704,7 +719,7 @@ $adminSidebarPathPrefix = '';
         }
 
         .panel-body {
-            padding: 14px 16px 16px;
+            padding: 12px 14px 14px;
         }
 
         .tools-panel,
@@ -724,7 +739,7 @@ $adminSidebarPathPrefix = '';
         .tools-stack,
         .details-stack {
             display: grid;
-            gap: 14px;
+            gap: 12px;
         }
 
         .tools-stack {
@@ -734,15 +749,15 @@ $adminSidebarPathPrefix = '';
 
         .section-list {
             display: grid;
-            gap: 10px;
+            gap: 8px;
         }
 
         .section-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            padding: 10px 11px;
+            gap: 8px;
+            padding: 8px 10px;
             background: #fbfcff;
             border: 1px solid var(--line);
             border-radius: 12px;
@@ -758,7 +773,7 @@ $adminSidebarPathPrefix = '';
         .section-item-main {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             min-width: 0;
         }
 
@@ -771,7 +786,7 @@ $adminSidebarPathPrefix = '';
 
         .section-name {
             font-weight: 700;
-            font-size: 13px;
+            font-size: 12px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -779,7 +794,7 @@ $adminSidebarPathPrefix = '';
 
         .section-meta {
             color: var(--muted);
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
         }
 
@@ -794,7 +809,7 @@ $adminSidebarPathPrefix = '';
             justify-content: space-between;
             align-items: center;
             gap: 10px;
-            padding: 14px 16px 0;
+            padding: 12px 14px 0;
         }
 
         .toolbar-group {
@@ -805,8 +820,8 @@ $adminSidebarPathPrefix = '';
         }
 
         .mini-button {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 10px;
             border: 1px solid var(--line);
             background: #ffffff;
@@ -819,13 +834,13 @@ $adminSidebarPathPrefix = '';
 
         .canvas-stage {
             flex: 1;
-            padding: 12px 14px 14px;
+            padding: 10px 12px 12px;
         }
 
         .canvas-frame {
             position: relative;
             height: 100%;
-            min-height: 430px;
+            min-height: 390px;
             border-radius: 18px;
             border: 1px solid #dfe5ef;
             overflow: hidden;
@@ -888,7 +903,7 @@ $adminSidebarPathPrefix = '';
         .zone {
             position: absolute;
             border-radius: 2px;
-            border: 5px solid #111111;
+            
             background: rgba(255, 255, 255, 0.96);
             padding: 14px;
             cursor: grab;
@@ -1091,9 +1106,9 @@ $adminSidebarPathPrefix = '';
             flex-direction: column;
             justify-content: center;
             min-height: 100%;
-            padding: 28px 18px 22px;
+            padding: 22px 16px 18px;
             color: var(--muted);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .details-empty::before {
@@ -1498,6 +1513,20 @@ $adminSidebarPathPrefix = '';
             }
         }
 
+        @media (max-width: 1320px) {
+            .visual-main {
+                max-width: 1080px;
+            }
+
+            .editor-grid {
+                grid-template-columns: minmax(150px, 176px) minmax(0, 1fr) minmax(190px, 220px);
+            }
+
+            .area-overview-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
         @media (max-width: 1180px) {
             .editor-grid {
                 grid-template-columns: 1fr;
@@ -1524,6 +1553,11 @@ $adminSidebarPathPrefix = '';
         }
 
         @media (max-width: 991px) {
+            .main-content {
+                width: 100%;
+                max-width: 100%;
+            }
+
             .visual-main {
                 padding: 16px;
             }
@@ -1563,8 +1597,8 @@ $adminSidebarPathPrefix = '';
             }
 
             .area-card {
-                min-width: 250px;
-                flex-basis: 250px;
+                min-width: 0;
+                flex-basis: auto;
             }
         }
     </style>
