@@ -1933,6 +1933,82 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         return areaNames;
     }
 
+    function formatAreaNameList(areaNames) {
+        if(!Array.isArray(areaNames) || !areaNames.length) {
+            return '';
+        }
+        if(areaNames.length === 1) {
+            return areaNames[0];
+        }
+        if(areaNames.length === 2) {
+            return `${areaNames[0]} & ${areaNames[1]}`;
+        }
+        return `${areaNames.slice(0, -1).join(', ')} & ${areaNames[areaNames.length - 1]}`;
+    }
+
+    function getBookingAssignmentSummary(booking) {
+        const assignedTableIds = getAssignedTableIds(booking);
+        if(!assignedTableIds.length) {
+            return '';
+        }
+
+        const assignedTables = assignedTableIds
+            .map(tableId => getTableById(tableId))
+            .filter(Boolean);
+
+        if(!assignedTables.length) {
+            return '';
+        }
+
+        const assignedTableIdSet = new Set(assignedTables.map(table => String(table.table_id)));
+        const groupedByArea = assignedTables.reduce((groups, table) => {
+            const areaKey = String(table.area_id || '0');
+            if(!groups[areaKey]) {
+                groups[areaKey] = [];
+            }
+            groups[areaKey].push(table);
+            return groups;
+        }, {});
+
+        const wholeAreaLabels = [];
+        const partialTableLabels = [];
+
+        Object.keys(groupedByArea)
+            .sort((leftAreaId, rightAreaId) => {
+                const leftArea = getAreaById(leftAreaId);
+                const rightArea = getAreaById(rightAreaId);
+                return sortAreas(leftArea || { display_order: 0, name: '' }, rightArea || { display_order: 0, name: '' });
+            })
+            .forEach(areaId => {
+                const areaTables = TABLES
+                    .filter(table => String(table.area_id) === String(areaId))
+                    .sort(sortTables);
+                const assignedAreaTables = groupedByArea[areaId].sort(sortTables);
+                const isWholeArea = areaTables.length > 0 && areaTables.every(table => assignedTableIdSet.has(String(table.table_id)));
+
+                if(isWholeArea) {
+                    const areaName = getAreaById(areaId)?.name || getAreaNameForTable(assignedAreaTables[0]);
+                    wholeAreaLabels.push(areaName);
+                    return;
+                }
+
+                assignedAreaTables.forEach(table => {
+                    partialTableLabels.push(`T${table.table_number}`);
+                });
+            });
+
+        if(wholeAreaLabels.length && !partialTableLabels.length) {
+            return formatAreaNameList(wholeAreaLabels);
+        }
+
+        if(wholeAreaLabels.length && partialTableLabels.length) {
+            return `${formatAreaNameList(wholeAreaLabels)} • ${partialTableLabels.join(', ')}`;
+        }
+
+        const areaNames = getBookingAreaNames(booking);
+        return `${areaNames.length ? `${areaNames.join(', ')} • ` : ''}${partialTableLabels.join(', ')}`;
+    }
+
     function getBookedPeopleCountForArea(areaId = 'all') {
         return BOOKING_DATA.reduce((total, booking) => {
             const guestCount = Number(booking.number_of_guests || 0);
@@ -2108,6 +2184,15 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         requestAnimationFrame(() => {
             document.getElementById('tableDetailsNumber').focus();
         });
+    }
+
+    function showCreateTableModalError(message, preferredAreaId) {
+        openCreateTableModal(preferredAreaId);
+        const errorBox = document.getElementById('tableDetailsError');
+        if(errorBox && message) {
+            errorBox.textContent = message;
+            errorBox.style.display = 'block';
+        }
     }
 
     function openAreaDetails(areaId = null) {
@@ -2406,32 +2491,45 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
         addTableButtons.forEach(addTableBtn => {
             addTableBtn.addEventListener('click', function() {
-            const fallbackArea = getSortedAreas()[0] || null;
-            const targetAreaId = activeAreaFilter === 'all'
-                ? (fallbackArea ? Number(fallbackArea.area_id) : 0)
-                : Number(activeAreaFilter);
+                const fallbackArea = getSortedAreas()[0] || null;
+                const buttonAreaId = Number(addTableBtn.dataset.areaId || 0);
+                const targetAreaId = buttonAreaId > 0
+                    ? buttonAreaId
+                    : activeAreaFilter === 'all'
+                        ? (fallbackArea ? Number(fallbackArea.area_id) : 0)
+                        : Number(activeAreaFilter);
 
-            const targetAreaTableCount = TABLES.filter(table => String(table.area_id) === String(targetAreaId)).length;
-            const noTablesAtAll = TABLES.length === 0;
+                if(targetAreaId < 1) {
+                    showCreateTableModalError('Create an area before adding tables.', null);
+                    return;
+                }
 
-            if(noTablesAtAll || targetAreaTableCount === 0) {
-                openCreateTableModal(targetAreaId);
-                return;
-            }
+                const targetAreaTableCount = TABLES.filter(table => String(table.area_id) === String(targetAreaId)).length;
+                const noTablesAtAll = TABLES.length === 0;
 
-            fetch('create-table.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    auto: true,
-                    area_id: targetAreaId
+                if(noTablesAtAll || targetAreaTableCount === 0) {
+                    openCreateTableModal(targetAreaId);
+                    return;
+                }
+
+                fetch('create-table.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        auto: true,
+                        area_id: targetAreaId
+                    })
                 })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.success) {
+                .then(async response => {
+                    const data = await response.json();
+                    if(!response.ok || !data.success) {
+                        throw new Error(data.error || 'Could not add table');
+                    }
+                    return data;
+                })
+                .then(data => {
                     TABLES.push({
                         table_id: data.table_id,
                         table_number: data.table_number,
@@ -2443,14 +2541,11 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                     });
                     activeAreaFilter = String(data.area_id);
                     renderTimeline();
-                } else {
-                    console.error('Could not add table:', data.error || 'Unknown error');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                console.error('Error adding table:', err.message);
-            });
+                })
+                .catch(err => {
+                    console.error(err);
+                    showCreateTableModalError(err.message || 'Could not add table.', targetAreaId);
+                });
             });
         });
     }
@@ -2849,11 +2944,10 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             const noteIcon = booking.special_request
                 ? `<span class="booking-item-note-icon" title="${booking.special_request.replace(/"/g, '&quot;')}"><i class="fa-solid fa-note-sticky"></i></span>`
                 : '';
-            const tableNumbers = getAssignedTableNumbers(booking);
-            const areaNames = getBookingAreaNames(booking);
+            const assignmentSummary = getBookingAssignmentSummary(booking);
             const rightSideText = isStandbyTab
                 ? `<span class="booking-item-meta">P${booking.number_of_guests}</span>`
-                : `<span class="booking-item-table">${areaNames.length ? `${areaNames.join(', ')} • ` : ''}${tableNumbers.map(tableNumber => `T${tableNumber}`).join(', ')}</span>`;
+                : `<span class="booking-item-table">${assignmentSummary}</span>`;
             const bottomRowRight = isStandbyTab
                 ? ''
                 : `<span class="booking-item-bottom-right">P${booking.number_of_guests}</span>`;
@@ -3010,7 +3104,9 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                     </span>
                 </div>`;
             }
-            return `<div class="table-label add-table-row"><button type="button" class="add-table-inline-btn" data-add-table-trigger="true" title="Add table">+</button></div>`;
+            const areaIdAttr = row.area_id ? ` data-area-id="${row.area_id}"` : '';
+            const addTitle = row.area_name ? `Add table to ${row.area_name}` : 'Add table';
+            return `<div class="table-label add-table-row"><button type="button" class="add-table-inline-btn" data-add-table-trigger="true"${areaIdAttr} title="${addTitle}">+</button></div>`;
         }).join('');
 
         // Populate booking list on left
@@ -3025,7 +3121,8 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             const emptyLabel = activeAreaFilter === 'all'
                 ? 'No tables found yet. Add your first table to start using the timeline.'
                 : 'No tables found for this area yet. Add one to start organizing this section.';
-            timelineGrid.innerHTML = `<div class="timeline-empty-state">${emptyLabel}<div style="margin-top:12px;"><button type="button" class="add-table-inline-btn" data-add-table-trigger="true" title="Add table">+</button></div></div>`;
+            const emptyAreaId = activeAreaFilter === 'all' ? (getSortedAreas()[0]?.area_id || '') : activeAreaFilter;
+            timelineGrid.innerHTML = `<div class="timeline-empty-state">${emptyLabel}<div style="margin-top:12px;"><button type="button" class="add-table-inline-btn" data-add-table-trigger="true" data-area-id="${emptyAreaId}" title="Add table">+</button></div></div>`;
             bindAddTableButton();
             return;
         }
@@ -3068,6 +3165,37 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         setCurrentTimeLine();
     }
 
+    function getBookingRenderSegments(booking, sourceTables = getVisibleTables()) {
+        const assignedTableIdSet = new Set(getAssignedTableIds(booking).map(tableId => String(tableId)));
+        const visibleAssignedTables = sourceTables.filter(table => assignedTableIdSet.has(String(table.table_id)));
+
+        if(!visibleAssignedTables.length) {
+            return [];
+        }
+
+        return visibleAssignedTables.reduce((segments, table, index) => {
+            const previousTable = index > 0 ? visibleAssignedTables[index - 1] : null;
+            const previousSourceIndex = previousTable ? sourceTables.findIndex(item => String(item.table_id) === String(previousTable.table_id)) : -1;
+            const currentSourceIndex = sourceTables.findIndex(item => String(item.table_id) === String(table.table_id));
+            const isSameArea = previousTable && String(previousTable.area_id) === String(table.area_id);
+            const isAdjacent = previousSourceIndex !== -1 && currentSourceIndex === previousSourceIndex + 1;
+
+            if(!segments.length || !isSameArea || !isAdjacent) {
+                segments.push({
+                    area_id: table.area_id,
+                    table_ids: [Number(table.table_id)],
+                    tables: [table],
+                });
+                return segments;
+            }
+
+            const activeSegment = segments[segments.length - 1];
+            activeSegment.table_ids.push(Number(table.table_id));
+            activeSegment.tables.push(table);
+            return segments;
+        }, []);
+    }
+
     // Render a single booking block
     function renderBooking(booking, timeSlots, tableTopMap) {
         const bookingStart = booking.start_time.substring(0, 5); // Convert HH:MM:SS to HH:MM
@@ -3082,22 +3210,17 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const assignedTableNumbers = getAssignedTableNumbers(booking);
         const assignedAreaNames = getBookingAreaNames(booking);
         const startIdx = timeSlots.indexOf(bookingStart);
-        const firstAssignedTableId = assignedTableIds[0];
-        const topPosition = tableTopMap[String(firstAssignedTableId)];
+        const visibleSegments = getBookingRenderSegments(booking);
 
-        if(startIdx === -1 || topPosition === undefined) return '';
+        if(startIdx === -1 || !visibleSegments.length) return '';
 
         const startDate = new Date(`2000-01-01 ${booking.start_time}`);
         const endDate = new Date(`2000-01-01 ${booking.end_time}`);
         const durationMins = (endDate - startDate) / (1000 * 60);
         const numSlots = Math.max(1, Math.ceil(durationMins / INTERVAL_MINS));
-        const rowSpan = Math.max(1, assignedTableIds.length);
-        const lastAssignedTableId = assignedTableIds[assignedTableIds.length - 1];
-        const bottomPosition = tableTopMap[String(lastAssignedTableId)] ?? topPosition;
 
         const leftPosition = startIdx * CELL_WIDTH;
         const width = Math.max(numSlots * CELL_WIDTH, CELL_WIDTH);
-        const height = Math.max(ROW_HEIGHT, (bottomPosition - topPosition) + ROW_HEIGHT);
 
         const statusClass = booking.status === 'confirmed' ? 'success' : (booking.status === 'pending' ? 'pending' : 'info');
         const overCapacityClass = getAssignedCapacity(booking) < Number(booking.number_of_guests || 0) ? 'over-capacity' : '';
@@ -3116,38 +3239,52 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             ? `${booking.customer_name} | ${guestCountText}${areaText} | ${bookingStartLabel} - ${bookingEndLabel} | Requested ${requestedStartLabel} - ${requestedEndLabel} | Scheduled ${bookingStartLabel} - ${bookingEndLabel}`
             : `${booking.customer_name} | ${guestCountText}${areaText} | ${bookingStartLabel} - ${bookingEndLabel}`;
 
-        return `<div class="booking-block ${statusClass} ${overCapacityClass} ${rescheduledClass}"
-                    draggable="true"
-                    data-booking-id="${booking.booking_id}"
-                    data-table-id="${booking.table_id ?? ''}"
-                    data-table-ids="${assignedTableIds.join(',')}"
-                    data-table-number="${assignedTableNumbers.length ? 'T' + assignedTableNumbers[0] : ''}"
-                    data-time="${booking.start_time}"
-                    data-duration="${durationMins}"
-                    data-customer="${booking.customer_name}"
-                    data-row-span="${rowSpan}"
-                    onclick="handleBookingClick(event, ${booking.booking_id})"
-                    style="left: ${leftPosition}px; top: ${topPosition}px; width: ${width}px; height: ${height}px;"
-                    title="${titleText}">
-            <div class="resize-handle top-handle"></div>
-            <div class="resize-handle left-handle"></div>
-            <div class="booking-content">
-                <div class="booking-top">
-                    <span class="booking-top-left">
-                        ${showTime ? `<span class="booking-time-text">${visibleTimeText}</span>` : ''}
-                        ${noteButtonHtml}
-                    </span>
-                    <span class="booking-top-right">
-                        ${showGuestCount ? `<span class="booking-meta-inline">${guestCountText}</span>` : ''}
-                    </span>
+        return visibleSegments.map(segment => {
+            const firstSegmentTableId = segment.table_ids[0];
+            const lastSegmentTableId = segment.table_ids[segment.table_ids.length - 1];
+            const topPosition = tableTopMap[String(firstSegmentTableId)];
+            const bottomPosition = tableTopMap[String(lastSegmentTableId)] ?? topPosition;
+
+            if(topPosition === undefined) {
+                return '';
+            }
+
+            const rowSpan = Math.max(1, segment.table_ids.length);
+            const height = Math.max(ROW_HEIGHT, (bottomPosition - topPosition) + ROW_HEIGHT);
+
+            return `<div class="booking-block ${statusClass} ${overCapacityClass} ${rescheduledClass}"
+                        draggable="true"
+                        data-booking-id="${booking.booking_id}"
+                        data-table-id="${booking.table_id ?? ''}"
+                        data-table-ids="${assignedTableIds.join(',')}"
+                        data-table-number="${assignedTableNumbers.length ? 'T' + assignedTableNumbers[0] : ''}"
+                        data-time="${booking.start_time}"
+                        data-duration="${durationMins}"
+                        data-customer="${booking.customer_name}"
+                        data-row-span="${rowSpan}"
+                        onclick="handleBookingClick(event, ${booking.booking_id})"
+                        style="left: ${leftPosition}px; top: ${topPosition}px; width: ${width}px; height: ${height}px;"
+                        title="${titleText}">
+                <div class="resize-handle top-handle"></div>
+                <div class="resize-handle left-handle"></div>
+                <div class="booking-content">
+                    <div class="booking-top">
+                        <span class="booking-top-left">
+                            ${showTime ? `<span class="booking-time-text">${visibleTimeText}</span>` : ''}
+                            ${noteButtonHtml}
+                        </span>
+                        <span class="booking-top-right">
+                            ${showGuestCount ? `<span class="booking-meta-inline">${guestCountText}</span>` : ''}
+                        </span>
+                    </div>
+                    <div class="booking-name-row">
+                        <span class="booking-name-text">${booking.customer_name}</span>
+                    </div>
                 </div>
-                <div class="booking-name-row">
-                    <span class="booking-name-text">${booking.customer_name}</span>
-                </div>
-            </div>
-            <div class="resize-handle right-handle"></div>
-            <div class="resize-handle bottom-handle"></div>
-        </div>`;
+                <div class="resize-handle right-handle"></div>
+                <div class="resize-handle bottom-handle"></div>
+            </div>`;
+        }).join('');
     }
 
     // Drag handlers
