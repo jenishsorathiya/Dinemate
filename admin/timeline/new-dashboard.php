@@ -909,7 +909,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
         }
 
         .booking-detail-grid {
@@ -920,6 +920,71 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
         .booking-detail-grid .full-width {
             grid-column: 1 / -1;
+        }
+
+        .booking-details-card {
+            width: min(100%, 560px);
+            padding: 20px;
+        }
+
+        .booking-details-card .booking-modal-header {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+        }
+
+        .booking-details-card .booking-modal-header h5 {
+            font-size: 18px;
+        }
+
+        .booking-details-card .booking-meta-chip {
+            margin-top: 8px;
+        }
+
+        .booking-details-card .modal-form-group {
+            margin-bottom: 0;
+        }
+
+        .booking-details-card .modal-form-group label {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .booking-details-card .modal-form-group input,
+        .booking-details-card .modal-form-group textarea {
+            padding: 9px 11px;
+        }
+
+        .booking-time-pair {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 8px;
+            align-items: center;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 6px 10px;
+            background: #ffffff;
+        }
+
+        .booking-time-pair input {
+            border: none !important;
+            padding: 4px 0 !important;
+            background: transparent;
+            min-width: 0;
+            box-shadow: none;
+        }
+
+        .booking-time-pair-separator {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .booking-readonly-input {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 600;
         }
 
         .booking-meta-chip {
@@ -947,6 +1012,14 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         @media (max-width: 520px) {
             .booking-detail-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .booking-time-pair {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-time-pair-separator {
+                display: none;
             }
         }
 
@@ -1753,43 +1826,51 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 </div>
 
 <div class="modal-backdrop-custom" id="bookingDetailsModal">
-    <div class="booking-modal-card">
+    <div class="booking-modal-card booking-details-card">
         <div class="booking-modal-header">
             <div>
                 <h5><i class="fa fa-clipboard-list"></i> Booking Details</h5>
                 <div class="booking-meta-chip" id="bookingDetailsMeta"></div>
             </div>
+            <button type="button" class="booking-modal-close" id="closeBookingDetailsModalBtn" aria-label="Close">&times;</button>
         </div>
         <div class="modal-error" id="bookingDetailsError"></div>
         <form id="bookingDetailsForm">
             <input type="hidden" id="bookingDetailsId">
+            <input type="hidden" id="bookingDetailsAction" value="save">
             <div class="booking-detail-topbar">
                 <button type="button" class="booking-modal-danger-small" id="cancelBookingActionBtn">Cancel Booking</button>
             </div>
             <div class="booking-detail-grid">
-                <div class="modal-form-group full-width">
+                <div class="modal-form-group">
                     <label for="bookingDetailsName">Name</label>
                     <input type="text" id="bookingDetailsName" required>
                 </div>
                 <div class="modal-form-group">
-                    <label for="bookingRequestedStart">Requested Start</label>
-                    <input type="time" id="bookingRequestedStart" min="10:00" max="21:30" step="1800" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="bookingRequestedEnd">Requested End</label>
-                    <input type="time" id="bookingRequestedEnd" min="10:30" max="22:00" step="1800" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="bookingAssignedStart">Assigned Start</label>
-                    <input type="time" id="bookingAssignedStart" min="10:00" max="21:30" step="1800" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="bookingAssignedEnd">Assigned End</label>
-                    <input type="time" id="bookingAssignedEnd" min="10:30" max="22:00" step="1800" required>
+                    <label for="bookingDetailsGuests">Party Size</label>
+                    <input type="number" id="bookingDetailsGuests" min="1" required>
                 </div>
                 <div class="modal-form-group full-width">
-                    <label for="bookingDetailsGuests">Number of People</label>
-                    <input type="number" id="bookingDetailsGuests" min="1" required>
+                    <label>Requested Time</label>
+                    <div class="booking-time-pair">
+                        <input type="time" id="bookingRequestedStart" min="10:00" max="21:30" step="1800" required>
+                        <span class="booking-time-pair-separator">to</span>
+                        <input type="time" id="bookingRequestedEnd" min="10:30" max="22:00" step="1800" required>
+                    </div>
+                </div>
+                <div class="modal-form-group full-width">
+                    <label>Assigned Time</label>
+                    <div class="booking-time-pair">
+                        <input type="time" id="bookingAssignedStart" min="10:00" max="21:30" step="1800" required>
+                        <span class="booking-time-pair-separator">to</span>
+                        <input type="time" id="bookingAssignedEnd" min="10:30" max="22:00" step="1800" required>
+                    </div>
+                </div>
+                <div class="modal-form-group full-width">
+                    <label for="bookingDetailsTable">Table</label>
+                    <select id="bookingDetailsTable">
+                        <option value="">Unassigned</option>
+                    </select>
                 </div>
                 <div class="modal-form-group full-width">
                     <label for="bookingDetailsNotes">Notes</label>
@@ -1987,6 +2068,89 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         return sortedTables.filter(table => String(table.area_id) === String(activeAreaFilter));
     }
 
+    function timesOverlap(startA, endA, startB, endB) {
+        return startA < endB && endA > startB;
+    }
+
+    function getAvailableTablesForBooking(bookingId, bookingDate, assignedStartTime, assignedEndTime) {
+        if(!bookingDate || !assignedStartTime || !assignedEndTime) {
+            return [...TABLES].sort(sortTables);
+        }
+
+        const blockedTableIds = new Set();
+
+        BOOKING_DATA.forEach(booking => {
+            if(String(booking.booking_id) === String(bookingId)) {
+                return;
+            }
+
+            const bookingStatus = String(booking.status || '').toLowerCase();
+            if(!['pending', 'confirmed'].includes(bookingStatus)) {
+                return;
+            }
+
+            if(String(booking.booking_date) !== String(bookingDate)) {
+                return;
+            }
+
+            if(!timesOverlap(
+                assignedStartTime,
+                assignedEndTime,
+                String(booking.start_time || ''),
+                String(booking.end_time || '')
+            )) {
+                return;
+            }
+
+            getAssignedTableIds(booking).forEach(tableId => {
+                blockedTableIds.add(String(tableId));
+            });
+        });
+
+        return [...TABLES]
+            .filter(table => !blockedTableIds.has(String(table.table_id)))
+            .sort(sortTables);
+    }
+
+    function refreshBookingTableOptions(selectedTableId = null, bookingId = null, bookingDate = null, assignedStartTime = null, assignedEndTime = null) {
+        const tableSelect = document.getElementById('bookingDetailsTable');
+        if(!tableSelect) {
+            return;
+        }
+
+        const options = ['<option value="">Unassigned</option>'];
+        const availableTables = getAvailableTablesForBooking(bookingId, bookingDate, assignedStartTime, assignedEndTime);
+        const selectedTable = selectedTableId ? getTableById(selectedTableId) : null;
+
+        if(selectedTable && !availableTables.some(table => String(table.table_id) === String(selectedTable.table_id))) {
+            availableTables.unshift(selectedTable);
+        }
+
+        availableTables.forEach(table => {
+            const isSelected = selectedTableId !== null && selectedTableId !== undefined && String(selectedTableId) === String(table.table_id);
+            options.push(`<option value="${table.table_id}"${isSelected ? ' selected' : ''}>${getAreaNameForTable(table)} • T${table.table_number} • ${table.capacity} seats</option>`);
+        });
+
+        tableSelect.innerHTML = options.join('');
+    }
+
+    function refreshBookingTableOptionsForCurrentForm() {
+        const bookingId = document.getElementById('bookingDetailsId').value;
+        const booking = BOOKING_DATA.find(item => String(item.booking_id) === String(bookingId));
+        const tableSelect = document.getElementById('bookingDetailsTable');
+        if(!booking || !tableSelect) {
+            return;
+        }
+
+        refreshBookingTableOptions(
+            tableSelect.value,
+            booking.booking_id,
+            booking.booking_date,
+            `${document.getElementById('bookingAssignedStart').value}:00`,
+            `${document.getElementById('bookingAssignedEnd').value}:00`
+        );
+    }
+
     function getAreaNameForTable(table) {
         return table && table.area_name ? table.area_name : 'Main Floor';
     }
@@ -2077,6 +2241,18 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
         const areaNames = getBookingAreaNames(booking);
         return `${areaNames.length ? `${areaNames.join(', ')} • ` : ''}${partialTableLabels.join(', ')}`;
+    }
+
+    function getBookingDetailsMetaSummary(booking) {
+        const rawStatusLabel = String(booking.status || 'pending');
+        const statusLabel = rawStatusLabel.charAt(0).toUpperCase() + rawStatusLabel.slice(1);
+        const assignmentSummary = getBookingAssignmentSummary(booking);
+
+        if(!getAssignedTableIds(booking).length || !assignmentSummary) {
+            return `Unassigned • ${statusLabel}`;
+        }
+
+        return `${assignmentSummary} • ${statusLabel}`;
     }
 
     function getBookedPeopleCountForArea(areaId = 'all') {
@@ -2745,6 +2921,8 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const form = document.getElementById('bookingDetailsForm');
         const errorBox = document.getElementById('bookingDetailsError');
         const saveBtn = document.getElementById('saveBookingDetailsBtn');
+        const assignedStartInput = document.getElementById('bookingAssignedStart');
+        const assignedEndInput = document.getElementById('bookingAssignedEnd');
 
         if(!modal || !form) return;
 
@@ -2815,8 +2993,18 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             }
         });
 
+        if(assignedStartInput) {
+            assignedStartInput.addEventListener('change', refreshBookingTableOptionsForCurrentForm);
+        }
+        if(assignedEndInput) {
+            assignedEndInput.addEventListener('change', refreshBookingTableOptionsForCurrentForm);
+        }
+
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+
+            const action = document.getElementById('bookingDetailsAction').value || 'save';
+            const selectedTableId = document.getElementById('bookingDetailsTable').value;
 
             const payload = {
                 booking_id: document.getElementById('bookingDetailsId').value,
@@ -2827,11 +3015,13 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 end_time: document.getElementById('bookingAssignedEnd').value,
                 number_of_guests: document.getElementById('bookingDetailsGuests').value,
                 special_request: document.getElementById('bookingDetailsNotes').value.trim(),
+                table_id: selectedTableId,
+                confirm_booking: action === 'confirm',
             };
 
             errorBox.style.display = 'none';
             saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
+            saveBtn.textContent = action === 'confirm' ? 'Confirming...' : 'Saving...';
 
             fetch('update-booking-details.php', {
                 method: 'POST',
@@ -2856,7 +3046,16 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                     };
                 }
                 renderTimeline();
+                const updatedBooking = bookingIdx !== -1 ? BOOKING_DATA[bookingIdx] : data.booking;
                 closeModal();
+
+                if(action === 'confirm') {
+                    if(updatedBooking && getAssignedTableIds(updatedBooking).length === 0) {
+                        switchBookingListTab('standby');
+                    } else {
+                        switchBookingListTab('bookings');
+                    }
+                }
             })
             .catch(error => {
                 errorBox.textContent = error.message;
@@ -2864,7 +3063,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             })
             .finally(() => {
                 saveBtn.disabled = false;
-                saveBtn.textContent = 'Save Changes';
+                saveBtn.textContent = document.getElementById('bookingDetailsAction').value === 'confirm' ? 'Confirm Booking' : 'Save Changes';
             });
         });
     }
@@ -3055,22 +3254,30 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         if(!booking) return;
 
         const assignedTableNumbers = getAssignedTableNumbers(booking);
-        const assignedAreaNames = getBookingAreaNames(booking);
         const tableLabel = assignedTableNumbers.length
             ? `Tables ${assignedTableNumbers.join(', ')}`
             : 'Unassigned';
-        const areaLabel = assignedAreaNames.length ? assignedAreaNames.join(', ') : 'No area';
+        const isPending = String(booking.status || '').toLowerCase() === 'pending';
 
         const modal = document.getElementById('bookingDetailsModal');
         document.getElementById('bookingDetailsId').value = booking.booking_id;
+        document.getElementById('bookingDetailsAction').value = isPending ? 'confirm' : 'save';
         document.getElementById('bookingDetailsName').value = booking.customer_name || '';
         document.getElementById('bookingRequestedStart').value = getRequestedStartTime(booking).substring(0, 5);
         document.getElementById('bookingRequestedEnd').value = getRequestedEndTime(booking).substring(0, 5);
         document.getElementById('bookingAssignedStart').value = booking.start_time.substring(0, 5);
         document.getElementById('bookingAssignedEnd').value = booking.end_time.substring(0, 5);
         document.getElementById('bookingDetailsGuests').value = booking.number_of_guests;
+        refreshBookingTableOptions(
+            booking.table_id,
+            booking.booking_id,
+            booking.booking_date,
+            booking.start_time,
+            booking.end_time
+        );
         document.getElementById('bookingDetailsNotes').value = booking.special_request || '';
-        document.getElementById('bookingDetailsMeta').textContent = `${booking.booking_date} • ${areaLabel} • ${tableLabel} • ${booking.status}`;
+        document.getElementById('bookingDetailsMeta').textContent = getBookingDetailsMetaSummary(booking);
+        document.getElementById('saveBookingDetailsBtn').textContent = isPending ? 'Confirm Booking' : 'Save Changes';
 
         const errorBox = document.getElementById('bookingDetailsError');
         errorBox.style.display = 'none';

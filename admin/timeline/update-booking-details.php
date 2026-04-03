@@ -24,6 +24,8 @@ $assignedStart = trim($data['start_time'] ?? '');
 $assignedEnd = trim($data['end_time'] ?? '');
 $guestCount = (int)($data['number_of_guests'] ?? 0);
 $specialRequest = trim($data['special_request'] ?? '');
+$selectedTableId = isset($data['table_id']) && $data['table_id'] !== '' ? (int)$data['table_id'] : null;
+$confirmBooking = !empty($data['confirm_booking']);
 
 if($bookingId < 1 || $customerName === '' || $requestedStart === '' || $requestedEnd === '' || $assignedStart === '' || $assignedEnd === '' || $guestCount < 1) {
     http_response_code(400);
@@ -94,16 +96,34 @@ try {
         exit();
     }
 
-    $assignedTablesStmt = $pdo->prepare("SELECT rt.table_id, rt.table_number, rt.capacity FROM booking_table_assignments bta INNER JOIN restaurant_tables rt ON rt.table_id = bta.table_id WHERE bta.booking_id = ? ORDER BY rt.table_number + 0, rt.table_number");
-    $assignedTablesStmt->execute([$bookingId]);
-    $assignedTables = $assignedTablesStmt->fetchAll(PDO::FETCH_ASSOC);
+    $nextAssignedTableIds = $selectedTableId !== null && $selectedTableId > 0 ? [$selectedTableId] : [];
+    $assignedTables = [];
+    $assignedTableNumbers = [];
 
-    $assignedTableIds = array_map(static function ($tableRow) {
-        return (int)$tableRow['table_id'];
-    }, $assignedTables);
-    $assignedTableNumbers = array_map(static function ($tableRow) {
-        return (string)$tableRow['table_number'];
-    }, $assignedTables);
+    if(!empty($nextAssignedTableIds)) {
+        $tablePlaceholders = implode(',', array_fill(0, count($nextAssignedTableIds), '?'));
+        $assignedTablesStmt = $pdo->prepare("SELECT table_id, table_number, capacity FROM restaurant_tables WHERE table_id IN ($tablePlaceholders)");
+        $assignedTablesStmt->execute($nextAssignedTableIds);
+        $tableRows = $assignedTablesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if(count($tableRows) !== count($nextAssignedTableIds)) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Selected table not found']);
+            exit();
+        }
+
+        $tableMap = [];
+        foreach($tableRows as $tableRow) {
+            $tableMap[(int)$tableRow['table_id']] = $tableRow;
+        }
+
+        foreach($nextAssignedTableIds as $tableId) {
+            $assignedTables[] = $tableMap[$tableId];
+            $assignedTableNumbers[] = (string)$tableMap[$tableId]['table_number'];
+        }
+    }
+
+    $assignedTableIds = $nextAssignedTableIds;
     $assignedCapacity = array_sum(array_map(static function ($tableRow) {
         return (int)$tableRow['capacity'];
     }, $assignedTables));
@@ -146,7 +166,11 @@ try {
         }
     }
 
-    $updateStmt = $pdo->prepare("
+    $nextStatus = $confirmBooking ? 'confirmed' : $booking['status'];
+
+    $pdo->beginTransaction();
+
+    $updateStmt = $pdo->prepare(" 
         UPDATE bookings
         SET customer_name_override = ?,
             requested_start_time = ?,
@@ -154,7 +178,8 @@ try {
             start_time = ?,
             end_time = ?,
             number_of_guests = ?,
-            special_request = ?
+            special_request = ?,
+            status = ?
         WHERE booking_id = ?
     ");
     $updateStmt->execute([
@@ -165,8 +190,13 @@ try {
         $assignedEndTime,
         $guestCount,
         $specialRequest !== '' ? $specialRequest : null,
+        $nextStatus,
         $bookingId,
     ]);
+
+    $assignedTableIds = syncBookingTableAssignments($pdo, $bookingId, $nextAssignedTableIds);
+
+    $pdo->commit();
 
     echo json_encode([
         'success' => true,
@@ -184,12 +214,15 @@ try {
             'requested_end_time' => $requestedEndTime,
             'number_of_guests' => $guestCount,
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
-            'status' => $booking['status'],
+            'status' => $nextStatus,
             'customer_name' => $customerName,
             'customer_name_override' => $customerName,
         ]
     ]);
 } catch(Throwable $e) {
+    if($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Could not update booking details']);
 }
