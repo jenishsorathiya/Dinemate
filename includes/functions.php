@@ -189,17 +189,14 @@ function ensureTableAreasSchema($pdo) {
         $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN sort_order INT NOT NULL DEFAULT 0 AFTER capacity");
     }
 
-    $defaultAreaStmt = $pdo->prepare("SELECT area_id FROM table_areas WHERE name = ? ORDER BY display_order ASC, area_id ASC LIMIT 1");
-    $defaultAreaStmt->execute(['Main Floor']);
-    $defaultAreaId = $defaultAreaStmt->fetchColumn();
+    $defaultAreaStmt = $pdo->query("SELECT area_id FROM table_areas WHERE is_active = 1 ORDER BY display_order ASC, area_id ASC LIMIT 1");
+    $defaultAreaId = (int) $defaultAreaStmt->fetchColumn();
 
-    if (!$defaultAreaId) {
+    if ($defaultAreaId <= 0) {
         $nextDisplayOrder = (int) $pdo->query("SELECT COALESCE(MAX(display_order), 0) + 10 FROM table_areas")->fetchColumn();
         $insertAreaStmt = $pdo->prepare("INSERT INTO table_areas (name, display_order, table_number_start, table_number_end, is_active) VALUES (?, ?, NULL, NULL, 1)");
         $insertAreaStmt->execute(['Main Floor', $nextDisplayOrder]);
         $defaultAreaId = (int) $pdo->lastInsertId();
-    } else {
-        $defaultAreaId = (int) $defaultAreaId;
     }
 
     $assignAreaStmt = $pdo->prepare("UPDATE restaurant_tables SET area_id = ? WHERE area_id IS NULL OR area_id = 0");

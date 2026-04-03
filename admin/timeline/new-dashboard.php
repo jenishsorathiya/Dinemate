@@ -1042,41 +1042,23 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         .timeline-toolbar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
+            gap: 12px;
             padding: 14px 16px;
             border-bottom: 1px solid #e8edf4;
             background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
-        }
-
-        .timeline-toolbar-copy {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            min-width: 0;
-        }
-
-        .timeline-toolbar-label {
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #6b7280;
-        }
-
-        .timeline-toolbar-note {
-            font-size: 13px;
-            font-weight: 500;
-            color: #374151;
-            line-height: 1.35;
+            overflow: hidden;
         }
 
         .area-filter-bar {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: flex-start;
             gap: 8px;
-            flex-wrap: wrap;
+            flex: 1;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: thin;
         }
 
         .area-filter-chip {
@@ -1090,11 +1072,25 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             line-height: 1;
             cursor: pointer;
             transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+            flex-shrink: 0;
         }
 
         .area-filter-chip:hover {
             border-color: #c3d0e3;
             transform: translateY(-1px);
+        }
+
+        .area-filter-chip.dragging {
+            opacity: 0.45;
+            transform: scale(0.98);
+        }
+
+        .area-filter-chip.drop-before {
+            box-shadow: inset 3px 0 0 #2563eb;
+        }
+
+        .area-filter-chip.drop-after {
+            box-shadow: inset -3px 0 0 #2563eb;
         }
 
         .area-filter-chip.active {
@@ -1107,6 +1103,19 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             background: #f8fafc;
             color: #2563eb;
             border-color: #cfe0ff;
+        }
+
+        .area-filter-add-btn {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1;
+            flex-shrink: 0;
         }
 
         .area-filter-chip-count {
@@ -1623,10 +1632,6 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             <!-- TIMELINE -->
             <div class="timeline-area">
                 <div class="timeline-toolbar">
-                    <div class="timeline-toolbar-copy">
-                        <span class="timeline-toolbar-label">Areas</span>
-                        <span class="timeline-toolbar-note">Filter the floor by section and keep tables organized by zone.</span>
-                    </div>
                     <div class="area-filter-bar" id="areaFilterBar"></div>
                 </div>
                 <div class="timeline-scroll-wrapper" id="timelineScrollWrapper">
@@ -1825,6 +1830,8 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     const AREA_HEADER_HEIGHT = 28;
     let activeBookingListTab = 'standby';
     let activeAreaFilter = 'all';
+    let suppressAreaChipClick = false;
+    let draggedAreaChipId = null;
 
     // Initialize timeline on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -2082,28 +2089,145 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const areaButtons = getSortedAreas().map(area => {
             const bookedPeopleCount = getBookedPeopleCountForArea(area.area_id);
             const isActive = String(activeAreaFilter) === String(area.area_id);
-            return `<button type="button" class="area-filter-chip${isActive ? ' active' : ''}" onclick="handleAreaChipClick(${area.area_id})">${area.name}<span class="area-filter-chip-count">${bookedPeopleCount}</span></button>`;
+            return `<button type="button" class="area-filter-chip${isActive ? ' active' : ''}" data-area-id="${area.area_id}" draggable="true" onclick="handleAreaChipClick(${area.area_id})">${area.name}<span class="area-filter-chip-count">${bookedPeopleCount}</span></button>`;
         }).join('');
 
         const totalBookedPeople = getBookedPeopleCountForArea('all');
-        const deleteChip = activeAreaFilter === 'all'
-            ? ''
-            : '<button type="button" class="area-filter-chip secondary" onclick="deleteAreaById(activeAreaFilter)">Delete Selected Area</button>';
         areaFilterBar.innerHTML = `
             <button type="button" class="area-filter-chip${activeAreaFilter === 'all' ? ' active' : ''}" onclick="setAreaFilter('all')">All Areas<span class="area-filter-chip-count">${totalBookedPeople}</span></button>
             ${areaButtons}
-            <button type="button" class="area-filter-chip secondary" onclick="openAreaDetails()">Add Area</button>
-            ${deleteChip}
+            <button type="button" class="area-filter-chip secondary area-filter-add-btn" onclick="openAreaDetails()" aria-label="Add area" title="Add area">+</button>
         `;
+        bindAreaFilterDragHandlers();
     }
 
     function handleAreaChipClick(areaId) {
+        if(suppressAreaChipClick) {
+            suppressAreaChipClick = false;
+            return;
+        }
+
         if(String(activeAreaFilter) === String(areaId)) {
             openAreaDetails(areaId);
             return;
         }
 
         setAreaFilter(areaId);
+    }
+
+    function clearAreaChipDropIndicators() {
+        document.querySelectorAll('.area-filter-chip.drop-before, .area-filter-chip.drop-after').forEach(chip => {
+            chip.classList.remove('drop-before', 'drop-after');
+        });
+    }
+
+    function persistAreaOrder(orderedAreaIds) {
+        return fetch('update-area-order.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ area_ids: orderedAreaIds })
+        })
+        .then(async response => {
+            const data = await response.json();
+            if(!response.ok || !data.success) {
+                throw new Error(data.error || 'Failed to save area order');
+            }
+            return data;
+        })
+        .then(data => {
+            if(Array.isArray(data.areas)) {
+                AREAS.length = 0;
+                data.areas.forEach(area => {
+                    AREAS.push(area);
+                });
+
+                const areaOrderMap = AREAS.reduce((map, area) => {
+                    map[String(area.area_id)] = Number(area.display_order || 0);
+                    return map;
+                }, {});
+
+                TABLES.forEach(table => {
+                    table.area_display_order = areaOrderMap[String(table.area_id)] ?? Number(table.area_display_order || 0);
+                });
+            }
+
+            renderTimeline();
+            return true;
+        });
+    }
+
+    function bindAreaFilterDragHandlers() {
+        const draggableAreaChips = document.querySelectorAll('.area-filter-chip[data-area-id]');
+        if(!draggableAreaChips.length) {
+            return;
+        }
+
+        draggableAreaChips.forEach(chip => {
+            chip.addEventListener('dragstart', function(event) {
+                draggedAreaChipId = chip.dataset.areaId;
+                suppressAreaChipClick = false;
+                chip.classList.add('dragging');
+                if(event.dataTransfer) {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', draggedAreaChipId);
+                }
+            });
+
+            chip.addEventListener('dragover', function(event) {
+                if(!draggedAreaChipId || draggedAreaChipId === chip.dataset.areaId) {
+                    return;
+                }
+
+                event.preventDefault();
+                clearAreaChipDropIndicators();
+                const bounds = chip.getBoundingClientRect();
+                const insertBefore = event.clientX < bounds.left + (bounds.width / 2);
+                chip.classList.add(insertBefore ? 'drop-before' : 'drop-after');
+            });
+
+            chip.addEventListener('dragleave', function() {
+                chip.classList.remove('drop-before', 'drop-after');
+            });
+
+            chip.addEventListener('drop', function(event) {
+                event.preventDefault();
+                const sourceAreaId = draggedAreaChipId || (event.dataTransfer ? event.dataTransfer.getData('text/plain') : '');
+                const targetAreaId = chip.dataset.areaId;
+                clearAreaChipDropIndicators();
+
+                if(!sourceAreaId || !targetAreaId || sourceAreaId === targetAreaId) {
+                    return;
+                }
+
+                const orderedAreas = getSortedAreas();
+                const sourceIndex = orderedAreas.findIndex(area => String(area.area_id) === String(sourceAreaId));
+                const targetIndex = orderedAreas.findIndex(area => String(area.area_id) === String(targetAreaId));
+                if(sourceIndex === -1 || targetIndex === -1) {
+                    return;
+                }
+
+                const bounds = chip.getBoundingClientRect();
+                const insertBefore = event.clientX < bounds.left + (bounds.width / 2);
+                const [movedArea] = orderedAreas.splice(sourceIndex, 1);
+                const adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+                const nextIndex = insertBefore ? adjustedTargetIndex : adjustedTargetIndex + 1;
+                orderedAreas.splice(nextIndex, 0, movedArea);
+
+                suppressAreaChipClick = true;
+                persistAreaOrder(orderedAreas.map(area => Number(area.area_id))).catch(error => {
+                    window.alert(error.message);
+                    renderTimeline();
+                });
+            });
+
+            chip.addEventListener('dragend', function() {
+                chip.classList.remove('dragging', 'drop-before', 'drop-after');
+                clearAreaChipDropIndicators();
+                draggedAreaChipId = null;
+            });
+        });
     }
 
     function setAreaFilter(areaId) {
