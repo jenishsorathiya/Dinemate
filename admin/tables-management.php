@@ -859,7 +859,6 @@ $adminSidebarPathPrefix = '';
             pointer-events: none;
         }
 
-        .canvas-overlay-left,
         .canvas-overlay-right {
             position: absolute;
             z-index: 3;
@@ -867,16 +866,31 @@ $adminSidebarPathPrefix = '';
             gap: 8px;
         }
 
-        .canvas-overlay-left {
-            top: 14px;
-            left: 14px;
-        }
-
         .canvas-overlay-right {
             top: 50%;
             right: 14px;
             transform: translateY(-50%);
             flex-direction: column;
+        }
+
+        .canvas-toolbar-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .edit-group {
+            justify-content: flex-end;
+        }
+
+        .toolbar-action {
+            box-shadow: none;
+        }
+
+        .is-hidden {
+            display: none;
         }
 
         .overlay-chip {
@@ -908,6 +922,10 @@ $adminSidebarPathPrefix = '';
             padding: 14px;
             cursor: grab;
             transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .canvas-frame:not(.edit-mode) .zone {
+            cursor: pointer;
         }
 
         .zone:hover {
@@ -976,6 +994,10 @@ $adminSidebarPathPrefix = '';
             box-shadow: 0 8px 16px rgba(17, 17, 17, 0.12);
         }
 
+        .canvas-frame:not(.edit-mode) .zone-resize-handle {
+            display: none;
+        }
+
         .zone.zone-lavender { background: rgba(139, 115, 238, 0.08); }
         .zone.zone-lavender .zone-label { color: var(--lavender); }
         .zone.zone-green { background: rgba(126, 207, 145, 0.09); }
@@ -1002,6 +1024,10 @@ $adminSidebarPathPrefix = '';
             box-shadow: 0 12px 22px rgba(59, 72, 98, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
             background: rgba(255, 255, 255, 0.94);
             transition: box-shadow 0.14s ease, transform 0.14s ease;
+        }
+
+        .canvas-frame:not(.edit-mode) .table-item {
+            cursor: pointer;
         }
 
         .table-item span:last-child {
@@ -1619,7 +1645,6 @@ $adminSidebarPathPrefix = '';
                     </div>
                     <div class="header-actions">
                         <button class="button" id="headerAddTable" type="button"><i class="fa-solid fa-plus"></i> Add Table</button>
-                        <button class="button button-primary" id="saveLayoutButton" type="button"><i class="fa-regular fa-floppy-disk"></i> Save Layout</button>
                     </div>
                 </header>
 
@@ -1659,19 +1684,21 @@ $adminSidebarPathPrefix = '';
                                 <h2 class="section-title">Visual Floor Plan</h2>
                                 <p class="section-note">Interactive seating map with realistic zones, drag positioning, and quick edits.</p>
                             </div>
-                            <div class="toolbar-group">
-                                <button class="mini-button" id="zoomOutButton" type="button"><i class="fa-solid fa-minus"></i></button>
-                                <button class="mini-button" id="resetViewButton" type="button"><i class="fa-solid fa-expand"></i></button>
-                                <button class="mini-button" id="zoomInButton" type="button"><i class="fa-solid fa-plus"></i></button>
+                            <div class="canvas-toolbar-actions">
+                                <div class="toolbar-group zoom-group">
+                                    <button class="mini-button" id="zoomOutButton" type="button"><i class="fa-solid fa-minus"></i></button>
+                                    <button class="mini-button" id="resetViewButton" type="button"><i class="fa-solid fa-expand"></i></button>
+                                    <button class="mini-button" id="zoomInButton" type="button"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <div class="toolbar-group edit-group">
+                                    <button class="button button-ghost toolbar-action" id="enterEditModeButton" type="button"><i class="fa-solid fa-pen"></i> Edit Layout</button>
+                                    <button class="button button-primary toolbar-action is-hidden" id="saveEditLayoutButton" type="button"><i class="fa-regular fa-floppy-disk"></i> Save Layout</button>
+                                    <button class="button button-ghost toolbar-action is-hidden" id="cancelEditModeButton" type="button"><i class="fa-solid fa-xmark"></i> Cancel</button>
+                                </div>
                             </div>
                         </div>
                         <div class="canvas-stage">
                             <div class="canvas-frame" id="canvasFrame">
-                                <div class="canvas-overlay-left">
-                                    <button class="overlay-chip" type="button" title="Select"><i class="fa-solid fa-arrow-pointer"></i></button>
-                                    <button class="overlay-chip" type="button" title="Move"><i class="fa-regular fa-hand"></i></button>
-                                    <button class="overlay-chip" type="button" title="Grid"><i class="fa-solid fa-grip"></i></button>
-                                </div>
                                 <div class="canvas-overlay-right">
                                     <button class="overlay-chip" id="zoomInFloating" type="button" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
                                     <button class="overlay-chip" id="resetViewFloating" type="button" title="Fit view"><i class="fa-solid fa-expand"></i></button>
@@ -1856,6 +1883,8 @@ $adminSidebarPathPrefix = '';
             modalAreaId: null,
             selectedAreaId: null,
             justManipulatedAreaId: null,
+            isEditMode: false,
+            layoutSnapshot: null,
         };
 
         const preferredAreaOrder = ['Stables', 'Kookaburra', 'Wisteria', 'Schumack', 'Main Bar', 'OSF', 'OSF Patio'];
@@ -1934,6 +1963,85 @@ $adminSidebarPathPrefix = '';
                 zone.y + TABLE_PADDING_Y,
                 Math.min(zone.y + zone.height - TABLE_PADDING_Y, Math.round(Number(table.layout_y)))
             );
+        }
+
+        function createLayoutSnapshot() {
+            return {
+                areas: state.areas.map((area) => ({
+                    area_id: Number(area.area_id),
+                    layout_x: area.layout_x,
+                    layout_y: area.layout_y,
+                    layout_width: area.layout_width,
+                    layout_height: area.layout_height,
+                })),
+                tables: state.tables.map((table) => ({
+                    table_id: Number(table.table_id),
+                    layout_x: table.layout_x,
+                    layout_y: table.layout_y,
+                })),
+            };
+        }
+
+        function restoreLayoutSnapshot(snapshot) {
+            if (!snapshot) {
+                return;
+            }
+
+            snapshot.areas.forEach((savedArea) => {
+                const area = getAreaById(savedArea.area_id);
+                if (!area) {
+                    return;
+                }
+
+                area.layout_x = savedArea.layout_x;
+                area.layout_y = savedArea.layout_y;
+                area.layout_width = savedArea.layout_width;
+                area.layout_height = savedArea.layout_height;
+            });
+
+            snapshot.tables.forEach((savedTable) => {
+                const table = state.tables.find((item) => Number(item.table_id) === Number(savedTable.table_id));
+                if (!table) {
+                    return;
+                }
+
+                table.layout_x = savedTable.layout_x;
+                table.layout_y = savedTable.layout_y;
+            });
+        }
+
+        function updateEditModeUI() {
+            document.getElementById('enterEditModeButton').classList.toggle('is-hidden', state.isEditMode);
+            document.getElementById('saveEditLayoutButton').classList.toggle('is-hidden', !state.isEditMode);
+            document.getElementById('cancelEditModeButton').classList.toggle('is-hidden', !state.isEditMode);
+            canvasFrame.classList.toggle('edit-mode', state.isEditMode);
+        }
+
+        function enterEditMode() {
+            if (state.isEditMode) {
+                return;
+            }
+
+            state.layoutSnapshot = createLayoutSnapshot();
+            state.isEditMode = true;
+            updateEditModeUI();
+            renderCanvas();
+            showToast('Edit mode enabled. Drag tables or areas, then save or cancel.');
+        }
+
+        function cancelEditMode() {
+            if (!state.isEditMode) {
+                return;
+            }
+
+            state.dragging = null;
+            restoreLayoutSnapshot(state.layoutSnapshot);
+            state.layoutSnapshot = null;
+            state.isEditMode = false;
+            state.justManipulatedAreaId = null;
+            updateEditModeUI();
+            renderAll();
+            showToast('Layout changes discarded.');
         }
 
         function getToneForArea(area) {
@@ -2140,6 +2248,7 @@ $adminSidebarPathPrefix = '';
 
         function renderCanvas() {
             updateCanvasViewport();
+            canvasFrame.classList.toggle('edit-mode', state.isEditMode);
             const zoneHtml = getRenderedZones().map((zone) => {
                 const area = getAreaByZoneKey(zone.key);
                 const isActive = area && Number(state.selectedAreaId) === Number(area.area_id);
@@ -2152,7 +2261,7 @@ $adminSidebarPathPrefix = '';
                     style="left:${zone.x}px; top:${zone.y}px; width:${zone.width}px; height:${zone.height}px;"
                 >
                     <div class="zone-label">${zone.label}</div>
-                    ${area ? '<div class="zone-resize-handle" data-area-resize-handle="true" aria-hidden="true"></div>' : ''}
+                    ${area && state.isEditMode ? '<div class="zone-resize-handle" data-area-resize-handle="true" aria-hidden="true"></div>' : ''}
                 </div>
             `;
             }).join('');
@@ -2422,6 +2531,10 @@ $adminSidebarPathPrefix = '';
         }
 
         function handleDragStart(event) {
+            if (!state.isEditMode) {
+                return;
+            }
+
             const tableId = Number(event.currentTarget.dataset.tableId);
             const table = state.tables.find((item) => Number(item.table_id) === tableId);
             if (!table) {
@@ -2444,6 +2557,10 @@ $adminSidebarPathPrefix = '';
         }
 
         function handleAreaDragStart(event) {
+            if (!state.isEditMode) {
+                return;
+            }
+
             if (event.target.closest('[data-area-resize-handle]')) {
                 return;
             }
@@ -2475,6 +2592,10 @@ $adminSidebarPathPrefix = '';
         }
 
         function handleAreaResizeStart(event) {
+            if (!state.isEditMode) {
+                return;
+            }
+
             event.preventDefault();
             event.stopPropagation();
 
@@ -2632,7 +2753,7 @@ $adminSidebarPathPrefix = '';
             canvasSurface.querySelectorAll('.zone.resizing').forEach((element) => element.classList.remove('resizing'));
         }
 
-        async function saveLayout() {
+        async function saveLayout(leaveEditMode = false) {
             try {
                 const response = await fetch('tables-management.php?action=save_layout', {
                     method: 'POST',
@@ -2662,6 +2783,15 @@ $adminSidebarPathPrefix = '';
                 const result = await response.json();
                 if (!response.ok || !result.success) {
                     throw new Error(result.error || 'Unable to save layout');
+                }
+
+                state.layoutSnapshot = createLayoutSnapshot();
+                if (leaveEditMode) {
+                    state.isEditMode = false;
+                    state.dragging = null;
+                    state.justManipulatedAreaId = null;
+                    updateEditModeUI();
+                    renderCanvas();
                 }
 
                 showToast('Layout saved successfully.');
@@ -2995,7 +3125,9 @@ $adminSidebarPathPrefix = '';
         document.getElementById('headerAddTable').addEventListener('click', openTableModal);
         document.getElementById('toolsAddTable').addEventListener('click', openTableModal);
         document.getElementById('addAreaButton').addEventListener('click', () => openAreaModal());
-        document.getElementById('saveLayoutButton').addEventListener('click', saveLayout);
+        document.getElementById('enterEditModeButton').addEventListener('click', enterEditMode);
+        document.getElementById('saveEditLayoutButton').addEventListener('click', () => saveLayout(true));
+        document.getElementById('cancelEditModeButton').addEventListener('click', cancelEditMode);
         document.getElementById('zoomInButton').addEventListener('click', () => changeScale(0.05));
         document.getElementById('zoomOutButton').addEventListener('click', () => changeScale(-0.05));
         document.getElementById('resetViewButton').addEventListener('click', resetView);
@@ -3044,6 +3176,7 @@ $adminSidebarPathPrefix = '';
             state.selectedTableId = Number(state.tables[0].table_id);
             state.selectedAreaId = Number(state.tables[0].area_id);
         }
+        updateEditModeUI();
         resetView(false);
         renderAll();
     </script>
