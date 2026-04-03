@@ -321,6 +321,26 @@ function ensureTableAreasSchema($pdo) {
         $pdo->exec("ALTER TABLE table_areas ADD COLUMN table_number_end INT NULL DEFAULT NULL AFTER table_number_start");
     }
 
+    $areaLayoutXStmt = $pdo->query("SHOW COLUMNS FROM table_areas LIKE 'layout_x'");
+    if ($areaLayoutXStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE table_areas ADD COLUMN layout_x INT NULL DEFAULT NULL AFTER table_number_end");
+    }
+
+    $areaLayoutYStmt = $pdo->query("SHOW COLUMNS FROM table_areas LIKE 'layout_y'");
+    if ($areaLayoutYStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE table_areas ADD COLUMN layout_y INT NULL DEFAULT NULL AFTER layout_x");
+    }
+
+    $areaLayoutWidthStmt = $pdo->query("SHOW COLUMNS FROM table_areas LIKE 'layout_width'");
+    if ($areaLayoutWidthStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE table_areas ADD COLUMN layout_width INT NULL DEFAULT NULL AFTER layout_y");
+    }
+
+    $areaLayoutHeightStmt = $pdo->query("SHOW COLUMNS FROM table_areas LIKE 'layout_height'");
+    if ($areaLayoutHeightStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE table_areas ADD COLUMN layout_height INT NULL DEFAULT NULL AFTER layout_width");
+    }
+
     $areaIdStmt = $pdo->query("SHOW COLUMNS FROM restaurant_tables LIKE 'area_id'");
     if ($areaIdStmt->rowCount() === 0) {
         $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN area_id INT NULL AFTER table_id");

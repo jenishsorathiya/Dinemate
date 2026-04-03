@@ -25,15 +25,15 @@ $resolveZoneKey = static function (string $name) use ($normalizeAreaName): strin
     $normalized = $normalizeAreaName($name);
 
     if (in_array($normalized, ['osf', 'osfpatio', 'outsidepatio'], true)) {
-        return 'osf-patio';
+        return 'osf';
     }
 
-    if (in_array($normalized, ['maindining', 'kookaburra', 'dining'], true)) {
-        return 'main-dining';
+    if (in_array($normalized, ['kookaburra', 'kookabura'], true)) {
+        return 'kookaburra';
     }
 
     if (in_array($normalized, ['mainbar', 'bararea', 'bar'], true)) {
-        return 'bar-area';
+        return 'main-bar';
     }
 
     if ($normalized === 'stables') {
@@ -44,7 +44,15 @@ $resolveZoneKey = static function (string $name) use ($normalizeAreaName): strin
         return 'wisteria';
     }
 
-    return 'main-dining';
+    if (in_array($normalized, ['schumack', 'schumacher', 'schumach'], true)) {
+        return 'schumack';
+    }
+
+    if (in_array($normalized, ['maindining', 'dining'], true)) {
+        return 'main-bar';
+    }
+
+    return 'osf';
 };
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_layout')) {
@@ -52,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
 
     $data = json_decode(file_get_contents('php://input'), true);
     $payloadTables = isset($data['tables']) && is_array($data['tables']) ? $data['tables'] : [];
+    $payloadAreas = isset($data['areas']) && is_array($data['areas']) ? $data['areas'] : [];
 
     if (empty($payloadTables)) {
         http_response_code(400);
@@ -60,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
     }
 
     $normalizedTables = [];
+    $normalizedAreas = [];
     $tableKeys = [];
     $areaIds = [];
 
@@ -106,6 +116,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
         ];
     }
 
+    foreach ($payloadAreas as $areaRow) {
+        $areaId = (int) ($areaRow['area_id'] ?? 0);
+        $layoutX = isset($areaRow['layout_x']) && $areaRow['layout_x'] !== '' ? (int) $areaRow['layout_x'] : null;
+        $layoutY = isset($areaRow['layout_y']) && $areaRow['layout_y'] !== '' ? (int) $areaRow['layout_y'] : null;
+        $layoutWidth = isset($areaRow['layout_width']) && $areaRow['layout_width'] !== '' ? (int) $areaRow['layout_width'] : null;
+        $layoutHeight = isset($areaRow['layout_height']) && $areaRow['layout_height'] !== '' ? (int) $areaRow['layout_height'] : null;
+
+        if ($areaId < 1) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Each area must include a valid id']);
+            exit();
+        }
+
+        if (($layoutWidth !== null && $layoutWidth < 60) || ($layoutHeight !== null && $layoutHeight < 60)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Area dimensions must be at least 60 pixels']);
+            exit();
+        }
+
+        $areaIds[$areaId] = true;
+        $normalizedAreas[$areaId] = [
+            'area_id' => $areaId,
+            'layout_x' => $layoutX,
+            'layout_y' => $layoutY,
+            'layout_width' => $layoutWidth,
+            'layout_height' => $layoutHeight,
+        ];
+    }
+
     try {
         $tableIds = array_map(static function (array $tableRow): int {
             return (int) $tableRow['table_id'];
@@ -148,6 +187,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
              WHERE table_id = ?"
         );
 
+        $updateAreaLayoutStmt = $pdo->prepare(
+            "UPDATE table_areas
+               SET layout_x = ?, layout_y = ?, layout_width = ?, layout_height = ?
+             WHERE area_id = ?"
+        );
+
         foreach ($normalizedTables as $tableRow) {
             $duplicateStmt = $pdo->prepare("SELECT table_id FROM restaurant_tables WHERE table_number = ? AND area_id = ? AND table_id != ? LIMIT 1");
             $duplicateStmt->execute([$tableRow['table_number'], $tableRow['area_id'], $tableRow['table_id']]);
@@ -166,6 +211,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
                 $tableRow['layout_y'],
                 $tableRow['table_shape'],
                 $tableRow['table_id'],
+            ]);
+        }
+
+        foreach ($normalizedAreas as $areaRow) {
+            $updateAreaLayoutStmt->execute([
+                $areaRow['layout_x'],
+                $areaRow['layout_y'],
+                $areaRow['layout_width'],
+                $areaRow['layout_height'],
+                $areaRow['area_id'],
             ]);
         }
 
@@ -209,7 +264,7 @@ $tablesStmt = $pdo->query(
 $tables = $tablesStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
 $areasStmt = $pdo->query(
-    "SELECT area_id, name, display_order, table_number_start, table_number_end, is_active
+    "SELECT area_id, name, display_order, table_number_start, table_number_end, layout_x, layout_y, layout_width, layout_height, is_active
      FROM table_areas
      WHERE is_active = 1
      ORDER BY display_order ASC, name ASC"
@@ -261,6 +316,10 @@ foreach ($areas as $area) {
         'display_order' => (int) $area['display_order'],
         'table_number_start' => $area['table_number_start'] !== null ? (int) $area['table_number_start'] : null,
         'table_number_end' => $area['table_number_end'] !== null ? (int) $area['table_number_end'] : null,
+        'layout_x' => $area['layout_x'] !== null ? (int) $area['layout_x'] : null,
+        'layout_y' => $area['layout_y'] !== null ? (int) $area['layout_y'] : null,
+        'layout_width' => $area['layout_width'] !== null ? (int) $area['layout_width'] : null,
+        'layout_height' => $area['layout_height'] !== null ? (int) $area['layout_height'] : null,
         'table_count' => $tableCount,
         'total_seats' => $totalAreaSeats,
         'range_label' => $rangeLabel,
@@ -687,6 +746,13 @@ $adminSidebarPathPrefix = '';
             background: #fbfcff;
             border: 1px solid var(--line);
             border-radius: 12px;
+            transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+        }
+
+        .section-item.active {
+            background: #ffffff;
+            border-color: rgba(22, 37, 68, 0.28);
+            box-shadow: 0 10px 20px rgba(22, 37, 68, 0.08);
         }
 
         .section-item-main {
@@ -816,29 +882,83 @@ $adminSidebarPathPrefix = '';
             position: absolute;
             inset: 0;
             transform-origin: top left;
+            will-change: transform;
         }
 
         .zone {
             position: absolute;
-            border-radius: 24px;
-            border: 2px dashed rgba(86, 108, 154, 0.18);
+            border-radius: 2px;
+            border: 5px solid #111111;
+            background: rgba(255, 255, 255, 0.96);
             padding: 14px;
-            backdrop-filter: blur(1px);
+            cursor: grab;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .zone:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(17, 17, 17, 0.08);
+        }
+
+        .zone.active {
+            box-shadow: 0 0 0 5px rgba(22, 37, 68, 0.12), 0 16px 30px rgba(17, 17, 17, 0.1);
+        }
+
+        .zone.dragging {
+            cursor: grabbing;
+            box-shadow: 0 18px 28px rgba(17, 17, 17, 0.14);
+        }
+
+        .zone.resizing {
+            cursor: nwse-resize;
+            box-shadow: 0 18px 28px rgba(17, 17, 17, 0.14);
         }
 
         .zone-label {
             position: absolute;
             left: 50%;
-            top: 12px;
-            transform: translateX(-50%);
-            padding: 7px 14px;
-            border-radius: 999px;
-            font-size: 12px;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0;
+            border-radius: 0;
+            font-size: 17px;
             font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            background: rgba(255, 255, 255, 0.72);
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            letter-spacing: -0.03em;
+            text-transform: none;
+            background: transparent;
+            border: none;
+            color: #111111;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .zone[data-zone-key="kookaburra"] .zone-label {
+            font-size: 13px;
+        }
+
+        .zone[data-zone-key="osf"] .zone-label,
+        .zone[data-zone-key="wisteria"] .zone-label,
+        .zone[data-zone-key="schumack"] .zone-label,
+        .zone[data-zone-key="main-bar"] .zone-label {
+            font-size: 21px;
+        }
+
+        .zone:focus-visible {
+            outline: 3px solid rgba(22, 37, 68, 0.28);
+            outline-offset: 4px;
+        }
+
+        .zone-resize-handle {
+            position: absolute;
+            right: -10px;
+            bottom: -10px;
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 3px solid #111111;
+            background: #ffffff;
+            cursor: nwse-resize;
+            box-shadow: 0 8px 16px rgba(17, 17, 17, 0.12);
         }
 
         .zone.zone-lavender { background: rgba(139, 115, 238, 0.08); }
@@ -1670,13 +1790,21 @@ $adminSidebarPathPrefix = '';
         const initialData = <?php echo json_encode($pagePayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         const BASE_CANVAS_WIDTH = 860;
         const BASE_CANVAS_HEIGHT = 472;
+        const VIEWPORT_PADDING = 26;
+        const MIN_VIEW_SCALE = 0.58;
+        const MAX_VIEW_SCALE = 2.4;
+        const MIN_AREA_WIDTH = 84;
+        const MIN_AREA_HEIGHT = 70;
+        const TABLE_PADDING_X = 34;
+        const TABLE_PADDING_Y = 30;
 
         const zoneBlueprints = [
-            { key: 'osf-patio', label: 'OSF Patio', tone: 'lavender', x: 28, y: 28, width: 310, height: 152 },
-            { key: 'main-dining', label: 'Main Dining', tone: 'green', x: 356, y: 28, width: 480, height: 152 },
-            { key: 'bar-area', label: 'Bar Area', tone: 'blue', x: 28, y: 198, width: 410, height: 166 },
-            { key: 'stables', label: 'Stables', tone: 'amber', x: 458, y: 198, width: 192, height: 134 },
-            { key: 'wisteria', label: 'Wisteria', tone: 'pink', x: 662, y: 198, width: 162, height: 134 }
+            { key: 'stables', label: 'Stables', tone: 'amber', x: 42, y: 26, width: 158, height: 74 },
+            { key: 'kookaburra', label: 'Kookaburra', tone: 'green', x: 42, y: 116, width: 88, height: 118 },
+            { key: 'wisteria', label: 'Wisteria', tone: 'pink', x: 474, y: 28, width: 164, height: 144 },
+            { key: 'schumack', label: 'Schumack', tone: 'blue', x: 474, y: 184, width: 176, height: 88 },
+            { key: 'main-bar', label: 'Main Bar', tone: 'lavender', x: 42, y: 242, width: 236, height: 142 },
+            { key: 'osf', label: 'OSF', tone: 'green', x: 46, y: 386, width: 392, height: 96 }
         ];
 
         const state = {
@@ -1688,11 +1816,15 @@ $adminSidebarPathPrefix = '';
             currentPage: 1,
             perPage: 5,
             zoom: 1,
+            panX: 0,
+            panY: 0,
             dragging: null,
             modalAreaId: null,
+            selectedAreaId: null,
+            justManipulatedAreaId: null,
         };
 
-        const preferredAreaOrder = ['Kookaburra', 'Wisteria', 'Stables', 'OSF Patio', 'Main Bar'];
+        const preferredAreaOrder = ['Stables', 'Kookaburra', 'Wisteria', 'Schumack', 'Main Bar', 'OSF', 'OSF Patio'];
 
         const metricGrid = document.getElementById('metricsGrid');
         const areaOverviewGrid = document.getElementById('areaOverviewGrid');
@@ -1716,8 +1848,62 @@ $adminSidebarPathPrefix = '';
             return state.areas.find((area) => Number(area.area_id) === Number(areaId)) || null;
         }
 
+        function getZoneBlueprint(zoneKey) {
+            return zoneBlueprints.find((zone) => zone.key === zoneKey) || null;
+        }
+
+        function getAreaByZoneKey(zoneKey) {
+            return state.areas.find((area) => area.zone_key === zoneKey) || null;
+        }
+
+        function getZoneByAreaId(areaId) {
+            const area = getAreaById(areaId);
+            if (!area) {
+                return null;
+            }
+
+            const blueprint = getZoneBlueprint(area.zone_key);
+            if (!blueprint) {
+                return null;
+            }
+
+            return {
+                ...blueprint,
+                x: area.layout_x !== null ? Number(area.layout_x) : blueprint.x,
+                y: area.layout_y !== null ? Number(area.layout_y) : blueprint.y,
+                width: area.layout_width !== null ? Number(area.layout_width) : blueprint.width,
+                height: area.layout_height !== null ? Number(area.layout_height) : blueprint.height,
+            };
+        }
+
+        function getRenderedZones() {
+            return zoneBlueprints.map((blueprint) => {
+                const area = getAreaByZoneKey(blueprint.key);
+
+                return {
+                    ...blueprint,
+                    area_id: area ? Number(area.area_id) : null,
+                    x: area && area.layout_x !== null ? Number(area.layout_x) : blueprint.x,
+                    y: area && area.layout_y !== null ? Number(area.layout_y) : blueprint.y,
+                    width: area && area.layout_width !== null ? Number(area.layout_width) : blueprint.width,
+                    height: area && area.layout_height !== null ? Number(area.layout_height) : blueprint.height,
+                };
+            });
+        }
+
+        function clampTableWithinZone(table, zone) {
+            table.layout_x = Math.max(
+                zone.x + TABLE_PADDING_X,
+                Math.min(zone.x + zone.width - TABLE_PADDING_X, Math.round(Number(table.layout_x)))
+            );
+            table.layout_y = Math.max(
+                zone.y + TABLE_PADDING_Y,
+                Math.min(zone.y + zone.height - TABLE_PADDING_Y, Math.round(Number(table.layout_y)))
+            );
+        }
+
         function getToneForArea(area) {
-            const zone = zoneBlueprints.find((item) => item.key === (area?.zone_key || ''));
+            const zone = getZoneBlueprint(area?.zone_key || '');
             return zone ? zone.tone : 'blue';
         }
 
@@ -1742,21 +1928,76 @@ $adminSidebarPathPrefix = '';
             });
         }
 
-        function getCanvasFitScale() {
-            const availableWidth = canvasFrame.clientWidth || BASE_CANVAS_WIDTH;
-            return Math.min(1, availableWidth / BASE_CANVAS_WIDTH);
+        function getViewportRect() {
+            return {
+                width: canvasFrame.clientWidth || BASE_CANVAS_WIDTH,
+                height: canvasFrame.clientHeight || BASE_CANVAS_HEIGHT,
+            };
+        }
+
+        function clampScale(scale) {
+            return Math.max(MIN_VIEW_SCALE, Math.min(MAX_VIEW_SCALE, Number(scale)));
+        }
+
+        function clampPan(scale, panX, panY) {
+            const viewport = getViewportRect();
+            const scaledWidth = BASE_CANVAS_WIDTH * scale;
+            const scaledHeight = BASE_CANVAS_HEIGHT * scale;
+
+            let nextPanX = Number(panX);
+            let nextPanY = Number(panY);
+
+            if (scaledWidth <= viewport.width - VIEWPORT_PADDING * 2) {
+                nextPanX = Math.round((viewport.width - scaledWidth) / 2);
+            } else {
+                const minPanX = Math.round(viewport.width - scaledWidth - VIEWPORT_PADDING);
+                const maxPanX = VIEWPORT_PADDING;
+                nextPanX = Math.min(maxPanX, Math.max(minPanX, nextPanX));
+            }
+
+            if (scaledHeight <= viewport.height - VIEWPORT_PADDING * 2) {
+                nextPanY = Math.round((viewport.height - scaledHeight) / 2);
+            } else {
+                const minPanY = Math.round(viewport.height - scaledHeight - VIEWPORT_PADDING);
+                const maxPanY = VIEWPORT_PADDING;
+                nextPanY = Math.min(maxPanY, Math.max(minPanY, nextPanY));
+            }
+
+            return { panX: nextPanX, panY: nextPanY };
+        }
+
+        function setViewport(scale, panX, panY) {
+            const nextScale = clampScale(scale);
+            const nextPan = clampPan(nextScale, panX, panY);
+            state.zoom = Number(nextScale.toFixed(3));
+            state.panX = nextPan.panX;
+            state.panY = nextPan.panY;
         }
 
         function getCanvasEffectiveScale() {
-            return Math.min(1.12, Math.max(0.68, getCanvasFitScale() * state.zoom));
+            return clampScale(state.zoom);
+        }
+
+        function getCanvasFitScale() {
+            const viewport = getViewportRect();
+            const widthScale = (viewport.width - VIEWPORT_PADDING * 2) / BASE_CANVAS_WIDTH;
+            const heightScale = (viewport.height - VIEWPORT_PADDING * 2) / BASE_CANVAS_HEIGHT;
+            return clampScale(Math.min(widthScale, heightScale));
+        }
+
+        function centerViewportOnRect(rect, scale) {
+            const viewport = getViewportRect();
+            const targetScale = clampScale(scale);
+            const panX = Math.round((viewport.width / 2) - ((rect.x + (rect.width / 2)) * targetScale));
+            const panY = Math.round((viewport.height / 2) - ((rect.y + (rect.height / 2)) * targetScale));
+            setViewport(targetScale, panX, panY);
         }
 
         function updateCanvasViewport() {
             const effectiveScale = getCanvasEffectiveScale();
             canvasSurface.style.width = `${BASE_CANVAS_WIDTH}px`;
             canvasSurface.style.height = `${BASE_CANVAS_HEIGHT}px`;
-            canvasSurface.style.transform = `scale(${effectiveScale})`;
-            canvasFrame.style.height = `${Math.round(BASE_CANVAS_HEIGHT * effectiveScale)}px`;
+            canvasSurface.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${effectiveScale})`;
         }
 
         function seedMissingPositions() {
@@ -1768,16 +2009,18 @@ $adminSidebarPathPrefix = '';
 
             areaBuckets.forEach((tables, areaId) => {
                 const area = getAreaById(areaId);
-                const zone = zoneBlueprints.find((item) => item.key === area.zone_key) || zoneBlueprints[0];
+                const zone = getZoneByAreaId(areaId) || zoneBlueprints[0];
 
                 tables.sort((left, right) => Number(left.sort_order) - Number(right.sort_order)).forEach((table, index) => {
                     if (table.layout_x !== null && table.layout_y !== null) {
                         return;
                     }
 
-                    const columns = zone.key === 'main-dining' ? 3 : 2;
-                    const offsetX = 74 + (index % columns) * 110;
-                    const offsetY = 76 + Math.floor(index / columns) * 92;
+                    const columns = zone.key === 'osf' ? 4 : 2;
+                    const gutterX = zone.key === 'osf' ? 90 : 82;
+                    const gutterY = zone.key === 'osf' ? 68 : 82;
+                    const offsetX = 42 + (index % columns) * gutterX;
+                    const offsetY = 42 + Math.floor(index / columns) * gutterY;
 
                     table.layout_x = Math.min(zone.x + zone.width - 54, zone.x + offsetX);
                     table.layout_y = Math.min(zone.y + zone.height - 54, zone.y + offsetY);
@@ -1847,7 +2090,7 @@ $adminSidebarPathPrefix = '';
                 const count = state.tables.filter((table) => Number(table.area_id) === Number(area.area_id)).length;
 
                 return `
-                    <div class="section-item">
+                    <div class="section-item${Number(state.selectedAreaId) === Number(area.area_id) ? ' active' : ''}">
                         <div class="section-item-main">
                             <span class="section-dot" style="background:${toneToColor(tone)}"></span>
                             <div>
@@ -1863,23 +2106,22 @@ $adminSidebarPathPrefix = '';
 
         function renderCanvas() {
             updateCanvasViewport();
-            const zoneHtml = zoneBlueprints.map((zone) => `
-                <div class="zone zone-${zone.tone}" style="left:${zone.x}px; top:${zone.y}px; width:${zone.width}px; height:${zone.height}px;">
-                    <div class="zone-label">${zone.label}</div>
-                </div>
-            `).join('');
+            const zoneHtml = getRenderedZones().map((zone) => {
+                const area = getAreaByZoneKey(zone.key);
+                const isActive = area && Number(state.selectedAreaId) === Number(area.area_id);
 
-            const decorHtml = `
-                <div class="decor plant" style="left: 260px; top: 16px;"></div>
-                <div class="decor plant" style="left: 780px; top: 14px;"></div>
-                <div class="decor plant" style="left: 12px; top: 144px;"></div>
-                <div class="decor plant" style="left: 720px; top: 246px;"></div>
-                <div class="decor plant" style="left: 600px; top: 332px;"></div>
-                <div class="decor" style="left: 18px; top: 224px;">
-                    <div class="bar-counter"></div>
-                    <div class="stools"><span></span><span></span><span></span><span></span><span></span></div>
+                return `
+                <div
+                    class="zone zone-${zone.tone}${isActive ? ' active' : ''}"
+                    data-zone-key="${zone.key}"
+                    ${area ? `data-area-id="${Number(area.area_id)}" tabindex="0" role="button" aria-label="Focus ${escapeAttribute(zone.label)} area"` : ''}
+                    style="left:${zone.x}px; top:${zone.y}px; width:${zone.width}px; height:${zone.height}px;"
+                >
+                    <div class="zone-label">${zone.label}</div>
+                    ${area ? '<div class="zone-resize-handle" data-area-resize-handle="true" aria-hidden="true"></div>' : ''}
                 </div>
             `;
+            }).join('');
 
             const tableHtml = state.tables.map((table) => {
                 const area = getAreaById(table.area_id);
@@ -1902,7 +2144,32 @@ $adminSidebarPathPrefix = '';
                 `;
             }).join('');
 
-            canvasSurface.innerHTML = zoneHtml + decorHtml + tableHtml;
+            canvasSurface.innerHTML = zoneHtml + tableHtml;
+
+            canvasSurface.querySelectorAll('[data-area-id]').forEach((zone) => {
+                zone.addEventListener('pointerdown', handleAreaDragStart);
+
+                const handle = zone.querySelector('[data-area-resize-handle]');
+                if (handle) {
+                    handle.addEventListener('pointerdown', handleAreaResizeStart);
+                }
+
+                zone.addEventListener('click', () => {
+                    if (Number(state.justManipulatedAreaId) === Number(zone.dataset.areaId)) {
+                        state.justManipulatedAreaId = null;
+                        return;
+                    }
+
+                    focusArea(Number(zone.dataset.areaId));
+                });
+
+                zone.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        focusArea(Number(zone.dataset.areaId));
+                    }
+                });
+            });
 
             canvasSurface.querySelectorAll('[data-table-id]').forEach((button) => {
                 button.addEventListener('click', (event) => {
@@ -2072,16 +2339,36 @@ $adminSidebarPathPrefix = '';
         }
 
         function selectTable(tableId) {
+            const table = state.tables.find((item) => Number(item.table_id) === Number(tableId));
             state.selectedTableId = Number(tableId);
+            state.selectedAreaId = table ? Number(table.area_id) : state.selectedAreaId;
             renderCanvas();
+            renderSectionList();
             renderDetails();
+        }
+
+        function zoomToArea(areaId) {
+            const zone = getZoneByAreaId(areaId);
+            if (!zone) {
+                resetView(false);
+                return;
+            }
+
+            const viewport = getViewportRect();
+            const widthScale = (viewport.width - VIEWPORT_PADDING * 3) / zone.width;
+            const heightScale = (viewport.height - VIEWPORT_PADDING * 3) / zone.height;
+            centerViewportOnRect(zone, Math.min(widthScale, heightScale));
         }
 
         function focusArea(areaId) {
             state.filterAreaId = String(areaId);
+            state.selectedAreaId = Number(areaId);
             inventoryFilter.value = state.filterAreaId;
             state.currentPage = 1;
+            zoomToArea(areaId);
             renderInventory();
+            renderSectionList();
+            renderCanvas();
 
             const table = state.tables.find((row) => Number(row.area_id) === Number(areaId));
             if (table) {
@@ -2110,6 +2397,7 @@ $adminSidebarPathPrefix = '';
             const rect = canvasSurface.getBoundingClientRect();
             const currentScale = getCanvasEffectiveScale();
             state.dragging = {
+                type: 'table',
                 tableId,
                 pointerId: event.pointerId,
                 offsetX: (event.clientX - rect.left) / currentScale - Number(table.layout_x),
@@ -2121,8 +2409,165 @@ $adminSidebarPathPrefix = '';
             selectTable(tableId);
         }
 
+        function handleAreaDragStart(event) {
+            if (event.target.closest('[data-area-resize-handle]')) {
+                return;
+            }
+
+            const areaId = Number(event.currentTarget.dataset.areaId || 0);
+            const area = getAreaById(areaId);
+            const zone = getZoneByAreaId(areaId);
+
+            if (!area || !zone) {
+                return;
+            }
+
+            const rect = canvasSurface.getBoundingClientRect();
+            const currentScale = getCanvasEffectiveScale();
+
+            state.dragging = {
+                type: 'area',
+                areaId,
+                pointerId: event.pointerId,
+                offsetX: (event.clientX - rect.left) / currentScale - zone.x,
+                offsetY: (event.clientY - rect.top) / currentScale - zone.y,
+                didMove: false,
+            };
+
+            event.currentTarget.setPointerCapture(event.pointerId);
+            event.currentTarget.classList.add('dragging');
+            state.selectedAreaId = areaId;
+            renderSectionList();
+        }
+
+        function handleAreaResizeStart(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const zoneElement = event.currentTarget.closest('[data-area-id]');
+            const areaId = Number(zoneElement?.dataset.areaId || 0);
+            const area = getAreaById(areaId);
+            const zone = getZoneByAreaId(areaId);
+
+            if (!area || !zone || !zoneElement) {
+                return;
+            }
+
+            const rect = canvasSurface.getBoundingClientRect();
+            const currentScale = getCanvasEffectiveScale();
+            const pointerX = (event.clientX - rect.left) / currentScale;
+            const pointerY = (event.clientY - rect.top) / currentScale;
+            const tableAnchors = state.tables
+                .filter((table) => Number(table.area_id) === Number(areaId) && table.layout_x !== null && table.layout_y !== null)
+                .map((table) => ({
+                    table,
+                    relativeX: zone.width > 0 ? (Number(table.layout_x) - zone.x) / zone.width : 0.5,
+                    relativeY: zone.height > 0 ? (Number(table.layout_y) - zone.y) / zone.height : 0.5,
+                }));
+
+            state.dragging = {
+                type: 'area-resize',
+                areaId,
+                pointerId: event.pointerId,
+                startPointerX: pointerX,
+                startPointerY: pointerY,
+                startX: zone.x,
+                startY: zone.y,
+                startWidth: zone.width,
+                startHeight: zone.height,
+                tableAnchors,
+                didMove: false,
+            };
+
+            zoneElement.setPointerCapture(event.pointerId);
+            zoneElement.classList.add('resizing');
+            state.selectedAreaId = areaId;
+            renderSectionList();
+        }
+
         function handlePointerMove(event) {
             if (!state.dragging) {
+                return;
+            }
+
+            if (state.dragging.type === 'area') {
+                const area = getAreaById(state.dragging.areaId);
+                const zone = getZoneByAreaId(state.dragging.areaId);
+                if (!area || !zone) {
+                    return;
+                }
+
+                const rect = canvasSurface.getBoundingClientRect();
+                const currentScale = getCanvasEffectiveScale();
+                const unclampedX = ((event.clientX - rect.left) / currentScale) - state.dragging.offsetX;
+                const unclampedY = ((event.clientY - rect.top) / currentScale) - state.dragging.offsetY;
+                const nextX = Math.max(16, Math.min(BASE_CANVAS_WIDTH - zone.width - 16, Math.round(unclampedX)));
+                const nextY = Math.max(16, Math.min(BASE_CANVAS_HEIGHT - zone.height - 16, Math.round(unclampedY)));
+                const deltaX = nextX - zone.x;
+                const deltaY = nextY - zone.y;
+
+                if (deltaX === 0 && deltaY === 0) {
+                    return;
+                }
+
+                area.layout_x = nextX;
+                area.layout_y = nextY;
+                state.dragging.didMove = true;
+
+                state.tables.forEach((table) => {
+                    if (Number(table.area_id) !== Number(area.area_id)) {
+                        return;
+                    }
+
+                    if (table.layout_x === null || table.layout_y === null) {
+                        return;
+                    }
+
+                    table.layout_x = Math.max(48, Math.min(BASE_CANVAS_WIDTH - 16, Math.round(Number(table.layout_x) + deltaX)));
+                    table.layout_y = Math.max(48, Math.min(BASE_CANVAS_HEIGHT - 16, Math.round(Number(table.layout_y) + deltaY)));
+                });
+
+                renderCanvas();
+                renderInventory();
+                return;
+            }
+
+            if (state.dragging.type === 'area-resize') {
+                const area = getAreaById(state.dragging.areaId);
+                if (!area) {
+                    return;
+                }
+
+                const rect = canvasSurface.getBoundingClientRect();
+                const currentScale = getCanvasEffectiveScale();
+                const pointerX = (event.clientX - rect.left) / currentScale;
+                const pointerY = (event.clientY - rect.top) / currentScale;
+                const requestedWidth = state.dragging.startWidth + (pointerX - state.dragging.startPointerX);
+                const requestedHeight = state.dragging.startHeight + (pointerY - state.dragging.startPointerY);
+                const nextWidth = Math.max(MIN_AREA_WIDTH, Math.min(BASE_CANVAS_WIDTH - state.dragging.startX - 16, Math.round(requestedWidth)));
+                const nextHeight = Math.max(MIN_AREA_HEIGHT, Math.min(BASE_CANVAS_HEIGHT - state.dragging.startY - 16, Math.round(requestedHeight)));
+
+                if (nextWidth === (area.layout_width ?? state.dragging.startWidth) && nextHeight === (area.layout_height ?? state.dragging.startHeight)) {
+                    return;
+                }
+
+                area.layout_width = nextWidth;
+                area.layout_height = nextHeight;
+                state.dragging.didMove = true;
+
+                state.dragging.tableAnchors.forEach((anchor) => {
+                    anchor.table.layout_x = state.dragging.startX + (anchor.relativeX * nextWidth);
+                    anchor.table.layout_y = state.dragging.startY + (anchor.relativeY * nextHeight);
+                    clampTableWithinZone(anchor.table, {
+                        x: state.dragging.startX,
+                        y: state.dragging.startY,
+                        width: nextWidth,
+                        height: nextHeight,
+                    });
+                });
+
+                renderCanvas();
+                renderInventory();
                 return;
             }
 
@@ -2136,15 +2581,21 @@ $adminSidebarPathPrefix = '';
             const nextX = ((event.clientX - rect.left) / currentScale) - state.dragging.offsetX;
             const nextY = ((event.clientY - rect.top) / currentScale) - state.dragging.offsetY;
 
-            table.layout_x = Math.max(48, Math.min(844, Math.round(nextX)));
-            table.layout_y = Math.max(48, Math.min(424, Math.round(nextY)));
+            table.layout_x = Math.max(48, Math.min(BASE_CANVAS_WIDTH - 16, Math.round(nextX)));
+            table.layout_y = Math.max(48, Math.min(BASE_CANVAS_HEIGHT - 16, Math.round(nextY)));
             renderCanvas();
             renderInventory();
         }
 
         function handlePointerUp() {
+            if (state.dragging && (state.dragging.type === 'area' || state.dragging.type === 'area-resize') && state.dragging.didMove) {
+                state.justManipulatedAreaId = state.dragging.areaId;
+                showToast('Area updated. Click Save Layout to keep the new size and position.');
+            }
+
             state.dragging = null;
-            canvasSurface.querySelectorAll('.table-item.dragging').forEach((element) => element.classList.remove('dragging'));
+            canvasSurface.querySelectorAll('.table-item.dragging, .zone.dragging').forEach((element) => element.classList.remove('dragging'));
+            canvasSurface.querySelectorAll('.zone.resizing').forEach((element) => element.classList.remove('resizing'));
         }
 
         async function saveLayout() {
@@ -2153,6 +2604,13 @@ $adminSidebarPathPrefix = '';
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        areas: state.areas.map((area) => ({
+                            area_id: Number(area.area_id),
+                            layout_x: area.layout_x,
+                            layout_y: area.layout_y,
+                            layout_width: area.layout_width,
+                            layout_height: area.layout_height,
+                        })),
                         tables: state.tables.map((table) => ({
                             table_id: Number(table.table_id),
                             table_number: String(table.table_number),
@@ -2278,11 +2736,11 @@ $adminSidebarPathPrefix = '';
 
             const areaId = Number(document.getElementById('modalTableArea').value);
             const area = getAreaById(areaId);
-            const zone = zoneBlueprints.find((item) => item.key === area.zone_key) || zoneBlueprints[0];
+            const zone = getZoneByAreaId(areaId) || zoneBlueprints[0];
             const sameAreaTables = state.tables.filter((table) => Number(table.area_id) === areaId).length;
-            const columns = zone.key === 'main-dining' ? 3 : 2;
-            const layoutX = Math.min(zone.x + zone.width - 54, zone.x + 74 + (sameAreaTables % columns) * 110);
-            const layoutY = Math.min(zone.y + zone.height - 54, zone.y + 76 + Math.floor(sameAreaTables / columns) * 92);
+            const columns = zone.key === 'osf' ? 4 : 2;
+            const layoutX = Math.min(zone.x + zone.width - 54, zone.x + 42 + (sameAreaTables % columns) * (zone.key === 'osf' ? 90 : 82));
+            const layoutY = Math.min(zone.y + zone.height - 54, zone.y + 42 + Math.floor(sameAreaTables / columns) * (zone.key === 'osf' ? 68 : 82));
 
             const payload = {
                 table_number: document.getElementById('modalTableNumber').value.trim().replace(/^T/i, ''),
@@ -2420,13 +2878,29 @@ $adminSidebarPathPrefix = '';
         }
 
         function changeScale(delta) {
-            state.zoom = Math.max(0.88, Math.min(1.12, Number((state.zoom + delta).toFixed(2))));
+            const viewport = getViewportRect();
+            const currentScale = getCanvasEffectiveScale();
+            const nextScale = clampScale(currentScale + delta);
+            const centerX = (viewport.width / 2 - state.panX) / currentScale;
+            const centerY = (viewport.height / 2 - state.panY) / currentScale;
+            const nextPanX = Math.round((viewport.width / 2) - (centerX * nextScale));
+            const nextPanY = Math.round((viewport.height / 2) - (centerY * nextScale));
+            setViewport(nextScale, nextPanX, nextPanY);
             renderCanvas();
         }
 
-        function resetView() {
-            state.zoom = 1;
-            renderCanvas();
+        function resetView(shouldRender = true) {
+            const scale = getCanvasFitScale();
+            centerViewportOnRect({ x: 0, y: 0, width: BASE_CANVAS_WIDTH, height: BASE_CANVAS_HEIGHT }, scale);
+
+            if (state.filterAreaId === 'all') {
+                state.selectedAreaId = null;
+            }
+
+            if (shouldRender) {
+                renderCanvas();
+                renderSectionList();
+            }
         }
 
         function exportInventory() {
@@ -2503,6 +2977,14 @@ $adminSidebarPathPrefix = '';
         inventoryFilter.addEventListener('change', (event) => {
             state.filterAreaId = event.target.value;
             state.currentPage = 1;
+            if (state.filterAreaId === 'all') {
+                state.selectedAreaId = null;
+                resetView(false);
+                renderSectionList();
+                renderCanvas();
+            } else {
+                focusArea(Number(state.filterAreaId));
+            }
             renderInventory();
         });
         tableModalForm.addEventListener('submit', createTable);
@@ -2526,7 +3008,9 @@ $adminSidebarPathPrefix = '';
         seedMissingPositions();
         if (state.tables[0]) {
             state.selectedTableId = Number(state.tables[0].table_id);
+            state.selectedAreaId = Number(state.tables[0].area_id);
         }
+        resetView(false);
         renderAll();
     </script>
 </body>
