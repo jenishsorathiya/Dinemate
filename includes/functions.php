@@ -156,6 +156,77 @@ function ensureBookingTableAssignmentsTable($pdo) {
     ");
 }
 
+function ensureTableAreasSchema($pdo) {
+    $pdo->exec(" 
+        CREATE TABLE IF NOT EXISTS table_areas (
+            area_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            display_order INT NOT NULL DEFAULT 0,
+            table_number_start INT NULL DEFAULT NULL,
+            table_number_end INT NULL DEFAULT NULL,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    $startStmt = $pdo->query("SHOW COLUMNS FROM table_areas LIKE 'table_number_start'");
+    if ($startStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE table_areas ADD COLUMN table_number_start INT NULL DEFAULT NULL AFTER display_order");
+    }
+
+    $endStmt = $pdo->query("SHOW COLUMNS FROM table_areas LIKE 'table_number_end'");
+    if ($endStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE table_areas ADD COLUMN table_number_end INT NULL DEFAULT NULL AFTER table_number_start");
+    }
+
+    $areaIdStmt = $pdo->query("SHOW COLUMNS FROM restaurant_tables LIKE 'area_id'");
+    if ($areaIdStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN area_id INT NULL AFTER table_id");
+    }
+
+    $sortOrderStmt = $pdo->query("SHOW COLUMNS FROM restaurant_tables LIKE 'sort_order'");
+    if ($sortOrderStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN sort_order INT NOT NULL DEFAULT 0 AFTER capacity");
+    }
+
+    $defaultAreaStmt = $pdo->prepare("SELECT area_id FROM table_areas WHERE name = ? ORDER BY display_order ASC, area_id ASC LIMIT 1");
+    $defaultAreaStmt->execute(['Main Floor']);
+    $defaultAreaId = $defaultAreaStmt->fetchColumn();
+
+    if (!$defaultAreaId) {
+        $nextDisplayOrder = (int) $pdo->query("SELECT COALESCE(MAX(display_order), 0) + 10 FROM table_areas")->fetchColumn();
+        $insertAreaStmt = $pdo->prepare("INSERT INTO table_areas (name, display_order, table_number_start, table_number_end, is_active) VALUES (?, ?, NULL, NULL, 1)");
+        $insertAreaStmt->execute(['Main Floor', $nextDisplayOrder]);
+        $defaultAreaId = (int) $pdo->lastInsertId();
+    } else {
+        $defaultAreaId = (int) $defaultAreaId;
+    }
+
+    $assignAreaStmt = $pdo->prepare("UPDATE restaurant_tables SET area_id = ? WHERE area_id IS NULL OR area_id = 0");
+    $assignAreaStmt->execute([$defaultAreaId]);
+
+    $tablesStmt = $pdo->query("SELECT table_id, area_id, sort_order FROM restaurant_tables ORDER BY area_id, CAST(table_number AS UNSIGNED), table_number, table_id");
+    $tables = $tablesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $sortCounters = [];
+    $sortUpdateStmt = $pdo->prepare("UPDATE restaurant_tables SET sort_order = ? WHERE table_id = ?");
+    foreach ($tables as $tableRow) {
+        $tableId = (int) $tableRow['table_id'];
+        $areaId = (int) $tableRow['area_id'];
+
+        if (!isset($sortCounters[$areaId])) {
+            $sortCounters[$areaId] = 10;
+        }
+
+        $currentSortOrder = (int) ($tableRow['sort_order'] ?? 0);
+        if ($currentSortOrder <= 0) {
+            $sortUpdateStmt->execute([$sortCounters[$areaId], $tableId]);
+        }
+
+        $sortCounters[$areaId] += 10;
+    }
+}
+
 function syncBookingTableAssignments($pdo, $bookingId, $tableIds) {
     $normalizedIds = [];
     foreach ($tableIds as $tableId) {
@@ -180,6 +251,128 @@ function syncBookingTableAssignments($pdo, $bookingId, $tableIds) {
     $updateStmt->execute([$primaryTableId, $bookingId]);
 
     return $normalizedIds;
+}
+
+function removeTablesAndUnassignBookings($pdo, $tableIds) {
+    $normalizedTableIds = [];
+    foreach ($tableIds as $tableId) {
+        $tableId = (int) $tableId;
+        if ($tableId > 0 && !in_array($tableId, $normalizedTableIds, true)) {
+            $normalizedTableIds[] = $tableId;
+        }
+    }
+
+    if (empty($normalizedTableIds)) {
+        return [
+            'deleted_table_ids' => [],
+            'affected_booking_ids' => [],
+        ];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($normalizedTableIds), '?'));
+
+    $bookingStmt = $pdo->prepare("SELECT DISTINCT booking_id FROM booking_table_assignments WHERE table_id IN ($placeholders)");
+    $bookingStmt->execute($normalizedTableIds);
+    $affectedBookingIds = array_map('intval', $bookingStmt->fetchAll(PDO::FETCH_COLUMN));
+
+    $remainingAssignmentStmt = $pdo->prepare("SELECT table_id FROM booking_table_assignments WHERE booking_id = ? AND table_id NOT IN ($placeholders) ORDER BY created_at ASC, table_id ASC");
+    foreach ($affectedBookingIds as $bookingId) {
+        $remainingAssignmentStmt->execute(array_merge([$bookingId], $normalizedTableIds));
+        $remainingTableIds = array_map('intval', $remainingAssignmentStmt->fetchAll(PDO::FETCH_COLUMN));
+        syncBookingTableAssignments($pdo, $bookingId, $remainingTableIds);
+    }
+
+    $deleteAssignmentsStmt = $pdo->prepare("DELETE FROM booking_table_assignments WHERE table_id IN ($placeholders)");
+    $deleteAssignmentsStmt->execute($normalizedTableIds);
+
+    $deleteTablesStmt = $pdo->prepare("DELETE FROM restaurant_tables WHERE table_id IN ($placeholders)");
+    $deleteTablesStmt->execute($normalizedTableIds);
+
+    return [
+        'deleted_table_ids' => $normalizedTableIds,
+        'affected_booking_ids' => $affectedBookingIds,
+    ];
+}
+
+function getAreaTablesForResponse($pdo, $areaId) {
+    $stmt = $pdo->prepare(" 
+        SELECT rt.table_id, rt.table_number, rt.capacity, rt.area_id, rt.sort_order,
+               ta.name AS area_name, ta.display_order AS area_display_order
+        FROM restaurant_tables rt
+        LEFT JOIN table_areas ta ON ta.area_id = rt.area_id
+        WHERE rt.area_id = ?
+        ORDER BY rt.sort_order ASC, rt.table_number + 0, rt.table_number ASC
+    ");
+    $stmt->execute([(int) $areaId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function syncAreaNumberedTables($pdo, $areaId, $tableNumberStart, $tableNumberEnd, $defaultCapacity = 8) {
+    $areaId = (int) $areaId;
+    $tableNumberStart = $tableNumberStart !== null ? (int) $tableNumberStart : null;
+    $tableNumberEnd = $tableNumberEnd !== null ? (int) $tableNumberEnd : null;
+
+    if ($areaId < 1 || $tableNumberStart === null || $tableNumberEnd === null) {
+        return [
+            'created_tables' => [],
+            'deleted_table_ids' => [],
+            'affected_booking_ids' => [],
+            'area_tables' => getAreaTablesForResponse($pdo, $areaId),
+        ];
+    }
+
+    $existingStmt = $pdo->prepare("SELECT table_id, table_number, capacity FROM restaurant_tables WHERE area_id = ? ORDER BY table_number + 0, table_number ASC, table_id ASC");
+    $existingStmt->execute([$areaId]);
+    $existingTables = $existingStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $targetNumbers = range($tableNumberStart, $tableNumberEnd);
+    $targetLookup = array_fill_keys($targetNumbers, true);
+    $existingByNumber = [];
+    $tablesToDelete = [];
+
+    foreach ($existingTables as $tableRow) {
+        $numericTableNumber = filter_var($tableRow['table_number'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($numericTableNumber === false || !isset($targetLookup[$numericTableNumber])) {
+            $tablesToDelete[] = (int) $tableRow['table_id'];
+            continue;
+        }
+
+        $existingByNumber[$numericTableNumber] = $tableRow;
+    }
+
+    $removalResult = removeTablesAndUnassignBookings($pdo, $tablesToDelete);
+
+    $insertStmt = $pdo->prepare("INSERT INTO restaurant_tables (area_id, table_number, capacity, sort_order, status) VALUES (?, ?, ?, ?, 'available')");
+    $createdTableIds = [];
+    $sortOrder = 10;
+    foreach ($targetNumbers as $targetNumber) {
+        if (!isset($existingByNumber[$targetNumber])) {
+            $insertStmt->execute([$areaId, (string) $targetNumber, (int) $defaultCapacity, $sortOrder]);
+            $createdTableIds[] = (int) $pdo->lastInsertId();
+        }
+        $sortOrder += 10;
+    }
+
+    $areaTables = getAreaTablesForResponse($pdo, $areaId);
+    $sortUpdateStmt = $pdo->prepare("UPDATE restaurant_tables SET sort_order = ? WHERE table_id = ?");
+    $sortOrder = 10;
+    foreach ($areaTables as $tableRow) {
+        $sortUpdateStmt->execute([$sortOrder, (int) $tableRow['table_id']]);
+        $sortOrder += 10;
+    }
+
+    $areaTables = getAreaTablesForResponse($pdo, $areaId);
+    $createdTableIdLookup = array_fill_keys($createdTableIds, true);
+    $createdTables = array_values(array_filter($areaTables, static function ($tableRow) use ($createdTableIdLookup) {
+        return isset($createdTableIdLookup[(int) $tableRow['table_id']]);
+    }));
+
+    return [
+        'created_tables' => $createdTables,
+        'deleted_table_ids' => $removalResult['deleted_table_ids'],
+        'affected_booking_ids' => $removalResult['affected_booking_ids'],
+        'area_tables' => $areaTables,
+    ];
 }
 
 // Logout function

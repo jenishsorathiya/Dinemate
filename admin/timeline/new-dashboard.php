@@ -10,10 +10,19 @@ if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 // Get all tables
-$tables = $pdo->query("SELECT table_id, table_number, capacity FROM restaurant_tables ORDER BY table_number ASC")->fetchAll(PDO::FETCH_ASSOC);
-
 ensureBookingRequestColumns($pdo);
 ensureBookingTableAssignmentsTable($pdo);
+ensureTableAreasSchema($pdo);
+
+$areas = $pdo->query("SELECT area_id, name, display_order, table_number_start, table_number_end, is_active FROM table_areas WHERE is_active = 1 ORDER BY display_order ASC, name ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+$tables = $pdo->query(" 
+    SELECT rt.table_id, rt.table_number, rt.capacity, rt.area_id, rt.sort_order,
+           ta.name AS area_name, ta.display_order AS area_display_order
+    FROM restaurant_tables rt
+    LEFT JOIN table_areas ta ON ta.area_id = rt.area_id
+    ORDER BY ta.display_order ASC, ta.name ASC, rt.sort_order ASC, rt.table_number + 0, rt.table_number ASC
+")->fetchAll(PDO::FETCH_ASSOC);
 
 // Get selected date (default to today)
 $selectedDate = $_GET['date'] ?? date('Y-m-d');
@@ -757,6 +766,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         }
 
         .modal-form-group input,
+        .modal-form-group select,
         .modal-form-group textarea {
             width: 100%;
             border: 1px solid #d1d5db;
@@ -968,6 +978,15 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             .timeline-date-nav-row {
                 justify-self: start;
             }
+
+            .timeline-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .area-filter-bar {
+                justify-content: flex-start;
+            }
         }
 
         /* TABLES LIST */
@@ -1018,6 +1037,82 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             border-radius: 18px;
             box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
             min-width: 0;
+        }
+
+        .timeline-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e8edf4;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        }
+
+        .timeline-toolbar-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .timeline-toolbar-label {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+
+        .timeline-toolbar-note {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            line-height: 1.35;
+        }
+
+        .area-filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .area-filter-chip {
+            border: 1px solid #dbe3ef;
+            background: #ffffff;
+            color: #334155;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .area-filter-chip:hover {
+            border-color: #c3d0e3;
+            transform: translateY(-1px);
+        }
+
+        .area-filter-chip.active {
+            background: #111827;
+            border-color: #111827;
+            color: #ffffff;
+        }
+
+        .area-filter-chip.secondary {
+            background: #f8fafc;
+            color: #2563eb;
+            border-color: #cfe0ff;
+        }
+
+        .area-filter-chip-count {
+            color: inherit;
+            opacity: 0.75;
+            margin-left: 4px;
         }
 
         .timeline-scroll-wrapper {
@@ -1110,6 +1205,87 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             font-weight: 700;
             color: #1f2937;
             background: #fff;
+        }
+
+        .table-label-inner {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+            min-width: 0;
+            padding: 0 6px;
+        }
+
+        .table-label-area-pill {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .area-label-row,
+        .area-divider-row {
+            height: 28px;
+            min-height: 28px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .area-label-row {
+            align-items: center;
+            justify-content: flex-start;
+            background: #f8fafc;
+            color: #0f172a;
+            padding: 0 10px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .area-divider-row {
+            display: flex;
+            position: relative;
+            min-width: max-content;
+            background: #f8fafc;
+        }
+
+        .area-divider-row::after {
+            content: attr(data-area-name);
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #64748b;
+            pointer-events: none;
+        }
+
+        .area-divider-cell {
+            min-width: 80px;
+            border-right: 1px solid #eef2f7;
+            background: transparent;
+        }
+
+        .timeline-empty-state {
+            padding: 28px 24px;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .timeline-grid {
@@ -1343,6 +1519,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             bottom: 0;
             z-index: 19;
             opacity: 0.7;
+            pointer-events: none;
         }
 
         /* SCROLLBAR STYLING */
@@ -1445,6 +1622,13 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
             <!-- TIMELINE -->
             <div class="timeline-area">
+                <div class="timeline-toolbar">
+                    <div class="timeline-toolbar-copy">
+                        <span class="timeline-toolbar-label">Areas</span>
+                        <span class="timeline-toolbar-note">Filter the floor by section and keep tables organized by zone.</span>
+                    </div>
+                    <div class="area-filter-bar" id="areaFilterBar"></div>
+                </div>
                 <div class="timeline-scroll-wrapper" id="timelineScrollWrapper">
                     <!-- TIME HEADER -->
                     <div class="time-header">
@@ -1556,25 +1740,73 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     <div class="booking-modal-card">
         <div class="booking-modal-header">
             <div>
-                <h5><i class="fa fa-chair"></i> Table Details</h5>
+                <h5 id="tableDetailsTitle"><i class="fa fa-chair"></i> Table Details</h5>
                 <div class="booking-meta-chip" id="tableDetailsMeta"></div>
             </div>
             <button type="button" class="booking-modal-close" id="closeTableDetailsModalBtn" aria-label="Close">&times;</button>
         </div>
         <div class="modal-error" id="tableDetailsError"></div>
         <form id="tableDetailsForm">
+            <input type="hidden" id="tableDetailsMode" value="edit">
             <input type="hidden" id="tableDetailsId">
             <div class="modal-form-group">
                 <label for="tableDetailsNumber">Table</label>
-                <input type="text" id="tableDetailsNumber" readonly>
+                <input type="text" id="tableDetailsNumber" required>
+                <div class="modal-helper-text" id="tableDetailsNumberHelp">Use a short table number like 1, 12, or A3.</div>
             </div>
             <div class="modal-form-group">
                 <label for="tableDetailsCapacity">Capacity</label>
                 <input type="number" id="tableDetailsCapacity" min="1" required>
             </div>
+            <div class="modal-form-group">
+                <label for="tableDetailsArea">Area</label>
+                <select id="tableDetailsArea" required></select>
+                <div class="modal-helper-text">Move this table into a venue section like Patio, Bar, or Dining Room.</div>
+            </div>
+            <div class="modal-form-group">
+                <label for="tableDetailsSortOrder">Order In Area</label>
+                <input type="number" id="tableDetailsSortOrder" min="1" step="1" required>
+            </div>
             <div class="booking-modal-actions">
+                <button type="button" class="booking-modal-danger-small" id="deleteTableBtn">Delete Table</button>
                 <button type="button" class="booking-modal-cancel" id="cancelTableDetailsBtn">Close</button>
-                <button type="submit" class="booking-modal-submit" id="saveTableDetailsBtn">Save Capacity</button>
+                <button type="submit" class="booking-modal-submit" id="saveTableDetailsBtn">Save Table</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-backdrop-custom" id="areaDetailsModal">
+    <div class="booking-modal-card">
+        <div class="booking-modal-header">
+            <div>
+                <h5 id="areaDetailsTitle"><i class="fa fa-layer-group"></i> Area Details</h5>
+                <div class="booking-meta-chip" id="areaDetailsMeta"></div>
+            </div>
+            <button type="button" class="booking-modal-close" id="closeAreaDetailsModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-error" id="areaDetailsError"></div>
+        <form id="areaDetailsForm">
+            <input type="hidden" id="areaDetailsMode" value="edit">
+            <input type="hidden" id="areaDetailsId">
+            <div class="modal-form-group">
+                <label for="areaDetailsName">Area Name</label>
+                <input type="text" id="areaDetailsName" required>
+            </div>
+            <div class="modal-form-group">
+                <label for="areaDetailsStartNumber">Table Number Starts At</label>
+                <input type="number" id="areaDetailsStartNumber" min="1" step="1" placeholder="Optional">
+                <div class="modal-helper-text">Use this if tables in this area should begin from a specific number, like 20.</div>
+            </div>
+            <div class="modal-form-group">
+                <label for="areaDetailsEndNumber">Table Number Ends At</label>
+                <input type="number" id="areaDetailsEndNumber" min="1" step="1" placeholder="Optional">
+                <div class="modal-helper-text">Optional upper bound. The + button will stop once the area reaches this number.</div>
+            </div>
+            <div class="booking-modal-actions">
+                <button type="button" class="booking-modal-danger-small" id="deleteAreaBtn">Delete Area</button>
+                <button type="button" class="booking-modal-cancel" id="cancelAreaDetailsBtn">Close</button>
+                <button type="submit" class="booking-modal-submit" id="saveAreaDetailsBtn">Save Area</button>
             </div>
         </form>
     </div>
@@ -1583,13 +1815,16 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 <script>
     const BOOKING_DATA = <?php echo $bookingsJson; ?>;
     const TABLES = <?php echo json_encode($tables); ?>;
+    const AREAS = <?php echo json_encode($areas); ?>;
     const SELECTED_DATE = '<?php echo $selectedDate; ?>';
     const START_HOUR = 10; // 10 AM
     const END_HOUR = 23;   // 11 PM
     const INTERVAL_MINS = 30;
     const CELL_WIDTH = 80;
     const ROW_HEIGHT = 40;
+    const AREA_HEADER_HEIGHT = 28;
     let activeBookingListTab = 'standby';
+    let activeAreaFilter = 'all';
 
     // Initialize timeline on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -1601,10 +1836,483 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         bindBookingModal();
         bindBookingDetailsModal();
         bindTableDetailsModal();
+        bindAreaDetailsModal();
         renderTimeline();
         setCurrentTimeLine();
 
     });
+
+    function sortAreas(left, right) {
+        const leftOrder = Number(left.display_order || 0);
+        const rightOrder = Number(right.display_order || 0);
+        if(leftOrder !== rightOrder) {
+            return leftOrder - rightOrder;
+        }
+        return `${left.name || ''}`.localeCompare(`${right.name || ''}`, undefined, { numeric: true, sensitivity: 'base' });
+    }
+
+    function sortTables(left, right) {
+        const areaOrderDiff = Number(left.area_display_order || 0) - Number(right.area_display_order || 0);
+        if(areaOrderDiff !== 0) {
+            return areaOrderDiff;
+        }
+
+        const areaNameDiff = `${left.area_name || ''}`.localeCompare(`${right.area_name || ''}`, undefined, { sensitivity: 'base' });
+        if(areaNameDiff !== 0) {
+            return areaNameDiff;
+        }
+
+        const sortOrderDiff = Number(left.sort_order || 0) - Number(right.sort_order || 0);
+        if(sortOrderDiff !== 0) {
+            return sortOrderDiff;
+        }
+
+        return `${left.table_number || ''}`.localeCompare(`${right.table_number || ''}`, undefined, { numeric: true, sensitivity: 'base' });
+    }
+
+    function getAreaById(areaId) {
+        return AREAS.find(area => String(area.area_id) === String(areaId)) || null;
+    }
+
+    function reconcileDeletedTables(deletedTableIds) {
+        const normalizedDeletedTableIds = Array.isArray(deletedTableIds) ? deletedTableIds.map(Number) : [];
+        if(!normalizedDeletedTableIds.length) {
+            return;
+        }
+
+        const deletedTableIdSet = new Set(normalizedDeletedTableIds);
+
+        for(let index = TABLES.length - 1; index >= 0; index -= 1) {
+            if(deletedTableIdSet.has(Number(TABLES[index].table_id))) {
+                TABLES.splice(index, 1);
+            }
+        }
+
+        BOOKING_DATA.forEach(booking => {
+            const nextAssignedTableIds = getAssignedTableIds(booking).filter(tableId => !deletedTableIdSet.has(Number(tableId)));
+            const nextAssignedTables = nextAssignedTableIds
+                .map(tableId => getTableById(tableId))
+                .filter(Boolean);
+
+            booking.assigned_table_ids = nextAssignedTableIds;
+            booking.assigned_table_numbers = nextAssignedTables.map(table => String(table.table_number));
+            booking.table_id = nextAssignedTableIds.length ? Number(nextAssignedTableIds[0]) : null;
+            booking.table_number = nextAssignedTables.length ? String(nextAssignedTables[0].table_number) : null;
+        });
+    }
+
+    function getTableById(tableId) {
+        return TABLES.find(table => String(table.table_id) === String(tableId)) || null;
+    }
+
+    function getSortedAreas() {
+        return [...AREAS].sort(sortAreas);
+    }
+
+    function getVisibleTables() {
+        const sortedTables = [...TABLES].sort(sortTables);
+        if(activeAreaFilter === 'all') {
+            return sortedTables;
+        }
+        return sortedTables.filter(table => String(table.area_id) === String(activeAreaFilter));
+    }
+
+    function getAreaNameForTable(table) {
+        return table && table.area_name ? table.area_name : 'Main Floor';
+    }
+
+    function getBookingAreaNames(booking) {
+        const areaNames = [];
+        getAssignedTableIds(booking).forEach(tableId => {
+            const table = getTableById(tableId);
+            const areaName = getAreaNameForTable(table);
+            if(areaName && !areaNames.includes(areaName)) {
+                areaNames.push(areaName);
+            }
+        });
+        return areaNames;
+    }
+
+    function getBookedPeopleCountForArea(areaId = 'all') {
+        return BOOKING_DATA.reduce((total, booking) => {
+            const guestCount = Number(booking.number_of_guests || 0);
+            if(guestCount <= 0) {
+                return total;
+            }
+
+            const assignedAreaIds = [...new Set(
+                getAssignedTableIds(booking)
+                    .map(tableId => getTableById(tableId))
+                    .filter(Boolean)
+                    .map(table => String(table.area_id))
+            )];
+
+            if(!assignedAreaIds.length) {
+                return total;
+            }
+
+            if(areaId === 'all') {
+                return total + guestCount;
+            }
+
+            return assignedAreaIds.includes(String(areaId)) ? total + guestCount : total;
+        }, 0);
+    }
+
+    function buildVisibleTableLayout() {
+        const visibleTables = getVisibleTables();
+        const rows = [];
+        const tableTopMap = {};
+        let activeAreaKey = null;
+        let currentTop = 0;
+
+        visibleTables.forEach(table => {
+            const nextAreaKey = String(table.area_id || '');
+            if(nextAreaKey !== activeAreaKey) {
+                rows.push({
+                    type: 'area',
+                    area_id: table.area_id,
+                    area_name: getAreaNameForTable(table),
+                    top: currentTop,
+                });
+                currentTop += AREA_HEADER_HEIGHT;
+                activeAreaKey = nextAreaKey;
+            }
+
+            tableTopMap[String(table.table_id)] = currentTop;
+            rows.push({
+                type: 'table',
+                table,
+                top: currentTop,
+            });
+            currentTop += ROW_HEIGHT;
+        });
+
+        rows.push({ type: 'add', top: currentTop });
+        currentTop += ROW_HEIGHT;
+
+        return {
+            visibleTables,
+            rows,
+            tableTopMap,
+            totalHeight: currentTop,
+        };
+    }
+
+    function renderAreaFilters() {
+        const areaFilterBar = document.getElementById('areaFilterBar');
+        if(!areaFilterBar) return;
+
+        const areaButtons = getSortedAreas().map(area => {
+            const bookedPeopleCount = getBookedPeopleCountForArea(area.area_id);
+            const isActive = String(activeAreaFilter) === String(area.area_id);
+            return `<button type="button" class="area-filter-chip${isActive ? ' active' : ''}" onclick="handleAreaChipClick(${area.area_id})">${area.name}<span class="area-filter-chip-count">${bookedPeopleCount}</span></button>`;
+        }).join('');
+
+        const totalBookedPeople = getBookedPeopleCountForArea('all');
+        const deleteChip = activeAreaFilter === 'all'
+            ? ''
+            : '<button type="button" class="area-filter-chip secondary" onclick="deleteAreaById(activeAreaFilter)">Delete Selected Area</button>';
+        areaFilterBar.innerHTML = `
+            <button type="button" class="area-filter-chip${activeAreaFilter === 'all' ? ' active' : ''}" onclick="setAreaFilter('all')">All Areas<span class="area-filter-chip-count">${totalBookedPeople}</span></button>
+            ${areaButtons}
+            <button type="button" class="area-filter-chip secondary" onclick="openAreaDetails()">Add Area</button>
+            ${deleteChip}
+        `;
+    }
+
+    function handleAreaChipClick(areaId) {
+        if(String(activeAreaFilter) === String(areaId)) {
+            openAreaDetails(areaId);
+            return;
+        }
+
+        setAreaFilter(areaId);
+    }
+
+    function setAreaFilter(areaId) {
+        activeAreaFilter = areaId === 'all' ? 'all' : String(areaId);
+        renderTimeline();
+    }
+
+    function refreshAreaSelectOptions(selectedAreaId) {
+        const select = document.getElementById('tableDetailsArea');
+        if(!select) return;
+
+        const options = getSortedAreas().map(area => {
+            const isSelected = String(selectedAreaId) === String(area.area_id);
+            return `<option value="${area.area_id}"${isSelected ? ' selected' : ''}>${area.name}</option>`;
+        }).join('');
+
+        select.innerHTML = options;
+    }
+
+    function getNextSortOrderForArea(areaId) {
+        const areaTables = TABLES.filter(table => String(table.area_id) === String(areaId));
+        if(!areaTables.length) {
+            return 10;
+        }
+
+        const maxSortOrder = areaTables.reduce((highest, table) => {
+            return Math.max(highest, Number(table.sort_order || 0));
+        }, 0);
+
+        return Math.max(10, maxSortOrder + 10);
+    }
+
+    function getNextTableNumberForArea(areaId) {
+        const area = getAreaById(areaId);
+        const areaTables = TABLES.filter(table => String(table.area_id) === String(areaId));
+        if(!areaTables.length) {
+            return String(area && area.table_number_start !== null ? area.table_number_start : 1);
+        }
+
+        const maxTableNumber = areaTables.reduce((highest, table) => {
+            const numericValue = parseInt(String(table.table_number || ''), 10);
+            if(Number.isNaN(numericValue)) {
+                return highest;
+            }
+            return Math.max(highest, numericValue);
+        }, 0);
+
+        const nextNumber = Math.max(1, maxTableNumber + 1);
+        if(area && area.table_number_end !== null && nextNumber > Number(area.table_number_end)) {
+            return String(area.table_number_end);
+        }
+
+        return String(nextNumber);
+    }
+
+    function openCreateTableModal(preferredAreaId) {
+        const fallbackArea = getSortedAreas()[0] || null;
+        const areaId = preferredAreaId || (fallbackArea ? Number(fallbackArea.area_id) : 0);
+        const modal = document.getElementById('tableDetailsModal');
+        if(!modal) return;
+
+        document.getElementById('tableDetailsMode').value = 'create';
+        document.getElementById('tableDetailsId').value = '';
+        document.getElementById('tableDetailsTitle').innerHTML = '<i class="fa fa-plus"></i> Create Table';
+        document.getElementById('tableDetailsNumber').value = getNextTableNumberForArea(areaId);
+        document.getElementById('tableDetailsNumber').readOnly = false;
+        document.getElementById('tableDetailsCapacity').value = '8';
+        refreshAreaSelectOptions(areaId);
+        document.getElementById('tableDetailsArea').value = String(areaId);
+        document.getElementById('tableDetailsSortOrder').value = getNextSortOrderForArea(areaId);
+        document.getElementById('tableDetailsMeta').textContent = areaId ? `New table in ${getAreaById(areaId)?.name || 'selected area'}` : 'New table';
+        document.getElementById('tableDetailsError').style.display = 'none';
+        document.getElementById('saveTableDetailsBtn').textContent = 'Create Table';
+        document.getElementById('deleteTableBtn').style.display = 'none';
+        modal.classList.add('open');
+        document.body.classList.add('modal-open');
+
+        requestAnimationFrame(() => {
+            document.getElementById('tableDetailsNumber').focus();
+        });
+    }
+
+    function openAreaDetails(areaId = null) {
+        const modal = document.getElementById('areaDetailsModal');
+        if(!modal) return;
+
+        const isEditMode = areaId !== null && areaId !== undefined;
+        const area = isEditMode ? getAreaById(areaId) : null;
+
+        document.getElementById('areaDetailsMode').value = isEditMode ? 'edit' : 'create';
+        document.getElementById('areaDetailsId').value = isEditMode ? area.area_id : '';
+        document.getElementById('areaDetailsTitle').innerHTML = isEditMode ? '<i class="fa fa-layer-group"></i> Edit Area' : '<i class="fa fa-plus"></i> Create Area';
+        document.getElementById('areaDetailsName').value = isEditMode ? area.name : '';
+        document.getElementById('areaDetailsStartNumber').value = isEditMode && area.table_number_start !== null ? area.table_number_start : '';
+        document.getElementById('areaDetailsEndNumber').value = isEditMode && area.table_number_end !== null ? area.table_number_end : '';
+        document.getElementById('areaDetailsMeta').textContent = isEditMode ? `${TABLES.filter(table => String(table.area_id) === String(area.area_id)).length} tables in this area` : 'Create a new area and set its numbering range';
+        document.getElementById('areaDetailsError').style.display = 'none';
+        document.getElementById('saveAreaDetailsBtn').textContent = isEditMode ? 'Save Area' : 'Create Area';
+        document.getElementById('deleteAreaBtn').style.display = isEditMode ? 'inline-flex' : 'none';
+        modal.classList.add('open');
+        document.body.classList.add('modal-open');
+
+        requestAnimationFrame(() => {
+            document.getElementById('areaDetailsName').focus();
+        });
+    }
+
+    function deleteAreaById(areaId, options = {}) {
+        const normalizedAreaId = String(areaId || '').trim();
+        const errorBox = options.errorBox || null;
+        const onSuccess = typeof options.onSuccess === 'function' ? options.onSuccess : null;
+        const areaName = getAreaById(normalizedAreaId)?.name || 'this area';
+
+        if(!normalizedAreaId) {
+            return Promise.resolve(false);
+        }
+
+        if(!window.confirm(`Delete area ${areaName}? Its tables will be removed and any affected bookings will become unassigned.`)) {
+            return Promise.resolve(false);
+        }
+
+        if(errorBox) {
+            errorBox.style.display = 'none';
+        }
+
+        return fetch('delete-area.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ area_id: normalizedAreaId })
+        })
+        .then(async response => {
+            const data = await response.json();
+            if(!response.ok || !data.success) {
+                throw new Error(data.error || 'Failed to delete area');
+            }
+            return data;
+        })
+        .then(data => {
+            reconcileDeletedTables(data.deleted_table_ids);
+
+            const areaIdx = AREAS.findIndex(area => String(area.area_id) === String(data.area_id));
+            if(areaIdx !== -1) {
+                AREAS.splice(areaIdx, 1);
+            }
+
+            if(String(activeAreaFilter) === String(data.area_id)) {
+                activeAreaFilter = 'all';
+            }
+
+            renderTimeline();
+            if(onSuccess) {
+                onSuccess(data);
+            }
+            return true;
+        })
+        .catch(error => {
+            if(errorBox) {
+                errorBox.textContent = error.message;
+                errorBox.style.display = 'block';
+            } else {
+                window.alert(error.message);
+            }
+            return false;
+        });
+    }
+
+    function bindAreaDetailsModal() {
+        const modal = document.getElementById('areaDetailsModal');
+        const closeBtn = document.getElementById('closeAreaDetailsModalBtn');
+        const cancelBtn = document.getElementById('cancelAreaDetailsBtn');
+        const deleteBtn = document.getElementById('deleteAreaBtn');
+        const form = document.getElementById('areaDetailsForm');
+        const errorBox = document.getElementById('areaDetailsError');
+        const saveBtn = document.getElementById('saveAreaDetailsBtn');
+
+        if(!modal || !form) return;
+
+        function closeModal() {
+            modal.classList.remove('open');
+            document.body.classList.remove('modal-open');
+            errorBox.style.display = 'none';
+        }
+
+        if(closeBtn) {
+            closeBtn.addEventListener('click', closeModal);
+        }
+        if(cancelBtn) {
+            cancelBtn.addEventListener('click', closeModal);
+        }
+        if(deleteBtn) {
+            deleteBtn.addEventListener('click', function() {
+                const areaId = document.getElementById('areaDetailsId').value;
+                if(!areaId) {
+                    return;
+                }
+
+                deleteBtn.disabled = true;
+                deleteAreaById(areaId, {
+                    errorBox,
+                    onSuccess: function() {
+                        closeModal();
+                    }
+                }).finally(() => {
+                    deleteBtn.disabled = false;
+                });
+            });
+        }
+
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) {
+                closeModal();
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const mode = document.getElementById('areaDetailsMode').value;
+            const payload = {
+                area_id: document.getElementById('areaDetailsId').value,
+                name: document.getElementById('areaDetailsName').value.trim(),
+                table_number_start: document.getElementById('areaDetailsStartNumber').value,
+                table_number_end: document.getElementById('areaDetailsEndNumber').value,
+            };
+
+            errorBox.style.display = 'none';
+            saveBtn.disabled = true;
+            saveBtn.textContent = mode === 'create' ? 'Creating...' : 'Saving...';
+
+            fetch(mode === 'create' ? 'create-area.php' : 'update-area.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => {
+                const data = await response.json();
+                if(!response.ok || !data.success) {
+                    throw new Error(data.error || `Failed to ${mode === 'create' ? 'create' : 'update'} area`);
+                }
+                return data;
+            })
+            .then(data => {
+                reconcileDeletedTables(data.deleted_table_ids);
+
+                const areaIdx = AREAS.findIndex(area => String(area.area_id) === String(data.area.area_id));
+                if(areaIdx !== -1) {
+                    AREAS[areaIdx] = {
+                        ...AREAS[areaIdx],
+                        ...data.area,
+                    };
+                } else {
+                    AREAS.push(data.area);
+                }
+
+                for(let index = TABLES.length - 1; index >= 0; index -= 1) {
+                    if(String(TABLES[index].area_id) === String(data.area.area_id)) {
+                        TABLES.splice(index, 1);
+                    }
+                }
+
+                if(Array.isArray(data.area_tables)) {
+                    data.area_tables.forEach(table => {
+                        TABLES.push(table);
+                    });
+                }
+
+                activeAreaFilter = String(data.area.area_id);
+                refreshAreaSelectOptions(data.area.area_id);
+                renderTimeline();
+                closeModal();
+            })
+            .catch(error => {
+                errorBox.textContent = error.message;
+                errorBox.style.display = 'block';
+            })
+            .finally(() => {
+                saveBtn.disabled = false;
+                saveBtn.textContent = mode === 'create' ? 'Create Area' : 'Save Area';
+            });
+        });
+    }
 
     function bindBookingModal() {
         const modal = document.getElementById('bookingModal');
@@ -1693,17 +2401,32 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     }
 
     function bindAddTableButton() {
-        const addTableBtn = document.getElementById('addTableBtn');
-        if(!addTableBtn) return;
+        const addTableButtons = document.querySelectorAll('[data-add-table-trigger="true"]');
+        if(!addTableButtons.length) return;
 
-        addTableBtn.addEventListener('click', function() {
+        addTableButtons.forEach(addTableBtn => {
+            addTableBtn.addEventListener('click', function() {
+            const fallbackArea = getSortedAreas()[0] || null;
+            const targetAreaId = activeAreaFilter === 'all'
+                ? (fallbackArea ? Number(fallbackArea.area_id) : 0)
+                : Number(activeAreaFilter);
+
+            const targetAreaTableCount = TABLES.filter(table => String(table.area_id) === String(targetAreaId)).length;
+            const noTablesAtAll = TABLES.length === 0;
+
+            if(noTablesAtAll || targetAreaTableCount === 0) {
+                openCreateTableModal(targetAreaId);
+                return;
+            }
+
             fetch('create-table.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    auto: true
+                    auto: true,
+                    area_id: targetAreaId
                 })
             })
             .then(r => r.json())
@@ -1712,8 +2435,13 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                     TABLES.push({
                         table_id: data.table_id,
                         table_number: data.table_number,
-                        capacity: data.capacity
+                        capacity: data.capacity,
+                        area_id: data.area_id,
+                        area_name: data.area_name,
+                        area_display_order: data.area_display_order,
+                        sort_order: data.sort_order,
                     });
+                    activeAreaFilter = String(data.area_id);
                     renderTimeline();
                 } else {
                     console.error('Could not add table:', data.error || 'Unknown error');
@@ -1722,6 +2450,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             .catch(err => {
                 console.error(err);
                 console.error('Error adding table:', err.message);
+            });
             });
         });
     }
@@ -1862,9 +2591,13 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const modal = document.getElementById('tableDetailsModal');
         const closeBtn = document.getElementById('closeTableDetailsModalBtn');
         const cancelBtn = document.getElementById('cancelTableDetailsBtn');
+        const deleteTableBtn = document.getElementById('deleteTableBtn');
         const form = document.getElementById('tableDetailsForm');
         const errorBox = document.getElementById('tableDetailsError');
         const saveBtn = document.getElementById('saveTableDetailsBtn');
+        const areaSelect = document.getElementById('tableDetailsArea');
+        const sortOrderInput = document.getElementById('tableDetailsSortOrder');
+        const modeInput = document.getElementById('tableDetailsMode');
 
         if(!modal || !form) return;
 
@@ -1876,6 +2609,64 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
         closeBtn.addEventListener('click', closeModal);
         cancelBtn.addEventListener('click', closeModal);
+
+        if(areaSelect && sortOrderInput) {
+            areaSelect.addEventListener('change', function() {
+                if(modeInput.value === 'create') {
+                    sortOrderInput.value = getNextSortOrderForArea(areaSelect.value);
+                    document.getElementById('tableDetailsNumber').value = getNextTableNumberForArea(areaSelect.value);
+                }
+            });
+        }
+
+        if(deleteTableBtn) {
+            deleteTableBtn.addEventListener('click', function() {
+                const tableId = document.getElementById('tableDetailsId').value;
+                const tableNumber = document.getElementById('tableDetailsNumber').value;
+                if(!tableId) {
+                    return;
+                }
+
+                if(!window.confirm(`Delete table ${tableNumber}?`)) {
+                    return;
+                }
+
+                errorBox.style.display = 'none';
+                deleteTableBtn.disabled = true;
+
+                fetch('delete-table.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ table_id: tableId })
+                })
+                .then(async response => {
+                    const data = await response.json();
+                    if(!response.ok || !data.success) {
+                        throw new Error(data.error || 'Failed to delete table');
+                    }
+                    return data;
+                })
+                .then(data => {
+                    const tableIdx = TABLES.findIndex(table => String(table.table_id) === String(data.table_id));
+                    if(tableIdx !== -1) {
+                        TABLES.splice(tableIdx, 1);
+                    }
+
+                    renderTimeline();
+                    closeModal();
+                })
+                .catch(error => {
+                    errorBox.textContent = error.message;
+                    errorBox.style.display = 'block';
+                })
+                .finally(() => {
+                    deleteTableBtn.disabled = false;
+                });
+            });
+        }
+
         modal.addEventListener('click', function(e) {
             if(e.target === modal) {
                 closeModal();
@@ -1885,37 +2676,63 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 
+            const mode = document.getElementById('tableDetailsMode').value;
             const payload = {
                 table_id: document.getElementById('tableDetailsId').value,
+                table_number: document.getElementById('tableDetailsNumber').value.trim(),
                 capacity: document.getElementById('tableDetailsCapacity').value,
+                area_id: document.getElementById('tableDetailsArea').value,
+                sort_order: document.getElementById('tableDetailsSortOrder').value,
             };
 
             errorBox.style.display = 'none';
             saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
+            saveBtn.textContent = mode === 'create' ? 'Creating...' : 'Saving...';
 
-            fetch('update-table.php', {
+            fetch(mode === 'create' ? 'create-table.php' : 'update-table.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(mode === 'create' ? {
+                    auto: false,
+                    table_number: payload.table_number,
+                    capacity: payload.capacity,
+                    area_id: payload.area_id,
+                    sort_order: payload.sort_order,
+                } : payload)
             })
             .then(async response => {
                 const data = await response.json();
                 if(!response.ok || !data.success) {
-                    throw new Error(data.error || 'Failed to update table');
+                    throw new Error(data.error || `Failed to ${mode === 'create' ? 'create' : 'update'} table`);
                 }
                 return data;
             })
             .then(data => {
-                const tableIdx = TABLES.findIndex(table => String(table.table_id) === String(data.table.table_id));
+                const tableData = mode === 'create'
+                    ? {
+                        table_id: data.table_id,
+                        table_number: data.table_number,
+                        capacity: data.capacity,
+                        area_id: data.area_id,
+                        area_name: data.area_name,
+                        area_display_order: data.area_display_order,
+                        sort_order: data.sort_order,
+                    }
+                    : data.table;
+
+                const tableIdx = TABLES.findIndex(table => String(table.table_id) === String(tableData.table_id));
                 if(tableIdx !== -1) {
                     TABLES[tableIdx] = {
                         ...TABLES[tableIdx],
-                        ...data.table,
+                        ...tableData,
                     };
+                } else {
+                    TABLES.push(tableData);
                 }
+
+                activeAreaFilter = String(tableData.area_id);
                 renderTimeline();
                 closeModal();
             })
@@ -1925,7 +2742,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             })
             .finally(() => {
                 saveBtn.disabled = false;
-                saveBtn.textContent = 'Save Capacity';
+                saveBtn.textContent = mode === 'create' ? 'Create Table' : 'Save Table';
             });
         });
     }
@@ -1934,11 +2751,19 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const table = TABLES.find(item => String(item.table_id) === String(tableId));
         if(!table) return;
 
+        document.getElementById('tableDetailsMode').value = 'edit';
         document.getElementById('tableDetailsId').value = table.table_id;
+        document.getElementById('tableDetailsTitle').innerHTML = '<i class="fa fa-chair"></i> Table Details';
         document.getElementById('tableDetailsNumber').value = `T${table.table_number}`;
+        document.getElementById('tableDetailsNumber').readOnly = true;
         document.getElementById('tableDetailsCapacity').value = table.capacity;
-        document.getElementById('tableDetailsMeta').textContent = `Current capacity: ${table.capacity} seats`;
+        refreshAreaSelectOptions(table.area_id);
+        document.getElementById('tableDetailsArea').value = table.area_id;
+        document.getElementById('tableDetailsSortOrder').value = table.sort_order || 10;
+        document.getElementById('tableDetailsMeta').textContent = `${getAreaNameForTable(table)} • ${table.capacity} seats`;
         document.getElementById('tableDetailsError').style.display = 'none';
+        document.getElementById('saveTableDetailsBtn').textContent = 'Save Table';
+        document.getElementById('deleteTableBtn').style.display = 'inline-flex';
         document.getElementById('tableDetailsModal').classList.add('open');
         document.body.classList.add('modal-open');
     }
@@ -1948,9 +2773,11 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         if(!booking) return;
 
         const assignedTableNumbers = getAssignedTableNumbers(booking);
+        const assignedAreaNames = getBookingAreaNames(booking);
         const tableLabel = assignedTableNumbers.length
             ? `Tables ${assignedTableNumbers.join(', ')}`
             : 'Unassigned';
+        const areaLabel = assignedAreaNames.length ? assignedAreaNames.join(', ') : 'No area';
 
         const modal = document.getElementById('bookingDetailsModal');
         document.getElementById('bookingDetailsId').value = booking.booking_id;
@@ -1961,7 +2788,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         document.getElementById('bookingAssignedEnd').value = booking.end_time.substring(0, 5);
         document.getElementById('bookingDetailsGuests').value = booking.number_of_guests;
         document.getElementById('bookingDetailsNotes').value = booking.special_request || '';
-        document.getElementById('bookingDetailsMeta').textContent = `${booking.booking_date} • ${tableLabel} • ${booking.status}`;
+        document.getElementById('bookingDetailsMeta').textContent = `${booking.booking_date} • ${areaLabel} • ${tableLabel} • ${booking.status}`;
 
         const errorBox = document.getElementById('bookingDetailsError');
         errorBox.style.display = 'none';
@@ -1995,6 +2822,15 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
         const assignedBookings = BOOKING_DATA
             .filter(booking => getAssignedTableIds(booking).length > 0)
+            .filter(booking => {
+                if(activeAreaFilter === 'all') {
+                    return true;
+                }
+                return getAssignedTableIds(booking).some(tableId => {
+                    const table = getTableById(tableId);
+                    return table && String(table.area_id) === String(activeAreaFilter);
+                });
+            })
             .sort((left, right) => `${left.start_time}`.localeCompare(`${right.start_time}`));
 
         const isStandbyTab = activeBookingListTab === 'standby';
@@ -2014,9 +2850,10 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 ? `<span class="booking-item-note-icon" title="${booking.special_request.replace(/"/g, '&quot;')}"><i class="fa-solid fa-note-sticky"></i></span>`
                 : '';
             const tableNumbers = getAssignedTableNumbers(booking);
+            const areaNames = getBookingAreaNames(booking);
             const rightSideText = isStandbyTab
                 ? `<span class="booking-item-meta">P${booking.number_of_guests}</span>`
-                : `<span class="booking-item-table">${tableNumbers.map(tableNumber => `T${tableNumber}`).join(', ')}</span>`;
+                : `<span class="booking-item-table">${areaNames.length ? `${areaNames.join(', ')} • ` : ''}${tableNumbers.map(tableNumber => `T${tableNumber}`).join(', ')}</span>`;
             const bottomRowRight = isStandbyTab
                 ? ''
                 : `<span class="booking-item-bottom-right">P${booking.number_of_guests}</span>`;
@@ -2070,17 +2907,18 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         return [];
     }
 
-    function getTableIndexMap() {
-        return TABLES.reduce((map, table, index) => {
+    function getTableIndexMap(sourceTables = getVisibleTables()) {
+        return sourceTables.reduce((map, table, index) => {
             map[String(table.table_id)] = index;
             return map;
         }, {});
     }
 
     function getBookingSpanTableIds(startTableId, spanCount) {
-        const startIndex = TABLES.findIndex(table => String(table.table_id) === String(startTableId));
+        const visibleTables = getVisibleTables();
+        const startIndex = visibleTables.findIndex(table => String(table.table_id) === String(startTableId));
         if(startIndex === -1) return [];
-        return TABLES.slice(startIndex, startIndex + spanCount).map(table => Number(table.table_id));
+        return visibleTables.slice(startIndex, startIndex + spanCount).map(table => Number(table.table_id));
     }
 
     function getAssignedCapacity(booking) {
@@ -2149,7 +2987,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     // Render the entire timeline
     function renderTimeline() {
         const timeSlots = getTimeSlots();
-        const tableIndexMap = getTableIndexMap();
+        const layout = buildVisibleTableLayout();
 
         // Render time headings (x-axis)
         const timeHeader = document.getElementById('timeHeader');
@@ -2157,11 +2995,23 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             `<div class="time-slot">${formatDisplayTime(time)}</div>`
         ).join('');
 
+        renderAreaFilters();
+
         // Render table labels (y-axis)
         const tableLabels = document.getElementById('tableLabels');
-        tableLabels.innerHTML = TABLES.map(table => 
-            `<div class="table-label clickable" onclick="openTableDetails(${table.table_id})" title="Edit table capacity">T${table.table_number}</div>`
-        ).join('') + `<div class="table-label add-table-row"><button class="add-table-inline-btn" id="addTableBtn" title="Add table">+</button></div>`;
+        tableLabels.innerHTML = layout.rows.map(row => {
+            if(row.type === 'area') {
+                return `<div class="table-label area-label-row">${row.area_name}</div>`;
+            }
+            if(row.type === 'table') {
+                return `<div class="table-label clickable" onclick="openTableDetails(${row.table.table_id})" title="Edit table details">
+                    <span class="table-label-inner">
+                        <span>T${row.table.table_number}</span>
+                    </span>
+                </div>`;
+            }
+            return `<div class="table-label add-table-row"><button type="button" class="add-table-inline-btn" data-add-table-trigger="true" title="Add table">+</button></div>`;
+        }).join('');
 
         // Populate booking list on left
         populateBookingList();
@@ -2170,31 +3020,48 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const timelineGrid = document.getElementById('timelineGrid');
         let gridHTML = '';
         let bookingHTML = '';
-        
-        TABLES.forEach(table => {
-            let rowHTML = `<div class="table-row" data-table-id="${table.table_id}">`;
-            
-            timeSlots.forEach(time => {
-                rowHTML += `<div class="time-cell" 
-                    data-table-id="${table.table_id}" 
-                    data-time="${time}"
-                    ondrop="handleDrop(event)"
-                    ondragover="handleDragOver(event)"></div>`;
-            });
-            
-            rowHTML += '</div>';
-            gridHTML += rowHTML;
+
+        if(layout.visibleTables.length === 0) {
+            const emptyLabel = activeAreaFilter === 'all'
+                ? 'No tables found yet. Add your first table to start using the timeline.'
+                : 'No tables found for this area yet. Add one to start organizing this section.';
+            timelineGrid.innerHTML = `<div class="timeline-empty-state">${emptyLabel}<div style="margin-top:12px;"><button type="button" class="add-table-inline-btn" data-add-table-trigger="true" title="Add table">+</button></div></div>`;
+            bindAddTableButton();
+            return;
+        }
+
+        layout.rows.forEach(row => {
+            if(row.type === 'area') {
+                gridHTML += `<div class="area-divider-row" data-area-name="${row.area_name.replace(/"/g, '&quot;')}">${timeSlots.map(() => `<div class="area-divider-cell"></div>`).join('')}</div>`;
+                return;
+            }
+
+            if(row.type === 'table') {
+                let rowHTML = `<div class="table-row" data-table-id="${row.table.table_id}">`;
+                timeSlots.forEach(time => {
+                    rowHTML += `<div class="time-cell" 
+                        data-table-id="${row.table.table_id}" 
+                        data-time="${time}"
+                        ondrop="handleDrop(event)"
+                        ondragover="handleDragOver(event)"></div>`;
+                });
+                rowHTML += '</div>';
+                gridHTML += rowHTML;
+                return;
+            }
+
+            gridHTML += `<div class="table-row add-table-row" aria-hidden="true">${timeSlots.map(() => `<div class="time-cell"></div>`).join('')}</div>`;
         });
 
         bookingHTML = BOOKING_DATA
             .filter(booking => getAssignedTableIds(booking).length > 0)
-            .map(booking => renderBooking(booking, timeSlots, tableIndexMap))
+            .map(booking => renderBooking(booking, timeSlots, layout.tableTopMap))
             .join('');
 
-        gridHTML += `<div class="table-row add-table-row" aria-hidden="true">${timeSlots.map(() => `<div class="time-cell"></div>`).join('')}</div>`;
         gridHTML += bookingHTML;
-        
+
         timelineGrid.innerHTML = gridHTML;
+        timelineGrid.style.minHeight = `${layout.totalHeight}px`;
 
         bindBookingDragHandlers();
         bindAddTableButton();
@@ -2202,7 +3069,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     }
 
     // Render a single booking block
-    function renderBooking(booking, timeSlots, tableIndexMap) {
+    function renderBooking(booking, timeSlots, tableTopMap) {
         const bookingStart = booking.start_time.substring(0, 5); // Convert HH:MM:SS to HH:MM
         const bookingEnd = booking.end_time.substring(0, 5);
         const requestedStart = getRequestedStartTime(booking).substring(0, 5);
@@ -2213,22 +3080,24 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const requestedEndLabel = formatDisplayTime(getRequestedEndTime(booking));
         const assignedTableIds = getAssignedTableIds(booking);
         const assignedTableNumbers = getAssignedTableNumbers(booking);
+        const assignedAreaNames = getBookingAreaNames(booking);
         const startIdx = timeSlots.indexOf(bookingStart);
         const firstAssignedTableId = assignedTableIds[0];
-        const startRowIndex = tableIndexMap[String(firstAssignedTableId)];
+        const topPosition = tableTopMap[String(firstAssignedTableId)];
 
-        if(startIdx === -1 || startRowIndex === undefined) return '';
+        if(startIdx === -1 || topPosition === undefined) return '';
 
         const startDate = new Date(`2000-01-01 ${booking.start_time}`);
         const endDate = new Date(`2000-01-01 ${booking.end_time}`);
         const durationMins = (endDate - startDate) / (1000 * 60);
         const numSlots = Math.max(1, Math.ceil(durationMins / INTERVAL_MINS));
         const rowSpan = Math.max(1, assignedTableIds.length);
+        const lastAssignedTableId = assignedTableIds[assignedTableIds.length - 1];
+        const bottomPosition = tableTopMap[String(lastAssignedTableId)] ?? topPosition;
 
         const leftPosition = startIdx * CELL_WIDTH;
         const width = Math.max(numSlots * CELL_WIDTH, CELL_WIDTH);
-        const topPosition = startRowIndex * ROW_HEIGHT;
-        const height = rowSpan * ROW_HEIGHT;
+        const height = Math.max(ROW_HEIGHT, (bottomPosition - topPosition) + ROW_HEIGHT);
 
         const statusClass = booking.status === 'confirmed' ? 'success' : (booking.status === 'pending' ? 'pending' : 'info');
         const overCapacityClass = getAssignedCapacity(booking) < Number(booking.number_of_guests || 0) ? 'over-capacity' : '';
@@ -2242,9 +3111,10 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const noteButtonHtml = showNoteButton
             ? `<button type="button" class="booking-note-btn" title="${booking.special_request.replace(/"/g, '&quot;')}" onclick="event.stopPropagation(); openBookingDetails(${booking.booking_id});" draggable="false"><i class="fa-solid fa-note-sticky"></i></button>`
             : '';
+        const areaText = assignedAreaNames.length ? ` | ${assignedAreaNames.join(', ')}` : '';
         const titleText = rescheduledClass
-            ? `${booking.customer_name} | ${guestCountText} | ${bookingStartLabel} - ${bookingEndLabel} | Requested ${requestedStartLabel} - ${requestedEndLabel} | Scheduled ${bookingStartLabel} - ${bookingEndLabel}`
-            : `${booking.customer_name} | ${guestCountText} | ${bookingStartLabel} - ${bookingEndLabel}`;
+            ? `${booking.customer_name} | ${guestCountText}${areaText} | ${bookingStartLabel} - ${bookingEndLabel} | Requested ${requestedStartLabel} - ${requestedEndLabel} | Scheduled ${bookingStartLabel} - ${bookingEndLabel}`
+            : `${booking.customer_name} | ${guestCountText}${areaText} | ${bookingStartLabel} - ${bookingEndLabel}`;
 
         return `<div class="booking-block ${statusClass} ${overCapacityClass} ${rescheduledClass}"
                     draggable="true"
@@ -2490,7 +3360,8 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 newEnd = `${String(baseDate.getHours()).padStart(2,'0')}:${String(baseDate.getMinutes()).padStart(2,'0')}:00`;
             }
         } else if(resizing === 'top' || resizing === 'bottom') {
-            const tableIndexMap = getTableIndexMap();
+            const visibleTables = getVisibleTables();
+            const tableIndexMap = getTableIndexMap(visibleTables);
             const currentTopIndex = tableIndexMap[String(resizeData.assignedTableIds[0])];
             const currentBottomIndex = currentTopIndex + resizeData.assignedTableIds.length - 1;
 
@@ -2501,11 +3372,11 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 if(resizing === 'top') {
                     nextTopIndex = Math.max(0, Math.min(currentBottomIndex, currentTopIndex + deltaRows));
                 } else {
-                    nextBottomIndex = Math.min(TABLES.length - 1, Math.max(currentTopIndex, currentBottomIndex + deltaRows));
+                    nextBottomIndex = Math.min(visibleTables.length - 1, Math.max(currentTopIndex, currentBottomIndex + deltaRows));
                 }
 
                 if(nextBottomIndex >= nextTopIndex) {
-                    newAssignedTableIds = TABLES.slice(nextTopIndex, nextBottomIndex + 1).map(table => Number(table.table_id));
+                    newAssignedTableIds = visibleTables.slice(nextTopIndex, nextBottomIndex + 1).map(table => Number(table.table_id));
                 }
             }
         }
@@ -2519,11 +3390,12 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         }
 
         if(newAssignedTableIds.length) {
-            const tableIndexMap = getTableIndexMap();
-            const topIndex = tableIndexMap[String(newAssignedTableIds[0])];
-            if(topIndex !== undefined) {
-                resizeData.bookingEl.style.top = `${topIndex * ROW_HEIGHT}px`;
-                resizeData.bookingEl.style.height = `${newAssignedTableIds.length * ROW_HEIGHT}px`;
+            const layout = buildVisibleTableLayout();
+            const topPosition = layout.tableTopMap[String(newAssignedTableIds[0])];
+            const bottomPosition = layout.tableTopMap[String(newAssignedTableIds[newAssignedTableIds.length - 1])];
+            if(topPosition !== undefined) {
+                resizeData.bookingEl.style.top = `${topPosition}px`;
+                resizeData.bookingEl.style.height = `${Math.max(ROW_HEIGHT, (bottomPosition - topPosition) + ROW_HEIGHT)}px`;
                 resizeData.bookingEl.dataset.rowSpan = String(newAssignedTableIds.length);
             }
         }
