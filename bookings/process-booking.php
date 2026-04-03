@@ -60,7 +60,6 @@ $customer_phone = trim($_POST['customer_phone'] ?? '');
 
 $date = sanitize($_POST['booking_date']);
 $start_time = sanitize($_POST['start_time']);
-$end_time = sanitize($_POST['end_time']);
 $guests = intval($_POST['number_of_guests']);
 $special = isset($_POST['special_request']) ? sanitize($_POST['special_request']) : '';
 
@@ -71,7 +70,7 @@ $minDuration = 60; // minutes
 $maxDuration = 180; // minutes
 
 // Validate all required fields
-if(empty($customer_name) || empty($customer_email) || empty($customer_phone) || empty($date) || empty($start_time) || empty($end_time) || empty($guests)){
+if(empty($customer_name) || empty($customer_email) || empty($customer_phone) || empty($date) || empty($start_time) || empty($guests)){
     $_SESSION['error'] = 'All fields are required.';
     redirect("book-table.php");
 }
@@ -96,8 +95,8 @@ if (!preg_match("/^[0-9\s\-\(\)\+]+$/", $customer_phone)) {
     redirect("book-table.php");
 }
 
-if (strlen($customer_phone) < 8 || strlen($customer_phone) > 30) {
-    $_SESSION['error'] = 'Phone number must be between 8 and 30 characters.';
+if (strlen(preg_replace('/\D+/', '', $customer_phone)) < 6 || strlen($customer_phone) > 30) {
+    $_SESSION['error'] = 'Phone number must be at least 6 digits and no longer than 30 characters.';
     redirect("book-table.php");
 }
 
@@ -106,9 +105,9 @@ if($guests < 1){
     redirect("book-table.php");
 }
 
-// Convert time strings to comparable format (HH:MM:SS)
+// Convert the selected arrival time into a fixed 60-minute booking request.
 $start_time = date('H:i:s', strtotime($start_time));
-$end_time = date('H:i:s', strtotime($end_time));
+$end_time = date('H:i:s', strtotime($start_time . ' +' . $minDuration . ' minutes'));
 
 /* ============ VALIDATION: Restaurant Hours ============ */
 if($start_time < $restaurantOpen){

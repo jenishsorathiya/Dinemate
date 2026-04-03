@@ -955,6 +955,67 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             padding: 9px 11px;
         }
 
+        .booking-create-card {
+            width: min(100%, 560px);
+            padding: 20px;
+        }
+
+        .booking-create-card .booking-modal-header {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+        }
+
+        .booking-create-card .booking-modal-header h5 {
+            font-size: 18px;
+        }
+
+        .booking-create-card .modal-form-group {
+            margin-bottom: 0;
+        }
+
+        .booking-create-card .modal-form-group label {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .booking-create-card .modal-form-group input,
+        .booking-create-card .modal-form-group textarea {
+            padding: 9px 11px;
+        }
+
+        .booking-inline-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px dashed #d1d5db;
+            background: #f9fafb;
+            color: #374151;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+        }
+
+        .booking-inline-trigger:hover {
+            background: #f3f4f6;
+            border-color: #cbd5e1;
+            color: #111827;
+        }
+
+        .booking-inline-trigger.is-active {
+            border-style: solid;
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            color: #3730a3;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
         .booking-time-pair {
             display: grid;
             grid-template-columns: 1fr auto 1fr;
@@ -1789,41 +1850,45 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 </div>
 
 <div class="modal-backdrop-custom" id="bookingModal">
-    <div class="booking-modal-card">
+    <div class="booking-modal-card booking-details-card booking-create-card">
         <div class="booking-modal-header">
             <h5><i class="fa fa-calendar-plus"></i> Add a Booking</h5>
             <button type="button" class="booking-modal-close" id="closeBookingModalBtn" aria-label="Close">&times;</button>
         </div>
         <div class="modal-error" id="bookingModalError"></div>
         <form id="adminBookingForm">
-            <div class="modal-form-group">
-                <label for="adminBookingName">Name</label>
-                <input type="text" id="adminBookingName" required>
-            </div>
-            <div class="modal-form-group">
-                <label for="adminBookingEmail">Email</label>
-                <input type="email" id="adminBookingEmail" required>
-            </div>
-            <div class="modal-form-group">
-                <label for="adminBookingPhone">Phone</label>
-                <input type="text" id="adminBookingPhone" required>
-            </div>
-            <div class="modal-form-group">
-                <label for="adminBookingDate">Date</label>
-                <input type="date" id="adminBookingDate" value="<?php echo htmlspecialchars($selectedDate); ?>" required>
-            </div>
-            <div class="modal-form-group">
-                <label for="adminBookingTime">Time</label>
-                <input type="time" id="adminBookingTime" min="10:00" max="21:00" step="1800" value="12:00" required>
-                <div class="modal-helper-text">Admin-created bookings are added as a 60-minute pending booking on the selected date.</div>
-            </div>
-            <div class="modal-form-group">
-                <label for="adminBookingGuests">Number of People</label>
-                <input type="number" id="adminBookingGuests" min="1" required>
-            </div>
-            <div class="modal-form-group">
-                <label for="adminBookingNotes">Notes</label>
-                <textarea id="adminBookingNotes" placeholder="Optional notes"></textarea>
+            <div class="booking-detail-grid">
+                <div class="modal-form-group">
+                    <label for="adminBookingName">Name</label>
+                    <input type="text" id="adminBookingName" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="adminBookingGuests">Number of People</label>
+                    <input type="number" id="adminBookingGuests" min="1" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="adminBookingDate">Date</label>
+                    <input type="date" id="adminBookingDate" value="<?php echo htmlspecialchars($selectedDate); ?>" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="adminBookingTime">Time</label>
+                    <input type="time" id="adminBookingTime" min="10:00" max="21:00" step="1800" value="12:00" required>
+                    <div class="modal-helper-text">Creates a 60-minute pending booking.</div>
+                </div>
+                <div class="modal-form-group full-width">
+                    <button type="button" class="booking-inline-trigger" id="toggleAdminBookingPhoneBtn">
+                        <i class="fa fa-phone"></i>
+                        <span id="toggleAdminBookingPhoneLabel">Add Phone Number</span>
+                    </button>
+                </div>
+                <div class="modal-form-group full-width is-hidden" id="adminBookingPhoneGroup">
+                    <label for="adminBookingPhone">Phone</label>
+                    <input type="text" id="adminBookingPhone" placeholder="Optional phone number">
+                </div>
+                <div class="modal-form-group full-width">
+                    <label for="adminBookingNotes">Notes</label>
+                    <textarea id="adminBookingNotes" placeholder="Optional notes"></textarea>
+                </div>
             </div>
             <div class="booking-modal-actions">
                 <button type="button" class="booking-modal-cancel" id="cancelBookingModalBtn">Cancel</button>
@@ -2775,17 +2840,36 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const openBtn = document.getElementById('openBookingModalBtn');
         const closeBtn = document.getElementById('closeBookingModalBtn');
         const cancelBtn = document.getElementById('cancelBookingModalBtn');
+        const togglePhoneBtn = document.getElementById('toggleAdminBookingPhoneBtn');
+        const togglePhoneLabel = document.getElementById('toggleAdminBookingPhoneLabel');
+        const phoneGroup = document.getElementById('adminBookingPhoneGroup');
+        const phoneInput = document.getElementById('adminBookingPhone');
         const form = document.getElementById('adminBookingForm');
         const errorBox = document.getElementById('bookingModalError');
         const submitBtn = document.getElementById('submitAdminBookingBtn');
 
         if(!modal || !openBtn || !form) return;
 
+        function setPhoneVisibility(visible) {
+            if(!phoneGroup || !togglePhoneBtn || !togglePhoneLabel || !phoneInput) {
+                return;
+            }
+
+            phoneGroup.classList.toggle('is-hidden', !visible);
+            togglePhoneBtn.classList.toggle('is-active', visible);
+            togglePhoneLabel.textContent = visible ? 'Remove Phone Number' : 'Add Phone Number';
+
+            if(!visible) {
+                phoneInput.value = '';
+            }
+        }
+
         function openModal() {
             modal.classList.add('open');
             document.body.classList.add('modal-open');
             errorBox.style.display = 'none';
             form.reset();
+            setPhoneVisibility(false);
             document.getElementById('adminBookingDate').value = SELECTED_DATE;
             document.getElementById('adminBookingTime').value = '12:00';
             requestAnimationFrame(() => {
@@ -2803,6 +2887,16 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         closeBtn.addEventListener('click', closeModal);
         cancelBtn.addEventListener('click', closeModal);
 
+        if(togglePhoneBtn) {
+            togglePhoneBtn.addEventListener('click', function() {
+                const shouldShow = phoneGroup ? phoneGroup.classList.contains('is-hidden') : false;
+                setPhoneVisibility(shouldShow);
+                if(shouldShow && phoneInput) {
+                    requestAnimationFrame(() => phoneInput.focus());
+                }
+            });
+        }
+
         modal.addEventListener('click', function(e) {
             if(e.target === modal) {
                 closeModal();
@@ -2814,8 +2908,8 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
             const payload = {
                 name: document.getElementById('adminBookingName').value.trim(),
-                customer_email: document.getElementById('adminBookingEmail').value.trim(),
-                customer_phone: document.getElementById('adminBookingPhone').value.trim(),
+                customer_email: '',
+                customer_phone: phoneInput ? phoneInput.value.trim() : '',
                 booking_date: document.getElementById('adminBookingDate').value,
                 start_time: document.getElementById('adminBookingTime').value,
                 number_of_guests: document.getElementById('adminBookingGuests').value,

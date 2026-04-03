@@ -23,21 +23,21 @@ $startTimeInput = trim($data['start_time'] ?? '');
 $guestCount = (int)($data['number_of_guests'] ?? 0);
 $specialRequest = trim($data['special_request'] ?? '');
 
-if($name === '' || $customerEmail === '' || $customerPhone === '' || $bookingDate === '' || $startTimeInput === '' || $guestCount < 1) {
+if($name === '' || $bookingDate === '' || $startTimeInput === '' || $guestCount < 1) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'All required fields must be provided']);
     exit();
 }
 
-if(!filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+if($customerEmail !== '' && !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'A valid email address is required']);
+    echo json_encode(['success' => false, 'error' => 'If provided, email must be valid']);
     exit();
 }
 
-if(!preg_match('/^[0-9\s\-\(\)\+]+$/', $customerPhone)) {
+if($customerPhone !== '' && !preg_match('/^[0-9\s\-\(\)\+]+$/', $customerPhone)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'A valid phone number is required']);
+    echo json_encode(['success' => false, 'error' => 'If provided, phone number must be valid']);
     exit();
 }
 
@@ -69,8 +69,8 @@ try {
     $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status) VALUES (NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')");
     $bookingStmt->execute([
         $name,
-        $customerPhone,
-        $customerEmail,
+        $customerPhone !== '' ? $customerPhone : null,
+        $customerEmail !== '' ? $customerEmail : null,
         generateGuestAccessToken(),
         $bookingDate,
         $startTime,
@@ -99,8 +99,8 @@ try {
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
             'status' => 'pending',
             'customer_name' => $name,
-            'customer_phone' => $customerPhone,
-            'customer_email' => $customerEmail,
+            'customer_phone' => $customerPhone !== '' ? $customerPhone : null,
+            'customer_email' => $customerEmail !== '' ? $customerEmail : null,
         ],
     ]);
 } catch(Throwable $e) {
