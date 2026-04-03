@@ -457,10 +457,16 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         }
 
         .booking-list-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .booking-list-tabs-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-bottom: 12px;
         }
 
         .booking-list-tab {
@@ -472,6 +478,9 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
 
@@ -479,6 +488,34 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             background: #111827;
             border-color: #111827;
             color: #ffffff;
+        }
+
+        .booking-list-tab.pending-span {
+            width: 100%;
+        }
+
+        .booking-list-tab.pending-span.has-pending {
+            background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+            border-color: #fb7185;
+            color: #be123c;
+            box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.2), 0 10px 22px rgba(244, 63, 94, 0.16);
+            animation: pendingPulse 1.8s ease-in-out infinite;
+        }
+
+        .booking-list-tab.pending-span.has-pending.active {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            border-color: #be123c;
+            color: #ffffff;
+            box-shadow: 0 0 0 1px rgba(225, 29, 72, 0.28), 0 12px 24px rgba(190, 24, 93, 0.28);
+        }
+
+        @keyframes pendingPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.2), 0 10px 22px rgba(244, 63, 94, 0.16);
+            }
+            50% {
+                box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.35), 0 14px 28px rgba(244, 63, 94, 0.24);
+            }
         }
 
         .booking-item {
@@ -579,6 +616,29 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
 
         .booking-item.dragging {
             opacity: 0.6;
+        }
+
+        .booking-item-action-btn {
+            border: 1px solid #c7d2fe;
+            background: #eef2ff;
+            color: #1d4ed8;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .booking-item-action-btn:hover {
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        .booking-item-action-btn:disabled {
+            opacity: 0.6;
+            cursor: wait;
         }
 
         .tables-section {
@@ -1600,8 +1660,11 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                         </div>
                     </div>
                     <div class="booking-list-tabs">
-                        <button type="button" class="booking-list-tab active" id="standbyTabBtn" onclick="switchBookingListTab('standby')">Standby</button>
-                        <button type="button" class="booking-list-tab" id="bookingsTabBtn" onclick="switchBookingListTab('bookings')">Bookings</button>
+                        <button type="button" class="booking-list-tab pending-span active" id="pendingTabBtn" onclick="switchBookingListTab('pending')">Pending</button>
+                        <div class="booking-list-tabs-row">
+                            <button type="button" class="booking-list-tab" id="standbyTabBtn" onclick="switchBookingListTab('standby')">Standby</button>
+                            <button type="button" class="booking-list-tab" id="bookingsTabBtn" onclick="switchBookingListTab('bookings')">Bookings</button>
+                        </div>
                     </div>
                     <div class="booking-list" id="bookingList"></div>
                     <div class="left-panel-footer">
@@ -1828,7 +1891,7 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     const CELL_WIDTH = 80;
     const ROW_HEIGHT = 40;
     const AREA_HEADER_HEIGHT = 28;
-    let activeBookingListTab = 'standby';
+    let activeBookingListTab = 'pending';
     let activeAreaFilter = 'all';
     let suppressAreaChipClick = false;
     let draggedAreaChipId = null;
@@ -3016,11 +3079,15 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
     }
 
     function switchBookingListTab(tabName) {
-        activeBookingListTab = tabName === 'bookings' ? 'bookings' : 'standby';
+        activeBookingListTab = ['pending', 'standby', 'bookings'].includes(tabName) ? tabName : 'pending';
 
+        const pendingTabBtn = document.getElementById('pendingTabBtn');
         const standbyTabBtn = document.getElementById('standbyTabBtn');
         const bookingsTabBtn = document.getElementById('bookingsTabBtn');
 
+        if(pendingTabBtn) {
+            pendingTabBtn.classList.toggle('active', activeBookingListTab === 'pending');
+        }
         if(standbyTabBtn) {
             standbyTabBtn.classList.toggle('active', activeBookingListTab === 'standby');
         }
@@ -3035,7 +3102,39 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
         const bookingList = document.getElementById('bookingList');
         if(!bookingList) return;
 
+        const pendingBookings = BOOKING_DATA
+            .filter(booking => String(booking.status || '').toLowerCase() === 'pending')
+            .filter(booking => {
+                if(activeAreaFilter === 'all') {
+                    return true;
+                }
+
+                const assignedTableIds = getAssignedTableIds(booking);
+                if(!assignedTableIds.length) {
+                    return true;
+                }
+
+                return assignedTableIds.some(tableId => {
+                    const table = getTableById(tableId);
+                    return table && String(table.area_id) === String(activeAreaFilter);
+                });
+            })
+            .sort((left, right) => `${left.start_time}`.localeCompare(`${right.start_time}`));
+
+        const pendingTabBtn = document.getElementById('pendingTabBtn');
+        if(pendingTabBtn) {
+            pendingTabBtn.style.display = pendingBookings.length ? 'inline-flex' : 'none';
+            pendingTabBtn.classList.toggle('has-pending', pendingBookings.length > 0);
+        }
+
+        if(activeBookingListTab === 'pending' && !pendingBookings.length) {
+            activeBookingListTab = 'standby';
+            switchBookingListTab('standby');
+            return;
+        }
+
         const standbyBookings = BOOKING_DATA
+            .filter(booking => String(booking.status || '').toLowerCase() !== 'pending')
             .filter(booking => getAssignedTableIds(booking).length === 0)
             .sort((left, right) => `${left.start_time}`.localeCompare(`${right.start_time}`));
 
@@ -3052,11 +3151,18 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             })
             .sort((left, right) => `${left.start_time}`.localeCompare(`${right.start_time}`));
 
+        const isPendingTab = activeBookingListTab === 'pending';
         const isStandbyTab = activeBookingListTab === 'standby';
-        const visibleBookings = isStandbyTab ? standbyBookings : assignedBookings;
-        const emptyMessage = isStandbyTab
-            ? 'No unassigned bookings for this date.'
-            : 'No assigned bookings for this date.';
+        const visibleBookings = isPendingTab
+            ? pendingBookings
+            : isStandbyTab
+                ? standbyBookings
+                : assignedBookings;
+        const emptyMessage = isPendingTab
+            ? 'No pending bookings for this date.'
+            : isStandbyTab
+                ? 'No unassigned bookings for this date.'
+                : 'No assigned bookings for this date.';
 
         if(visibleBookings.length === 0) {
             bookingList.innerHTML = `<p class="booking-list-empty">${emptyMessage}</p>`;
@@ -3069,14 +3175,18 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 ? `<span class="booking-item-note-icon" title="${booking.special_request.replace(/"/g, '&quot;')}"><i class="fa-solid fa-note-sticky"></i></span>`
                 : '';
             const assignmentSummary = getBookingAssignmentSummary(booking);
-            const rightSideText = isStandbyTab
-                ? `<span class="booking-item-meta">P${booking.number_of_guests}</span>`
+            const pendingActionButton = isPendingTab
+                ? `<button type="button" class="booking-item-action-btn" onclick="confirmPendingBooking(${booking.booking_id}, event)">Confirm</button>`
+                : '';
+            const rightSideText = isPendingTab || isStandbyTab
+                ? `${pendingActionButton}<span class="booking-item-meta">P${booking.number_of_guests}</span>`
                 : `<span class="booking-item-table">${assignmentSummary}</span>`;
-            const bottomRowRight = isStandbyTab
+            const bottomRowRight = isPendingTab || isStandbyTab
                 ? ''
                 : `<span class="booking-item-bottom-right">P${booking.number_of_guests}</span>`;
-            const draggableAttributes = isStandbyTab ? 'draggable="true"' : 'draggable="false"';
-            const draggableClass = isStandbyTab ? ' draggable-booking' : '';
+            const canDragFromList = isPendingTab || isStandbyTab;
+            const draggableAttributes = canDragFromList ? 'draggable="true"' : 'draggable="false"';
+            const draggableClass = canDragFromList ? ' draggable-booking' : '';
             return `
                 <div class="booking-item${draggableClass}" ${draggableAttributes} data-booking-id="${booking.booking_id}" onclick="handleBookingClick(event, ${booking.booking_id})">
                     <div class="booking-item-top">
@@ -3095,6 +3205,59 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                 </div>
             `;
         }).join('');
+    }
+
+    function confirmPendingBooking(bookingId, event) {
+        if(event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        const button = event ? event.currentTarget : null;
+        if(button) {
+            button.disabled = true;
+        }
+
+        fetch('confirm-pending-booking.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ booking_id: bookingId })
+        })
+        .then(async response => {
+            const data = await response.json();
+            if(!response.ok || !data.success) {
+                throw new Error(data.error || 'Could not confirm booking');
+            }
+            return data;
+        })
+        .then(data => {
+            const bookingIdx = BOOKING_DATA.findIndex(booking => String(booking.booking_id) === String(data.booking_id));
+            if(bookingIdx !== -1) {
+                BOOKING_DATA[bookingIdx].status = data.status || 'confirmed';
+                BOOKING_DATA[bookingIdx].table_id = data.table_id !== null ? Number(data.table_id) : null;
+                BOOKING_DATA[bookingIdx].table_number = data.table_number || null;
+                BOOKING_DATA[bookingIdx].assigned_table_ids = Array.isArray(data.assigned_table_ids) ? data.assigned_table_ids.map(Number) : [];
+                BOOKING_DATA[bookingIdx].assigned_table_numbers = Array.isArray(data.assigned_table_numbers) ? data.assigned_table_numbers : [];
+            }
+
+            renderTimeline();
+
+            const updatedBooking = bookingIdx !== -1 ? BOOKING_DATA[bookingIdx] : null;
+            if(updatedBooking && getAssignedTableIds(updatedBooking).length === 0) {
+                switchBookingListTab('standby');
+                return;
+            }
+
+            populateBookingList();
+        })
+        .catch(error => {
+            window.alert(error.message);
+            if(button) {
+                button.disabled = false;
+            }
+        });
     }
 
     function getRequestedStartTime(booking) {
