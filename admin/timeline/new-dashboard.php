@@ -3056,6 +3056,12 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
                     };
                 }
                 renderTimeline();
+                if(action === 'confirm') {
+                    if(typeof window.refreshAdminPendingBookings === 'function') {
+                        window.refreshAdminPendingBookings();
+                    }
+                    document.dispatchEvent(new CustomEvent('admin-pending-bookings-changed'));
+                }
                 const updatedBooking = bookingIdx !== -1 ? BOOKING_DATA[bookingIdx] : data.booking;
                 closeModal();
 
@@ -3460,6 +3466,10 @@ $adminProfileName = $_SESSION['name'] ?? 'Admin';
             }
 
             renderTimeline();
+            if(typeof window.refreshAdminPendingBookings === 'function') {
+                window.refreshAdminPendingBookings();
+            }
+            document.dispatchEvent(new CustomEvent('admin-pending-bookings-changed'));
 
             const updatedBooking = bookingIdx !== -1 ? BOOKING_DATA[bookingIdx] : null;
             if(updatedBooking && getAssignedTableIds(updatedBooking).length === 0) {
