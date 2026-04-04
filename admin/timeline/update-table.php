@@ -9,6 +9,26 @@ ensureTableAreasSchema($pdo);
 
 requireAdmin(['json' => true]);
 
+$normalizeTableShape = static function (string $value): string {
+    $shape = strtolower(trim($value));
+
+    $aliases = [
+        'auto' => 'auto',
+        'circle' => 'circle',
+        'square' => 'square',
+        'rect' => 'rect-horizontal',
+        'rectangle' => 'rect-horizontal',
+        'rect-h' => 'rect-horizontal',
+        'horizontal' => 'rect-horizontal',
+        'rect-horizontal' => 'rect-horizontal',
+        'rect-v' => 'rect-vertical',
+        'vertical' => 'rect-vertical',
+        'rect-vertical' => 'rect-vertical',
+    ];
+
+    return $aliases[$shape] ?? 'auto';
+};
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 $tableId = (int)($data['table_id'] ?? 0);
@@ -18,11 +38,7 @@ $sortOrder = (int)($data['sort_order'] ?? 0);
 $reservable = array_key_exists('reservable', $data) ? (int)!empty($data['reservable']) : 1;
 $layoutX = isset($data['layout_x']) && $data['layout_x'] !== '' ? (int)$data['layout_x'] : null;
 $layoutY = isset($data['layout_y']) && $data['layout_y'] !== '' ? (int)$data['layout_y'] : null;
-$tableShape = strtolower(trim((string)($data['table_shape'] ?? 'auto')));
-
-if(!in_array($tableShape, ['auto', 'circle', 'rect'], true)) {
-    $tableShape = 'auto';
-}
+$tableShape = $normalizeTableShape((string)($data['table_shape'] ?? 'auto'));
 
 if($tableId < 1 || $capacity < 1 || $areaId < 1 || $sortOrder < 1) {
     http_response_code(400);
@@ -93,7 +109,7 @@ try {
                 'reservable' => (int)$table['reservable'],
                 'layout_x' => $table['layout_x'] !== null ? (int)$table['layout_x'] : null,
                 'layout_y' => $table['layout_y'] !== null ? (int)$table['layout_y'] : null,
-                'table_shape' => $table['table_shape'] ?: 'auto',
+                'table_shape' => $normalizeTableShape((string)($table['table_shape'] ?: 'auto')),
             ]
         ]);
         exit();
@@ -116,7 +132,7 @@ try {
             'reservable' => (int)$table['reservable'],
             'layout_x' => $table['layout_x'] !== null ? (int)$table['layout_x'] : null,
             'layout_y' => $table['layout_y'] !== null ? (int)$table['layout_y'] : null,
-            'table_shape' => $table['table_shape'] ?: 'auto',
+            'table_shape' => $normalizeTableShape((string)($table['table_shape'] ?: 'auto')),
         ]
     ]);
 } catch(PDOException $e) {

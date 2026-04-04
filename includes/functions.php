@@ -341,6 +341,16 @@ function ensureTableAreasSchema($pdo) {
         $pdo->exec("ALTER TABLE table_areas ADD COLUMN layout_height INT NULL DEFAULT NULL AFTER layout_width");
     }
 
+    $areaLabelXStmt = $pdo->query("SHOW COLUMNS FROM table_areas LIKE 'label_layout_x'");
+    if ($areaLabelXStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE table_areas ADD COLUMN label_layout_x INT NULL DEFAULT NULL AFTER layout_height");
+    }
+
+    $areaLabelYStmt = $pdo->query("SHOW COLUMNS FROM table_areas LIKE 'label_layout_y'");
+    if ($areaLabelYStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE table_areas ADD COLUMN label_layout_y INT NULL DEFAULT NULL AFTER label_layout_x");
+    }
+
     $areaIdStmt = $pdo->query("SHOW COLUMNS FROM restaurant_tables LIKE 'area_id'");
     if ($areaIdStmt->rowCount() === 0) {
         $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN area_id INT NULL AFTER table_id");

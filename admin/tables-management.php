@@ -55,6 +55,26 @@ $resolveZoneKey = static function (string $name) use ($normalizeAreaName): strin
     return 'osf';
 };
 
+$normalizeTableShape = static function (string $value): string {
+    $shape = strtolower(trim($value));
+
+    $aliases = [
+        'auto' => 'auto',
+        'circle' => 'circle',
+        'square' => 'square',
+        'rect' => 'rect-horizontal',
+        'rectangle' => 'rect-horizontal',
+        'rect-h' => 'rect-horizontal',
+        'horizontal' => 'rect-horizontal',
+        'rect-horizontal' => 'rect-horizontal',
+        'rect-v' => 'rect-vertical',
+        'vertical' => 'rect-vertical',
+        'rect-vertical' => 'rect-vertical',
+    ];
+
+    return $aliases[$shape] ?? 'auto';
+};
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_layout')) {
     header('Content-Type: application/json');
 
@@ -82,11 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
         $reservable = !empty($tableRow['reservable']) ? 1 : 0;
         $layoutX = isset($tableRow['layout_x']) && $tableRow['layout_x'] !== '' ? (int) $tableRow['layout_x'] : null;
         $layoutY = isset($tableRow['layout_y']) && $tableRow['layout_y'] !== '' ? (int) $tableRow['layout_y'] : null;
-        $tableShape = strtolower(trim((string) ($tableRow['table_shape'] ?? 'auto')));
-
-        if (!in_array($tableShape, ['auto', 'circle', 'rect'], true)) {
-            $tableShape = 'auto';
-        }
+        $tableShape = $normalizeTableShape((string) ($tableRow['table_shape'] ?? 'auto'));
 
         if ($tableId < 1 || $tableNumber === '' || $capacity < 1 || $areaId < 1 || $sortOrder < 1) {
             http_response_code(400);
@@ -122,6 +138,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
         $layoutY = isset($areaRow['layout_y']) && $areaRow['layout_y'] !== '' ? (int) $areaRow['layout_y'] : null;
         $layoutWidth = isset($areaRow['layout_width']) && $areaRow['layout_width'] !== '' ? (int) $areaRow['layout_width'] : null;
         $layoutHeight = isset($areaRow['layout_height']) && $areaRow['layout_height'] !== '' ? (int) $areaRow['layout_height'] : null;
+        $labelLayoutX = isset($areaRow['label_layout_x']) && $areaRow['label_layout_x'] !== '' ? (int) $areaRow['label_layout_x'] : null;
+        $labelLayoutY = isset($areaRow['label_layout_y']) && $areaRow['label_layout_y'] !== '' ? (int) $areaRow['label_layout_y'] : null;
 
         if ($areaId < 1) {
             http_response_code(400);
@@ -142,6 +160,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
             'layout_y' => $layoutY,
             'layout_width' => $layoutWidth,
             'layout_height' => $layoutHeight,
+            'label_layout_x' => $labelLayoutX,
+            'label_layout_y' => $labelLayoutY,
         ];
     }
 
@@ -189,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
 
         $updateAreaLayoutStmt = $pdo->prepare(
             "UPDATE table_areas
-               SET layout_x = ?, layout_y = ?, layout_width = ?, layout_height = ?
+                             SET layout_x = ?, layout_y = ?, layout_width = ?, layout_height = ?, label_layout_x = ?, label_layout_y = ?
              WHERE area_id = ?"
         );
 
@@ -220,6 +240,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
                 $areaRow['layout_y'],
                 $areaRow['layout_width'],
                 $areaRow['layout_height'],
+                $areaRow['label_layout_x'],
+                $areaRow['label_layout_y'],
                 $areaRow['area_id'],
             ]);
         }
@@ -264,7 +286,7 @@ $tablesStmt = $pdo->query(
 $tables = $tablesStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
 $areasStmt = $pdo->query(
-    "SELECT area_id, name, display_order, table_number_start, table_number_end, layout_x, layout_y, layout_width, layout_height, is_active
+    "SELECT area_id, name, display_order, table_number_start, table_number_end, layout_x, layout_y, layout_width, layout_height, label_layout_x, label_layout_y, is_active
      FROM table_areas
      WHERE is_active = 1
      ORDER BY display_order ASC, name ASC"
@@ -320,6 +342,8 @@ foreach ($areas as $area) {
         'layout_y' => $area['layout_y'] !== null ? (int) $area['layout_y'] : null,
         'layout_width' => $area['layout_width'] !== null ? (int) $area['layout_width'] : null,
         'layout_height' => $area['layout_height'] !== null ? (int) $area['layout_height'] : null,
+        'label_layout_x' => $area['label_layout_x'] !== null ? (int) $area['label_layout_x'] : null,
+        'label_layout_y' => $area['label_layout_y'] !== null ? (int) $area['label_layout_y'] : null,
         'table_count' => $tableCount,
         'total_seats' => $totalAreaSeats,
         'range_label' => $rangeLabel,
@@ -327,7 +351,7 @@ foreach ($areas as $area) {
     ];
 }
 
-$tablesPayload = array_map(static function (array $row): array {
+$tablesPayload = array_map(static function (array $row) use ($normalizeTableShape): array {
     return [
         'table_id' => (int) $row['table_id'],
         'table_number' => (string) $row['table_number'],
@@ -337,7 +361,7 @@ $tablesPayload = array_map(static function (array $row): array {
         'reservable' => (int) $row['reservable'],
         'layout_x' => $row['layout_x'] !== null ? (int) $row['layout_x'] : null,
         'layout_y' => $row['layout_y'] !== null ? (int) $row['layout_y'] : null,
-        'table_shape' => (string) ($row['table_shape'] ?: 'auto'),
+        'table_shape' => $normalizeTableShape((string) ($row['table_shape'] ?: 'auto')),
         'area_name' => (string) $row['area_name'],
         'area_display_order' => (int) $row['area_display_order'],
     ];
@@ -436,8 +460,8 @@ $adminSidebarPathPrefix = '';
         }
 
         .visual-main {
-            width: min(100%, 1180px);
-            padding: 12px;
+            width: min(100%, 1240px);
+            padding: 16px;
             max-width: 100%;
             margin: 0 auto;
         }
@@ -454,7 +478,7 @@ $adminSidebarPathPrefix = '';
 
         .page-stack {
             display: grid;
-            gap: 12px;
+            gap: 16px;
             min-width: 0;
         }
 
@@ -495,13 +519,13 @@ $adminSidebarPathPrefix = '';
         }
 
         .button {
-            height: 38px;
+            height: 40px;
             border-radius: 12px;
-            padding: 0 14px;
+            padding: 0 16px;
             border: 1px solid var(--line);
             background: #ffffff;
             color: var(--text);
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
@@ -542,7 +566,7 @@ $adminSidebarPathPrefix = '';
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
+            gap: 14px;
             min-width: 0;
         }
 
@@ -555,19 +579,19 @@ $adminSidebarPathPrefix = '';
         }
 
         .metric-card {
-            padding: 14px 16px;
+            padding: 16px 18px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .metric-icon {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 12px;
             display: grid;
             place-items: center;
-            font-size: 15px;
+            font-size: 16px;
         }
 
         .metric-icon.lavender { background: rgba(139, 115, 238, 0.12); color: var(--lavender); }
@@ -584,7 +608,7 @@ $adminSidebarPathPrefix = '';
 
         .metric-value {
             margin: 0;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: -0.04em;
         }
@@ -593,8 +617,8 @@ $adminSidebarPathPrefix = '';
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 12px;
-            padding: 14px 14px 0;
+            gap: 14px;
+            padding: 14px 16px 0;
         }
 
         .section-title {
@@ -611,13 +635,13 @@ $adminSidebarPathPrefix = '';
         }
 
         .area-overview-body {
-            padding: 12px 14px 14px;
+            padding: 10px 16px 14px;
         }
 
         .area-overview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 10px;
+            gap: 12px;
             width: 100%;
             min-width: 0;
         }
@@ -629,7 +653,7 @@ $adminSidebarPathPrefix = '';
             padding: 10px;
             display: grid;
             gap: 8px;
-            min-height: 122px;
+            min-height: 120px;
             min-width: 0;
             max-width: none;
             flex: initial;
@@ -638,9 +662,9 @@ $adminSidebarPathPrefix = '';
         .area-card .button {
             width: 100%;
             justify-content: center;
-            height: 34px;
+            height: 32px;
             border-radius: 10px;
-            font-size: 12px;
+            font-size: 11px;
             box-shadow: none;
         }
 
@@ -648,7 +672,7 @@ $adminSidebarPathPrefix = '';
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
         }
 
         .area-chip {
@@ -683,9 +707,9 @@ $adminSidebarPathPrefix = '';
 
         .area-stats {
             display: grid;
-            gap: 4px;
+            gap: 2px;
             color: var(--muted);
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .area-stats strong {
@@ -696,19 +720,19 @@ $adminSidebarPathPrefix = '';
 
         .range-pill {
             width: fit-content;
-            padding: 5px 9px;
+            padding: 4px 8px;
             border-radius: 999px;
             background: #f4f7fc;
             border: 1px solid var(--line);
             color: var(--muted);
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
         }
 
         .editor-grid {
             display: grid;
-            grid-template-columns: minmax(164px, 190px) minmax(0, 1fr) minmax(208px, 236px);
-            gap: 12px;
+            grid-template-columns: minmax(210px, 250px) minmax(0, 1fr) minmax(240px, 290px);
+            gap: 14px;
             align-items: stretch;
             min-width: 0;
         }
@@ -719,7 +743,7 @@ $adminSidebarPathPrefix = '';
         }
 
         .panel-body {
-            padding: 12px 14px 14px;
+            padding: 14px 16px 16px;
         }
 
         .tools-panel,
@@ -739,7 +763,7 @@ $adminSidebarPathPrefix = '';
         .tools-stack,
         .details-stack {
             display: grid;
-            gap: 12px;
+            gap: 14px;
         }
 
         .tools-stack {
@@ -749,15 +773,15 @@ $adminSidebarPathPrefix = '';
 
         .section-list {
             display: grid;
-            gap: 8px;
+            gap: 10px;
         }
 
         .section-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
-            padding: 8px 10px;
+            gap: 10px;
+            padding: 10px 11px;
             background: #fbfcff;
             border: 1px solid var(--line);
             border-radius: 12px;
@@ -773,7 +797,7 @@ $adminSidebarPathPrefix = '';
         .section-item-main {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             min-width: 0;
         }
 
@@ -786,7 +810,7 @@ $adminSidebarPathPrefix = '';
 
         .section-name {
             font-weight: 700;
-            font-size: 12px;
+            font-size: 13px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -794,7 +818,7 @@ $adminSidebarPathPrefix = '';
 
         .section-meta {
             color: var(--muted);
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
         }
 
@@ -809,7 +833,7 @@ $adminSidebarPathPrefix = '';
             justify-content: space-between;
             align-items: center;
             gap: 10px;
-            padding: 12px 14px 0;
+            padding: 14px 16px 0;
         }
 
         .toolbar-group {
@@ -820,8 +844,8 @@ $adminSidebarPathPrefix = '';
         }
 
         .mini-button {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 10px;
             border: 1px solid var(--line);
             background: #ffffff;
@@ -834,13 +858,13 @@ $adminSidebarPathPrefix = '';
 
         .canvas-stage {
             flex: 1;
-            padding: 10px 12px 12px;
+            padding: 12px 14px 14px;
         }
 
         .canvas-frame {
             position: relative;
             height: 100%;
-            min-height: 390px;
+            min-height: 470px;
             border-radius: 18px;
             border: 1px solid #dfe5ef;
             overflow: hidden;
@@ -916,12 +940,12 @@ $adminSidebarPathPrefix = '';
 
         .zone {
             position: absolute;
-            border-radius: 2px;
-            
-            background: rgba(255, 255, 255, 0.96);
-            padding: 14px;
+            border-radius: 22px;
+            border: 2px dashed rgba(163, 176, 196, 0.58);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 250, 255, 0.74));
+            padding: 18px 16px 14px;
             cursor: grab;
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         }
 
         .canvas-frame:not(.edit-mode) .zone {
@@ -931,6 +955,7 @@ $adminSidebarPathPrefix = '';
         .zone:hover {
             transform: translateY(-1px);
             box-shadow: 0 12px 22px rgba(17, 17, 17, 0.08);
+            border-color: rgba(114, 132, 159, 0.7);
         }
 
         .zone.active {
@@ -950,19 +975,32 @@ $adminSidebarPathPrefix = '';
         .zone-label {
             position: absolute;
             left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            padding: 0;
-            border-radius: 0;
-            font-size: 17px;
+            top: 14px;
+            transform: translateX(-50%);
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 14px;
+            font-size: 14px;
             font-weight: 800;
-            letter-spacing: -0.03em;
-            text-transform: none;
-            background: transparent;
-            border: none;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(191, 201, 218, 0.9);
             color: #111111;
             text-align: center;
-            pointer-events: none;
+            pointer-events: auto;
+            box-shadow: 0 8px 20px rgba(55, 72, 105, 0.1);
+            backdrop-filter: blur(6px);
+            white-space: nowrap;
+        }
+
+        .canvas-frame.edit-mode .zone-label {
+            cursor: grab;
+        }
+
+        .zone.dragging .zone-label {
+            cursor: grabbing;
         }
 
         .zone[data-zone-key="kookaburra"] .zone-label {
@@ -973,7 +1011,7 @@ $adminSidebarPathPrefix = '';
         .zone[data-zone-key="wisteria"] .zone-label,
         .zone[data-zone-key="schumack"] .zone-label,
         .zone[data-zone-key="main-bar"] .zone-label {
-            font-size: 21px;
+            font-size: 14px;
         }
 
         .zone:focus-visible {
@@ -998,42 +1036,102 @@ $adminSidebarPathPrefix = '';
             display: none;
         }
 
-        .zone.zone-lavender { background: rgba(139, 115, 238, 0.08); }
+        .zone.zone-lavender { background: linear-gradient(180deg, rgba(139, 115, 238, 0.08), rgba(139, 115, 238, 0.03)); }
         .zone.zone-lavender .zone-label { color: var(--lavender); }
-        .zone.zone-green { background: rgba(126, 207, 145, 0.09); }
+        .zone.zone-green { background: linear-gradient(180deg, rgba(126, 207, 145, 0.1), rgba(126, 207, 145, 0.04)); }
         .zone.zone-green .zone-label { color: #2d9250; }
-        .zone.zone-blue { background: rgba(95, 169, 243, 0.08); }
+        .zone.zone-blue { background: linear-gradient(180deg, rgba(95, 169, 243, 0.09), rgba(95, 169, 243, 0.04)); }
         .zone.zone-blue .zone-label { color: #3573b8; }
-        .zone.zone-amber { background: rgba(255, 191, 69, 0.09); }
+        .zone.zone-amber { background: linear-gradient(180deg, rgba(255, 191, 69, 0.1), rgba(255, 191, 69, 0.04)); }
         .zone.zone-amber .zone-label { color: #c7861f; }
-        .zone.zone-pink { background: rgba(255, 119, 183, 0.09); }
+        .zone.zone-pink { background: linear-gradient(180deg, rgba(255, 119, 183, 0.09), rgba(255, 119, 183, 0.04)); }
         .zone.zone-pink .zone-label { color: #d14d8f; }
 
         .table-item {
             position: absolute;
-            border: 1px solid transparent;
+            border: none;
             cursor: grab;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 4px;
+            display: grid;
+            place-items: center;
             font-weight: 800;
             color: #2d3a59;
             user-select: none;
-            box-shadow: 0 12px 22px rgba(59, 72, 98, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-            background: rgba(255, 255, 255, 0.94);
-            transition: box-shadow 0.14s ease, transform 0.14s ease;
+            background: transparent;
+            box-shadow: none;
+            transition: transform 0.14s ease;
+            padding: 0;
         }
 
         .canvas-frame:not(.edit-mode) .table-item {
             cursor: pointer;
         }
 
-        .table-item span:last-child {
-            font-size: 12px;
+        .table-shell {
+            position: relative;
+            display: grid;
+            place-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .table-top {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2px;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            border: 2px solid currentColor;
+            box-shadow: 0 8px 18px rgba(59, 72, 98, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 255, 0.92));
+        }
+
+        .table-top::before,
+        .table-top::after {
+            content: '';
+            position: absolute;
+            background: inherit;
+            border: 2px solid currentColor;
+            border-radius: inherit;
+            opacity: 0.72;
+            z-index: -1;
+        }
+
+        .table-top::before {
+            inset: 4px -6px;
+        }
+
+        .table-top::after {
+            inset: -4px 6px;
+        }
+
+        .table-label,
+        .table-capacity {
+            position: relative;
+            z-index: 3;
+        }
+
+        .table-capacity {
+            font-size: 10px;
             font-weight: 700;
             color: #51607e;
+        }
+
+        .table-label {
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .table-chair {
+            position: absolute;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.98);
+            border: 2px solid rgba(121, 136, 164, 0.45);
+            box-shadow: 0 4px 10px rgba(59, 72, 98, 0.12);
         }
 
         .table-item:hover {
@@ -1041,33 +1139,114 @@ $adminSidebarPathPrefix = '';
         }
 
         .table-item.selected {
-            border-color: #17315b;
+            filter: drop-shadow(0 14px 24px rgba(22, 37, 68, 0.24));
+        }
+
+        .table-item.selected .table-top {
             box-shadow: 0 18px 28px rgba(22, 37, 68, 0.2), 0 0 0 4px rgba(22, 37, 68, 0.08);
         }
 
         .table-item.dragging {
             cursor: grabbing;
-            box-shadow: 0 22px 34px rgba(22, 37, 68, 0.24);
+            filter: drop-shadow(0 18px 30px rgba(22, 37, 68, 0.24));
         }
 
         .table-circle {
-            width: 58px;
-            height: 58px;
+            width: 66px;
+            height: 66px;
+        }
+
+        .table-circle .table-top {
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
         }
 
-        .table-rect {
-            min-width: 74px;
-            height: 54px;
-            padding: 0 12px;
+        .table-square {
+            width: 70px;
+            height: 70px;
+        }
+
+        .table-square .table-top {
+            width: 48px;
+            height: 48px;
             border-radius: 14px;
         }
 
-        .table-tone-lavender { background: linear-gradient(180deg, #f5f0ff, #f0e8ff); border-color: rgba(139, 115, 238, 0.35); }
-        .table-tone-green { background: linear-gradient(180deg, #effcee, #e2f7e4); border-color: rgba(126, 207, 145, 0.42); }
-        .table-tone-blue { background: linear-gradient(180deg, #eef7ff, #ddecfb); border-color: rgba(95, 169, 243, 0.42); }
-        .table-tone-amber { background: linear-gradient(180deg, #fff6e9, #ffe8cb); border-color: rgba(255, 191, 69, 0.5); }
-        .table-tone-pink { background: linear-gradient(180deg, #fff0f7, #ffe4ef); border-color: rgba(255, 119, 183, 0.4); }
+        .table-rect-horizontal {
+            width: 92px;
+            height: 62px;
+        }
+
+        .table-rect-horizontal .table-top {
+            width: 62px;
+            height: 40px;
+            border-radius: 14px;
+        }
+
+        .table-rect-vertical {
+            width: 62px;
+            height: 92px;
+        }
+
+        .table-rect-vertical .table-top {
+            width: 40px;
+            height: 62px;
+            border-radius: 14px;
+        }
+
+        .table-circle .table-chair,
+        .table-square .table-chair {
+            width: 12px;
+            height: 9px;
+            border-radius: 999px;
+        }
+
+        .table-rect-horizontal .table-chair,
+        .table-rect-vertical .table-chair {
+            width: 10px;
+            height: 16px;
+            border-radius: 8px;
+        }
+
+        .table-chair-top { top: 7px; left: 50%; transform: translateX(-50%); }
+        .table-chair-bottom { bottom: 7px; left: 50%; transform: translateX(-50%); }
+        .table-chair-left { left: 7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+        .table-chair-right { right: 7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+        .table-chair-top-left { top: 10px; left: 10px; transform: rotate(-28deg); }
+        .table-chair-top-right { top: 10px; right: 10px; transform: rotate(28deg); }
+        .table-chair-bottom-left { bottom: 10px; left: 10px; transform: rotate(28deg); }
+        .table-chair-bottom-right { bottom: 10px; right: 10px; transform: rotate(-28deg); }
+
+        .table-circle .table-chair-top-left,
+        .table-circle .table-chair-top-right,
+        .table-circle .table-chair-bottom-left,
+        .table-circle .table-chair-bottom-right,
+        .table-square .table-chair-top,
+        .table-square .table-chair-bottom,
+        .table-square .table-chair-left,
+        .table-square .table-chair-right,
+        .table-rect-horizontal .table-chair-top-left,
+        .table-rect-horizontal .table-chair-top-right,
+        .table-rect-horizontal .table-chair-bottom-left,
+        .table-rect-horizontal .table-chair-bottom-right,
+        .table-rect-vertical .table-chair-top-left,
+        .table-rect-vertical .table-chair-top-right,
+        .table-rect-vertical .table-chair-bottom-left,
+        .table-rect-vertical .table-chair-bottom-right {
+            display: none;
+        }
+
+        .table-tone-lavender { color: rgba(139, 115, 238, 0.42); }
+        .table-tone-lavender .table-top { background: linear-gradient(180deg, #f7f2ff, #f0e8ff); }
+        .table-tone-green { color: rgba(126, 207, 145, 0.52); }
+        .table-tone-green .table-top { background: linear-gradient(180deg, #f1fdef, #e2f7e4); }
+        .table-tone-blue { color: rgba(95, 169, 243, 0.5); }
+        .table-tone-blue .table-top { background: linear-gradient(180deg, #f2f8ff, #ddecfb); }
+        .table-tone-amber { color: rgba(255, 191, 69, 0.6); }
+        .table-tone-amber .table-top { background: linear-gradient(180deg, #fff7eb, #ffe8cb); }
+        .table-tone-pink { color: rgba(255, 119, 183, 0.46); }
+        .table-tone-pink .table-top { background: linear-gradient(180deg, #fff1f7, #ffe4ef); }
 
         .decor {
             position: absolute;
@@ -1132,7 +1311,7 @@ $adminSidebarPathPrefix = '';
             flex-direction: column;
             justify-content: center;
             min-height: 100%;
-            padding: 22px 16px 18px;
+            padding: 28px 18px 22px;
             color: var(--muted);
             font-size: 13px;
         }
@@ -1526,7 +1705,7 @@ $adminSidebarPathPrefix = '';
 
         @media (min-width: 1600px) {
             .editor-grid {
-                grid-template-columns: minmax(210px, 236px) minmax(0, 1fr) minmax(230px, 260px);
+                grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(250px, 300px);
             }
 
             .details-panel {
@@ -1541,11 +1720,11 @@ $adminSidebarPathPrefix = '';
 
         @media (max-width: 1320px) {
             .visual-main {
-                max-width: 1080px;
+                max-width: 1140px;
             }
 
             .editor-grid {
-                grid-template-columns: minmax(150px, 176px) minmax(0, 1fr) minmax(190px, 220px);
+                grid-template-columns: minmax(190px, 220px) minmax(0, 1fr) minmax(220px, 250px);
             }
 
             .area-overview-grid {
@@ -1585,7 +1764,7 @@ $adminSidebarPathPrefix = '';
             }
 
             .visual-main {
-                padding: 16px;
+                padding: 14px;
             }
 
             .page-header,
@@ -1785,7 +1964,9 @@ $adminSidebarPathPrefix = '';
                         <select id="modalTableShape" name="table_shape">
                             <option value="auto">Automatic</option>
                             <option value="circle">Circle</option>
-                            <option value="rect">Rectangle</option>
+                            <option value="square">Square</option>
+                            <option value="rect-horizontal">Rectangle Horizontal</option>
+                            <option value="rect-vertical">Rectangle Vertical</option>
                         </select>
                     </div>
                     <div class="toggle-row">
@@ -1850,7 +2031,7 @@ $adminSidebarPathPrefix = '';
     <script>
         const initialData = <?php echo json_encode($pagePayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         const BASE_CANVAS_WIDTH = 860;
-        const BASE_CANVAS_HEIGHT = 472;
+        const BASE_CANVAS_HEIGHT = 600;
         const VIEWPORT_PADDING = 26;
         const MIN_VIEW_SCALE = 0.58;
         const MAX_VIEW_SCALE = 2.4;
@@ -1860,12 +2041,12 @@ $adminSidebarPathPrefix = '';
         const TABLE_PADDING_Y = 30;
 
         const zoneBlueprints = [
-            { key: 'stables', label: 'Stables', tone: 'amber', x: 42, y: 26, width: 158, height: 74 },
-            { key: 'kookaburra', label: 'Kookaburra', tone: 'green', x: 42, y: 116, width: 88, height: 118 },
-            { key: 'wisteria', label: 'Wisteria', tone: 'pink', x: 474, y: 28, width: 164, height: 144 },
-            { key: 'schumack', label: 'Schumack', tone: 'blue', x: 474, y: 184, width: 176, height: 88 },
-            { key: 'main-bar', label: 'Main Bar', tone: 'lavender', x: 42, y: 242, width: 236, height: 142 },
-            { key: 'osf', label: 'OSF', tone: 'green', x: 46, y: 386, width: 392, height: 96 }
+            { key: 'stables', label: 'Stables', tone: 'amber', x: 42, y: 16, width: 166, height: 92 },
+            { key: 'kookaburra', label: 'Kookaburra', tone: 'green', x: 42, y: 126, width: 112, height: 138 },
+            { key: 'wisteria', label: 'Wisteria', tone: 'pink', x: 478, y: 14, width: 176, height: 156 },
+            { key: 'schumack', label: 'Schumack', tone: 'blue', x: 478, y: 194, width: 188, height: 118 },
+            { key: 'main-bar', label: 'Main Bar', tone: 'lavender', x: 176, y: 190, width: 316, height: 184 },
+            { key: 'osf', label: 'OSF', tone: 'green', x: 42, y: 392, width: 644, height: 192 }
         ];
 
         const state = {
@@ -1915,6 +2096,37 @@ $adminSidebarPathPrefix = '';
             return zoneBlueprints.find((zone) => zone.key === zoneKey) || null;
         }
 
+        function resolveZoneLayout(blueprint, area = null) {
+            const resolved = {
+                ...blueprint,
+                x: area && area.layout_x !== null ? Number(area.layout_x) : blueprint.x,
+                y: area && area.layout_y !== null ? Number(area.layout_y) : blueprint.y,
+                width: area && area.layout_width !== null ? Number(area.layout_width) : blueprint.width,
+                height: area && area.layout_height !== null ? Number(area.layout_height) : blueprint.height,
+            };
+
+            if (resolved.key === 'osf') {
+                const bottomGap = BASE_CANVAS_HEIGHT - (resolved.y + resolved.height);
+
+                if (bottomGap > 72) {
+                    resolved.height = Math.max(MIN_AREA_HEIGHT, BASE_CANVAS_HEIGHT - resolved.y - 16);
+                }
+            }
+
+            return resolved;
+        }
+
+        function resolveAreaLabelLayout(area, zone) {
+            const labelX = area && area.label_layout_x !== null
+                ? Number(area.label_layout_x)
+                : Math.round(zone.x + (zone.width / 2));
+            const labelY = area && area.label_layout_y !== null
+                ? Number(area.label_layout_y)
+                : zone.y + 14;
+
+            return { x: labelX, y: labelY };
+        }
+
         function getAreaByZoneKey(zoneKey) {
             return state.areas.find((area) => area.zone_key === zoneKey) || null;
         }
@@ -1930,13 +2142,7 @@ $adminSidebarPathPrefix = '';
                 return null;
             }
 
-            return {
-                ...blueprint,
-                x: area.layout_x !== null ? Number(area.layout_x) : blueprint.x,
-                y: area.layout_y !== null ? Number(area.layout_y) : blueprint.y,
-                width: area.layout_width !== null ? Number(area.layout_width) : blueprint.width,
-                height: area.layout_height !== null ? Number(area.layout_height) : blueprint.height,
-            };
+            return resolveZoneLayout(blueprint, area);
         }
 
         function getRenderedZones() {
@@ -1944,12 +2150,8 @@ $adminSidebarPathPrefix = '';
                 const area = getAreaByZoneKey(blueprint.key);
 
                 return {
-                    ...blueprint,
                     area_id: area ? Number(area.area_id) : null,
-                    x: area && area.layout_x !== null ? Number(area.layout_x) : blueprint.x,
-                    y: area && area.layout_y !== null ? Number(area.layout_y) : blueprint.y,
-                    width: area && area.layout_width !== null ? Number(area.layout_width) : blueprint.width,
-                    height: area && area.layout_height !== null ? Number(area.layout_height) : blueprint.height,
+                    ...resolveZoneLayout(blueprint, area),
                 };
             });
         }
@@ -1973,6 +2175,8 @@ $adminSidebarPathPrefix = '';
                     layout_y: area.layout_y,
                     layout_width: area.layout_width,
                     layout_height: area.layout_height,
+                    label_layout_x: area.label_layout_x,
+                    label_layout_y: area.label_layout_y,
                 })),
                 tables: state.tables.map((table) => ({
                     table_id: Number(table.table_id),
@@ -1997,6 +2201,8 @@ $adminSidebarPathPrefix = '';
                 area.layout_y = savedArea.layout_y;
                 area.layout_width = savedArea.layout_width;
                 area.layout_height = savedArea.layout_height;
+                area.label_layout_x = savedArea.label_layout_x;
+                area.label_layout_y = savedArea.label_layout_y;
             });
 
             snapshot.tables.forEach((savedTable) => {
@@ -2049,12 +2255,54 @@ $adminSidebarPathPrefix = '';
             return zone ? zone.tone : 'blue';
         }
 
-        function resolveShape(table) {
-            if (table.table_shape === 'circle' || table.table_shape === 'rect') {
-                return table.table_shape;
+        function normalizeTableShape(value) {
+            const shape = String(value || 'auto').trim().toLowerCase();
+
+            if (shape === 'circle' || shape === 'square' || shape === 'rect-horizontal' || shape === 'rect-vertical') {
+                return shape;
             }
 
-            return Number(table.capacity) <= 4 ? 'circle' : 'rect';
+            if (shape === 'rect' || shape === 'rectangle' || shape === 'rect-h' || shape === 'horizontal') {
+                return 'rect-horizontal';
+            }
+
+            if (shape === 'rect-v' || shape === 'vertical') {
+                return 'rect-vertical';
+            }
+
+            return 'auto';
+        }
+
+        function resolveShape(table) {
+            const explicitShape = normalizeTableShape(table.table_shape);
+
+            if (explicitShape !== 'auto') {
+                return explicitShape;
+            }
+
+            const capacity = Number(table.capacity || 0);
+
+            if (capacity <= 2) {
+                return 'circle';
+            }
+
+            if (capacity <= 4) {
+                return 'square';
+            }
+
+            return capacity >= 8 ? 'rect-horizontal' : 'rect-vertical';
+        }
+
+        function getShapeOptions(selectedShape) {
+            const currentShape = normalizeTableShape(selectedShape);
+
+            return `
+                <option value="auto" ${currentShape === 'auto' ? 'selected' : ''}>Automatic</option>
+                <option value="circle" ${currentShape === 'circle' ? 'selected' : ''}>Circle</option>
+                <option value="square" ${currentShape === 'square' ? 'selected' : ''}>Square</option>
+                <option value="rect-horizontal" ${currentShape === 'rect-horizontal' ? 'selected' : ''}>Rectangle Horizontal</option>
+                <option value="rect-vertical" ${currentShape === 'rect-vertical' ? 'selected' : ''}>Rectangle Vertical</option>
+            `;
         }
 
         function getSortedAreas() {
@@ -2098,7 +2346,7 @@ $adminSidebarPathPrefix = '';
             }
 
             if (scaledHeight <= viewport.height - VIEWPORT_PADDING * 2) {
-                nextPanY = Math.round((viewport.height - scaledHeight) / 2);
+                nextPanY = VIEWPORT_PADDING;
             } else {
                 const minPanY = Math.round(viewport.height - scaledHeight - VIEWPORT_PADDING);
                 const maxPanY = VIEWPORT_PADDING;
@@ -2123,8 +2371,7 @@ $adminSidebarPathPrefix = '';
         function getCanvasFitScale() {
             const viewport = getViewportRect();
             const widthScale = (viewport.width - VIEWPORT_PADDING * 2) / BASE_CANVAS_WIDTH;
-            const heightScale = (viewport.height - VIEWPORT_PADDING * 2) / BASE_CANVAS_HEIGHT;
-            return clampScale(Math.min(widthScale, heightScale));
+            return clampScale(widthScale);
         }
 
         function centerViewportOnRect(rect, scale) {
@@ -2260,7 +2507,7 @@ $adminSidebarPathPrefix = '';
                     ${area ? `data-area-id="${Number(area.area_id)}" tabindex="0" role="button" aria-label="Focus ${escapeAttribute(zone.label)} area"` : ''}
                     style="left:${zone.x}px; top:${zone.y}px; width:${zone.width}px; height:${zone.height}px;"
                 >
-                    <div class="zone-label">${zone.label}</div>
+                    <div class="zone-label" data-area-drag-handle="true" style="left:${resolveAreaLabelLayout(area, zone).x}px; top:${resolveAreaLabelLayout(area, zone).y}px; transform:translate(-50%, 0);">${zone.label}</div>
                     ${area && state.isEditMode ? '<div class="zone-resize-handle" data-area-resize-handle="true" aria-hidden="true"></div>' : ''}
                 </div>
             `;
@@ -2281,8 +2528,20 @@ $adminSidebarPathPrefix = '';
                         data-table-id="${Number(table.table_id)}"
                         style="left:${x}px; top:${y}px; transform: translate(-50%, -50%);"
                     >
-                        <span>T${escapeHtml(table.table_number)}</span>
-                        <span>${Number(table.capacity)}p</span>
+                        <span class="table-shell">
+                            <span class="table-chair table-chair-top"></span>
+                            <span class="table-chair table-chair-bottom"></span>
+                            <span class="table-chair table-chair-left"></span>
+                            <span class="table-chair table-chair-right"></span>
+                            <span class="table-chair table-chair-top-left"></span>
+                            <span class="table-chair table-chair-top-right"></span>
+                            <span class="table-chair table-chair-bottom-left"></span>
+                            <span class="table-chair table-chair-bottom-right"></span>
+                            <span class="table-top">
+                                <span class="table-label">T${escapeHtml(table.table_number)}</span>
+                                <span class="table-capacity">${Number(table.capacity)}p</span>
+                            </span>
+                        </span>
                     </button>
                 `;
             }).join('');
@@ -2290,7 +2549,10 @@ $adminSidebarPathPrefix = '';
             canvasSurface.innerHTML = zoneHtml + tableHtml;
 
             canvasSurface.querySelectorAll('[data-area-id]').forEach((zone) => {
-                zone.addEventListener('pointerdown', handleAreaDragStart);
+                const dragHandle = zone.querySelector('[data-area-drag-handle]');
+                if (dragHandle) {
+                    dragHandle.addEventListener('pointerdown', handleAreaDragStart);
+                }
 
                 const handle = zone.querySelector('[data-area-resize-handle]');
                 if (handle) {
@@ -2368,9 +2630,7 @@ $adminSidebarPathPrefix = '';
                         <div class="field">
                             <label for="detailShape">Shape</label>
                             <select id="detailShape">
-                                <option value="auto" ${table.table_shape === 'auto' ? 'selected' : ''}>Automatic</option>
-                                <option value="circle" ${table.table_shape === 'circle' ? 'selected' : ''}>Circle</option>
-                                <option value="rect" ${table.table_shape === 'rect' ? 'selected' : ''}>Rectangle</option>
+                                ${getShapeOptions(table.table_shape)}
                             </select>
                         </div>
                     </div>
@@ -2561,15 +2821,20 @@ $adminSidebarPathPrefix = '';
                 return;
             }
 
+            event.preventDefault();
+            event.stopPropagation();
+
             if (event.target.closest('[data-area-resize-handle]')) {
                 return;
             }
 
-            const areaId = Number(event.currentTarget.dataset.areaId || 0);
+            const zoneElement = event.currentTarget.closest('[data-area-id]');
+            const areaId = Number(zoneElement?.dataset.areaId || 0);
             const area = getAreaById(areaId);
             const zone = getZoneByAreaId(areaId);
+            const labelPosition = resolveAreaLabelLayout(area, zone);
 
-            if (!area || !zone) {
+            if (!area || !zone || !zoneElement) {
                 return;
             }
 
@@ -2577,16 +2842,16 @@ $adminSidebarPathPrefix = '';
             const currentScale = getCanvasEffectiveScale();
 
             state.dragging = {
-                type: 'area',
+                type: 'area-label',
                 areaId,
                 pointerId: event.pointerId,
-                offsetX: (event.clientX - rect.left) / currentScale - zone.x,
-                offsetY: (event.clientY - rect.top) / currentScale - zone.y,
+                offsetX: (event.clientX - rect.left) / currentScale - labelPosition.x,
+                offsetY: (event.clientY - rect.top) / currentScale - labelPosition.y,
                 didMove: false,
             };
 
-            event.currentTarget.setPointerCapture(event.pointerId);
-            event.currentTarget.classList.add('dragging');
+            zoneElement.setPointerCapture(event.pointerId);
+            zoneElement.classList.add('dragging');
             state.selectedAreaId = areaId;
             renderSectionList();
         }
@@ -2645,7 +2910,7 @@ $adminSidebarPathPrefix = '';
                 return;
             }
 
-            if (state.dragging.type === 'area') {
+            if (state.dragging.type === 'area-label') {
                 const area = getAreaById(state.dragging.areaId);
                 const zone = getZoneByAreaId(state.dragging.areaId);
                 if (!area || !zone) {
@@ -2656,34 +2921,18 @@ $adminSidebarPathPrefix = '';
                 const currentScale = getCanvasEffectiveScale();
                 const unclampedX = ((event.clientX - rect.left) / currentScale) - state.dragging.offsetX;
                 const unclampedY = ((event.clientY - rect.top) / currentScale) - state.dragging.offsetY;
-                const nextX = Math.max(16, Math.min(BASE_CANVAS_WIDTH - zone.width - 16, Math.round(unclampedX)));
-                const nextY = Math.max(16, Math.min(BASE_CANVAS_HEIGHT - zone.height - 16, Math.round(unclampedY)));
-                const deltaX = nextX - zone.x;
-                const deltaY = nextY - zone.y;
+                const nextX = Math.max(zone.x + 42, Math.min(zone.x + zone.width - 42, Math.round(unclampedX)));
+                const nextY = Math.max(zone.y + 8, Math.min(zone.y + zone.height - 38, Math.round(unclampedY)));
 
-                if (deltaX === 0 && deltaY === 0) {
+                if (nextX === area.label_layout_x && nextY === area.label_layout_y) {
                     return;
                 }
 
-                area.layout_x = nextX;
-                area.layout_y = nextY;
+                area.label_layout_x = nextX;
+                area.label_layout_y = nextY;
                 state.dragging.didMove = true;
 
-                state.tables.forEach((table) => {
-                    if (Number(table.area_id) !== Number(area.area_id)) {
-                        return;
-                    }
-
-                    if (table.layout_x === null || table.layout_y === null) {
-                        return;
-                    }
-
-                    table.layout_x = Math.max(48, Math.min(BASE_CANVAS_WIDTH - 16, Math.round(Number(table.layout_x) + deltaX)));
-                    table.layout_y = Math.max(48, Math.min(BASE_CANVAS_HEIGHT - 16, Math.round(Number(table.layout_y) + deltaY)));
-                });
-
                 renderCanvas();
-                renderInventory();
                 return;
             }
 
@@ -2743,7 +2992,7 @@ $adminSidebarPathPrefix = '';
         }
 
         function handlePointerUp() {
-            if (state.dragging && (state.dragging.type === 'area' || state.dragging.type === 'area-resize') && state.dragging.didMove) {
+            if (state.dragging && (state.dragging.type === 'area-label' || state.dragging.type === 'area-resize') && state.dragging.didMove) {
                 state.justManipulatedAreaId = state.dragging.areaId;
                 showToast('Area updated. Click Save Layout to keep the new size and position.');
             }
@@ -2765,6 +3014,8 @@ $adminSidebarPathPrefix = '';
                             layout_y: area.layout_y,
                             layout_width: area.layout_width,
                             layout_height: area.layout_height,
+                            label_layout_x: area.label_layout_x,
+                            label_layout_y: area.label_layout_y,
                         })),
                         tables: state.tables.map((table) => ({
                             table_id: Number(table.table_id),

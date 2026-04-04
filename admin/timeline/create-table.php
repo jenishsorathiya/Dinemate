@@ -9,6 +9,26 @@ ensureTableAreasSchema($pdo);
 
 requireAdmin(['json' => true]);
 
+$normalizeTableShape = static function (string $value): string {
+    $shape = strtolower(trim($value));
+
+    $aliases = [
+        'auto' => 'auto',
+        'circle' => 'circle',
+        'square' => 'square',
+        'rect' => 'rect-horizontal',
+        'rectangle' => 'rect-horizontal',
+        'rect-h' => 'rect-horizontal',
+        'horizontal' => 'rect-horizontal',
+        'rect-horizontal' => 'rect-horizontal',
+        'rect-v' => 'rect-vertical',
+        'vertical' => 'rect-vertical',
+        'rect-vertical' => 'rect-vertical',
+    ];
+
+    return $aliases[$shape] ?? 'auto';
+};
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 $isAuto = isset($data['auto']) && $data['auto'] === true;
@@ -17,11 +37,7 @@ $requestedSortOrder = (int)($data['sort_order'] ?? 0);
 $requestedReservable = array_key_exists('reservable', $data) ? (int)!empty($data['reservable']) : 1;
 $requestedLayoutX = isset($data['layout_x']) && $data['layout_x'] !== '' ? (int)$data['layout_x'] : null;
 $requestedLayoutY = isset($data['layout_y']) && $data['layout_y'] !== '' ? (int)$data['layout_y'] : null;
-$requestedTableShape = strtolower(trim((string)($data['table_shape'] ?? 'auto')));
-
-if(!in_array($requestedTableShape, ['auto', 'circle', 'rect'], true)) {
-    $requestedTableShape = 'auto';
-}
+$requestedTableShape = $normalizeTableShape((string)($data['table_shape'] ?? 'auto'));
 
 $defaultAreaStmt = $pdo->query("SELECT area_id FROM table_areas WHERE is_active = 1 ORDER BY display_order ASC, name ASC LIMIT 1");
 $defaultAreaId = (int)$defaultAreaStmt->fetchColumn();
