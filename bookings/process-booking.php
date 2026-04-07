@@ -179,8 +179,25 @@ try {
     redirect("booking-confirmation.php?id=" . $booking_id . "&token=" . urlencode($guestAccessToken));
     
 } catch(PDOException $e) {
-    $_SESSION['error'] = 'Error creating booking. Please try again.';
+    // Always log the full exception for server-side diagnostics
     error_log('Booking insertion error: ' . $e->getMessage());
+    error_log($e->getTraceAsString());
+
+    // If running on a local development machine, expose the DB error in the session
+    $isLocal = in_array($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1', ['127.0.0.1', '::1']) ||
+               (isset($_SERVER['SERVER_NAME']) && ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.0.0.1'));
+
+    if ($isLocal) {
+        // Provide the detailed error only on local dev to help debugging
+        $_SESSION['error'] = 'Error creating booking. DB error: ' . $e->getMessage();
+    } else {
+        $_SESSION['error'] = 'Error creating booking. Please try again.';
+    }
+
+    // Optional: write a concise message to a local log file for easier inspection
+    $logLine = '[' . date('Y-m-d H:i:s') . '] Booking insertion error: ' . $e->getMessage() . "\n";
+    @file_put_contents(__DIR__ . '/../storage/bookings_errors.log', $logLine, FILE_APPEND | LOCK_EX);
+
     redirect("book-table.php");
 }
 ?>

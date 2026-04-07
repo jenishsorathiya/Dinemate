@@ -160,12 +160,21 @@ function displayFlashMessage() {
     if ($flash) {
         $type = $flash['type'];
         $message = $flash['message'];
-        $alertClass = match($type) {
-            'success' => 'alert-success',
-            'error' => 'alert-danger',
-            'warning' => 'alert-warning',
-            default => 'alert-info'
-        };
+        // Use switch for broader PHP version compatibility (avoid PHP 8 match())
+        switch ($type) {
+            case 'success':
+                $alertClass = 'alert-success';
+                break;
+            case 'error':
+                $alertClass = 'alert-danger';
+                break;
+            case 'warning':
+                $alertClass = 'alert-warning';
+                break;
+            default:
+                $alertClass = 'alert-info';
+                break;
+        }
         echo "<div class='alert $alertClass alert-dismissible fade show' role='alert'>
                 $message
                 <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
@@ -201,6 +210,10 @@ function ensureBookingRequestColumns($pdo) {
     $guestTokenStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'guest_access_token'");
     $guestTokenExists = $guestTokenStmt->rowCount() > 0;
 
+    // Handle legacy booking_time column which some older DBs still have
+    $bookingTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'booking_time'");
+    $bookingTimeColumn = $bookingTimeStmt->fetch(PDO::FETCH_ASSOC);
+
     $userIdStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'user_id'");
     $userIdColumn = $userIdStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -231,6 +244,18 @@ function ensureBookingRequestColumns($pdo) {
     if (!$guestTokenExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN guest_access_token VARCHAR(64) DEFAULT NULL AFTER customer_email");
         $pdo->exec("CREATE UNIQUE INDEX idx_bookings_guest_access_token ON bookings (guest_access_token)");
+    }
+
+    // If booking_time exists but is NOT NULL without a default, make it nullable to avoid insert failures
+    if ($bookingTimeColumn && isset($bookingTimeColumn['Null']) && $bookingTimeColumn['Null'] !== 'YES') {
+        // Use the same column type but allow NULL and default NULL
+        $type = $bookingTimeColumn['Type'] ?? 'VARCHAR(255)';
+        try {
+            $pdo->exec("ALTER TABLE bookings MODIFY COLUMN booking_time {$type} NULL DEFAULT NULL");
+        } catch (Exception $e) {
+            // If modify fails, log but continue — we don't want setup to fatally break here
+            error_log('Could not modify booking_time column: ' . $e->getMessage());
+        }
     }
 
     if ($userIdColumn && $userIdColumn['Null'] !== 'YES') {
