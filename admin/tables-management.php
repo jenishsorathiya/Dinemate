@@ -968,7 +968,6 @@ $adminSidebarPathPrefix = '';
         }
 
         .zone.resizing {
-            cursor: nwse-resize;
             box-shadow: 0 18px 28px rgba(17, 17, 17, 0.14);
         }
 
@@ -1019,15 +1018,65 @@ $adminSidebarPathPrefix = '';
 
         .zone-resize-handle {
             position: absolute;
-            right: -10px;
-            bottom: -10px;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border-radius: 4px;
             border: 3px solid #111111;
             background: #ffffff;
-            cursor: nwse-resize;
             box-shadow: 0 8px 16px rgba(17, 17, 17, 0.12);
+            z-index: 2;
+        }
+
+        .zone-resize-handle[data-resize-direction="n"] {
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: ns-resize;
+        }
+
+        .zone-resize-handle[data-resize-direction="s"] {
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: ns-resize;
+        }
+
+        .zone-resize-handle[data-resize-direction="e"] {
+            top: 50%;
+            right: -10px;
+            transform: translateY(-50%);
+            cursor: ew-resize;
+        }
+
+        .zone-resize-handle[data-resize-direction="w"] {
+            top: 50%;
+            left: -10px;
+            transform: translateY(-50%);
+            cursor: ew-resize;
+        }
+
+        .zone-resize-handle[data-resize-direction="ne"] {
+            top: -10px;
+            right: -10px;
+            cursor: nesw-resize;
+        }
+
+        .zone-resize-handle[data-resize-direction="nw"] {
+            top: -10px;
+            left: -10px;
+            cursor: nwse-resize;
+        }
+
+        .zone-resize-handle[data-resize-direction="se"] {
+            right: -10px;
+            bottom: -10px;
+            cursor: nwse-resize;
+        }
+
+        .zone-resize-handle[data-resize-direction="sw"] {
+            left: -10px;
+            bottom: -10px;
+            cursor: nesw-resize;
         }
 
         .canvas-frame:not(.edit-mode) .zone-resize-handle {
@@ -2046,6 +2095,7 @@ $adminSidebarPathPrefix = '';
         const TABLE_OSF_GUTTER_X = 76;
         const TABLE_OSF_GUTTER_Y = 60;
         const AREA_LABEL_CANVAS_PADDING = 10;
+        const AREA_CANVAS_PADDING = 16;
 
         const zoneBlueprints = [
             { key: 'stables', label: 'Stables', tone: 'amber', x: 42, y: 16, width: 166, height: 92 },
@@ -2104,23 +2154,17 @@ $adminSidebarPathPrefix = '';
         }
 
         function resolveZoneLayout(blueprint, area = null) {
-            const resolved = {
+            return {
                 ...blueprint,
                 x: area && area.layout_x !== null ? Number(area.layout_x) : blueprint.x,
                 y: area && area.layout_y !== null ? Number(area.layout_y) : blueprint.y,
                 width: area && area.layout_width !== null ? Number(area.layout_width) : blueprint.width,
                 height: area && area.layout_height !== null ? Number(area.layout_height) : blueprint.height,
             };
+        }
 
-            if (resolved.key === 'osf') {
-                const bottomGap = BASE_CANVAS_HEIGHT - (resolved.y + resolved.height);
-
-                if (bottomGap > 72) {
-                    resolved.height = Math.max(MIN_AREA_HEIGHT, BASE_CANVAS_HEIGHT - resolved.y - 16);
-                }
-            }
-
-            return resolved;
+        function getAreaResizeHandleDirections() {
+            return ['n', 'e', 's', 'w', 'ne', 'nw', 'se', 'sw'];
         }
 
         function resolveAreaLabelLayout(area, zone) {
@@ -2528,7 +2572,7 @@ $adminSidebarPathPrefix = '';
                     ${area ? `data-area-id="${Number(area.area_id)}" tabindex="0" role="button" aria-label="Focus ${escapeAttribute(zone.label)} area"` : ''}
                     style="left:${zone.x}px; top:${zone.y}px; width:${zone.width}px; height:${zone.height}px;"
                 >
-                    ${area && state.isEditMode ? '<div class="zone-resize-handle" data-area-resize-handle="true" aria-hidden="true"></div>' : ''}
+                    ${area && state.isEditMode ? getAreaResizeHandleDirections().map((direction) => `<div class="zone-resize-handle" data-area-resize-handle="true" data-resize-direction="${direction}" aria-hidden="true"></div>`).join('') : ''}
                 </div>
             `;
             }).join('');
@@ -2937,6 +2981,7 @@ $adminSidebarPathPrefix = '';
             const currentScale = getCanvasEffectiveScale();
             const pointerX = (event.clientX - rect.left) / currentScale;
             const pointerY = (event.clientY - rect.top) / currentScale;
+            const direction = String(event.currentTarget.dataset.resizeDirection || 'se').toLowerCase();
             const tableAnchors = state.tables
                 .filter((table) => Number(table.area_id) === Number(areaId) && table.layout_x !== null && table.layout_y !== null)
                 .map((table) => ({
@@ -2955,6 +3000,7 @@ $adminSidebarPathPrefix = '';
                 startY: zone.y,
                 startWidth: zone.width,
                 startHeight: zone.height,
+                direction,
                 tableAnchors,
                 didMove: false,
             };
@@ -3012,25 +3058,91 @@ $adminSidebarPathPrefix = '';
                 const currentScale = getCanvasEffectiveScale();
                 const pointerX = (event.clientX - rect.left) / currentScale;
                 const pointerY = (event.clientY - rect.top) / currentScale;
-                const requestedWidth = state.dragging.startWidth + (pointerX - state.dragging.startPointerX);
-                const requestedHeight = state.dragging.startHeight + (pointerY - state.dragging.startPointerY);
-                const nextWidth = Math.max(MIN_AREA_WIDTH, Math.min(BASE_CANVAS_WIDTH - state.dragging.startX - 16, Math.round(requestedWidth)));
-                const nextHeight = Math.max(MIN_AREA_HEIGHT, Math.min(BASE_CANVAS_HEIGHT - state.dragging.startY - 16, Math.round(requestedHeight)));
+                const deltaX = pointerX - state.dragging.startPointerX;
+                const deltaY = pointerY - state.dragging.startPointerY;
+                const direction = state.dragging.direction;
+                let nextX = state.dragging.startX;
+                let nextY = state.dragging.startY;
+                let nextWidth = state.dragging.startWidth;
+                let nextHeight = state.dragging.startHeight;
 
-                if (nextWidth === (area.layout_width ?? state.dragging.startWidth) && nextHeight === (area.layout_height ?? state.dragging.startHeight)) {
+                if (direction.includes('e')) {
+                    nextWidth = state.dragging.startWidth + deltaX;
+                }
+
+                if (direction.includes('s')) {
+                    nextHeight = state.dragging.startHeight + deltaY;
+                }
+
+                if (direction.includes('w')) {
+                    nextX = state.dragging.startX + deltaX;
+                    nextWidth = state.dragging.startWidth - deltaX;
+                }
+
+                if (direction.includes('n')) {
+                    nextY = state.dragging.startY + deltaY;
+                    nextHeight = state.dragging.startHeight - deltaY;
+                }
+
+                if (nextWidth < MIN_AREA_WIDTH) {
+                    if (direction.includes('w')) {
+                        nextX -= MIN_AREA_WIDTH - nextWidth;
+                    }
+                    nextWidth = MIN_AREA_WIDTH;
+                }
+
+                if (nextHeight < MIN_AREA_HEIGHT) {
+                    if (direction.includes('n')) {
+                        nextY -= MIN_AREA_HEIGHT - nextHeight;
+                    }
+                    nextHeight = MIN_AREA_HEIGHT;
+                }
+
+                if (nextX < AREA_CANVAS_PADDING) {
+                    if (direction.includes('w')) {
+                        nextWidth -= AREA_CANVAS_PADDING - nextX;
+                    }
+                    nextX = AREA_CANVAS_PADDING;
+                }
+
+                if (nextY < AREA_CANVAS_PADDING) {
+                    if (direction.includes('n')) {
+                        nextHeight -= AREA_CANVAS_PADDING - nextY;
+                    }
+                    nextY = AREA_CANVAS_PADDING;
+                }
+
+                const maxWidth = BASE_CANVAS_WIDTH - AREA_CANVAS_PADDING - nextX;
+                const maxHeight = BASE_CANVAS_HEIGHT - AREA_CANVAS_PADDING - nextY;
+                nextWidth = Math.max(MIN_AREA_WIDTH, Math.min(maxWidth, nextWidth));
+                nextHeight = Math.max(MIN_AREA_HEIGHT, Math.min(maxHeight, nextHeight));
+
+                nextX = Math.round(nextX);
+                nextY = Math.round(nextY);
+                nextWidth = Math.round(nextWidth);
+                nextHeight = Math.round(nextHeight);
+
+                if (
+                    nextX === (area.layout_x ?? state.dragging.startX)
+                    && nextY === (area.layout_y ?? state.dragging.startY)
+                    && nextWidth === (area.layout_width ?? state.dragging.startWidth)
+                    && nextHeight === (area.layout_height ?? state.dragging.startHeight)
+                ) {
                     return;
                 }
 
+                area.layout_x = nextX;
+                area.layout_y = nextY;
                 area.layout_width = nextWidth;
                 area.layout_height = nextHeight;
                 state.dragging.didMove = true;
 
                 state.dragging.tableAnchors.forEach((anchor) => {
-                    anchor.table.layout_x = state.dragging.startX + (anchor.relativeX * nextWidth);
-                    anchor.table.layout_y = state.dragging.startY + (anchor.relativeY * nextHeight);
+                    anchor.table.layout_x = nextX + (anchor.relativeX * nextWidth);
+                    anchor.table.layout_y = nextY + (anchor.relativeY * nextHeight);
                     clampTableWithinZone(anchor.table, {
-                        x: state.dragging.startX,
-                        y: state.dragging.startY,
+                        x: nextX,
+                        y: nextY,
                         width: nextWidth,
                         height: nextHeight,
                     });
