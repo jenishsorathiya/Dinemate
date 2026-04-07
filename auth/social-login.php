@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . "/../config/db.php";
+require_once __DIR__ . "/../includes/functions.php";
 
 if (!isset($_GET['provider'])) {
     header("Location: login.php");
@@ -39,8 +40,12 @@ if (!$user) {
     $user_id = $user['user_id'];
 }
 
-$_SESSION['user_id'] = $user_id;
-$_SESSION['role'] = 'customer';
+storeUserSession([
+    'user_id' => $user_id,
+    'role' => 'customer',
+    'name' => $name,
+    'email' => $email,
+]);
 
-header("Location: ../bookings/book-table.php");
+header("Location: " . getPostLoginRedirect('customer'));
 exit();

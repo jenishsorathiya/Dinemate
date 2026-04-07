@@ -6,8 +6,9 @@
 <title>DineMate | Register</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="../assets/css/dashboard-theme.css" rel="stylesheet">
 
 </head>    
 
@@ -80,16 +81,8 @@
 <style>
 body {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(-45deg, #f4d58d, #f6f1e9, #e9edc9, #f4b400);
-    background-size: 400% 400%;
-    animation: gradientBG 12s ease infinite;
-}
-
-@keyframes gradientBG {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
+    font-family: 'Inter', sans-serif;
+    background: #f5f7fb;
 }
 
 .auth-wrapper {
@@ -97,29 +90,36 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 30px;
+    padding: 28px;
 }
 
 .auth-box {
     width: 100%;
     max-width: 1100px;
-    background: rgba(255,255,255,0.6);
-    backdrop-filter: blur(15px);
-    border-radius: 25px;
+    background: #ffffff;
+    border: 1px solid #e7ecf3;
+    border-radius: 20px;
     overflow: hidden;
     display: flex;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
-    animation: fadeIn 0.8s ease;
-}
-
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(20px);}
-    to {opacity:1; transform:translateY(0);}
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
 }
 
 .auth-left {
     flex: 1;
-    padding: 60px;
+    padding: 56px;
+}
+
+.auth-left h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #162033;
+}
+
+.auth-left p,
+.auth-left a,
+#emailMsg,
+#matchMsg {
+    color: #69758b;
 }
 
 .auth-right {
@@ -131,7 +131,7 @@ body {
 .auth-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: linear-gradient(180deg, rgba(22, 32, 51, 0.22), rgba(22, 32, 51, 0.64));
 }
 
 .auth-right-content {
@@ -142,30 +142,33 @@ body {
 }
 
 .form-control {
-    border-radius: 50px;
-    padding: 14px 22px;
-    border: none;
-    background: #f7f7f7;
+    border-radius: 12px;
+    padding: 13px 14px;
+    border: 1px solid #d9e1ec;
+    background: #ffffff;
     transition: 0.3s;
 }
 
 .form-control:focus {
-    box-shadow: 0 0 0 3px #f4b400;
+    box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
+    border-color: #bdc9da;
     background: white;
 }
 
 .btn-main {
-    background: #f4b400;
-    border: none;
-    border-radius: 50px;
-    padding: 14px;
+    background: #1d2840;
+    border: 1px solid #1d2840;
+    border-radius: 12px;
+    padding: 13px 14px;
     font-weight: 600;
-    transition: 0.3s;
+    color: #ffffff;
+    transition: 0.18s ease;
 }
 
 .btn-main:hover {
-    background: #d39e00;
-    transform: scale(1.03);
+    background: #141d31;
+    border-color: #141d31;
+    transform: translateY(-1px);
 }
 
 .password-wrapper {
@@ -201,10 +204,10 @@ body {
     position: fixed;
     top: 30px;
     right: 30px;
-    background: #333;
+    background: #1d2840;
     color: white;
     padding: 15px 20px;
-    border-radius: 10px;
+    border-radius: 14px;
     display: none;
     z-index: 999;
     animation: slideIn 0.3s ease;
@@ -227,6 +230,20 @@ body {
     font-weight: bold;
     z-index: 9999;
     backdrop-filter: blur(5px);
+}
+
+@media (max-width: 991px) {
+    .auth-box {
+        flex-direction: column;
+    }
+
+    .auth-right {
+        min-height: 240px;
+    }
+
+    .auth-left {
+        padding: 28px;
+    }
 }
 
 small {

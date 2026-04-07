@@ -1,5 +1,6 @@
 <?php
 require_once "../config/db.php";
+require_once "../includes/functions.php";
 session_start();
 
 // Prevent session fixation
@@ -55,17 +56,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             
             if ($password_valid) {
-                // Set session variables
-                $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['name'] = $user['name'];
-                $_SESSION['email'] = $user['email'];
-                $_SESSION['logged_in'] = true;
+                storeUserSession($user);
 
                 // Optional: Log successful login (for audit trail)
                 // logLoginAttempt($user['user_id'], 'success');
 
-                header("Location: ../index.php");
+                header("Location: " . getPostLoginRedirect($user['role'] ?? null));
                 exit;
             }
         }

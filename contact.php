@@ -20,8 +20,9 @@
 .contact-card {
     background: white;
     padding: 35px;
-    border-radius: 14px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    border: 1px solid #e7ecf3;
+    border-radius: 18px;
+    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
 }
 .form-control {
     border-radius: 10px;
@@ -33,19 +34,20 @@
     margin-right: 10px;
 }
 .btn-contact {
-    background: #f4b400;
-    border: none;
+    background: #1d2840;
+    border: 1px solid #1d2840;
+    color: #ffffff;
     padding: 12px 25px;
-    border-radius: 30px;
+    border-radius: 12px;
     font-weight: 600;
 }
 .btn-contact:hover {
-    background: #e0a800;
+    background: #141d31;
 }
 .map {
-    border-radius: 14px;
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
 }
 </style>
 

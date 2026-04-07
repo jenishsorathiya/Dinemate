@@ -1,6 +1,12 @@
 <?php
 require_once "../config/db.php";
-require_once "../includes/session-check.php";
+require_once "../includes/functions.php";
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+ensureBookingRequestColumns($pdo);
 
 if(!isset($_GET['id'])){
     header("Location: book-table.php");
@@ -8,19 +14,39 @@ if(!isset($_GET['id'])){
 }
 
 $booking_id = intval($_GET['id']);
+$guest_token = trim($_GET['token'] ?? '');
 
-$stmt = $pdo->prepare("
-SELECT b.*, t.table_number 
-FROM bookings b
-JOIN restaurant_tables t ON b.table_id = t.table_id
-WHERE b.booking_id = ? AND b.user_id = ?
-");
-$stmt->execute([$booking_id, $_SESSION['user_id']]);
+$isLoggedInCustomer = isLoggedIn() && getCurrentUserRole() === 'customer';
+
+if($isLoggedInCustomer) {
+    $stmt = $pdo->prepare("
+        SELECT b.*, t.table_number
+        FROM bookings b
+        LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
+        WHERE b.booking_id = ?
+          AND (b.user_id = ? OR b.guest_access_token = ?)
+        LIMIT 1
+    ");
+    $stmt->execute([$booking_id, getCurrentUserId(), $guest_token]);
+} else {
+    $stmt = $pdo->prepare("
+        SELECT b.*, t.table_number
+        FROM bookings b
+        LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
+        WHERE b.booking_id = ? AND b.guest_access_token = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$booking_id, $guest_token]);
+}
+
 $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if(!$booking){
     die("Booking not found.");
 }
+
+$tableLabel = $booking['table_number'] ? 'Table ' . $booking['table_number'] : 'To be assigned by staff';
+$statusLabel = ucfirst($booking['status'] ?? 'pending');
 ?>
 
 <?php include "../includes/header.php"; ?>
@@ -40,9 +66,10 @@ margin-bottom:80px;
 
 .confirm-card{
 background:white;
-border-radius:18px;
-padding:40px;
-box-shadow:0 25px 60px rgba(0,0,0,0.08);
+border:1px solid #e7ecf3;
+border-radius:20px;
+padding:36px;
+box-shadow:0 18px 42px rgba(15,23,42,0.08);
 text-align:center;
 max-width:700px;
 margin:auto;
@@ -65,8 +92,9 @@ animation:pop 0.6s ease;
 /* Reservation ticket */
 
 .ticket{
-background:#f8f9fa;
-border-radius:12px;
+background:#f8fafc;
+border:1px solid #e7ecf3;
+border-radius:16px;
 padding:20px;
 margin-top:25px;
 display:flex;
@@ -87,23 +115,25 @@ font-size:15px;
 .qr-box{
 padding:10px;
 background:white;
-border-radius:10px;
-box-shadow:0 5px 15px rgba(0,0,0,0.1);
+border:1px solid #e7ecf3;
+border-radius:14px;
+box-shadow:0 10px 24px rgba(15,23,42,0.06);
 }
 
 /* Button */
 
 .btn-bookings{
-background:#f4b400;
-border:none;
+background:#1d2840;
+border:1px solid #1d2840;
+color:#ffffff;
 padding:14px;
-border-radius:40px;
+border-radius:12px;
 font-weight:600;
 margin-top:25px;
 }
 
 .btn-bookings:hover{
-background:#e0a800;
+background:#141d31;
 }
 
 </style>
@@ -117,11 +147,11 @@ background:#e0a800;
 </div>
 
 <h3 class="text-success mt-2">
-Reservation Confirmed
+Reservation Request Submitted
 </h3>
 
 <p class="text-muted">
-Your table has been successfully booked.
+Your request has been saved. A table will be assigned by the admin team.
 </p>
 
 <!-- Reservation Ticket -->
@@ -130,11 +160,19 @@ Your table has been successfully booked.
 
 <div class="ticket-info">
 
-<p><strong>Table:</strong> <?= $booking['table_number'] ?></p>
+<p><strong>Table:</strong> <?= htmlspecialchars($tableLabel) ?></p>
+
+<p><strong>Status:</strong> <?= htmlspecialchars($statusLabel) ?></p>
+
+<p><strong>Name:</strong> <?= htmlspecialchars($booking['customer_name'] ?? '') ?></p>
+
+<p><strong>Email:</strong> <?= htmlspecialchars($booking['customer_email'] ?? '') ?></p>
+
+<p><strong>Phone:</strong> <?= htmlspecialchars($booking['customer_phone'] ?? '') ?></p>
 
 <p><strong>Date:</strong> <?= $booking['booking_date'] ?></p>
 
-<p><strong>Time:</strong> <?= date("h:i A",strtotime($booking['booking_time'])) ?></p>
+<p><strong>Time:</strong> <?= date("h:i A",strtotime($booking['start_time'])) ?> - <?= date("h:i A",strtotime($booking['end_time'])) ?></p>
 
 <p><strong>Guests:</strong> <?= $booking['number_of_guests'] ?></p>
 
@@ -146,9 +184,15 @@ Your table has been successfully booked.
 
 </div>
 
+<?php if($isLoggedInCustomer): ?>
 <a href="my-bookings.php" class="btn btn-bookings w-100">
 View My Bookings
 </a>
+<?php else: ?>
+<a href="book-table.php" class="btn btn-bookings w-100">
+Book Another Reservation
+</a>
+<?php endif; ?>
 
 </div>
 
@@ -169,11 +213,13 @@ origin:{ y:0.6 }
 
 const qrData = `
 Reservation
-Table: <?= $booking['table_number'] ?>
+Table: <?= addslashes($tableLabel) ?>
+
+Status: <?= addslashes($statusLabel) ?>
 
 Date: <?= $booking['booking_date'] ?>
 
-Time: <?= $booking['booking_time'] ?>
+Time: <?= $booking['start_time'] ?> - <?= $booking['end_time'] ?>
 
 Guests: <?= $booking['number_of_guests'] ?>
 `;

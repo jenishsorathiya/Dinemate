@@ -1,13 +1,9 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/config/db.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/functions.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 
-// Check if user is admin
-if(!isAdmin()) {
-    header("Location: ../auth/login.php");
-    exit();
-}
+requireAdmin();
 
 // Get dashboard statistics
 $totalBookings = $pdo->query("SELECT COUNT(*) FROM bookings")->fetchColumn();
@@ -17,10 +13,10 @@ $todayBookings = $pdo->query("SELECT COUNT(*) FROM bookings WHERE booking_date =
 
 // Get latest bookings
 $stmt = $pdo->query("
-    SELECT b.*, u.name, t.table_number 
+    SELECT b.*, COALESCE(b.customer_name_override, b.customer_name, u.name) AS name, t.table_number 
     FROM bookings b
-    JOIN users u ON b.user_id = u.user_id
-    JOIN restaurant_tables t ON b.table_id = t.table_id
+    LEFT JOIN users u ON b.user_id = u.user_id
+    LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
     ORDER BY b.created_at DESC
     LIMIT 5
 ");
@@ -75,6 +71,13 @@ for($i = 6; $i >= 0; $i--) {
 }
 // Sort by date
 array_multisort($days, $totals);
+
+$adminPageTitle = 'Analytics';
+$adminPageIcon = 'fa-chart-line';
+$adminNotificationCount = (int) $todayBookings;
+$adminProfileName = $_SESSION['name'] ?? 'Admin';
+$adminSidebarActive = 'dashboard';
+$adminSidebarPathPrefix = '';
 ?>
 
 <!DOCTYPE html>
@@ -83,15 +86,22 @@ array_multisort($days, $totals);
     <title>DineMate Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/dashboard-theme.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         body {
             margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background: #f4f6f9;
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
             transition: 0.3s;
+        }
+
+        .admin-layout {
+            display: flex;
+            height: 100vh;
         }
         
         body.dark-mode {
@@ -100,87 +110,56 @@ array_multisort($days, $totals);
         }
         
         /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            height: 100vh;
-            position: fixed;
-            background: #111827;
-            color: white;
-            padding: 25px;
-            left: 0;
-            top: 0;
-            z-index: 100;
-        }
         
         body.dark-mode .sidebar {
             background: #0f172a;
         }
         
-        .sidebar h4 {
-            color: #f4b400;
-            margin-bottom: 35px;
-            font-weight: 700;
-        }
-        
-        .sidebar a {
-            display: block;
-            padding: 12px 15px;
-            color: #ddd;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: 0.3s;
-        }
-        
-        .sidebar a i {
-            margin-right: 10px;
-            width: 24px;
-        }
-        
-        .sidebar a:hover {
-            background: #1f2937;
-            color: #f4b400;
-        }
-        
-        .sidebar a.active {
-            background: #f4b400;
-            color: #111827;
-        }
-        
-        /* TOPBAR */
-        .topbar {
-            margin-left: 260px;
-            height: 70px;
-            background: white;
+        .main-content {
+            flex: 1;
+            min-width: 0;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            position: fixed;
-            right: 0;
-            left: 260px;
-            top: 0;
-            z-index: 99;
+            flex-direction: column;
+            overflow: hidden;
         }
         
         body.dark-mode .topbar {
             background: #1f2937;
             color: white;
         }
+
+        body.dark-mode .topbar-page,
+        body.dark-mode .topbar-page-title,
+        body.dark-mode .topbar-page i,
+        body.dark-mode .topbar-profile-name {
+            color: white;
+        }
+
+        body.dark-mode .topbar-icon-button,
+        body.dark-mode .topbar-profile {
+            background: #111827;
+            color: white;
+        }
+
+        body.dark-mode .topbar-profile-icon {
+            background: #f4b400;
+            color: #111827;
+        }
         
         /* MAIN CONTENT */
         .main {
-            margin-left: 260px;
-            padding: 90px 30px 30px 30px;
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
         }
         
         /* STAT CARDS */
         .stat-card {
             background: white;
-            padding: 25px;
-            border-radius: 14px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border: 1px solid #e7ecf3;
+            padding: 24px;
+            border-radius: 18px;
+            box-shadow: 0 16px 36px rgba(15,23,42,0.06);
             transition: 0.3s;
             text-align: center;
         }
@@ -195,7 +174,7 @@ array_multisort($days, $totals);
         
         .stat-card i {
             font-size: 32px;
-            color: #f4b400;
+            color: #556176;
             margin-bottom: 12px;
         }
         
@@ -222,9 +201,10 @@ array_multisort($days, $totals);
         /* CARDS */
         .card-custom {
             background: white;
-            border-radius: 14px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border: 1px solid #e7ecf3;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 16px 36px rgba(15,23,42,0.06);
             margin-bottom: 30px;
         }
         
@@ -340,69 +320,20 @@ array_multisort($days, $totals);
             color: white;
         }
         
-        /* WELCOME SECTION */
-        .welcome-section {
-            margin-bottom: 30px;
-        }
-        
-        .welcome-section h2 {
-            font-size: 24px;
-            font-weight: 600;
-        }
-        
-        body.dark-mode .welcome-section p {
-            color: #9ca3af;
-        }
     </style>
 </head>
 <body>
 
+<div class="admin-layout">
+
 <!-- SIDEBAR -->
-<div class="sidebar">
-    <h4><i class="fa fa-utensils"></i> DineMate</h4>
-    <a href="dashboard.php" class="active">
-        <i class="fa fa-chart-line"></i> Dashboard
-    </a>
-    <a href="manage-bookings.php">
-        <i class="fa fa-calendar-check"></i> Bookings
-    </a>
-    <a href="manage-tables.php">
-        <i class="fa fa-chair"></i> Tables
-    </a>
-    <a href="manage-users.php">
-        <i class="fa fa-users"></i> Users
-    </a>
-    <a href="../auth/logout.php">
-        <i class="fa fa-sign-out-alt"></i> Logout
-    </a>
-</div>
+<?php include __DIR__ . '/admin-sidebar.php'; ?>
 
-<!-- TOPBAR -->
-<div class="topbar">
-    <div class="welcome-section">
-        <h5 class="mb-0">Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>!</h5>
-        <small><?= date('l, F j, Y') ?></small>
-    </div>
-    <div>
-        <button onclick="toggleDarkMode()" class="dark-mode-toggle">
-            <i class="fa fa-moon"></i>
-        </button>
-        <span class="ms-3 position-relative">
-            <i class="fa fa-bell"></i>
-            <?php if($todayBookings > 0): ?>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                <?= $todayBookings ?>
-            </span>
-            <?php endif; ?>
-        </span>
-        <span class="ms-3">
-            <i class="fa fa-user-circle"></i> <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?>
-        </span>
-    </div>
-</div>
+<div class="main-content">
+    <?php include __DIR__ . '/admin-topbar.php'; ?>
 
-<!-- MAIN CONTENT -->
-<div class="main">
+    <!-- MAIN CONTENT -->
+    <div class="main">
     
     <!-- STATS CARDS -->
     <div class="row g-4 mb-4">
@@ -456,9 +387,9 @@ array_multisort($days, $totals);
                         <?php foreach($recentBookings as $booking): ?>
                         <tr>
                             <td><?= htmlspecialchars($booking['name']) ?></td>
-                            <td>Table <?= $booking['table_number'] ?></td>
+                            <td><?= $booking['table_number'] ? 'Table ' . htmlspecialchars($booking['table_number']) : 'Unassigned' ?></td>
                             <td><?= $booking['booking_date'] ?></td>
-                            <td><?= date('h:i A', strtotime($booking['booking_time'])) ?></td>
+                            <td><?= date('h:i A', strtotime($booking['start_time'])) ?> - <?= date('h:i A', strtotime($booking['end_time'])) ?></td>
                             <td><?= $booking['number_of_guests'] ?></td>
                         </tr>
                         <?php endforeach; ?>
@@ -488,6 +419,8 @@ array_multisort($days, $totals);
             </div>
         </div>
     </div>
+    </div>
+</div>
 </div>
 
 <script>

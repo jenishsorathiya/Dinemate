@@ -1,13 +1,9 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/config/db.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/functions.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 
-// Check if user is admin
-if(!isAdmin()) {
-    header("Location: ../auth/login.php");
-    exit();
-}
+requireAdmin();
 
 // Handle Promote User to Admin
 if(isset($_GET['promote'])) {
@@ -167,6 +163,13 @@ if(isset($_GET['edit'])) {
     $stmt->execute([$edit_id]);
     $editUser = $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
+$adminPageTitle = 'Users';
+$adminPageIcon = 'fa-users';
+$adminNotificationCount = 0;
+$adminProfileName = $_SESSION['name'] ?? 'Admin';
+$adminSidebarActive = 'users';
+$adminSidebarPathPrefix = '';
 ?>
 
 <!DOCTYPE html>
@@ -175,87 +178,47 @@ if(isset($_GET['edit'])) {
     <title>Manage Users | DineMate Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/dashboard-theme.css" rel="stylesheet">
     
     <style>
         body {
             margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background: #f4f6f9;
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
+        }
+
+        .admin-layout {
+            display: flex;
+            height: 100vh;
         }
         
         /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            height: 100vh;
-            position: fixed;
-            background: #111827;
-            color: white;
-            padding: 25px;
-            left: 0;
-            top: 0;
-        }
         
-        .sidebar h4 {
-            color: #f4b400;
-            margin-bottom: 35px;
-            font-weight: 700;
-        }
-        
-        .sidebar a {
-            display: block;
-            padding: 12px 15px;
-            color: #ddd;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: 0.3s;
-        }
-        
-        .sidebar a i {
-            margin-right: 10px;
-            width: 24px;
-        }
-        
-        .sidebar a:hover {
-            background: #1f2937;
-            color: #f4b400;
-        }
-        
-        .sidebar a.active {
-            background: #f4b400;
-            color: #111827;
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         
         /* TOPBAR */
-        .topbar {
-            margin-left: 260px;
-            height: 70px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            position: fixed;
-            right: 0;
-            left: 260px;
-            top: 0;
-            z-index: 99;
-        }
-        
         /* MAIN CONTENT */
         .main {
-            margin-left: 260px;
-            padding: 90px 30px 30px 30px;
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
         }
         
         /* CARDS */
         .card-custom {
             background: white;
-            border-radius: 14px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border: 1px solid #e7ecf3;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 16px 36px rgba(15,23,42,0.06);
             margin-bottom: 30px;
         }
         
@@ -297,13 +260,13 @@ if(isset($_GET['edit'])) {
         }
         
         .role-admin {
-            background: #f4b400;
-            color: #111827;
+            background: #eef2f6;
+            color: #556176;
         }
         
         .role-customer {
-            background: #3b82f6;
-            color: white;
+            background: #e6f7ee;
+            color: #1d7a53;
         }
         
         /* BUTTONS */
@@ -392,36 +355,16 @@ if(isset($_GET['edit'])) {
 </head>
 <body>
 
+<div class="admin-layout">
+
 <!-- SIDEBAR -->
-<div class="sidebar">
-    <h4><i class="fa fa-utensils"></i> DineMate</h4>
-    <a href="dashboard.php">
-        <i class="fa fa-chart-line"></i> Dashboard
-    </a>
-    <a href="manage-bookings.php">
-        <i class="fa fa-calendar-check"></i> Bookings
-    </a>
-    <a href="manage-tables.php">
-        <i class="fa fa-chair"></i> Tables
-    </a>
-    <a href="manage-users.php" class="active">
-        <i class="fa fa-users"></i> Users
-    </a>
-    <a href="../auth/logout.php">
-        <i class="fa fa-sign-out-alt"></i> Logout
-    </a>
-</div>
+<?php include __DIR__ . '/admin-sidebar.php'; ?>
 
-<!-- TOPBAR -->
-<div class="topbar">
-    <h5 class="mb-0"><i class="fa fa-users"></i> Manage Users</h5>
-    <div>
-        <span><i class="fa fa-user-circle"></i> <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?></span>
-    </div>
-</div>
+<div class="main-content">
+    <?php include __DIR__ . '/admin-topbar.php'; ?>
 
-<!-- MAIN CONTENT -->
-<div class="main">
+    <!-- MAIN CONTENT -->
+    <div class="main">
     
     <!-- Flash Messages -->
     <?php
@@ -614,6 +557,8 @@ if(isset($_GET['edit'])) {
             <p class="text-muted text-center mb-0">No users found.</p>
         <?php endif; ?>
     </div>
+    </div>
+</div>
 </div>
 
 <script>
