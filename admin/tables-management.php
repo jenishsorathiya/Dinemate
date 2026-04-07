@@ -974,9 +974,7 @@ $adminSidebarPathPrefix = '';
 
         .zone-label {
             position: absolute;
-            left: 50%;
-            top: 14px;
-            transform: translateX(-50%);
+            z-index: 4;
             display: inline-flex;
             align-items: center;
             padding: 8px 16px;
@@ -999,18 +997,18 @@ $adminSidebarPathPrefix = '';
             cursor: grab;
         }
 
-        .zone.dragging .zone-label {
+        .zone-label.dragging {
             cursor: grabbing;
         }
 
-        .zone[data-zone-key="kookaburra"] .zone-label {
+        .zone-label[data-zone-key="kookaburra"] {
             font-size: 13px;
         }
 
-        .zone[data-zone-key="osf"] .zone-label,
-        .zone[data-zone-key="wisteria"] .zone-label,
-        .zone[data-zone-key="schumack"] .zone-label,
-        .zone[data-zone-key="main-bar"] .zone-label {
+        .zone-label[data-zone-key="osf"],
+        .zone-label[data-zone-key="wisteria"],
+        .zone-label[data-zone-key="schumack"],
+        .zone-label[data-zone-key="main-bar"] {
             font-size: 14px;
         }
 
@@ -1116,13 +1114,13 @@ $adminSidebarPathPrefix = '';
         }
 
         .table-capacity {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
             color: #51607e;
         }
 
         .table-label {
-            font-size: 12px;
+            font-size: 11px;
             line-height: 1;
         }
 
@@ -1152,71 +1150,71 @@ $adminSidebarPathPrefix = '';
         }
 
         .table-circle {
-            width: 66px;
-            height: 66px;
+            width: 56px;
+            height: 56px;
         }
 
         .table-circle .table-top {
-            width: 46px;
-            height: 46px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
         }
 
         .table-square {
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
         }
 
         .table-square .table-top {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
         }
 
         .table-rect-horizontal {
-            width: 92px;
-            height: 62px;
+            width: 78px;
+            height: 52px;
         }
 
         .table-rect-horizontal .table-top {
-            width: 62px;
-            height: 40px;
-            border-radius: 14px;
+            width: 52px;
+            height: 34px;
+            border-radius: 12px;
         }
 
         .table-rect-vertical {
-            width: 62px;
-            height: 92px;
+            width: 52px;
+            height: 78px;
         }
 
         .table-rect-vertical .table-top {
-            width: 40px;
-            height: 62px;
-            border-radius: 14px;
+            width: 34px;
+            height: 52px;
+            border-radius: 12px;
         }
 
         .table-circle .table-chair,
         .table-square .table-chair {
-            width: 12px;
-            height: 9px;
+            width: 10px;
+            height: 8px;
             border-radius: 999px;
         }
 
         .table-rect-horizontal .table-chair,
         .table-rect-vertical .table-chair {
-            width: 10px;
-            height: 16px;
+            width: 9px;
+            height: 14px;
             border-radius: 8px;
         }
 
-        .table-chair-top { top: 7px; left: 50%; transform: translateX(-50%); }
-        .table-chair-bottom { bottom: 7px; left: 50%; transform: translateX(-50%); }
-        .table-chair-left { left: 7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
-        .table-chair-right { right: 7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
-        .table-chair-top-left { top: 10px; left: 10px; transform: rotate(-28deg); }
-        .table-chair-top-right { top: 10px; right: 10px; transform: rotate(28deg); }
-        .table-chair-bottom-left { bottom: 10px; left: 10px; transform: rotate(28deg); }
-        .table-chair-bottom-right { bottom: 10px; right: 10px; transform: rotate(-28deg); }
+        .table-chair-top { top: 5px; left: 50%; transform: translateX(-50%); }
+        .table-chair-bottom { bottom: 5px; left: 50%; transform: translateX(-50%); }
+        .table-chair-left { left: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+        .table-chair-right { right: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+        .table-chair-top-left { top: 8px; left: 8px; transform: rotate(-28deg); }
+        .table-chair-top-right { top: 8px; right: 8px; transform: rotate(28deg); }
+        .table-chair-bottom-left { bottom: 8px; left: 8px; transform: rotate(28deg); }
+        .table-chair-bottom-right { bottom: 8px; right: 8px; transform: rotate(-28deg); }
 
         .table-circle .table-chair-top-left,
         .table-circle .table-chair-top-right,
@@ -2037,8 +2035,17 @@ $adminSidebarPathPrefix = '';
         const MAX_VIEW_SCALE = 2.4;
         const MIN_AREA_WIDTH = 84;
         const MIN_AREA_HEIGHT = 70;
-        const TABLE_PADDING_X = 34;
-        const TABLE_PADDING_Y = 30;
+        const TABLE_PADDING_X = 24;
+        const TABLE_PADDING_Y = 22;
+        const TABLE_DRAG_EDGE_PADDING = 40;
+        const TABLE_DEFAULT_OFFSET = 34;
+        const TABLE_DEFAULT_COLUMNS = 2;
+        const TABLE_DEFAULT_GUTTER_X = 70;
+        const TABLE_DEFAULT_GUTTER_Y = 68;
+        const TABLE_OSF_COLUMNS = 4;
+        const TABLE_OSF_GUTTER_X = 76;
+        const TABLE_OSF_GUTTER_Y = 60;
+        const AREA_LABEL_CANVAS_PADDING = 10;
 
         const zoneBlueprints = [
             { key: 'stables', label: 'Stables', tone: 'amber', x: 42, y: 16, width: 166, height: 92 },
@@ -2154,6 +2161,22 @@ $adminSidebarPathPrefix = '';
                     ...resolveZoneLayout(blueprint, area),
                 };
             });
+        }
+
+        function getTableLayoutConfig(zone) {
+            if (zone && zone.key === 'osf') {
+                return {
+                    columns: TABLE_OSF_COLUMNS,
+                    gutterX: TABLE_OSF_GUTTER_X,
+                    gutterY: TABLE_OSF_GUTTER_Y,
+                };
+            }
+
+            return {
+                columns: TABLE_DEFAULT_COLUMNS,
+                gutterX: TABLE_DEFAULT_GUTTER_X,
+                gutterY: TABLE_DEFAULT_GUTTER_Y,
+            };
         }
 
         function clampTableWithinZone(table, zone) {
@@ -2405,14 +2428,12 @@ $adminSidebarPathPrefix = '';
                         return;
                     }
 
-                    const columns = zone.key === 'osf' ? 4 : 2;
-                    const gutterX = zone.key === 'osf' ? 90 : 82;
-                    const gutterY = zone.key === 'osf' ? 68 : 82;
-                    const offsetX = 42 + (index % columns) * gutterX;
-                    const offsetY = 42 + Math.floor(index / columns) * gutterY;
+                    const layoutConfig = getTableLayoutConfig(zone);
+                    const offsetX = TABLE_DEFAULT_OFFSET + (index % layoutConfig.columns) * layoutConfig.gutterX;
+                    const offsetY = TABLE_DEFAULT_OFFSET + Math.floor(index / layoutConfig.columns) * layoutConfig.gutterY;
 
-                    table.layout_x = Math.min(zone.x + zone.width - 54, zone.x + offsetX);
-                    table.layout_y = Math.min(zone.y + zone.height - 54, zone.y + offsetY);
+                    table.layout_x = Math.min(zone.x + zone.width - TABLE_DRAG_EDGE_PADDING, zone.x + offsetX);
+                    table.layout_y = Math.min(zone.y + zone.height - TABLE_DRAG_EDGE_PADDING, zone.y + offsetY);
                 });
             });
         }
@@ -2507,10 +2528,26 @@ $adminSidebarPathPrefix = '';
                     ${area ? `data-area-id="${Number(area.area_id)}" tabindex="0" role="button" aria-label="Focus ${escapeAttribute(zone.label)} area"` : ''}
                     style="left:${zone.x}px; top:${zone.y}px; width:${zone.width}px; height:${zone.height}px;"
                 >
-                    <div class="zone-label" data-area-drag-handle="true" style="left:${resolveAreaLabelLayout(area, zone).x}px; top:${resolveAreaLabelLayout(area, zone).y}px; transform:translate(-50%, 0);">${zone.label}</div>
                     ${area && state.isEditMode ? '<div class="zone-resize-handle" data-area-resize-handle="true" aria-hidden="true"></div>' : ''}
                 </div>
             `;
+            }).join('');
+
+            const labelHtml = getRenderedZones().map((zone) => {
+                const area = getAreaByZoneKey(zone.key);
+                const labelPosition = resolveAreaLabelLayout(area, zone);
+                const areaAttrs = area
+                    ? `data-area-label-id="${Number(area.area_id)}" tabindex="0" role="button" aria-label="Focus ${escapeAttribute(zone.label)} area"`
+                    : '';
+
+                return `
+                    <div
+                        class="zone-label"
+                        data-zone-key="${zone.key}"
+                        ${areaAttrs}
+                        style="left:${labelPosition.x}px; top:${labelPosition.y}px; transform:translate(-50%, 0);"
+                    >${zone.label}</div>
+                `;
             }).join('');
 
             const tableHtml = state.tables.map((table) => {
@@ -2546,14 +2583,9 @@ $adminSidebarPathPrefix = '';
                 `;
             }).join('');
 
-            canvasSurface.innerHTML = zoneHtml + tableHtml;
+            canvasSurface.innerHTML = zoneHtml + labelHtml + tableHtml;
 
-            canvasSurface.querySelectorAll('[data-area-id]').forEach((zone) => {
-                const dragHandle = zone.querySelector('[data-area-drag-handle]');
-                if (dragHandle) {
-                    dragHandle.addEventListener('pointerdown', handleAreaDragStart);
-                }
-
+            canvasSurface.querySelectorAll('.zone[data-area-id]').forEach((zone) => {
                 const handle = zone.querySelector('[data-area-resize-handle]');
                 if (handle) {
                     handle.addEventListener('pointerdown', handleAreaResizeStart);
@@ -2574,6 +2606,31 @@ $adminSidebarPathPrefix = '';
                         focusArea(Number(zone.dataset.areaId));
                     }
                 });
+            });
+
+            canvasSurface.querySelectorAll('[data-area-label-id]').forEach((label) => {
+                label.addEventListener('click', (event) => {
+                    const areaId = Number(label.dataset.areaLabelId);
+
+                    if (Number(state.justManipulatedAreaId) === areaId) {
+                        state.justManipulatedAreaId = null;
+                        return;
+                    }
+
+                    event.stopPropagation();
+                    focusArea(areaId);
+                });
+
+                label.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        focusArea(Number(label.dataset.areaLabelId));
+                    }
+                });
+
+                if (state.isEditMode) {
+                    label.addEventListener('pointerdown', handleAreaDragStart);
+                }
             });
 
             canvasSurface.querySelectorAll('[data-table-id]').forEach((button) => {
@@ -2828,18 +2885,19 @@ $adminSidebarPathPrefix = '';
                 return;
             }
 
-            const zoneElement = event.currentTarget.closest('[data-area-id]');
-            const areaId = Number(zoneElement?.dataset.areaId || 0);
+            const labelElement = event.currentTarget;
+            const areaId = Number(labelElement?.dataset.areaLabelId || 0);
             const area = getAreaById(areaId);
             const zone = getZoneByAreaId(areaId);
             const labelPosition = resolveAreaLabelLayout(area, zone);
 
-            if (!area || !zone || !zoneElement) {
+            if (!area || !zone || !labelElement) {
                 return;
             }
 
             const rect = canvasSurface.getBoundingClientRect();
             const currentScale = getCanvasEffectiveScale();
+            const labelRect = labelElement.getBoundingClientRect();
 
             state.dragging = {
                 type: 'area-label',
@@ -2847,11 +2905,13 @@ $adminSidebarPathPrefix = '';
                 pointerId: event.pointerId,
                 offsetX: (event.clientX - rect.left) / currentScale - labelPosition.x,
                 offsetY: (event.clientY - rect.top) / currentScale - labelPosition.y,
+                labelWidth: labelRect.width / currentScale,
+                labelHeight: labelRect.height / currentScale,
                 didMove: false,
             };
 
-            zoneElement.setPointerCapture(event.pointerId);
-            zoneElement.classList.add('dragging');
+            labelElement.setPointerCapture(event.pointerId);
+            labelElement.classList.add('dragging');
             state.selectedAreaId = areaId;
             renderSectionList();
         }
@@ -2912,8 +2972,7 @@ $adminSidebarPathPrefix = '';
 
             if (state.dragging.type === 'area-label') {
                 const area = getAreaById(state.dragging.areaId);
-                const zone = getZoneByAreaId(state.dragging.areaId);
-                if (!area || !zone) {
+                if (!area) {
                     return;
                 }
 
@@ -2921,8 +2980,15 @@ $adminSidebarPathPrefix = '';
                 const currentScale = getCanvasEffectiveScale();
                 const unclampedX = ((event.clientX - rect.left) / currentScale) - state.dragging.offsetX;
                 const unclampedY = ((event.clientY - rect.top) / currentScale) - state.dragging.offsetY;
-                const nextX = Math.max(zone.x + 42, Math.min(zone.x + zone.width - 42, Math.round(unclampedX)));
-                const nextY = Math.max(zone.y + 8, Math.min(zone.y + zone.height - 38, Math.round(unclampedY)));
+                const halfLabelWidth = Math.max(18, state.dragging.labelWidth / 2);
+                const nextX = Math.max(
+                    AREA_LABEL_CANVAS_PADDING + halfLabelWidth,
+                    Math.min(BASE_CANVAS_WIDTH - AREA_LABEL_CANVAS_PADDING - halfLabelWidth, Math.round(unclampedX))
+                );
+                const nextY = Math.max(
+                    AREA_LABEL_CANVAS_PADDING,
+                    Math.min(BASE_CANVAS_HEIGHT - AREA_LABEL_CANVAS_PADDING - state.dragging.labelHeight, Math.round(unclampedY))
+                );
 
                 if (nextX === area.label_layout_x && nextY === area.label_layout_y) {
                     return;
@@ -2985,8 +3051,8 @@ $adminSidebarPathPrefix = '';
             const nextX = ((event.clientX - rect.left) / currentScale) - state.dragging.offsetX;
             const nextY = ((event.clientY - rect.top) / currentScale) - state.dragging.offsetY;
 
-            table.layout_x = Math.max(48, Math.min(BASE_CANVAS_WIDTH - 16, Math.round(nextX)));
-            table.layout_y = Math.max(48, Math.min(BASE_CANVAS_HEIGHT - 16, Math.round(nextY)));
+            table.layout_x = Math.max(TABLE_DRAG_EDGE_PADDING, Math.min(BASE_CANVAS_WIDTH - 16, Math.round(nextX)));
+            table.layout_y = Math.max(TABLE_DRAG_EDGE_PADDING, Math.min(BASE_CANVAS_HEIGHT - 16, Math.round(nextY)));
             renderCanvas();
             renderInventory();
         }
@@ -2998,7 +3064,7 @@ $adminSidebarPathPrefix = '';
             }
 
             state.dragging = null;
-            canvasSurface.querySelectorAll('.table-item.dragging, .zone.dragging').forEach((element) => element.classList.remove('dragging'));
+            canvasSurface.querySelectorAll('.table-item.dragging, .zone.dragging, .zone-label.dragging').forEach((element) => element.classList.remove('dragging'));
             canvasSurface.querySelectorAll('.zone.resizing').forEach((element) => element.classList.remove('resizing'));
         }
 
@@ -3153,9 +3219,9 @@ $adminSidebarPathPrefix = '';
             const area = getAreaById(areaId);
             const zone = getZoneByAreaId(areaId) || zoneBlueprints[0];
             const sameAreaTables = state.tables.filter((table) => Number(table.area_id) === areaId).length;
-            const columns = zone.key === 'osf' ? 4 : 2;
-            const layoutX = Math.min(zone.x + zone.width - 54, zone.x + 42 + (sameAreaTables % columns) * (zone.key === 'osf' ? 90 : 82));
-            const layoutY = Math.min(zone.y + zone.height - 54, zone.y + 42 + Math.floor(sameAreaTables / columns) * (zone.key === 'osf' ? 68 : 82));
+            const layoutConfig = getTableLayoutConfig(zone);
+            const layoutX = Math.min(zone.x + zone.width - TABLE_DRAG_EDGE_PADDING, zone.x + TABLE_DEFAULT_OFFSET + (sameAreaTables % layoutConfig.columns) * layoutConfig.gutterX);
+            const layoutY = Math.min(zone.y + zone.height - TABLE_DRAG_EDGE_PADDING, zone.y + TABLE_DEFAULT_OFFSET + Math.floor(sameAreaTables / layoutConfig.columns) * layoutConfig.gutterY);
 
             const payload = {
                 table_number: document.getElementById('modalTableNumber').value.trim().replace(/^T/i, ''),
