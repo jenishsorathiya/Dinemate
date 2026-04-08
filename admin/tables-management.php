@@ -415,6 +415,7 @@ $adminSidebarPathPrefix = '';
             --blue: #5fa9f3;
             --amber: #ffbd67;
             --pink: #ff77b7;
+            --mocha: #8b5e3c;
             --radius: 22px;
         }
 
@@ -977,14 +978,14 @@ $adminSidebarPathPrefix = '';
             z-index: 4;
             display: inline-flex;
             align-items: center;
-            padding: 8px 16px;
+            padding: 7px 14px;
             border-radius: 14px;
-            font-size: 14px;
+            font-size: 10px;
             font-weight: 800;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.03em;
             text-transform: uppercase;
             background: rgba(255, 255, 255, 0.88);
-            border: 1px solid rgba(191, 201, 218, 0.9);
+         
             color: #111111;
             text-align: center;
             pointer-events: auto;
@@ -992,6 +993,7 @@ $adminSidebarPathPrefix = '';
             box-shadow: 0 8px 20px rgba(55, 72, 105, 0.1);
             backdrop-filter: blur(6px);
             white-space: nowrap;
+            
         }
 
         .canvas-frame.edit-mode .zone-label {
@@ -1002,17 +1004,9 @@ $adminSidebarPathPrefix = '';
             cursor: grabbing;
         }
 
-        .zone-label[data-zone-key="kookaburra"] {
-            font-size: 13px;
-        }
+   
 
-        .zone-label[data-zone-key="osf"],
-        .zone-label[data-zone-key="wisteria"],
-        .zone-label[data-zone-key="schumack"],
-        .zone-label[data-zone-key="main-bar"] {
-            font-size: 14px;
-        }
-
+         
         .zone:focus-visible {
             outline: 3px solid rgba(22, 37, 68, 0.28);
             outline-offset: 4px;
@@ -1096,6 +1090,8 @@ $adminSidebarPathPrefix = '';
         .zone.zone-amber .zone-label { color: #c7861f; }
         .zone.zone-pink { background: linear-gradient(180deg, rgba(255, 119, 183, 0.09), rgba(255, 119, 183, 0.04)); }
         .zone.zone-pink .zone-label { color: #d14d8f; }
+        .zone.zone-mocha { background: linear-gradient(180deg, rgba(160, 120, 90, 0.1), rgba(160, 120, 90, 0.04)); }
+        .zone.zone-mocha .zone-label { color: #8b5e3c; }
 
         .table-item {
             position: absolute;
@@ -1298,7 +1294,8 @@ $adminSidebarPathPrefix = '';
         .table-tone-amber .table-top { background: linear-gradient(180deg, #fff7eb, #ffe8cb); }
         .table-tone-pink { color: rgba(255, 119, 183, 0.46); }
         .table-tone-pink .table-top { background: linear-gradient(180deg, #fff1f7, #ffe4ef); }
-
+        .table-tone-mocha {  color: rgba(160, 120, 90, 0.5); }
+        .table-tone-mocha .table-top {  background: linear-gradient(180deg, #f8f4f1, #efe6df); }
         .decor {
             position: absolute;
             pointer-events: none;
@@ -2107,7 +2104,7 @@ $adminSidebarPathPrefix = '';
             { key: 'wisteria', label: 'Wisteria', tone: 'pink', x: 478, y: 14, width: 176, height: 156 },
             { key: 'schumack', label: 'Schumack', tone: 'blue', x: 478, y: 194, width: 188, height: 118 },
             { key: 'main-bar', label: 'Main Bar', tone: 'lavender', x: 176, y: 190, width: 316, height: 184 },
-            { key: 'osf', label: 'OSF', tone: 'green', x: 42, y: 392, width: 644, height: 192 }
+            { key: 'osf', label: 'OSF', tone: 'mocha', x: 42, y: 392, width: 644, height: 192 }
         ];
 
         const state = {
