@@ -945,6 +945,7 @@ $adminSidebarPathPrefix = '';
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 250, 255, 0.74));
             padding: 18px 16px 14px;
             cursor: grab;
+            touch-action: none;
             transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         }
 
@@ -987,6 +988,7 @@ $adminSidebarPathPrefix = '';
             color: #111111;
             text-align: center;
             pointer-events: auto;
+            touch-action: none;
             box-shadow: 0 8px 20px rgba(55, 72, 105, 0.1);
             backdrop-filter: blur(6px);
             white-space: nowrap;
@@ -1025,6 +1027,7 @@ $adminSidebarPathPrefix = '';
             background: #ffffff;
             box-shadow: 0 8px 16px rgba(17, 17, 17, 0.12);
             z-index: 2;
+            touch-action: none;
         }
 
         .zone-resize-handle[data-resize-direction="n"] {
@@ -1103,6 +1106,7 @@ $adminSidebarPathPrefix = '';
             font-weight: 800;
             color: #2d3a59;
             user-select: none;
+            touch-action: none;
             background: transparent;
             box-shadow: none;
             transition: transform 0.14s ease;
@@ -2630,10 +2634,9 @@ $adminSidebarPathPrefix = '';
             canvasSurface.innerHTML = zoneHtml + labelHtml + tableHtml;
 
             canvasSurface.querySelectorAll('.zone[data-area-id]').forEach((zone) => {
-                const handle = zone.querySelector('[data-area-resize-handle]');
-                if (handle) {
+                zone.querySelectorAll('[data-area-resize-handle]').forEach((handle) => {
                     handle.addEventListener('pointerdown', handleAreaResizeStart);
-                }
+                });
 
                 zone.addEventListener('click', () => {
                     if (Number(state.justManipulatedAreaId) === Number(zone.dataset.areaId)) {
