@@ -53,6 +53,8 @@ if($_SERVER["REQUEST_METHOD"] !== "POST"){
 }
 
 $user_id = (isLoggedIn() && getCurrentUserRole() === 'customer') ? (int) $_SESSION['user_id'] : null;
+$bookingSource = $user_id ? 'customer_account' : 'guest_web';
+$createdByUserId = $user_id ?: null;
 
 $customer_name = trim($_POST['customer_name'] ?? '');
 $customer_email = trim($_POST['customer_email'] ?? '');
@@ -151,10 +153,18 @@ if((int)$capacityStmt->fetchColumn() === 0){
 }
 
 /* ============ INSERT BOOKING ============ */
+$customerProfileId = upsertCustomerProfile(
+    $pdo,
+    $customer_name,
+    $customer_email,
+    $customer_phone,
+    $user_id
+);
+
 $stmt = $pdo->prepare("
     INSERT INTO bookings 
-    (user_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status)
-    VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status, booking_source, created_by_user_id)
+    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
 ");
 
 try {
@@ -162,6 +172,7 @@ try {
 
     $stmt->execute([
         $user_id, 
+        $customerProfileId,
         $customer_name,
         $customer_phone,
         $customer_email,
@@ -172,7 +183,9 @@ try {
         $start_time,
         $end_time,
         $guests, 
-        $special
+        $special,
+        $bookingSource,
+        $createdByUserId
     ]);
     
     $booking_id = $pdo->lastInsertId();

@@ -131,6 +131,9 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
         <a href="<?php echo htmlspecialchars($adminSidebarLink('manage-users.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('users'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-users"></i><span class="nav-label">Users</span>
         </a>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('customer-history.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('customers'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-address-book"></i><span class="nav-label">Customers</span>
+        </a>
         <a href="<?php echo htmlspecialchars($adminSidebarLink('../auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-sign-out-alt"></i><span class="nav-label">Logout</span>
         </a>

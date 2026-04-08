@@ -315,11 +315,14 @@ if (!empty($visibleUserIds)) {
             b.end_time,
             b.number_of_guests,
             b.status,
+            b.booking_source,
             b.reservation_card_status,
+            creator.name AS created_by_name,
             GROUP_CONCAT(DISTINCT rt.table_number ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ', ') AS assigned_table_numbers
         FROM bookings b
         LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
         LEFT JOIN restaurant_tables rt ON bta.table_id = rt.table_id
+        LEFT JOIN users creator ON b.created_by_user_id = creator.user_id
         WHERE b.user_id IN ($placeholders)
           AND (
               b.booking_date < CURDATE()
@@ -353,6 +356,9 @@ if (!empty($visibleUserIds)) {
             'number_of_guests' => (int) ($bookingRow['number_of_guests'] ?? 0),
             'status' => (string) ($bookingRow['status'] ?? ''),
             'status_label' => getBookingStatusLabel($bookingRow['status'] ?? ''),
+            'booking_source' => (string) ($bookingRow['booking_source'] ?? ''),
+            'booking_source_label' => getBookingSourceLabel($bookingRow['booking_source'] ?? ''),
+            'created_by_name' => (string) ($bookingRow['created_by_name'] ?? ''),
             'reservation_card_status_label' => !empty($bookingRow['reservation_card_status']) ? getBookingPlacementLabel($bookingRow['reservation_card_status']) : '',
             'assigned_table_numbers' => (string) ($bookingRow['assigned_table_numbers'] ?? ''),
         ];
@@ -740,6 +746,9 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         bookingHistoryList.innerHTML = bookings.map((booking) => {
             const tableSummary = booking.assigned_table_numbers ? `Table ${escapeHtml(booking.assigned_table_numbers)}` : 'No table recorded';
             const placementSummary = booking.reservation_card_status_label ? escapeHtml(booking.reservation_card_status_label) : '';
+            const sourceSummary = booking.booking_source === 'admin_manual' && booking.created_by_name
+                ? `${escapeHtml(booking.booking_source_label)} by ${escapeHtml(booking.created_by_name)}`
+                : escapeHtml(booking.booking_source_label || '');
             const statusClass = String(booking.status || '').replace('_', '-');
 
             return `
@@ -751,6 +760,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                                 <span>${escapeHtml(formatHistoryTime(booking.start_time))} - ${escapeHtml(formatHistoryTime(booking.end_time))}</span>
                                 <span>P${escapeHtml(booking.number_of_guests)}</span>
                                 <span>${tableSummary}</span>
+                                ${sourceSummary ? `<span>${sourceSummary}</span>` : ''}
                             </div>
                         </div>
                         <span class="booking-badge ${escapeHtml(statusClass === 'completed' ? 'has-bookings' : 'no-bookings')}">

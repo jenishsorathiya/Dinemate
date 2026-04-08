@@ -173,6 +173,13 @@ try {
             ? $currentPlacementStatus
             : 'not_placed';
     }
+    $nextCustomerProfileId = upsertCustomerProfile(
+        $pdo,
+        $customerName,
+        (string) ($booking['customer_email'] ?? ''),
+        (string) ($booking['customer_phone'] ?? ''),
+        $booking['user_id'] !== null ? (int) $booking['user_id'] : null
+    );
 
     $pdo->beginTransaction();
 
@@ -186,7 +193,8 @@ try {
             number_of_guests = ?,
             special_request = ?,
             status = ?,
-            reservation_card_status = ?
+            reservation_card_status = ?,
+            customer_profile_id = ?
         WHERE booking_id = ?
     ");
     $updateStmt->execute([
@@ -199,6 +207,7 @@ try {
         $specialRequest !== '' ? $specialRequest : null,
         $nextStatus,
         $nextPlacementStatus,
+        $nextCustomerProfileId,
         $bookingId,
     ]);
 

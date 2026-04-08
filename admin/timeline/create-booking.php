@@ -12,6 +12,7 @@ requireAdmin(['json' => true]);
 $data = json_decode(file_get_contents('php://input'), true);
 
 $name = trim($data['name'] ?? '');
+$customerProfileId = (int) ($data['customer_profile_id'] ?? 0);
 $customerEmail = trim($data['customer_email'] ?? '');
 $customerPhone = trim($data['customer_phone'] ?? '');
 $bookingDate = trim($data['booking_date'] ?? '');
@@ -62,8 +63,45 @@ if((int)$capacityStmt->fetchColumn() === 0) {
 }
 
 try {
-    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status) VALUES (NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending')");
+    if ($customerProfileId > 0) {
+        $profileStmt = $pdo->prepare("SELECT * FROM customer_profiles WHERE customer_profile_id = ? LIMIT 1");
+        $profileStmt->execute([$customerProfileId]);
+        $existingProfile = $profileStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$existingProfile) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Selected customer profile was not found']);
+            exit();
+        }
+
+        $profileName = $name !== '' ? $name : (string) ($existingProfile['name'] ?? 'Guest');
+        $profileEmail = $customerEmail !== '' ? $customerEmail : (string) ($existingProfile['email'] ?? '');
+        $profilePhone = $customerPhone !== '' ? $customerPhone : (string) ($existingProfile['phone'] ?? '');
+
+        $customerProfileId = upsertCustomerProfile(
+            $pdo,
+            $profileName,
+            $profileEmail !== '' ? $profileEmail : null,
+            $profilePhone !== '' ? $profilePhone : null,
+            isset($existingProfile['linked_user_id']) && $existingProfile['linked_user_id'] !== null ? (int) $existingProfile['linked_user_id'] : null
+        );
+
+        $name = $profileName;
+        $customerEmail = $profileEmail;
+        $customerPhone = $profilePhone;
+    } else {
+        $customerProfileId = upsertCustomerProfile(
+            $pdo,
+            $name,
+            $customerEmail !== '' ? $customerEmail : null,
+            $customerPhone !== '' ? $customerPhone : null,
+            null
+        );
+    }
+
+    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status, booking_source, created_by_user_id) VALUES (NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending', 'admin_manual', ?)");
     $bookingStmt->execute([
+        $customerProfileId,
         $name,
         $customerPhone !== '' ? $customerPhone : null,
         $customerEmail !== '' ? $customerEmail : null,
@@ -75,6 +113,7 @@ try {
         $endTime,
         $guestCount,
         $specialRequest !== '' ? $specialRequest : null,
+        (int) (getCurrentUserId() ?? 0) ?: null,
     ]);
 
     $bookingId = $pdo->lastInsertId();
@@ -94,6 +133,8 @@ try {
             'number_of_guests' => $guestCount,
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
             'status' => 'pending',
+            'booking_source' => 'admin_manual',
+            'booking_source_label' => getBookingSourceLabel('admin_manual'),
             'customer_name' => $name,
             'customer_phone' => $customerPhone !== '' ? $customerPhone : null,
             'customer_email' => $customerEmail !== '' ? $customerEmail : null,

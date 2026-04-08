@@ -225,9 +225,12 @@ $serviceOutcomesStmt = $pdo->query(
             b.end_time,
             b.number_of_guests,
             b.status,
+            b.booking_source,
+            creator.name AS created_by_name,
             COALESCE(b.customer_name_override, b.customer_name, u.name, 'Guest') AS customer_name
      FROM bookings b
      LEFT JOIN users u ON b.user_id = u.user_id
+     LEFT JOIN users creator ON b.created_by_user_id = creator.user_id
      WHERE b.booking_date = CURDATE()
        AND b.status IN ('completed', 'cancelled', 'no_show')
      ORDER BY b.start_time DESC, b.booking_id DESC
@@ -282,10 +285,13 @@ $bookingHistorySql = "
             b.number_of_guests,
             b.status,
             b.reservation_card_status,
+            b.booking_source,
+            creator.name AS created_by_name,
             COALESCE(b.customer_name_override, b.customer_name, u.name, 'Guest') AS customer_name,
             GROUP_CONCAT(DISTINCT rt.table_number ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ', ') AS assigned_table_numbers
      FROM bookings b
      LEFT JOIN users u ON b.user_id = u.user_id
+     LEFT JOIN users creator ON b.created_by_user_id = creator.user_id
      LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
      LEFT JOIN restaurant_tables rt ON bta.table_id = rt.table_id
      WHERE " . implode("\n       AND ", $historyFilters) . "
@@ -1158,6 +1164,12 @@ $adminSidebarPathPrefix = '';
                         <div class="queue-shell">
                             <div class="workflow-list">
                                 <?php foreach ($serviceOutcomes as $booking): ?>
+                                    <?php
+                                    $sourceSummary = getBookingSourceLabel($booking['booking_source'] ?? '');
+                                    if (($booking['booking_source'] ?? '') === 'admin_manual' && !empty($booking['created_by_name'])) {
+                                        $sourceSummary .= ' by ' . $booking['created_by_name'];
+                                    }
+                                    ?>
                                     <article class="workflow-item">
                                         <div class="workflow-main">
                                             <div class="workflow-item-top">
@@ -1169,6 +1181,7 @@ $adminSidebarPathPrefix = '';
                                             <div class="workflow-item-meta">
                                                 <span><?php echo htmlspecialchars(date('D, j M', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span>
                                                 <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span><?php echo htmlspecialchars($sourceSummary, ENT_QUOTES, 'UTF-8'); ?></span>
                                                 <span class="workflow-meta-accent">P<?php echo (int) $booking['number_of_guests']; ?></span>
                                             </div>
                                         </div>
@@ -1233,6 +1246,10 @@ $adminSidebarPathPrefix = '';
                                     if (!empty($booking['reservation_card_status'])) {
                                         $placementSummary = getBookingPlacementLabel($booking['reservation_card_status']);
                                     }
+                                    $sourceSummary = getBookingSourceLabel($booking['booking_source'] ?? '');
+                                    if (($booking['booking_source'] ?? '') === 'admin_manual' && !empty($booking['created_by_name'])) {
+                                        $sourceSummary .= ' by ' . $booking['created_by_name'];
+                                    }
                                     ?>
                                     <article class="workflow-item">
                                         <div class="workflow-main">
@@ -1246,6 +1263,7 @@ $adminSidebarPathPrefix = '';
                                                 <span><?php echo htmlspecialchars(date('D, j M Y', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span>
                                                 <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
                                                 <span><?php echo htmlspecialchars($assignedTableSummary, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span><?php echo htmlspecialchars($sourceSummary, ENT_QUOTES, 'UTF-8'); ?></span>
                                                 <span class="workflow-meta-accent">P<?php echo (int) $booking['number_of_guests']; ?></span>
                                             </div>
                                         </div>

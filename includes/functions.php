@@ -193,6 +193,154 @@ function getBookingPlacementLabel($status) {
     return $labels[$normalizedStatus] ?? 'Not placed';
 }
 
+function getBookingSources() {
+    return ['customer_account', 'guest_web', 'admin_manual'];
+}
+
+function getBookingSourceLabel($source) {
+    $normalizedSource = strtolower(trim((string) $source));
+    $labels = [
+        'customer_account' => 'Customer account',
+        'guest_web' => 'Guest web booking',
+        'admin_manual' => 'Entered by admin',
+    ];
+
+    return $labels[$normalizedSource] ?? 'Unknown source';
+}
+
+function normalizeCustomerProfileEmail($email) {
+    return strtolower(trim((string) $email));
+}
+
+function normalizeCustomerProfilePhone($phone) {
+    return preg_replace('/\D+/', '', (string) $phone);
+}
+
+function ensureCustomerProfilesSchema($pdo) {
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS customer_profiles (
+            customer_profile_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            linked_user_id INT NULL DEFAULT NULL,
+            name VARCHAR(100) NOT NULL,
+            email VARCHAR(100) NULL DEFAULT NULL,
+            phone VARCHAR(30) NULL DEFAULT NULL,
+            normalized_email VARCHAR(100) NULL DEFAULT NULL,
+            normalized_phone VARCHAR(30) NULL DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            KEY idx_customer_profiles_linked_user_id (linked_user_id),
+            KEY idx_customer_profiles_normalized_email (normalized_email),
+            KEY idx_customer_profiles_normalized_phone (normalized_phone)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    $profileIdStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'customer_profile_id'");
+    if ($profileIdStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN customer_profile_id INT NULL DEFAULT NULL AFTER user_id");
+    }
+}
+
+function findMatchingCustomerProfile($pdo, $name, $email = null, $phone = null, $linkedUserId = null) {
+    $normalizedEmail = normalizeCustomerProfileEmail($email);
+    $normalizedPhone = normalizeCustomerProfilePhone($phone);
+
+    if ($linkedUserId !== null && (int) $linkedUserId > 0) {
+        $stmt = $pdo->prepare("SELECT * FROM customer_profiles WHERE linked_user_id = ? ORDER BY customer_profile_id ASC LIMIT 1");
+        $stmt->execute([(int) $linkedUserId]);
+        $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($profile) {
+            return $profile;
+        }
+    }
+
+    if ($normalizedEmail !== '') {
+        $stmt = $pdo->prepare("SELECT * FROM customer_profiles WHERE normalized_email = ? ORDER BY customer_profile_id ASC LIMIT 1");
+        $stmt->execute([$normalizedEmail]);
+        $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($profile) {
+            return $profile;
+        }
+    }
+
+    if ($normalizedPhone !== '') {
+        $stmt = $pdo->prepare("SELECT * FROM customer_profiles WHERE normalized_phone = ? ORDER BY customer_profile_id ASC LIMIT 1");
+        $stmt->execute([$normalizedPhone]);
+        $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($profile) {
+            return $profile;
+        }
+    }
+
+    return null;
+}
+
+function upsertCustomerProfile($pdo, $name, $email = null, $phone = null, $linkedUserId = null) {
+    $trimmedName = trim((string) $name);
+    $trimmedEmail = trim((string) ($email ?? ''));
+    $trimmedPhone = trim((string) ($phone ?? ''));
+    $normalizedEmail = normalizeCustomerProfileEmail($trimmedEmail);
+    $normalizedPhone = normalizeCustomerProfilePhone($trimmedPhone);
+
+    if ($trimmedName === '' && $normalizedEmail === '' && $normalizedPhone === '') {
+        return null;
+    }
+
+    $profile = findMatchingCustomerProfile(
+        $pdo,
+        $trimmedName,
+        $trimmedEmail !== '' ? $trimmedEmail : null,
+        $trimmedPhone !== '' ? $trimmedPhone : null,
+        $linkedUserId
+    );
+
+    if ($profile) {
+        $profileId = (int) $profile['customer_profile_id'];
+        $nextName = $trimmedName !== '' ? $trimmedName : (string) ($profile['name'] ?? 'Guest');
+        $nextEmail = $trimmedEmail !== '' ? $trimmedEmail : (string) ($profile['email'] ?? '');
+        $nextPhone = $trimmedPhone !== '' ? $trimmedPhone : (string) ($profile['phone'] ?? '');
+        $nextLinkedUserId = ($linkedUserId !== null && (int) $linkedUserId > 0)
+            ? (int) $linkedUserId
+            : ((isset($profile['linked_user_id']) && $profile['linked_user_id'] !== null) ? (int) $profile['linked_user_id'] : null);
+
+        $stmt = $pdo->prepare("
+            UPDATE customer_profiles
+            SET linked_user_id = ?,
+                name = ?,
+                email = ?,
+                phone = ?,
+                normalized_email = ?,
+                normalized_phone = ?
+            WHERE customer_profile_id = ?
+        ");
+        $stmt->execute([
+            $nextLinkedUserId,
+            $nextName !== '' ? $nextName : 'Guest',
+            $nextEmail !== '' ? $nextEmail : null,
+            $nextPhone !== '' ? $nextPhone : null,
+            $nextEmail !== '' ? normalizeCustomerProfileEmail($nextEmail) : null,
+            $nextPhone !== '' ? normalizeCustomerProfilePhone($nextPhone) : null,
+            $profileId,
+        ]);
+
+        return $profileId;
+    }
+
+    $stmt = $pdo->prepare("
+        INSERT INTO customer_profiles (linked_user_id, name, email, phone, normalized_email, normalized_phone)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+    $stmt->execute([
+        ($linkedUserId !== null && (int) $linkedUserId > 0) ? (int) $linkedUserId : null,
+        $trimmedName !== '' ? $trimmedName : 'Guest',
+        $trimmedEmail !== '' ? $trimmedEmail : null,
+        $trimmedPhone !== '' ? $trimmedPhone : null,
+        $normalizedEmail !== '' ? $normalizedEmail : null,
+        $normalizedPhone !== '' ? $normalizedPhone : null,
+    ]);
+
+    return (int) $pdo->lastInsertId();
+}
+
 function ensureBookingStatusSchema($pdo) {
     $statusStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'status'");
     $statusColumn = $statusStmt->fetch(PDO::FETCH_ASSOC);
@@ -244,6 +392,7 @@ function displayFlashMessage() {
 
 function ensureBookingRequestColumns($pdo) {
     ensureBookingStatusSchema($pdo);
+    ensureCustomerProfilesSchema($pdo);
 
     $startTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
     $startTimeExists = $startTimeStmt->rowCount() > 0;
@@ -274,6 +423,12 @@ function ensureBookingRequestColumns($pdo) {
 
     $placementStatusStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'reservation_card_status'");
     $placementStatusColumn = $placementStatusStmt->fetch(PDO::FETCH_ASSOC);
+
+    $bookingSourceStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'booking_source'");
+    $bookingSourceColumn = $bookingSourceStmt->fetch(PDO::FETCH_ASSOC);
+
+    $createdByStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'created_by_user_id'");
+    $createdByColumn = $createdByStmt->fetch(PDO::FETCH_ASSOC);
 
     // Handle legacy booking_time column which some older DBs still have
     $bookingTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'booking_time'");
@@ -320,6 +475,21 @@ function ensureBookingRequestColumns($pdo) {
         if (strpos($placementType, 'enum(') === 0 && $normalizedPlacementType !== $expectedPlacementType) {
             $pdo->exec("ALTER TABLE bookings MODIFY COLUMN reservation_card_status ENUM('not_placed', 'placed') DEFAULT NULL");
         }
+    }
+
+    if (!$bookingSourceColumn) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN booking_source ENUM('customer_account', 'guest_web', 'admin_manual') DEFAULT NULL AFTER reservation_card_status");
+    } else {
+        $bookingSourceType = strtolower((string) ($bookingSourceColumn['Type'] ?? ''));
+        $normalizedBookingSourceType = str_replace(['`', '"', ' '], '', $bookingSourceType);
+        $expectedBookingSourceType = "enum('customer_account','guest_web','admin_manual')";
+        if (strpos($bookingSourceType, 'enum(') === 0 && $normalizedBookingSourceType !== $expectedBookingSourceType) {
+            $pdo->exec("ALTER TABLE bookings MODIFY COLUMN booking_source ENUM('customer_account', 'guest_web', 'admin_manual') DEFAULT NULL");
+        }
+    }
+
+    if (!$createdByColumn) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN created_by_user_id INT NULL AFTER booking_source");
     }
 
     // If booking_time exists but is NOT NULL without a default, make it nullable to avoid insert failures
@@ -374,6 +544,47 @@ function ensureBookingRequestColumns($pdo) {
             $tokenUpdateStmt->execute([generateGuestAccessToken(), $bookingId]);
         }
     }
+
+    $missingProfileRowsStmt = $pdo->query("
+        SELECT
+            b.booking_id,
+            b.user_id,
+            COALESCE(NULLIF(b.customer_name_override, ''), NULLIF(b.customer_name, ''), u.name, 'Guest') AS profile_name,
+            COALESCE(NULLIF(b.customer_email, ''), u.email, '') AS profile_email,
+            COALESCE(NULLIF(b.customer_phone, ''), u.phone, '') AS profile_phone
+        FROM bookings b
+        LEFT JOIN users u ON b.user_id = u.user_id
+        WHERE b.customer_profile_id IS NULL
+        ORDER BY b.booking_id ASC
+    ");
+    $missingProfileRows = $missingProfileRowsStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    if (!empty($missingProfileRows)) {
+        $profileUpdateStmt = $pdo->prepare("UPDATE bookings SET customer_profile_id = ? WHERE booking_id = ?");
+        foreach ($missingProfileRows as $row) {
+            $profileId = upsertCustomerProfile(
+                $pdo,
+                (string) ($row['profile_name'] ?? 'Guest'),
+                (string) ($row['profile_email'] ?? ''),
+                (string) ($row['profile_phone'] ?? ''),
+                $row['user_id'] !== null ? (int) $row['user_id'] : null
+            );
+            if ($profileId !== null) {
+                $profileUpdateStmt->execute([$profileId, (int) $row['booking_id']]);
+            }
+        }
+    }
+
+    $pdo->exec("
+        UPDATE bookings
+        SET booking_source = CASE
+            WHEN booking_source IS NOT NULL THEN booking_source
+            WHEN created_by_user_id IS NOT NULL THEN 'admin_manual'
+            WHEN user_id IS NOT NULL THEN 'customer_account'
+            WHEN guest_access_token IS NOT NULL AND guest_access_token <> '' THEN 'guest_web'
+            ELSE 'admin_manual'
+        END
+        WHERE booking_source IS NULL
+    ");
 
     $pdo->exec("
         UPDATE bookings b
