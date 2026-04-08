@@ -14,7 +14,7 @@ if ($id < 1) {
 
 $stmt = $pdo->prepare("
 UPDATE bookings SET status='cancelled'
-WHERE booking_id=? AND user_id=?
+WHERE booking_id=? AND user_id=? AND status IN ('pending', 'confirmed')
 ");
 
 $stmt->execute([$id, getCurrentUserId()]);

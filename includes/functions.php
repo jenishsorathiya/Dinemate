@@ -154,6 +154,52 @@ function getFlashMessage() {
     return null;
 }
 
+function getBookingStatuses() {
+    return ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'];
+}
+
+function getBookingActiveStatuses() {
+    return ['pending', 'confirmed'];
+}
+
+function getBookingCompletedStatuses() {
+    return ['completed', 'cancelled', 'no_show'];
+}
+
+function getBookingStatusLabel($status) {
+    $normalizedStatus = strtolower(trim((string) $status));
+    $labels = [
+        'pending' => 'Pending',
+        'confirmed' => 'Confirmed',
+        'completed' => 'Completed',
+        'cancelled' => 'Cancelled',
+        'no_show' => 'No-show',
+    ];
+
+    return $labels[$normalizedStatus] ?? ucfirst($normalizedStatus ?: 'pending');
+}
+
+function ensureBookingStatusSchema($pdo) {
+    $statusStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'status'");
+    $statusColumn = $statusStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$statusColumn) {
+        return;
+    }
+
+    $statusType = strtolower((string) ($statusColumn['Type'] ?? ''));
+    if (strpos($statusType, 'enum(') !== 0) {
+        return;
+    }
+
+    $normalizedType = str_replace(['`', '"', ' '], '', $statusType);
+    $expectedType = "enum('pending','confirmed','completed','cancelled','no_show')";
+
+    if ($normalizedType !== $expectedType) {
+        $pdo->exec("ALTER TABLE bookings MODIFY COLUMN status ENUM('pending','confirmed','completed','cancelled','no_show') DEFAULT 'confirmed'");
+    }
+}
+
 // Display flash message as HTML
 function displayFlashMessage() {
     $flash = getFlashMessage();
@@ -183,6 +229,8 @@ function displayFlashMessage() {
 }
 
 function ensureBookingRequestColumns($pdo) {
+    ensureBookingStatusSchema($pdo);
+
     $startTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
     $startTimeExists = $startTimeStmt->rowCount() > 0;
 

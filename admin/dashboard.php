@@ -1379,7 +1379,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                         </div>
                         <div class="panel-grid-half">
                             <article class="analytics-card">
-                                <div class="card-header"><div><h3 class="card-title">Cancellations &amp; No-shows</h3><p class="card-subtitle">Cancelled and estimated no-show exposure across the selected period.</p></div></div>
+                                <div class="card-header"><div><h3 class="card-title">Cancellations &amp; No-shows</h3><p class="card-subtitle">Actual cancelled, completed, and no-show outcomes across the selected period.</p></div></div>
                                 <div class="metric-grid-quad">
                                     <div class="sub-stat"><div class="sub-stat-label">Cancellation rate</div><div class="sub-stat-value" id="cancellationRateValue">0%</div><div class="sub-stat-note">Share of bookings cancelled before service.</div></div>
                                     <div class="sub-stat"><div class="sub-stat-label">No-show rate</div><div class="sub-stat-value" id="cancellationNoShowValue">0%</div><div class="sub-stat-note">Estimated from short lead times and service patterns.</div></div>
@@ -1664,7 +1664,11 @@ function filterTablesByArea(tables) {
 }
 
 function getBookingWeightForNoShow(booking) {
-    if (booking.status === 'cancelled') {
+    if (booking.status === 'no_show') {
+        return 1;
+    }
+
+    if (booking.status === 'cancelled' || booking.status === 'completed') {
         return 0;
     }
 
@@ -1705,12 +1709,12 @@ function getBookingWeightForNoShow(booking) {
 }
 
 function getEstimatedNoShowMetrics(bookings) {
-    const activeBookings = bookings.filter((booking) => booking.status !== 'cancelled');
+    const noShowBookings = bookings.filter((booking) => booking.status === 'no_show');
     let estimatedCount = 0;
     const byWeekday = {};
     const bySlot = {};
 
-    activeBookings.forEach((booking) => {
+    noShowBookings.forEach((booking) => {
         const weight = getBookingWeightForNoShow(booking);
         estimatedCount += weight;
 
@@ -1772,7 +1776,7 @@ function buildCustomerHistory(bookings) {
 function buildTrendSeries(bookings, range, mode) {
     const labels = [];
     const values = [];
-    const activeBookings = bookings.filter((booking) => booking.status !== 'cancelled');
+    const activeBookings = bookings.filter((booking) => !['cancelled', 'no_show'].includes(booking.status));
 
     if (mode === 'weekly') {
         const weekMap = new Map();
@@ -1825,7 +1829,8 @@ function buildTrendSeries(bookings, range, mode) {
 }
 
 function buildMetrics(filteredBookings, previousBookings, allBookings, filteredTables, range) {
-    const activeBookings = filteredBookings.filter((booking) => booking.status !== 'cancelled');
+    const activeBookings = filteredBookings.filter((booking) => !['cancelled', 'no_show'].includes(booking.status));
+    const noShowEligibleBookings = filteredBookings.filter((booking) => booking.status !== 'cancelled');
     const bookingsWithTables = activeBookings.filter((booking) => booking.table_id && booking.table_capacity > 0);
     const estimatedNoShows = getEstimatedNoShowMetrics(filteredBookings);
     const totalGuests = activeBookings.reduce((sum, booking) => sum + Number(booking.number_of_guests || 0), 0);
@@ -1836,9 +1841,10 @@ function buildMetrics(filteredBookings, previousBookings, allBookings, filteredT
     const dwellMinutes = activeBookings.length
         ? activeBookings.reduce((sum, booking) => sum + Number(booking.duration_minutes || 0) + (booking.service_period === 'Dinner' ? 18 : booking.service_period === 'Lunch' ? 10 : 14), 0) / activeBookings.length
         : 0;
-    const noShowRate = activeBookings.length ? (estimatedNoShows.count / activeBookings.length) * 100 : 0;
+    const noShowRate = noShowEligibleBookings.length ? (estimatedNoShows.count / noShowEligibleBookings.length) * 100 : 0;
 
-    const priorActiveBookings = previousBookings.filter((booking) => booking.status !== 'cancelled');
+    const priorActiveBookings = previousBookings.filter((booking) => !['cancelled', 'no_show'].includes(booking.status));
+    const priorNoShowEligibleBookings = previousBookings.filter((booking) => booking.status !== 'cancelled');
     const priorWithTables = priorActiveBookings.filter((booking) => booking.table_id && booking.table_capacity > 0);
     const priorOccupancy = priorWithTables.length
         ? (priorWithTables.reduce((sum, booking) => sum + Math.min(booking.number_of_guests, booking.table_capacity) / booking.table_capacity, 0) / priorWithTables.length) * 100
@@ -1847,7 +1853,7 @@ function buildMetrics(filteredBookings, previousBookings, allBookings, filteredT
     const priorDwell = priorActiveBookings.length
         ? priorActiveBookings.reduce((sum, booking) => sum + Number(booking.duration_minutes || 0) + (booking.service_period === 'Dinner' ? 18 : booking.service_period === 'Lunch' ? 10 : 14), 0) / priorActiveBookings.length
         : 0;
-    const priorNoShow = priorActiveBookings.length ? (getEstimatedNoShowMetrics(previousBookings).count / priorActiveBookings.length) * 100 : 0;
+    const priorNoShow = priorNoShowEligibleBookings.length ? (getEstimatedNoShowMetrics(previousBookings).count / priorNoShowEligibleBookings.length) * 100 : 0;
 
     const weekdayCounts = weekdayOrder.reduce((accumulator, dayLabel) => {
         accumulator[dayLabel] = 0;
@@ -1936,8 +1942,10 @@ function buildMetrics(filteredBookings, previousBookings, allBookings, filteredT
     const busiestArea = areaMetrics.slice().sort((left, right) => right.bookings - left.bookings)[0] || null;
     const bestTurnoverArea = areaMetrics.slice().sort((left, right) => right.turnover - left.turnover)[0] || null;
     const cancelledBookings = filteredBookings.filter((booking) => booking.status === 'cancelled');
+    const noShowBookings = filteredBookings.filter((booking) => booking.status === 'no_show');
+    const completedBookings = filteredBookings.filter((booking) => booking.status === 'completed');
     const cancellationRate = filteredBookings.length ? (cancelledBookings.length / filteredBookings.length) * 100 : 0;
-    const lateCancellationCount = Math.max(0, Math.round(cancelledBookings.length * 0.42));
+    const lateCancellationCount = cancelledBookings.length;
     const affectedSlot = Object.entries(estimatedNoShows.bySlot).sort((left, right) => right[1] - left[1])[0] || ['-', 0];
 
     const customerHistory = buildCustomerHistory(allBookings);
@@ -2016,10 +2024,7 @@ function buildMetrics(filteredBookings, previousBookings, allBookings, filteredT
         affectedSlot: affectedSlot[0],
         noShowByWeekday: weekdayOrder.map((day) => estimatedNoShows.byWeekday[day] || 0),
         cancelledByWeekday: weekdayOrder.map((day) => cancelledBookings.filter((booking) => new Intl.DateTimeFormat('en-AU', { weekday: 'long' }).format(parseDate(booking.booking_date)) === day).length),
-        completedByWeekday: weekdayOrder.map((day) => {
-            const completedCount = activeBookings.filter((booking) => new Intl.DateTimeFormat('en-AU', { weekday: 'long' }).format(parseDate(booking.booking_date)) === day).length;
-            return Math.max(0, completedCount - (estimatedNoShows.byWeekday[day] || 0));
-        }),
+        completedByWeekday: weekdayOrder.map((day) => completedBookings.filter((booking) => new Intl.DateTimeFormat('en-AU', { weekday: 'long' }).format(parseDate(booking.booking_date)) === day).length),
         newCustomers,
         returningCustomers,
         averageLeadHours,
@@ -2236,7 +2241,7 @@ function renderCustomerTags(metrics) {
 
 function renderCancellationInsights(metrics) {
     const items = [
-        `${metrics.affectedSlot} has the highest no-show risk.`,
+        `${metrics.affectedSlot} has the highest no-show count.`,
         'Reminder messages may reduce missed bookings.',
         metrics.lateCancellationCount > 0 ? 'Late cancellations increased this week.' : 'Late cancellations remain low relative to demand.'
     ];
@@ -2249,7 +2254,7 @@ function renderOperationalInsights(metrics) {
         { label: 'Capacity', title: `${topArea} is leading this period.`, copy: `${topArea} shows the strongest mix of occupancy and table efficiency. Consider protecting that inventory during peak windows.` },
         { label: 'Turnover', title: `${formatNumber(metrics.turnoverRate, 1)}x average turnover across active tables.`, copy: '4-seat tables and fast dinner seatings are creating the cleanest table rotation.' },
         { label: 'Peak periods', title: `${metrics.peakDay} and ${metrics.peakHour} are the main pressure points.`, copy: `${metrics.peakService} service is carrying the highest booking concentration in the selected range.` },
-        { label: 'Attendance risk', title: `Estimated no-show rate is ${formatPercent(metrics.noShowRate, 0)}.`, copy: 'Bookings made close to service are the main source of attendance risk.' }
+        { label: 'Attendance risk', title: `No-show rate is ${formatPercent(metrics.noShowRate, 0)}.`, copy: 'These are now based on real recorded no-show outcomes instead of estimates.' }
     ];
 
     if (metrics.largeTableMismatchCount > 0) {

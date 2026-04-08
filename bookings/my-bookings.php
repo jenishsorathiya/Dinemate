@@ -22,7 +22,7 @@ $upcomingBookings = [];
 $pastBookings = [];
 
 foreach ($bookings as $booking) {
-	$isUpcoming = ($booking['booking_date'] >= $today) && (($booking['status'] ?? '') !== 'cancelled');
+	$isUpcoming = ($booking['booking_date'] >= $today) && in_array(strtolower((string) ($booking['status'] ?? '')), ['pending', 'confirmed'], true);
 	if ($isUpcoming) {
 		$upcomingBookings[] = $booking;
 	} else {
@@ -114,6 +114,21 @@ background:#fff2df;
 color:#b66a11;
 }
 
+.status.completed{
+background:#e6f7ee;
+color:#1d7a53;
+}
+
+.status.cancelled{
+background:#ffe7ea;
+color:#c13f56;
+}
+
+.status.no_show{
+background:#eef2ff;
+color:#4338ca;
+}
+
 /* DETAILS */
 
 .booking-details{
@@ -180,7 +195,7 @@ My Reservations
 </div>
 
 <div class="status <?= htmlspecialchars($b['status']) ?>">
-<?= ucfirst($b['status']) ?>
+<?= htmlspecialchars(getBookingStatusLabel($b['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8') ?>
 </div>
 
 </div>
@@ -217,6 +232,7 @@ My Reservations
 
 <div class="booking-actions">
 
+<?php if (in_array(strtolower((string) ($b['status'] ?? '')), ['pending', 'confirmed'], true)): ?>
 <a href="modify-booking.php?id=<?= $b['booking_id'] ?>" class="btn-edit">
 Edit
 </a>
@@ -224,6 +240,7 @@ Edit
 <a href="cancel-booking.php?id=<?= $b['booking_id'] ?>" class="btn-cancel">
 Cancel
 </a>
+<?php endif; ?>
 
 </div>
 
@@ -249,7 +266,7 @@ Cancel
 </div>
 
 <div class="status <?= htmlspecialchars($b['status']) ?>">
-<?= ucfirst($b['status']) ?>
+<?= htmlspecialchars(getBookingStatusLabel($b['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8') ?>
 </div>
 
 </div>

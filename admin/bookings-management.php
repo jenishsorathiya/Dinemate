@@ -39,6 +39,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     setFlashMessage('warning', 'That booking could not be rejected.');
                 }
+            } elseif (in_array($action, ['mark_completed', 'mark_no_show', 'cancel_confirmed'], true)) {
+                $pdo->beginTransaction();
+
+                if ($action === 'cancel_confirmed') {
+                    $deleteAssignmentsStmt = $pdo->prepare("DELETE FROM booking_table_assignments WHERE booking_id = ?");
+                    $deleteAssignmentsStmt->execute([$bookingId]);
+
+                    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'cancelled', table_id = NULL WHERE booking_id = ? AND status = 'confirmed'");
+                    $updateStmt->execute([$bookingId]);
+                    $successMessage = 'Confirmed booking cancelled.';
+                    $warningMessage = 'That confirmed booking could not be cancelled.';
+                } elseif ($action === 'mark_completed') {
+                    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'completed' WHERE booking_id = ? AND status = 'confirmed'");
+                    $updateStmt->execute([$bookingId]);
+                    $successMessage = 'Booking marked as completed.';
+                    $warningMessage = 'That booking could not be marked as completed.';
+                } else {
+                    $deleteAssignmentsStmt = $pdo->prepare("DELETE FROM booking_table_assignments WHERE booking_id = ?");
+                    $deleteAssignmentsStmt->execute([$bookingId]);
+
+                    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'no_show', table_id = NULL WHERE booking_id = ? AND status = 'confirmed'");
+                    $updateStmt->execute([$bookingId]);
+                    $successMessage = 'Booking marked as no-show.';
+                    $warningMessage = 'That booking could not be marked as no-show.';
+                }
+
+                $pdo->commit();
+
+                if ($updateStmt->rowCount() > 0) {
+                    setFlashMessage('success', $successMessage);
+                } else {
+                    setFlashMessage('warning', $warningMessage);
+                }
             }
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
@@ -57,6 +90,20 @@ $pendingRequestsCount = (int) $pdo->query(
      FROM bookings
      WHERE status = 'pending'
        AND booking_date >= CURDATE()"
+)->fetchColumn();
+
+$completedTodayCount = (int) $pdo->query(
+    "SELECT COUNT(*)
+     FROM bookings
+     WHERE status = 'completed'
+       AND booking_date = CURDATE()"
+)->fetchColumn();
+
+$noShowTodayCount = (int) $pdo->query(
+    "SELECT COUNT(*)
+     FROM bookings
+     WHERE status = 'no_show'
+       AND booking_date = CURDATE()"
 )->fetchColumn();
 
 $unassignedConfirmedCount = (int) $pdo->query(
@@ -147,6 +194,23 @@ $todayBookingsStmt = $pdo->query(
      ORDER BY b.start_time ASC, b.booking_id ASC"
 );
 $todayBookings = $todayBookingsStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+$serviceOutcomesStmt = $pdo->query(
+    "SELECT b.booking_id,
+            b.booking_date,
+            b.start_time,
+            b.end_time,
+            b.number_of_guests,
+            b.status,
+            COALESCE(b.customer_name_override, b.customer_name, u.name, 'Guest') AS customer_name
+     FROM bookings b
+     LEFT JOIN users u ON b.user_id = u.user_id
+     WHERE b.booking_date = CURDATE()
+       AND b.status IN ('completed', 'cancelled', 'no_show')
+     ORDER BY b.start_time DESC, b.booking_id DESC
+     LIMIT 12"
+);
+$serviceOutcomes = $serviceOutcomesStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
 $todayCapacity = (int) $pdo->query("SELECT COALESCE(SUM(capacity), 0) FROM restaurant_tables")->fetchColumn();
 
@@ -563,6 +627,18 @@ $adminSidebarPathPrefix = '';
             color: #50607c;
         }
 
+        .btn-workflow.is-complete {
+            background: #dff7ee;
+            border-color: #c4eddc;
+            color: #177755;
+        }
+
+        .btn-workflow.is-no-show {
+            background: #eef2ff;
+            border-color: #d9deff;
+            color: #4338ca;
+        }
+
         .status-pill {
             display: inline-flex;
             align-items: center;
@@ -584,6 +660,21 @@ $adminSidebarPathPrefix = '';
         .status-pill.confirmed {
             background: var(--accent-green-soft);
             color: #177755;
+        }
+
+        .status-pill.completed {
+            background: #e1f7ef;
+            color: #13674c;
+        }
+
+        .status-pill.cancelled {
+            background: var(--accent-red-soft);
+            color: #cc4157;
+        }
+
+        .status-pill.no-show {
+            background: #eef2ff;
+            color: #4338ca;
         }
 
         .service-load-card {
@@ -752,7 +843,7 @@ $adminSidebarPathPrefix = '';
                 <div class="hero-card">
                     <div class="section-header">
                         <h1>Bookings Management</h1>
-                        <p>Manage pending requests, assign tables, and keep track of today's reservations.</p>
+                        <p>Manage pending requests, assign tables, and record real service outcomes like completed visits, cancellations, and no-shows.</p>
                     </div>
                 </div>
 
@@ -771,6 +862,16 @@ $adminSidebarPathPrefix = '';
                         <div class="attention-label">Overlapping / Conflicts</div>
                         <div class="attention-value"><?php echo $conflictPairsCount; ?></div>
                         <p class="attention-note">Potential clashes in table assignments today.</p>
+                    </div>
+                    <div class="card-surface attention-card">
+                        <div class="attention-label">Completed Today</div>
+                        <div class="attention-value"><?php echo $completedTodayCount; ?></div>
+                        <p class="attention-note">Confirmed bookings marked as attended and completed.</p>
+                    </div>
+                    <div class="card-surface attention-card is-warning">
+                        <div class="attention-label">No-shows Today</div>
+                        <div class="attention-value"><?php echo $noShowTodayCount; ?></div>
+                        <p class="attention-note">Confirmed bookings marked as no-show.</p>
                     </div>
                 </div>
             </section>
@@ -861,6 +962,21 @@ $adminSidebarPathPrefix = '';
                                                 <p class="workflow-notes"><?php echo htmlspecialchars(trim((string) ($booking['special_request'] ?? '')) !== '' ? $booking['special_request'] : 'No notes added.', ENT_QUOTES, 'UTF-8'); ?></p>
                                             </div>
                                             <div class="workflow-actions">
+                                                <form method="POST" class="inline-form" onsubmit="return confirm('Mark this booking as completed?');">
+                                                    <input type="hidden" name="action" value="mark_completed">
+                                                    <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
+                                                    <button type="submit" class="btn-workflow is-complete">Completed</button>
+                                                </form>
+                                                <form method="POST" class="inline-form" onsubmit="return confirm('Mark this booking as a no-show?');">
+                                                    <input type="hidden" name="action" value="mark_no_show">
+                                                    <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
+                                                    <button type="submit" class="btn-workflow is-no-show">No-show</button>
+                                                </form>
+                                                <form method="POST" class="inline-form" onsubmit="return confirm('Cancel this confirmed booking?');">
+                                                    <input type="hidden" name="action" value="cancel_confirmed">
+                                                    <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
+                                                    <button type="submit" class="btn-workflow is-reject">Cancel</button>
+                                                </form>
                                                 <a class="btn-workflow is-confirm" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#timelineGrid">Assign Table</a>
                                                 <a class="btn-link-workflow" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList">View</a>
                                             </div>
@@ -874,6 +990,43 @@ $adminSidebarPathPrefix = '';
                         <?php endif; ?>
                     </section>
                 </div>
+            </section>
+
+            <section class="section-block">
+                <section class="card-surface panel-card">
+                    <div class="panel-top">
+                        <h3>Today's Outcomes</h3>
+                        <div class="panel-tools">
+                            <span class="panel-count"><?php echo count($serviceOutcomes); ?></span>
+                        </div>
+                    </div>
+
+                    <?php if (!empty($serviceOutcomes)): ?>
+                        <div class="queue-shell">
+                            <div class="workflow-list">
+                                <?php foreach ($serviceOutcomes as $booking): ?>
+                                    <article class="workflow-item">
+                                        <div class="workflow-main">
+                                            <div class="workflow-item-top">
+                                                <h4 class="workflow-item-name"><?php echo htmlspecialchars($booking['customer_name'], ENT_QUOTES, 'UTF-8'); ?></h4>
+                                                <span class="status-pill <?php echo htmlspecialchars(str_replace('_', '-', (string) $booking['status']), ENT_QUOTES, 'UTF-8'); ?>">
+                                                    <?php echo htmlspecialchars(getBookingStatusLabel($booking['status']), ENT_QUOTES, 'UTF-8'); ?>
+                                                </span>
+                                            </div>
+                                            <div class="workflow-item-meta">
+                                                <span><?php echo htmlspecialchars(date('D, j M', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span class="workflow-meta-accent">P<?php echo (int) $booking['number_of_guests']; ?></span>
+                                            </div>
+                                        </div>
+                                    </article>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="empty-state">No completed, cancelled, or no-show outcomes recorded for today yet.</div>
+                    <?php endif; ?>
+                </section>
             </section>
 
             <section class="section-block">

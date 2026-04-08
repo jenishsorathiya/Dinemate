@@ -46,7 +46,7 @@ if(!$booking){
 }
 
 $tableLabel = $booking['table_number'] ? 'Table ' . $booking['table_number'] : 'To be assigned by staff';
-$statusLabel = ucfirst($booking['status'] ?? 'pending');
+$statusLabel = getBookingStatusLabel($booking['status'] ?? 'pending');
 ?>
 
 <?php include "../includes/header.php"; ?>

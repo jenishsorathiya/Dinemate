@@ -16,7 +16,7 @@ $booking_id = intval($_GET['id']);
 /* 🔹 Fetch existing booking */
 $stmt = $pdo->prepare("
 SELECT * FROM bookings 
-WHERE booking_id = ? AND user_id = ?
+WHERE booking_id = ? AND user_id = ? AND status IN ('pending', 'confirmed')
 ");
 $stmt->execute([$booking_id, getCurrentUserId()]);
 $booking = $stmt->fetch(PDO::FETCH_ASSOC);

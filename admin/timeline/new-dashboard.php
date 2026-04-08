@@ -35,7 +35,7 @@ $stmt = $pdo->prepare("
     LEFT JOIN users u ON b.user_id = u.user_id
     LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
     LEFT JOIN restaurant_tables rt ON bta.table_id = rt.table_id
-    WHERE b.booking_date = ? AND b.status IN ('pending', 'confirmed')
+    WHERE b.booking_date = ? AND b.status IN ('pending', 'confirmed', 'completed', 'no_show')
     GROUP BY b.booking_id
     ORDER BY b.start_time ASC
 ");
@@ -703,10 +703,27 @@ $adminSidebarPathPrefix = '../';
             background: #fecaca;
         }
 
+        .booking-modal-secondary-small {
+            background: #eef2ff;
+            color: #3730a3;
+            border: 1px solid #d9deff;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .booking-modal-secondary-small:hover {
+            background: #e0e7ff;
+        }
+
         .booking-detail-topbar {
             display: flex;
             align-items: center;
             justify-content: flex-end;
+            gap: 8px;
             margin-bottom: 10px;
         }
 
@@ -1489,6 +1506,14 @@ $adminSidebarPathPrefix = '../';
             background: linear-gradient(135deg, #3b82f6, #2563eb);
         }
 
+        .booking-block.completed {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .booking-block.no-show {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
         .booking-block.over-capacity {
             background: linear-gradient(135deg, #f59e0b, #ea580c);
         }
@@ -1680,6 +1705,8 @@ $adminSidebarPathPrefix = '../';
             <input type="hidden" id="bookingDetailsAction" value="save">
             <div class="booking-detail-topbar">
                 <button type="button" class="booking-modal-danger-small" id="cancelBookingActionBtn">Cancel Booking</button>
+                <button type="button" class="booking-modal-secondary-small" id="completeBookingActionBtn">Mark Completed</button>
+                <button type="button" class="booking-modal-secondary-small" id="noShowBookingActionBtn">Mark No-show</button>
             </div>
             <div class="booking-detail-grid">
                 <div class="modal-form-group">
@@ -2084,8 +2111,10 @@ $adminSidebarPathPrefix = '../';
     }
 
     function getBookingDetailsMetaSummary(booking) {
-        const rawStatusLabel = String(booking.status || 'pending');
-        const statusLabel = rawStatusLabel.charAt(0).toUpperCase() + rawStatusLabel.slice(1);
+        const rawStatusLabel = String(booking.status || 'pending').toLowerCase();
+        const statusLabel = rawStatusLabel === 'no_show'
+            ? 'No-show'
+            : rawStatusLabel.charAt(0).toUpperCase() + rawStatusLabel.slice(1);
         const assignmentSummary = getBookingAssignmentSummary(booking);
 
         if(!getAssignedTableIds(booking).length || !assignmentSummary) {
@@ -2789,6 +2818,8 @@ $adminSidebarPathPrefix = '../';
         const closeBtn = document.getElementById('closeBookingDetailsModalBtn');
         const cancelBtn = document.getElementById('cancelBookingDetailsBtn');
         const cancelBookingActionBtn = document.getElementById('cancelBookingActionBtn');
+        const completeBookingActionBtn = document.getElementById('completeBookingActionBtn');
+        const noShowBookingActionBtn = document.getElementById('noShowBookingActionBtn');
         const form = document.getElementById('bookingDetailsForm');
         const errorBox = document.getElementById('bookingDetailsError');
         const saveBtn = document.getElementById('saveBookingDetailsBtn');
@@ -2809,6 +2840,66 @@ $adminSidebarPathPrefix = '../';
         if(cancelBtn) {
             cancelBtn.addEventListener('click', closeModal);
         }
+
+        function markBookingOutcome(nextStatus, buttonEl, loadingLabel, confirmMessage) {
+            const bookingId = document.getElementById('bookingDetailsId').value;
+            if(!bookingId) {
+                return;
+            }
+
+            const booking = BOOKING_DATA.find(item => item.booking_id == bookingId);
+            const bookingName = booking ? booking.customer_name : 'this booking';
+            if(!window.confirm(confirmMessage.replace('%s', bookingName))) {
+                return;
+            }
+
+            errorBox.style.display = 'none';
+            buttonEl.disabled = true;
+            buttonEl.textContent = loadingLabel;
+
+            fetch('mark-booking-status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    booking_id: bookingId,
+                    status: nextStatus,
+                })
+            })
+            .then(async response => {
+                const data = await response.json();
+                if(!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to update booking status');
+                }
+                return data;
+            })
+            .then(data => {
+                const bookingIdx = BOOKING_DATA.findIndex(item => item.booking_id == data.booking_id);
+                if(bookingIdx !== -1) {
+                    BOOKING_DATA[bookingIdx].status = data.status || nextStatus;
+                    BOOKING_DATA[bookingIdx].table_id = data.table_id !== null ? Number(data.table_id) : null;
+                    BOOKING_DATA[bookingIdx].table_number = data.table_number || null;
+                    BOOKING_DATA[bookingIdx].assigned_table_ids = Array.isArray(data.assigned_table_ids) ? data.assigned_table_ids.map(Number) : [];
+                    BOOKING_DATA[bookingIdx].assigned_table_numbers = Array.isArray(data.assigned_table_numbers) ? data.assigned_table_numbers : [];
+                }
+                renderTimeline();
+                closeModal();
+            })
+            .catch(error => {
+                errorBox.textContent = error.message;
+                errorBox.style.display = 'block';
+            })
+            .finally(() => {
+                buttonEl.disabled = false;
+                if(buttonEl === completeBookingActionBtn) {
+                    buttonEl.textContent = 'Mark Completed';
+                } else if(buttonEl === noShowBookingActionBtn) {
+                    buttonEl.textContent = 'Mark No-show';
+                }
+            });
+        }
+
         cancelBookingActionBtn.addEventListener('click', function() {
             const bookingId = document.getElementById('bookingDetailsId').value;
             if(!bookingId) {
@@ -2858,6 +2949,16 @@ $adminSidebarPathPrefix = '../';
                 cancelBookingActionBtn.textContent = 'Cancel Booking';
             });
         });
+        if(completeBookingActionBtn) {
+            completeBookingActionBtn.addEventListener('click', function() {
+                markBookingOutcome('completed', completeBookingActionBtn, 'Saving...', 'Mark %s as completed?');
+            });
+        }
+        if(noShowBookingActionBtn) {
+            noShowBookingActionBtn.addEventListener('click', function() {
+                markBookingOutcome('no_show', noShowBookingActionBtn, 'Saving...', 'Mark %s as a no-show?');
+            });
+        }
         modal.addEventListener('click', function(e) {
             if(e.target === modal) {
                 closeModal();
@@ -3135,8 +3236,12 @@ $adminSidebarPathPrefix = '../';
             ? `Tables ${assignedTableNumbers.join(', ')}`
             : 'Unassigned';
         const isPending = String(booking.status || '').toLowerCase() === 'pending';
+        const isConfirmed = String(booking.status || '').toLowerCase() === 'confirmed';
 
         const modal = document.getElementById('bookingDetailsModal');
+        const cancelActionBtn = document.getElementById('cancelBookingActionBtn');
+        const completeActionBtn = document.getElementById('completeBookingActionBtn');
+        const noShowActionBtn = document.getElementById('noShowBookingActionBtn');
         document.getElementById('bookingDetailsId').value = booking.booking_id;
         document.getElementById('bookingDetailsAction').value = isPending ? 'confirm' : 'save';
         document.getElementById('bookingDetailsName').value = booking.customer_name || '';
@@ -3155,6 +3260,17 @@ $adminSidebarPathPrefix = '../';
         document.getElementById('bookingDetailsNotes').value = booking.special_request || '';
         document.getElementById('bookingDetailsMeta').textContent = getBookingDetailsMetaSummary(booking);
         document.getElementById('saveBookingDetailsBtn').textContent = isPending ? 'Confirm Booking' : 'Save Changes';
+        if(cancelActionBtn) {
+            cancelActionBtn.style.display = isPending || isConfirmed ? 'inline-flex' : 'none';
+        }
+        if(completeActionBtn) {
+            completeActionBtn.style.display = isConfirmed ? 'inline-flex' : 'none';
+            completeActionBtn.textContent = 'Mark Completed';
+        }
+        if(noShowActionBtn) {
+            noShowActionBtn.style.display = isConfirmed ? 'inline-flex' : 'none';
+            noShowActionBtn.textContent = 'Mark No-show';
+        }
 
         const errorBox = document.getElementById('bookingDetailsError');
         errorBox.style.display = 'none';
@@ -3262,13 +3378,15 @@ $adminSidebarPathPrefix = '../';
             const pendingActionButton = isPendingTab
                 ? `<button type="button" class="booking-item-action-btn" onclick="confirmPendingBooking(${booking.booking_id}, event)">Confirm</button>`
                 : '';
+            const bookingStatus = String(booking.status || '').toLowerCase();
+            const isLiveBooking = ['pending', 'confirmed'].includes(bookingStatus);
             const rightSideText = isPendingTab || isStandbyTab
                 ? `${pendingActionButton}<span class="booking-item-meta">P${booking.number_of_guests}</span>`
                 : `<span class="booking-item-table">${assignmentSummary}</span>`;
             const bottomRowRight = isPendingTab || isStandbyTab
                 ? ''
                 : `<span class="booking-item-bottom-right">P${booking.number_of_guests}</span>`;
-            const canDragFromList = isPendingTab || isStandbyTab;
+            const canDragFromList = (isPendingTab || isStandbyTab) && isLiveBooking;
             const draggableAttributes = canDragFromList ? 'draggable="true"' : 'draggable="false"';
             const draggableClass = canDragFromList ? ' draggable-booking' : '';
             return `
@@ -3597,7 +3715,16 @@ $adminSidebarPathPrefix = '../';
         const leftPosition = startIdx * CELL_WIDTH;
         const width = Math.max(numSlots * CELL_WIDTH, CELL_WIDTH);
 
-        const statusClass = booking.status === 'confirmed' ? 'success' : (booking.status === 'pending' ? 'pending' : 'info');
+        const normalizedStatus = String(booking.status || '').toLowerCase();
+        const statusClass = normalizedStatus === 'confirmed'
+            ? 'success'
+            : normalizedStatus === 'pending'
+                ? 'pending'
+                : normalizedStatus === 'completed'
+                    ? 'completed'
+                    : normalizedStatus === 'no_show'
+                        ? 'no-show'
+                        : 'info';
         const overCapacityClass = getAssignedCapacity(booking) < Number(booking.number_of_guests || 0) ? 'over-capacity' : '';
         const rescheduledClass = requestedStart !== bookingStart ? 'rescheduled' : '';
         const guestCountText = `P${booking.number_of_guests}`;
@@ -3614,6 +3741,8 @@ $adminSidebarPathPrefix = '../';
             ? `${booking.customer_name} | ${guestCountText}${areaText} | ${bookingStartLabel} - ${bookingEndLabel} | Requested ${requestedStartLabel} - ${requestedEndLabel} | Scheduled ${bookingStartLabel} - ${bookingEndLabel}`
             : `${booking.customer_name} | ${guestCountText}${areaText} | ${bookingStartLabel} - ${bookingEndLabel}`;
 
+        const isInteractiveBooking = ['pending', 'confirmed'].includes(normalizedStatus);
+
         return visibleSegments.map(segment => {
             const firstSegmentTableId = segment.table_ids[0];
             const lastSegmentTableId = segment.table_ids[segment.table_ids.length - 1];
@@ -3628,7 +3757,7 @@ $adminSidebarPathPrefix = '../';
             const height = Math.max(ROW_HEIGHT, (bottomPosition - topPosition) + ROW_HEIGHT);
 
             return `<div class="booking-block ${statusClass} ${overCapacityClass} ${rescheduledClass}"
-                        draggable="true"
+                        draggable="${isInteractiveBooking ? 'true' : 'false'}"
                         data-booking-id="${booking.booking_id}"
                         data-table-id="${booking.table_id ?? ''}"
                         data-table-ids="${assignedTableIds.join(',')}"
@@ -3673,17 +3802,18 @@ $adminSidebarPathPrefix = '../';
             const rightHandle = booking.querySelector('.right-handle');
             const topHandle = booking.querySelector('.top-handle');
             const bottomHandle = booking.querySelector('.bottom-handle');
+            const isDraggable = booking.getAttribute('draggable') === 'true';
 
-            if(leftHandle) {
+            if(leftHandle && isDraggable) {
                 leftHandle.addEventListener('mousedown', handleResizeStart.bind(null, 'left', booking));
             }
-            if(rightHandle) {
+            if(rightHandle && isDraggable) {
                 rightHandle.addEventListener('mousedown', handleResizeStart.bind(null, 'right', booking));
             }
-            if(topHandle) {
+            if(topHandle && isDraggable) {
                 topHandle.addEventListener('mousedown', handleResizeStart.bind(null, 'top', booking));
             }
-            if(bottomHandle) {
+            if(bottomHandle && isDraggable) {
                 bottomHandle.addEventListener('mousedown', handleResizeStart.bind(null, 'bottom', booking));
             }
         });
@@ -3708,6 +3838,11 @@ $adminSidebarPathPrefix = '../';
     }
 
     function handleDragStart(e) {
+        if(this.getAttribute('draggable') !== 'true') {
+            e.preventDefault();
+            return;
+        }
+
         draggedBooking = this;
         this.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
