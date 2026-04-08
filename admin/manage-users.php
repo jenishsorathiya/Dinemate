@@ -5,12 +5,40 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 
 requireAdmin();
 
+$registeredUserFilterSql = "
+    (
+        users.role = 'admin'
+        OR (
+            users.role = 'customer'
+            AND users.email NOT LIKE '%@admin-booking.local'
+            AND users.email NOT LIKE 'guest-%@local.dinemate'
+        )
+    )
+";
+
+$findRegisteredUserById = static function (PDO $pdo, int $userId) use ($registeredUserFilterSql): ?array {
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM users
+        WHERE user_id = ?
+          AND {$registeredUserFilterSql}
+        LIMIT 1
+    ");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $user ?: null;
+};
+
 // Handle Promote User to Admin
 if(isset($_GET['promote'])) {
     $user_id = intval($_GET['promote']);
+    $targetUser = $findRegisteredUserById($pdo, $user_id);
     
     // Don't allow promoting self
-    if($user_id != $_SESSION['user_id']) {
+    if(!$targetUser) {
+        setFlashMessage('warning', 'That account is not a registered user.');
+    } elseif($user_id != $_SESSION['user_id']) {
         $stmt = $pdo->prepare("UPDATE users SET role = 'admin' WHERE user_id = ?");
         $stmt->execute([$user_id]);
         setFlashMessage('success', 'User promoted to admin successfully!');
@@ -24,9 +52,12 @@ if(isset($_GET['promote'])) {
 // Handle Demote User to Customer
 if(isset($_GET['demote'])) {
     $user_id = intval($_GET['demote']);
+    $targetUser = $findRegisteredUserById($pdo, $user_id);
     
     // Don't allow demoting self
-    if($user_id != $_SESSION['user_id']) {
+    if(!$targetUser) {
+        setFlashMessage('warning', 'That account is not a registered user.');
+    } elseif($user_id != $_SESSION['user_id']) {
         // Check if this is the last admin
         $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
         $adminCount = $stmt->fetchColumn();
@@ -48,9 +79,12 @@ if(isset($_GET['demote'])) {
 // Handle Delete User
 if(isset($_GET['delete'])) {
     $user_id = intval($_GET['delete']);
+    $targetUser = $findRegisteredUserById($pdo, $user_id);
     
     // Don't allow deleting self
-    if($user_id != $_SESSION['user_id']) {
+    if(!$targetUser) {
+        setFlashMessage('warning', 'That account is not a registered user.');
+    } elseif($user_id != $_SESSION['user_id']) {
         // Check if user has bookings
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE user_id = ?");
         $stmt->execute([$user_id]);
@@ -116,6 +150,13 @@ if(isset($_POST['edit_user'])) {
     $email = sanitize($_POST['email']);
     $phone = sanitize($_POST['phone']);
     $role = sanitize($_POST['role']);
+    $targetUser = $findRegisteredUserById($pdo, $user_id);
+
+    if(!$targetUser) {
+        setFlashMessage('warning', 'That account is not a registered user.');
+        header("Location: manage-users.php");
+        exit();
+    }
     
     // Don't allow editing self if it would remove admin role
     if($user_id == $_SESSION['user_id'] && $role != 'admin') {
@@ -150,6 +191,14 @@ $stmt = $pdo->query("
            COUNT(b.booking_id) AS booking_count
     FROM users u
     LEFT JOIN bookings b ON u.user_id = b.user_id
+    WHERE (
+        u.role = 'admin'
+        OR (
+            u.role = 'customer'
+            AND u.email NOT LIKE '%@admin-booking.local'
+            AND u.email NOT LIKE 'guest-%@local.dinemate'
+        )
+    )
     GROUP BY u.user_id
     ORDER BY u.created_at DESC
 ");
@@ -159,9 +208,13 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $editUser = null;
 if(isset($_GET['edit'])) {
     $edit_id = intval($_GET['edit']);
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
-    $stmt->execute([$edit_id]);
-    $editUser = $stmt->fetch(PDO::FETCH_ASSOC);
+    $editUser = $findRegisteredUserById($pdo, $edit_id);
+
+    if(!$editUser) {
+        setFlashMessage('warning', 'That account is not a registered user.');
+        header("Location: manage-users.php");
+        exit();
+    }
 }
 
 $adminPageTitle = 'Users';
