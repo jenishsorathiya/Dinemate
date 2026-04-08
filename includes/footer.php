@@ -16,6 +16,7 @@ $footerLinks = [
 
 if (isLoggedIn() && $footerRole === 'customer') {
     $footerLinks = [
+        ['label' => 'Dashboard', 'path' => 'bookings/dashboard.php'],
         ['label' => 'Home', 'path' => 'index.php'],
         ['label' => 'Book', 'path' => 'bookings/book-table.php'],
         ['label' => 'My Bookings', 'path' => 'bookings/my-bookings.php'],

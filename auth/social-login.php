@@ -3,6 +3,8 @@ session_start();
 require_once __DIR__ . "/../config/db.php";
 require_once __DIR__ . "/../includes/functions.php";
 
+ensureUserAccountSchema($pdo);
+
 if (!isset($_GET['provider'])) {
     header("Location: login.php");
     exit();
@@ -37,6 +39,11 @@ if (!$user) {
     $stmt->execute([$name,$email,$password]);
     $user_id = $pdo->lastInsertId();
 } else {
+    if (!empty($user['is_disabled'])) {
+        $_SESSION['error'] = "This account has been disabled. Please contact the restaurant.";
+        header("Location: login.php");
+        exit();
+    }
     $user_id = $user['user_id'];
 }
 

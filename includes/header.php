@@ -83,6 +83,7 @@ $currentUserRole = getCurrentUserRole();
                     <a href="<?php echo htmlspecialchars($navUrl('admin/menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/menu-management.php']) ? 'is-active' : ''; ?>">Menu Management</a>
                     <a href="<?php echo htmlspecialchars($navUrl('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-logout">Logout</a>
                 <?php elseif($isLoggedInUser && $currentUserRole === 'customer'): ?>
+                    <a href="<?php echo htmlspecialchars($navUrl('bookings/dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['bookings/dashboard.php']) ? 'is-active' : ''; ?>">Dashboard</a>
                     <a href="<?php echo htmlspecialchars($navUrl('index.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['', 'index.php']) ? 'is-active' : ''; ?>">Home</a>
                     <a href="<?php echo htmlspecialchars($navUrl('menu.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['menu.php']) ? 'is-active' : ''; ?>">Menu</a>
                     <a href="<?php echo htmlspecialchars($navUrl('bookings/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-book <?php echo $isActivePath(['bookings/book-table.php', 'bookings/booking-confirmation.php']) ? 'is-active' : ''; ?>">

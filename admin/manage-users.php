@@ -5,6 +5,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/functions.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 
 requireAdmin();
+ensureUserAccountSchema($pdo);
 
 $registeredUserFilterSql = "
     (
@@ -213,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlashMessage('success', 'User updated successfully.');
         $redirectToManageUsers();
     }
-    if (in_array($action, ['promote_user', 'demote_user', 'delete_user'], true)) {
+    if (in_array($action, ['promote_user', 'demote_user', 'delete_user', 'disable_user', 'enable_user'], true)) {
         $userId = (int) ($_POST['user_id'] ?? 0);
         $targetUser = $findRegisteredUserById($pdo, $userId);
 
@@ -227,6 +228,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 setFlashMessage('error', 'You cannot delete yourself.');
             } elseif ($action === 'demote_user') {
                 setFlashMessage('error', 'You cannot demote yourself.');
+            } elseif ($action === 'disable_user') {
+                setFlashMessage('error', 'You cannot disable your own account.');
             } else {
                 setFlashMessage('error', 'You cannot promote yourself.');
             }
@@ -255,6 +258,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $redirectToManageUsers();
         }
 
+        if ($action === 'disable_user') {
+            if (($targetUser['role'] ?? '') === 'admin') {
+                $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin' AND COALESCE(is_disabled, 0) = 0");
+                $activeAdminCount = (int) $stmt->fetchColumn();
+                if ($activeAdminCount <= 1) {
+                    setFlashMessage('error', 'Cannot disable the last active admin.');
+                    $redirectToManageUsers();
+                }
+            }
+
+            $stmt = $pdo->prepare("UPDATE users SET is_disabled = 1 WHERE user_id = ?");
+            $stmt->execute([$userId]);
+            setFlashMessage('success', 'User account disabled successfully.');
+            $redirectToManageUsers();
+        }
+
+        if ($action === 'enable_user') {
+            $stmt = $pdo->prepare("UPDATE users SET is_disabled = 0 WHERE user_id = ?");
+            $stmt->execute([$userId]);
+            setFlashMessage('success', 'User account enabled successfully.');
+            $redirectToManageUsers();
+        }
+
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE user_id = ?");
         $stmt->execute([$userId]);
         $bookingCount = (int) $stmt->fetchColumn();
@@ -278,6 +304,7 @@ $userListStmt = $pdo->query("
         u.email,
         u.phone,
         u.role,
+        COALESCE(u.is_disabled, 0) AS is_disabled,
         u.created_at,
         COUNT(b.booking_id) AS booking_count,
         MAX(b.booking_date) AS last_booking_date
@@ -291,7 +318,7 @@ $userListStmt = $pdo->query("
             AND u.email NOT LIKE 'guest-%@local.dinemate'
         )
     )
-    GROUP BY u.user_id, u.name, u.email, u.phone, u.role, u.created_at
+    GROUP BY u.user_id, u.name, u.email, u.phone, u.role, u.is_disabled, u.created_at
     ORDER BY
         CASE WHEN u.role = 'admin' THEN 0 ELSE 1 END,
         u.created_at DESC,
@@ -483,12 +510,14 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         .table-custom tbody tr:hover { background: #fbfcff; }
         .user-name { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; }
         .user-meta { display: block; margin-top: 6px; color: var(--users-muted); font-size: 12px; }
-        .tiny-badge, .role-badge, .booking-badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+        .tiny-badge, .role-badge, .booking-badge, .account-badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
         .tiny-badge { background: #eaf1ff; color: #3658a5; }
         .role-badge.role-admin { background: #edf2f7; color: #4a556a; }
         .role-badge.role-customer { background: #e9f7ef; color: #1f8f63; }
         .booking-badge.has-bookings { background: #eef4ff; color: #315cba; }
         .booking-badge.no-bookings { background: #f5f7fb; color: #6c768d; }
+        .account-badge.active { background: #e9f7ef; color: #1f8f63; }
+        .account-badge.disabled { background: #fff0f3; color: #c94b62; }
         .booking-badge.booking-trigger { border: 0; cursor: pointer; }
         .booking-badge.booking-trigger:hover { transform: translateY(-1px); box-shadow: var(--users-shadow-soft); }
         .table-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -584,12 +613,20 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                                             <?php
                                             $bookingCount = (int) ($user['booking_count'] ?? 0);
                                             $isSelf = (int) $user['user_id'] === $currentUserId;
+                                            $isDisabled = (int) ($user['is_disabled'] ?? 0) === 1;
                                             $joinedTs = !empty($user['created_at']) ? strtotime((string) $user['created_at']) : false;
                                             $lastBookingTs = !empty($user['last_booking_date']) ? strtotime((string) $user['last_booking_date']) : false;
                                             ?>
                                             <tr data-role="<?php echo htmlspecialchars((string) $user['role'], ENT_QUOTES, 'UTF-8'); ?>" data-bookings="<?php echo $bookingCount; ?>" data-name="<?php echo htmlspecialchars(strtolower((string) ($user['name'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>" data-email="<?php echo htmlspecialchars(strtolower((string) ($user['email'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>" data-phone="<?php echo htmlspecialchars(strtolower((string) ($user['phone'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>" data-created="<?php echo $joinedTs !== false ? (int) $joinedTs : 0; ?>">
                                                 <td>
-                                                    <div class="user-name"><span><?php echo htmlspecialchars((string) $user['name'], ENT_QUOTES, 'UTF-8'); ?></span><?php if ($isSelf): ?><span class="tiny-badge"><i class="fa-solid fa-user-check"></i> You</span><?php endif; ?></div>
+                                                    <div class="user-name">
+                                                        <span><?php echo htmlspecialchars((string) $user['name'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                                        <?php if ($isSelf): ?><span class="tiny-badge"><i class="fa-solid fa-user-check"></i> You</span><?php endif; ?>
+                                                        <span class="account-badge <?php echo $isDisabled ? 'disabled' : 'active'; ?>">
+                                                            <i class="fa-solid fa-<?php echo $isDisabled ? 'ban' : 'circle-check'; ?>"></i>
+                                                            <?php echo $isDisabled ? 'Disabled' : 'Active'; ?>
+                                                        </span>
+                                                    </div>
                                                     <span class="user-meta"><?php echo htmlspecialchars((string) $user['email'], ENT_QUOTES, 'UTF-8'); ?></span>
                                                     <span class="user-meta"><?php echo htmlspecialchars((string) (($user['phone'] ?? '') !== '' ? $user['phone'] : 'No phone number'), ENT_QUOTES, 'UTF-8'); ?></span>
                                                 </td>
@@ -615,6 +652,11 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                                                                 <form method="POST" action="" onsubmit="return confirm('Promote this user to admin?');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="promote_user"><input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>"><button type="submit" class="btn-primary-soft btn-table"><i class="fa-solid fa-arrow-up"></i> Promote</button></form>
                                                             <?php else: ?>
                                                                 <form method="POST" action="" onsubmit="return confirm('Demote this admin to customer?');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="demote_user"><input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>"><button type="submit" class="btn-warning-soft btn-table"><i class="fa-solid fa-arrow-down"></i> Demote</button></form>
+                                                            <?php endif; ?>
+                                                            <?php if ($isDisabled): ?>
+                                                                <form method="POST" action="" onsubmit="return confirm('Enable this user account?');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="enable_user"><input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>"><button type="submit" class="btn-primary-soft btn-table"><i class="fa-solid fa-user-check"></i> Enable</button></form>
+                                                            <?php else: ?>
+                                                                <form method="POST" action="" onsubmit="return confirm('Disable this user account? They will not be able to log in.');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="disable_user"><input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>"><button type="submit" class="btn-warning-soft btn-table"><i class="fa-solid fa-user-slash"></i> Disable</button></form>
                                                             <?php endif; ?>
                                                             <?php if ($bookingCount === 0): ?>
                                                                 <form method="POST" action="" onsubmit="return confirm('Delete this user? This action cannot be undone.');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="delete_user"><input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>"><button type="submit" class="btn-danger-soft btn-table"><i class="fa-solid fa-trash"></i> Delete</button></form>

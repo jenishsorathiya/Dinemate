@@ -96,6 +96,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $redirectToCustomerHistory($returnQuery);
     }
 
+    if ($action === 'save_notes') {
+        $notes = trim((string) ($_POST['notes'] ?? ''));
+        $updateStmt = $pdo->prepare("UPDATE customer_profiles SET notes = ? WHERE customer_profile_id = ?");
+        $updateStmt->execute([$notes !== '' ? $notes : null, $profileId]);
+        setFlashMessage('success', 'Customer notes updated successfully.');
+        $redirectToCustomerHistory($returnQuery);
+    }
+
+    if ($action === 'merge_profile') {
+        $targetProfileId = (int) ($_POST['merge_target_profile_id'] ?? 0);
+        if ($targetProfileId < 1 || $targetProfileId === $profileId) {
+            setFlashMessage('warning', 'Please choose a different target customer profile.');
+            $redirectToCustomerHistory($returnQuery);
+        }
+
+        $profileLookupStmt = $pdo->prepare("SELECT * FROM customer_profiles WHERE customer_profile_id = ? LIMIT 1");
+        $profileLookupStmt->execute([$profileId]);
+        $sourceProfile = $profileLookupStmt->fetch(PDO::FETCH_ASSOC);
+
+        $profileLookupStmt->execute([$targetProfileId]);
+        $targetProfile = $profileLookupStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$sourceProfile || !$targetProfile) {
+            setFlashMessage('warning', 'One of the customer profiles could not be found.');
+            $redirectToCustomerHistory($returnQuery);
+        }
+
+        if (!empty($sourceProfile['linked_user_id']) && !empty($targetProfile['linked_user_id']) && (int) $sourceProfile['linked_user_id'] !== (int) $targetProfile['linked_user_id']) {
+            setFlashMessage('warning', 'Cannot merge profiles that are linked to different registered accounts.');
+            $redirectToCustomerHistory($returnQuery);
+        }
+
+        $mergedLinkedUserId = !empty($targetProfile['linked_user_id'])
+            ? (int) $targetProfile['linked_user_id']
+            : (!empty($sourceProfile['linked_user_id']) ? (int) $sourceProfile['linked_user_id'] : null);
+        $mergedName = trim((string) ($targetProfile['name'] ?? '')) !== '' ? (string) $targetProfile['name'] : (string) ($sourceProfile['name'] ?? 'Guest');
+        $mergedEmail = trim((string) ($targetProfile['email'] ?? '')) !== '' ? (string) $targetProfile['email'] : (string) ($sourceProfile['email'] ?? '');
+        $mergedPhone = trim((string) ($targetProfile['phone'] ?? '')) !== '' ? (string) $targetProfile['phone'] : (string) ($sourceProfile['phone'] ?? '');
+        $sourceNotes = trim((string) ($sourceProfile['notes'] ?? ''));
+        $targetNotes = trim((string) ($targetProfile['notes'] ?? ''));
+        $mergedNotes = $targetNotes;
+        if ($sourceNotes !== '') {
+            $mergedNotes = $targetNotes !== '' ? ($targetNotes . "\n\n" . $sourceNotes) : $sourceNotes;
+        }
+
+        $pdo->beginTransaction();
+
+        $bookingUpdateStmt = $pdo->prepare("UPDATE bookings SET customer_profile_id = ? WHERE customer_profile_id = ?");
+        $bookingUpdateStmt->execute([$targetProfileId, $profileId]);
+
+        $profileUpdateStmt = $pdo->prepare("
+            UPDATE customer_profiles
+            SET linked_user_id = ?,
+                name = ?,
+                email = ?,
+                phone = ?,
+                notes = ?,
+                normalized_email = ?,
+                normalized_phone = ?
+            WHERE customer_profile_id = ?
+        ");
+        $profileUpdateStmt->execute([
+            $mergedLinkedUserId,
+            $mergedName !== '' ? $mergedName : 'Guest',
+            $mergedEmail !== '' ? $mergedEmail : null,
+            $mergedPhone !== '' ? $mergedPhone : null,
+            $mergedNotes !== '' ? $mergedNotes : null,
+            $mergedEmail !== '' ? normalizeCustomerProfileEmail($mergedEmail) : null,
+            $mergedPhone !== '' ? normalizeCustomerProfilePhone($mergedPhone) : null,
+            $targetProfileId,
+        ]);
+
+        $deleteProfileStmt = $pdo->prepare("DELETE FROM customer_profiles WHERE customer_profile_id = ?");
+        $deleteProfileStmt->execute([$profileId]);
+
+        $pdo->commit();
+
+        parse_str($returnQuery, $returnParams);
+        $returnParams['profile'] = $targetProfileId;
+        setFlashMessage('success', 'Customer profiles merged successfully.');
+        $redirectToCustomerHistory(http_build_query($returnParams));
+    }
+
     setFlashMessage('warning', 'Unknown customer profile action.');
     $redirectToCustomerHistory($returnQuery);
 }
@@ -196,6 +279,7 @@ if ($selectedProfileId > 0) {
             cp.name,
             cp.email,
             cp.phone,
+            cp.notes,
             cp.linked_user_id,
             linked_user.name AS linked_user_name,
             linked_user.email AS linked_user_email
@@ -309,6 +393,8 @@ $flash = getFlashMessage();
         .history-card-note { margin-top: 10px; color: var(--text-muted); font-size: 12px; }
         .empty-state { padding: 28px 18px; text-align: center; color: var(--text-muted); font-size: 14px; border: 1px dashed var(--line); border-radius: 20px; background: #fbfcff; }
         .form-select, .btn-surface { min-height: 46px; border-radius: 14px; border: 1px solid var(--line); background: #fbfcfe; padding: 12px 14px; color: var(--text-main); }
+        .form-control { min-height: 46px; border-radius: 14px; border: 1px solid var(--line); background: #fbfcfe; padding: 12px 14px; color: var(--text-main); }
+        textarea.form-control { min-height: 120px; resize: vertical; }
         .btn-surface { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; text-decoration: none; }
         .link-form { display: grid; gap: 12px; margin-top: 16px; }
         .link-actions { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -475,6 +561,47 @@ $flash = getFlashMessage();
                                             </form>
                                         <?php endif; ?>
                                     </div>
+                                </div>
+
+                                <div class="history-card">
+                                    <div class="history-card-title">Customer Notes</div>
+                                    <form method="POST" class="link-form">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <input type="hidden" name="action" value="save_notes">
+                                        <input type="hidden" name="customer_profile_id" value="<?php echo (int) $selectedProfile['customer_profile_id']; ?>">
+                                        <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <textarea name="notes" class="form-control" placeholder="Add internal notes like VIP preferences, allergies, seating preferences, or service reminders..."><?php echo htmlspecialchars((string) ($selectedProfile['notes'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                        <div class="link-actions">
+                                            <button type="submit" class="btn-primary-soft">
+                                                <i class="fa-solid fa-floppy-disk"></i> Save Notes
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="history-card">
+                                    <div class="history-card-title">Merge Customer Profile</div>
+                                    <div class="history-card-note">Use this when the same person ended up with duplicate customer profiles from different phone, email, or guest booking entries.</div>
+                                    <form method="POST" class="link-form">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <input type="hidden" name="action" value="merge_profile">
+                                        <input type="hidden" name="customer_profile_id" value="<?php echo (int) $selectedProfile['customer_profile_id']; ?>">
+                                        <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <select name="merge_target_profile_id" class="form-select" required>
+                                            <option value="">Merge this profile into...</option>
+                                            <?php foreach ($profiles as $mergeCandidate): ?>
+                                                <?php if ((int) $mergeCandidate['customer_profile_id'] === (int) $selectedProfile['customer_profile_id']) { continue; } ?>
+                                                <option value="<?php echo (int) $mergeCandidate['customer_profile_id']; ?>">
+                                                    <?php echo htmlspecialchars((string) $mergeCandidate['name'] . ' • ' . ((string) (($mergeCandidate['email'] ?? '') !== '' ? $mergeCandidate['email'] : (($mergeCandidate['phone'] ?? '') !== '' ? $mergeCandidate['phone'] : 'No contact'))), ENT_QUOTES, 'UTF-8'); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <div class="link-actions">
+                                            <button type="submit" class="btn-surface" onclick="return confirm('Merge this customer profile into the selected target profile? This will move bookings to the target profile and remove the current profile.');">
+                                                <i class="fa-solid fa-code-merge"></i> Merge Profile
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
 
                                 <?php if (!empty($selectedProfileBookings)): ?>

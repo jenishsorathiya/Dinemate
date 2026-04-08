@@ -47,6 +47,13 @@ if(!$booking){
 
 $tableLabel = $booking['table_number'] ? 'Table ' . $booking['table_number'] : 'To be assigned by staff';
 $statusLabel = getBookingStatusLabel($booking['status'] ?? 'pending');
+$sourceLabel = getBookingSourceLabel($booking['booking_source'] ?? '');
+$placementLabel = getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed');
+$customerProfile = null;
+
+if ($isLoggedInCustomer) {
+    $customerProfile = ensureCustomerProfileForUser($pdo, (int) getCurrentUserId());
+}
 ?>
 
 <?php include "../includes/header.php"; ?>
@@ -136,6 +143,46 @@ margin-top:25px;
 background:#141d31;
 }
 
+.confirm-grid{
+display:grid;
+grid-template-columns:minmax(0,1.1fr) minmax(240px,0.9fr);
+gap:20px;
+margin-top:25px;
+text-align:left;
+}
+
+.confirm-side{
+border:1px solid #e7ecf3;
+border-radius:16px;
+padding:18px;
+background:#f8fafc;
+}
+
+.confirm-side h4{
+margin:0 0 12px;
+font-size:18px;
+color:#162033;
+}
+
+.confirm-side p{
+font-size:14px;
+color:#556176;
+margin-bottom:10px;
+}
+
+.confirm-links{
+display:flex;
+gap:12px;
+flex-wrap:wrap;
+margin-top:18px;
+}
+
+@media (max-width: 767px){
+.confirm-grid{
+grid-template-columns:1fr;
+}
+}
+
 </style>
 
 <div class="container confirm-wrapper">
@@ -154,40 +201,55 @@ Reservation Request Submitted
 Your request has been saved. A table will be assigned by the admin team.
 </p>
 
-<!-- Reservation Ticket -->
-
+<div class="confirm-grid">
 <div class="ticket">
-
 <div class="ticket-info">
-
 <p><strong>Table:</strong> <?= htmlspecialchars($tableLabel) ?></p>
-
 <p><strong>Status:</strong> <?= htmlspecialchars($statusLabel) ?></p>
-
+<p><strong>Source:</strong> <?= htmlspecialchars($sourceLabel) ?></p>
+<p><strong>Placed:</strong> <?= htmlspecialchars($placementLabel) ?></p>
 <p><strong>Name:</strong> <?= htmlspecialchars($booking['customer_name'] ?? '') ?></p>
-
 <p><strong>Email:</strong> <?= htmlspecialchars($booking['customer_email'] ?? '') ?></p>
-
 <p><strong>Phone:</strong> <?= htmlspecialchars($booking['customer_phone'] ?? '') ?></p>
-
 <p><strong>Date:</strong> <?= $booking['booking_date'] ?></p>
-
 <p><strong>Time:</strong> <?= date("h:i A",strtotime($booking['start_time'])) ?> - <?= date("h:i A",strtotime($booking['end_time'])) ?></p>
-
 <p><strong>Guests:</strong> <?= $booking['number_of_guests'] ?></p>
-
+<?php if (!empty($booking['special_request'])): ?>
+<p><strong>Note:</strong> <?= htmlspecialchars($booking['special_request']) ?></p>
+<?php endif; ?>
 </div>
-
 <div class="qr-box">
 <div id="qr"></div>
 </div>
+</div>
 
+<aside class="confirm-side">
+<h4>What Happens Next</h4>
+<p>Your booking stays in your portal so you can reschedule, cancel, or rebook from history later.</p>
+<p>Table assignment and reservation-card placement are handled by staff. Once you are logged in, guest and account bookings can continue to collect under the same customer profile.</p>
+<?php if ($isLoggedInCustomer && $customerProfile): ?>
+<p><strong>Reminder preferences:</strong> <?= !empty($customerProfile['email_reminders_enabled']) ? 'Email reminders on' : 'Email reminders off'; ?>, <?= !empty($customerProfile['sms_reminders_enabled']) ? 'SMS reminders on' : 'SMS reminders off'; ?>.</p>
+<?php endif; ?>
+<div class="confirm-links">
+<?php if($isLoggedInCustomer): ?>
+<a href="dashboard.php" class="btn btn-outline-dark">Customer Dashboard</a>
+<a href="my-bookings.php" class="btn btn-outline-secondary">Booking History</a>
+<?php else: ?>
+<a href="../auth/register.php" class="btn btn-outline-dark">Create Account</a>
+<?php endif; ?>
+</div>
+</aside>
 </div>
 
 <?php if($isLoggedInCustomer): ?>
-<a href="my-bookings.php" class="btn btn-bookings w-100">
+<div class="confirm-links">
+<a href="my-bookings.php" class="btn btn-bookings flex-fill">
 View My Bookings
 </a>
+<a href="book-table.php?<?= htmlspecialchars(http_build_query(['rebook' => (int) $booking['booking_id'], 'date' => (string) $booking['booking_date'], 'time' => date('H:i', strtotime((string) $booking['start_time'])), 'guests' => (int) $booking['number_of_guests'], 'special' => (string) ($booking['special_request'] ?? '')]), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-secondary flex-fill">
+Book Similar Again
+</a>
+</div>
 <?php else: ?>
 <a href="book-table.php" class="btn btn-bookings w-100">
 Book Another Reservation

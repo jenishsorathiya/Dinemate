@@ -3,6 +3,8 @@ require_once "../config/db.php";
 require_once "../includes/functions.php";
 session_start();
 
+ensureUserAccountSchema($pdo);
+
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -14,7 +16,9 @@ $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='admin'");
 $stmt->execute([$email]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($user && $password === $user['password']) {
+if ($user && !empty($user['is_disabled'])) {
+    $error = "This admin account has been disabled.";
+} elseif ($user && $password === $user['password']) {
 
     $_SESSION['user_id'] = $user['user_id'];
     $_SESSION['role'] = $user['role'];

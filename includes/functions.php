@@ -45,6 +45,10 @@ function getDefaultRedirectForRole($role) {
         return appPath('admin/timeline/new-dashboard.php');
     }
 
+    if ($role === 'customer') {
+        return appPath('bookings/dashboard.php');
+    }
+
     return appPath('index.php');
 }
 
@@ -136,6 +140,13 @@ function requireCustomer(array $options = []) {
     requireRole('customer', $options);
 }
 
+function ensureUserAccountSchema($pdo) {
+    $disabledStmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'is_disabled'");
+    if ($disabledStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN is_disabled TINYINT(1) NOT NULL DEFAULT 0 AFTER role");
+    }
+}
+
 // Set flash message (temporary message that disappears after one page load)
 function setFlashMessage($type, $message) {
     $_SESSION['flash_message'] = [
@@ -224,6 +235,7 @@ function ensureCustomerProfilesSchema($pdo) {
             name VARCHAR(100) NOT NULL,
             email VARCHAR(100) NULL DEFAULT NULL,
             phone VARCHAR(30) NULL DEFAULT NULL,
+            notes TEXT NULL DEFAULT NULL,
             normalized_email VARCHAR(100) NULL DEFAULT NULL,
             normalized_phone VARCHAR(30) NULL DEFAULT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -234,10 +246,53 @@ function ensureCustomerProfilesSchema($pdo) {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
 
+    $notesStmt = $pdo->query("SHOW COLUMNS FROM customer_profiles LIKE 'notes'");
+    if ($notesStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE customer_profiles ADD COLUMN notes TEXT NULL DEFAULT NULL AFTER phone");
+    }
+
+    $dietaryNotesStmt = $pdo->query("SHOW COLUMNS FROM customer_profiles LIKE 'dietary_notes'");
+    if ($dietaryNotesStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE customer_profiles ADD COLUMN dietary_notes TEXT NULL DEFAULT NULL AFTER notes");
+    }
+
+    $seatingPreferenceStmt = $pdo->query("SHOW COLUMNS FROM customer_profiles LIKE 'seating_preference'");
+    if ($seatingPreferenceStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE customer_profiles ADD COLUMN seating_preference VARCHAR(50) NULL DEFAULT NULL AFTER dietary_notes");
+    }
+
+    $preferredTimeStmt = $pdo->query("SHOW COLUMNS FROM customer_profiles LIKE 'preferred_booking_time'");
+    if ($preferredTimeStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE customer_profiles ADD COLUMN preferred_booking_time VARCHAR(30) NULL DEFAULT NULL AFTER seating_preference");
+    }
+
+    $emailReminderStmt = $pdo->query("SHOW COLUMNS FROM customer_profiles LIKE 'email_reminders_enabled'");
+    if ($emailReminderStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE customer_profiles ADD COLUMN email_reminders_enabled TINYINT(1) NOT NULL DEFAULT 1 AFTER preferred_booking_time");
+    }
+
+    $smsReminderStmt = $pdo->query("SHOW COLUMNS FROM customer_profiles LIKE 'sms_reminders_enabled'");
+    if ($smsReminderStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE customer_profiles ADD COLUMN sms_reminders_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER email_reminders_enabled");
+    }
+
     $profileIdStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'customer_profile_id'");
     if ($profileIdStmt->rowCount() === 0) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN customer_profile_id INT NULL DEFAULT NULL AFTER user_id");
     }
+}
+
+function getCustomerProfileByUserId($pdo, $userId) {
+    $userId = (int) $userId;
+    if ($userId < 1) {
+        return null;
+    }
+
+    $stmt = $pdo->prepare("SELECT * FROM customer_profiles WHERE linked_user_id = ? ORDER BY customer_profile_id ASC LIMIT 1");
+    $stmt->execute([$userId]);
+    $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $profile ?: null;
 }
 
 function findMatchingCustomerProfile($pdo, $name, $email = null, $phone = null, $linkedUserId = null) {
@@ -341,6 +396,78 @@ function upsertCustomerProfile($pdo, $name, $email = null, $phone = null, $linke
     return (int) $pdo->lastInsertId();
 }
 
+function ensureCustomerProfileForUser($pdo, $userId) {
+    $userId = (int) $userId;
+    if ($userId < 1) {
+        return null;
+    }
+
+    ensureCustomerProfilesSchema($pdo);
+
+    $userStmt = $pdo->prepare("SELECT user_id, name, email, phone FROM users WHERE user_id = ? AND role = 'customer' LIMIT 1");
+    $userStmt->execute([$userId]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        return null;
+    }
+
+    $profileId = upsertCustomerProfile(
+        $pdo,
+        (string) ($user['name'] ?? 'Customer'),
+        (string) ($user['email'] ?? ''),
+        (string) ($user['phone'] ?? ''),
+        $userId
+    );
+
+    if ($profileId === null) {
+        return null;
+    }
+
+    $profileStmt = $pdo->prepare("SELECT * FROM customer_profiles WHERE customer_profile_id = ? LIMIT 1");
+    $profileStmt->execute([$profileId]);
+
+    return $profileStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+function getCustomerPortalBookings($pdo, $userId) {
+    $userId = (int) $userId;
+    if ($userId < 1) {
+        return [];
+    }
+
+    $profile = ensureCustomerProfileForUser($pdo, $userId);
+    $profileId = $profile ? (int) ($profile['customer_profile_id'] ?? 0) : 0;
+
+    $sql = "
+        SELECT
+            b.*,
+            t.table_number,
+            cp.name AS profile_name,
+            cp.email AS profile_email,
+            cp.phone AS profile_phone,
+            creator.name AS created_by_name
+        FROM bookings b
+        LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
+        LEFT JOIN customer_profiles cp ON b.customer_profile_id = cp.customer_profile_id
+        LEFT JOIN users creator ON b.created_by_user_id = creator.user_id
+        WHERE b.user_id = ?
+    ";
+    $params = [$userId];
+
+    if ($profileId > 0) {
+        $sql .= " OR b.customer_profile_id = ?";
+        $params[] = $profileId;
+    }
+
+    $sql .= " ORDER BY b.booking_date DESC, COALESCE(b.start_time, '00:00:00') DESC, b.booking_id DESC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+}
+
 function ensureBookingStatusSchema($pdo) {
     $statusStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'status'");
     $statusColumn = $statusStmt->fetch(PDO::FETCH_ASSOC);
@@ -392,6 +519,7 @@ function displayFlashMessage() {
 
 function ensureBookingRequestColumns($pdo) {
     ensureBookingStatusSchema($pdo);
+    ensureUserAccountSchema($pdo);
     ensureCustomerProfilesSchema($pdo);
 
     $startTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");

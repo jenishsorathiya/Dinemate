@@ -13,6 +13,7 @@ $prefillEmail = '';
 $prefillPhone = '';
 $prefillPhoneCountry = '+61';
 $prefillPhoneLocal = '';
+$prefillSpecialRequest = trim((string) ($_GET['special'] ?? ''));
 
 if(isLoggedIn() && getCurrentUserRole() === 'customer') {
     $customerStmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE user_id = ? LIMIT 1");
@@ -23,6 +24,13 @@ if(isLoggedIn() && getCurrentUserRole() === 'customer') {
         $prefillName = (string)($customer['name'] ?? '');
         $prefillEmail = (string)($customer['email'] ?? '');
         $prefillPhone = (string)($customer['phone'] ?? '');
+    }
+
+    $customerProfile = ensureCustomerProfileForUser($pdo, (int) getCurrentUserId());
+    if ($customerProfile) {
+        if ($prefillSpecialRequest === '' && !empty($customerProfile['dietary_notes'])) {
+            $prefillSpecialRequest = (string) $customerProfile['dietary_notes'];
+        }
     }
 }
 
@@ -39,8 +47,9 @@ $restaurantHours = [
 $pageError = $_SESSION['error'] ?? '';
 unset($_SESSION['error']);
 
-$defaultBookingDate = date('Y-m-d');
-$defaultStartTime = '12:00';
+$defaultBookingDate = trim((string) ($_GET['date'] ?? date('Y-m-d')));
+$defaultStartTime = trim((string) ($_GET['time'] ?? '12:00'));
+$defaultGuests = max(1, (int) ($_GET['guests'] ?? 2));
 $timeOptions = [];
 $timeCursor = strtotime($restaurantHours['open']);
 $timeLastSlot = strtotime($restaurantHours['close'] . ' -60 minutes');
@@ -48,6 +57,14 @@ $timeLastSlot = strtotime($restaurantHours['close'] . ' -60 minutes');
 while ($timeCursor <= $timeLastSlot) {
     $timeOptions[] = date('H:i', $timeCursor);
     $timeCursor = strtotime('+30 minutes', $timeCursor);
+}
+
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $defaultBookingDate)) {
+    $defaultBookingDate = date('Y-m-d');
+}
+
+if (!preg_match('/^\d{2}:\d{2}$/', $defaultStartTime) || !in_array($defaultStartTime, $timeOptions, true)) {
+    $defaultStartTime = '12:00';
 }
 
 if ($prefillPhone !== '') {
@@ -787,6 +804,13 @@ $phoneCountryOptions = [
             </div>
         <?php endif; ?>
 
+        <?php if (isset($_GET['rebook'])): ?>
+            <div class="booking-alert" style="border-color:#c7d2fe;background:#eef2ff;color:#3730a3;">
+                <i class="fa fa-repeat"></i>
+                Rebooking mode is on. We have prefilled your previous booking details so you can adjust them before confirming.
+            </div>
+        <?php endif; ?>
+
         <form action="process-booking.php" method="POST" id="booking-form" novalidate>
             <input type="hidden" name="booking_date" id="booking-date" value="<?= htmlspecialchars($defaultBookingDate) ?>">
             <input type="hidden" name="end_time" id="end-time" value="13:00">
@@ -864,7 +888,7 @@ $phoneCountryOptions = [
                                 <label for="number-of-guests">How many people are coming?</label>
                                 <div class="booking-guests-control">
                                     <button type="button" class="booking-guest-btn" id="decreaseGuestsBtn" aria-label="Decrease guests">−</button>
-                                    <input type="number" name="number_of_guests" id="number-of-guests" class="booking-guests-display" min="1" value="2" required>
+                                    <input type="number" name="number_of_guests" id="number-of-guests" class="booking-guests-display" min="1" value="<?php echo (int) $defaultGuests; ?>" required>
                                     <button type="button" class="booking-guest-btn is-primary" id="increaseGuestsBtn" aria-label="Increase guests">+</button>
                                 </div>
                                 <div class="booking-inline-error" id="guest-count-error"></div>
@@ -941,7 +965,7 @@ $phoneCountryOptions = [
                             </div>
                             <div class="booking-field full-width">
                                 <label for="special-request">Add Note or Special Requirements</label>
-                                <textarea name="special_request" id="special-request" class="booking-textarea" placeholder="Birthday celebration, pram space, allergy note, preferred seating, or anything the team should know."></textarea>
+                                <textarea name="special_request" id="special-request" class="booking-textarea" placeholder="Birthday celebration, pram space, allergy note, preferred seating, or anything the team should know."><?php echo htmlspecialchars($prefillSpecialRequest, ENT_QUOTES, 'UTF-8'); ?></textarea>
                             </div>
                         </div>
 

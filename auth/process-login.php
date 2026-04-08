@@ -3,6 +3,8 @@ require_once "../config/db.php";
 require_once "../includes/functions.php";
 session_start();
 
+ensureUserAccountSchema($pdo);
+
 // Prevent session fixation
 session_regenerate_id(true);
 
@@ -41,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         // Query database for user
-        $stmt = $pdo->prepare("SELECT user_id, email, password, role, name FROM users WHERE email = ? LIMIT 1");
+        $stmt = $pdo->prepare("SELECT user_id, email, password, role, name, is_disabled FROM users WHERE email = ? LIMIT 1");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -56,6 +58,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             
             if ($password_valid) {
+                if (!empty($user['is_disabled'])) {
+                    $_SESSION['error'] = "This account has been disabled. Please contact the restaurant.";
+                    header("Location: login.php");
+                    exit;
+                }
+
                 storeUserSession($user);
 
                 // Optional: Log successful login (for audit trail)
