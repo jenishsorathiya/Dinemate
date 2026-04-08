@@ -299,6 +299,66 @@ $userListStmt = $pdo->query("
 ");
 $users = $userListStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
+$userBookingHistory = [];
+$visibleUserIds = array_values(array_filter(array_map(static function (array $user): int {
+    return (int) ($user['user_id'] ?? 0);
+}, $users)));
+
+if (!empty($visibleUserIds)) {
+    $placeholders = implode(',', array_fill(0, count($visibleUserIds), '?'));
+    $bookingHistoryStmt = $pdo->prepare("
+        SELECT
+            b.booking_id,
+            b.user_id,
+            b.booking_date,
+            b.start_time,
+            b.end_time,
+            b.number_of_guests,
+            b.status,
+            b.reservation_card_status,
+            GROUP_CONCAT(DISTINCT rt.table_number ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ', ') AS assigned_table_numbers
+        FROM bookings b
+        LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
+        LEFT JOIN restaurant_tables rt ON bta.table_id = rt.table_id
+        WHERE b.user_id IN ($placeholders)
+          AND (
+              b.booking_date < CURDATE()
+              OR (b.booking_date = CURDATE() AND b.status IN ('completed', 'cancelled', 'no_show'))
+          )
+        GROUP BY
+            b.booking_id,
+            b.user_id,
+            b.booking_date,
+            b.start_time,
+            b.end_time,
+            b.number_of_guests,
+            b.status,
+            b.reservation_card_status
+        ORDER BY b.booking_date DESC, b.start_time DESC, b.booking_id DESC
+    ");
+    $bookingHistoryStmt->execute($visibleUserIds);
+    $bookingHistoryRows = $bookingHistoryStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    foreach ($bookingHistoryRows as $bookingRow) {
+        $userId = (int) ($bookingRow['user_id'] ?? 0);
+        if (!isset($userBookingHistory[$userId])) {
+            $userBookingHistory[$userId] = [];
+        }
+
+        $userBookingHistory[$userId][] = [
+            'booking_id' => (int) ($bookingRow['booking_id'] ?? 0),
+            'booking_date' => (string) ($bookingRow['booking_date'] ?? ''),
+            'start_time' => (string) ($bookingRow['start_time'] ?? ''),
+            'end_time' => (string) ($bookingRow['end_time'] ?? ''),
+            'number_of_guests' => (int) ($bookingRow['number_of_guests'] ?? 0),
+            'status' => (string) ($bookingRow['status'] ?? ''),
+            'status_label' => getBookingStatusLabel($bookingRow['status'] ?? ''),
+            'reservation_card_status_label' => !empty($bookingRow['reservation_card_status']) ? getBookingPlacementLabel($bookingRow['reservation_card_status']) : '',
+            'assigned_table_numbers' => (string) ($bookingRow['assigned_table_numbers'] ?? ''),
+        ];
+    }
+}
+
 $editUser = null;
 if (isset($_GET['edit'])) {
     $editId = (int) ($_GET['edit'] ?? 0);
@@ -348,6 +408,7 @@ $adminNotificationCount = $totalUsers;
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
 $adminSidebarActive = 'users';
 $adminSidebarPathPrefix = '';
+$userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -422,6 +483,8 @@ $adminSidebarPathPrefix = '';
         .role-badge.role-customer { background: #e9f7ef; color: #1f8f63; }
         .booking-badge.has-bookings { background: #eef4ff; color: #315cba; }
         .booking-badge.no-bookings { background: #f5f7fb; color: #6c768d; }
+        .booking-badge.booking-trigger { border: 0; cursor: pointer; }
+        .booking-badge.booking-trigger:hover { transform: translateY(-1px); box-shadow: var(--users-shadow-soft); }
         .table-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .table-actions form, .table-actions a { margin: 0; }
         .btn-table { min-height: 36px; padding: 0 12px; border-radius: 12px; font-size: 12px; }
@@ -431,6 +494,13 @@ $adminSidebarPathPrefix = '';
         .modal-header, .modal-footer { border: 0; padding: 22px 24px 0; }
         .modal-body { padding: 22px 24px 24px; }
         .modal-footer { padding: 0 24px 24px; }
+        .history-list { display: grid; gap: 12px; }
+        .history-card { border: 1px solid var(--users-line); border-radius: 18px; padding: 16px 18px; background: #fbfcff; }
+        .history-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+        .history-card-title { margin: 0; font-size: 15px; font-weight: 800; }
+        .history-card-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 10px; color: var(--users-muted); font-size: 13px; }
+        .history-card-note { margin-top: 10px; color: var(--users-muted); font-size: 12px; }
+        .history-empty { padding: 18px; border: 1px dashed var(--users-line); border-radius: 18px; background: #fbfcff; color: var(--users-muted); text-align: center; font-size: 14px; }
         @media (max-width: 1200px) { .stats-grid, .table-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .content-grid, .hero-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .form-grid, .table-toolbar { grid-template-columns: 1fr; } .panel-heading, .results-footer { align-items: flex-start; flex-direction: column; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid #edf2f7; } .table-custom tbody td { padding: 8px 0; border: 0; } }
     </style>
@@ -518,7 +588,15 @@ $adminSidebarPathPrefix = '';
                                                     <span class="user-meta"><?php echo htmlspecialchars((string) (($user['phone'] ?? '') !== '' ? $user['phone'] : 'No phone number'), ENT_QUOTES, 'UTF-8'); ?></span>
                                                 </td>
                                                 <td><span class="role-badge role-<?php echo htmlspecialchars((string) $user['role'], ENT_QUOTES, 'UTF-8'); ?>"><i class="fa-solid fa-<?php echo $user['role'] === 'admin' ? 'crown' : 'user'; ?>"></i><?php echo htmlspecialchars(ucfirst((string) $user['role']), ENT_QUOTES, 'UTF-8'); ?></span></td>
-                                                <td><span class="booking-badge <?php echo $bookingCount > 0 ? 'has-bookings' : 'no-bookings'; ?>"><i class="fa-solid fa-calendar-check"></i><?php echo $bookingCount > 0 ? number_format($bookingCount) . ' booking' . ($bookingCount === 1 ? '' : 's') : 'No bookings'; ?></span></td>
+                                                <td>
+                                                    <?php if ($bookingCount > 0): ?>
+                                                        <button type="button" class="booking-badge has-bookings booking-trigger" data-user-id="<?php echo (int) $user['user_id']; ?>" data-user-name="<?php echo htmlspecialchars((string) $user['name'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                            <i class="fa-solid fa-calendar-check"></i><?php echo number_format($bookingCount) . ' booking' . ($bookingCount === 1 ? '' : 's'); ?>
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <span class="booking-badge no-bookings"><i class="fa-solid fa-calendar-check"></i>No bookings</span>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td><?php echo $joinedTs !== false ? htmlspecialchars(date('M d, Y', $joinedTs), ENT_QUOTES, 'UTF-8') : '-'; ?><span class="user-meta"><?php echo $joinedTs !== false ? htmlspecialchars(date('g:i A', $joinedTs), ENT_QUOTES, 'UTF-8') : ''; ?></span></td>
                                                 <td><?php echo $lastBookingTs !== false ? htmlspecialchars(date('M d, Y', $lastBookingTs), ENT_QUOTES, 'UTF-8') : 'No booking yet'; ?></td>
                                                 <td>
@@ -575,7 +653,7 @@ $adminSidebarPathPrefix = '';
                             <div class="form-field"><label class="form-label" for="edit-email">Email</label><input type="email" id="edit-email" name="email" class="form-control" maxlength="150" value="<?php echo htmlspecialchars((string) $editUser['email'], ENT_QUOTES, 'UTF-8'); ?>" required></div>
                             <div class="form-field"><label class="form-label" for="edit-phone">Phone</label><input type="text" id="edit-phone" name="phone" class="form-control" maxlength="30" value="<?php echo htmlspecialchars((string) ($editUser['phone'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"></div>
                             <div class="form-field"><label class="form-label" for="edit-role">Role</label><select id="edit-role" name="role" class="form-select"><option value="customer" <?php echo ($editUser['role'] === 'customer') ? 'selected' : ''; ?>>Customer</option><option value="admin" <?php echo ($editUser['role'] === 'admin') ? 'selected' : ''; ?>>Admin</option></select></div>
-                            <div class="form-field full"><label class="form-label" for="edit-password">Reset Password</label><input type="password" id="edit-password" name="password" class="form-control" minlength="6" maxlength="255" placeholder="Leave blank to keep the current password"><div class="form-help">Only fill this in if you want to change the user’s password. The new password will be hashed before it is saved.</div></div>
+                            <div class="form-field full"><label class="form-label" for="edit-password">Reset Password</label><input type="password" id="edit-password" name="password" class="form-control" minlength="6" maxlength="255" placeholder="Leave blank to keep the current password"><div class="form-help">Only fill this in if you want to change the userâ€™s password. The new password will be hashed before it is saved.</div></div>
                         </div>
 
                         <div class="modal-footer px-0 pb-0"><button type="button" class="btn-surface" onclick="window.location.href='manage-users.php'">Cancel</button><button type="submit" class="btn-primary-soft"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button></div>
@@ -585,7 +663,24 @@ $adminSidebarPathPrefix = '';
         </div>
     </div>
 <?php endif; ?>
+<div class="modal fade" id="bookingHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="panel-title mb-1" id="bookingHistoryModalTitle">Booking History</h2>
+                    <p class="panel-subtitle mb-0" id="bookingHistoryModalSubtitle">Past bookings for this user.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="bookingHistoryList" class="history-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
+    const USER_BOOKING_HISTORY = <?php echo $userBookingHistoryJson ?: '{}'; ?>;
     const usersTableBody = document.querySelector('#usersTable tbody');
     const searchInput = document.getElementById('searchInput');
     const roleFilter = document.getElementById('roleFilter');
@@ -594,6 +689,81 @@ $adminSidebarPathPrefix = '';
     const resultsCount = document.getElementById('resultsCount');
     const emptyState = document.getElementById('emptyState');
     const userRows = Array.from(usersTableBody.querySelectorAll('tr'));
+    const bookingHistoryModalElement = document.getElementById('bookingHistoryModal');
+    const bookingHistoryList = document.getElementById('bookingHistoryList');
+    const bookingHistoryModalTitle = document.getElementById('bookingHistoryModalTitle');
+    const bookingHistoryModalSubtitle = document.getElementById('bookingHistoryModalSubtitle');
+    let bookingHistoryModal = null;
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function formatHistoryDate(dateValue) {
+        if (!dateValue) return 'Unknown date';
+        const parsed = new Date(`${dateValue}T00:00:00`);
+        return Number.isNaN(parsed.getTime()) ? dateValue : parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function formatHistoryTime(timeValue) {
+        if (!timeValue) return '';
+        const parsed = new Date(`1970-01-01T${timeValue}`);
+        return Number.isNaN(parsed.getTime()) ? timeValue : parsed.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function renderBookingHistory(userId, userName) {
+        if (!bookingHistoryModal || !bookingHistoryList || !bookingHistoryModalTitle || !bookingHistoryModalSubtitle) {
+            if (!bookingHistoryModalElement || !bookingHistoryList || !bookingHistoryModalTitle || !bookingHistoryModalSubtitle || typeof bootstrap === 'undefined') {
+                return;
+            }
+
+            bookingHistoryModal = new bootstrap.Modal(bookingHistoryModalElement);
+        }
+
+        const bookings = Array.isArray(USER_BOOKING_HISTORY[String(userId)]) ? USER_BOOKING_HISTORY[String(userId)] : [];
+        bookingHistoryModalTitle.textContent = `${userName} Booking History`;
+        bookingHistoryModalSubtitle.textContent = bookings.length
+            ? `${bookings.length} past booking${bookings.length === 1 ? '' : 's'} recorded for this registered user.`
+            : 'No past bookings recorded for this registered user.';
+
+        if (!bookings.length) {
+            bookingHistoryList.innerHTML = `<div class="history-empty">No past bookings recorded for this user yet.</div>`;
+            bookingHistoryModal.show();
+            return;
+        }
+
+        bookingHistoryList.innerHTML = bookings.map((booking) => {
+            const tableSummary = booking.assigned_table_numbers ? `Table ${escapeHtml(booking.assigned_table_numbers)}` : 'No table recorded';
+            const placementSummary = booking.reservation_card_status_label ? escapeHtml(booking.reservation_card_status_label) : '';
+            const statusClass = String(booking.status || '').replace('_', '-');
+
+            return `
+                <article class="history-card">
+                    <div class="history-card-top">
+                        <div>
+                            <h3 class="history-card-title">${escapeHtml(formatHistoryDate(booking.booking_date))}</h3>
+                            <div class="history-card-meta">
+                                <span>${escapeHtml(formatHistoryTime(booking.start_time))} - ${escapeHtml(formatHistoryTime(booking.end_time))}</span>
+                                <span>P${escapeHtml(booking.number_of_guests)}</span>
+                                <span>${tableSummary}</span>
+                            </div>
+                        </div>
+                        <span class="booking-badge ${escapeHtml(statusClass === 'completed' ? 'has-bookings' : 'no-bookings')}">
+                            ${escapeHtml(booking.status_label || booking.status)}
+                        </span>
+                    </div>
+                    ${placementSummary ? `<div class="history-card-note">Reservation card: ${placementSummary}</div>` : ''}
+                </article>
+            `;
+        }).join('');
+
+        bookingHistoryModal.show();
+    }
 
     function applyFilters() {
         const searchValue = searchInput.value.trim().toLowerCase();
@@ -631,6 +801,12 @@ $adminSidebarPathPrefix = '';
     [searchInput, roleFilter, bookingFilter, sortFilter].forEach((element) => {
         element.addEventListener('input', applyFilters);
         element.addEventListener('change', applyFilters);
+    });
+
+    document.querySelectorAll('.booking-trigger').forEach((button) => {
+        button.addEventListener('click', () => {
+            renderBookingHistory(button.dataset.userId || '', button.dataset.userName || 'User');
+        });
     });
 
     setTimeout(() => {
