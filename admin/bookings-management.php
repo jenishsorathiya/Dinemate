@@ -235,6 +235,68 @@ $serviceOutcomesStmt = $pdo->query(
 );
 $serviceOutcomes = $serviceOutcomesStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
+$historyStatus = strtolower(trim((string) ($_GET['history_status'] ?? 'all')));
+$historySearch = trim((string) ($_GET['history_search'] ?? ''));
+$historyDateFrom = trim((string) ($_GET['history_from'] ?? ''));
+$historyDateTo = trim((string) ($_GET['history_to'] ?? ''));
+
+$allowedHistoryStatuses = ['all', 'completed', 'cancelled', 'no_show', 'pending', 'confirmed'];
+if (!in_array($historyStatus, $allowedHistoryStatuses, true)) {
+    $historyStatus = 'all';
+}
+
+$historyFilters = [
+    "(b.booking_date < CURDATE() OR (b.booking_date = CURDATE() AND b.status IN ('completed', 'cancelled', 'no_show')))"
+];
+$historyParams = [];
+
+if ($historyStatus !== 'all') {
+    $historyFilters[] = "b.status = ?";
+    $historyParams[] = $historyStatus;
+}
+
+if ($historySearch !== '') {
+    $historyFilters[] = "COALESCE(b.customer_name_override, b.customer_name, u.name, 'Guest') LIKE ?";
+    $historyParams[] = '%' . $historySearch . '%';
+}
+
+if ($historyDateFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $historyDateFrom)) {
+    $historyFilters[] = "b.booking_date >= ?";
+    $historyParams[] = $historyDateFrom;
+} else {
+    $historyDateFrom = '';
+}
+
+if ($historyDateTo !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $historyDateTo)) {
+    $historyFilters[] = "b.booking_date <= ?";
+    $historyParams[] = $historyDateTo;
+} else {
+    $historyDateTo = '';
+}
+
+$bookingHistorySql = "
+    SELECT b.booking_id,
+            b.booking_date,
+            b.start_time,
+            b.end_time,
+            b.number_of_guests,
+            b.status,
+            b.reservation_card_status,
+            COALESCE(b.customer_name_override, b.customer_name, u.name, 'Guest') AS customer_name,
+            GROUP_CONCAT(DISTINCT rt.table_number ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ', ') AS assigned_table_numbers
+     FROM bookings b
+     LEFT JOIN users u ON b.user_id = u.user_id
+     LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
+     LEFT JOIN restaurant_tables rt ON bta.table_id = rt.table_id
+     WHERE " . implode("\n       AND ", $historyFilters) . "
+     GROUP BY b.booking_id
+     ORDER BY b.booking_date DESC, b.start_time DESC, b.booking_id DESC
+     LIMIT 50
+";
+$bookingHistoryStmt = $pdo->prepare($bookingHistorySql);
+$bookingHistoryStmt->execute($historyParams);
+$bookingHistory = $bookingHistoryStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
 $todayCapacity = (int) $pdo->query("SELECT COALESCE(SUM(capacity), 0) FROM restaurant_tables")->fetchColumn();
 
 $todayDate = date('Y-m-d');
@@ -798,6 +860,68 @@ $adminSidebarPathPrefix = '';
             font-size: 14px;
         }
 
+        .history-filters {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .history-filter-group {
+            display: grid;
+            gap: 6px;
+        }
+
+        .history-filter-group label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .history-filter-group input,
+        .history-filter-group select {
+            width: 100%;
+            border: 1px solid var(--border-strong);
+            border-radius: 12px;
+            background: #fff;
+            color: var(--text-main);
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .history-filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .history-filter-submit,
+        .history-filter-clear {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            border-radius: 12px;
+            padding: 0 14px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .history-filter-submit {
+            border: none;
+            background: var(--accent-navy);
+            color: #fff;
+        }
+
+        .history-filter-clear {
+            border: 1px solid var(--border-strong);
+            background: #fff;
+            color: var(--text-main);
+        }
+
         .alert {
             margin-bottom: 0;
             border-radius: 16px;
@@ -805,7 +929,8 @@ $adminSidebarPathPrefix = '';
 
         @media (max-width: 1180px) {
             .attention-grid,
-            .workflow-grid {
+            .workflow-grid,
+            .history-filters {
                 grid-template-columns: 1fr;
             }
 
@@ -1053,6 +1178,90 @@ $adminSidebarPathPrefix = '';
                         </div>
                     <?php else: ?>
                         <div class="empty-state">No completed, cancelled, or no-show outcomes recorded for today yet.</div>
+                    <?php endif; ?>
+                </section>
+            </section>
+
+            <section class="section-block">
+                <section class="card-surface panel-card">
+                    <div class="panel-top">
+                        <h3>Recent Booking History</h3>
+                        <div class="panel-tools">
+                            <span class="panel-count"><?php echo count($bookingHistory); ?></span>
+                        </div>
+                    </div>
+
+                    <form method="GET" class="history-filters">
+                        <div class="history-filter-group">
+                            <label for="historyStatus">Status</label>
+                            <select id="historyStatus" name="history_status">
+                                <option value="all"<?php echo $historyStatus === 'all' ? ' selected' : ''; ?>>All statuses</option>
+                                <option value="completed"<?php echo $historyStatus === 'completed' ? ' selected' : ''; ?>>Completed</option>
+                                <option value="cancelled"<?php echo $historyStatus === 'cancelled' ? ' selected' : ''; ?>>Cancelled</option>
+                                <option value="no_show"<?php echo $historyStatus === 'no_show' ? ' selected' : ''; ?>>No-show</option>
+                                <option value="confirmed"<?php echo $historyStatus === 'confirmed' ? ' selected' : ''; ?>>Confirmed</option>
+                                <option value="pending"<?php echo $historyStatus === 'pending' ? ' selected' : ''; ?>>Pending</option>
+                            </select>
+                        </div>
+                        <div class="history-filter-group">
+                            <label for="historySearch">Customer</label>
+                            <input type="text" id="historySearch" name="history_search" placeholder="Search by customer name" value="<?php echo htmlspecialchars($historySearch, ENT_QUOTES, 'UTF-8'); ?>">
+                        </div>
+                        <div class="history-filter-group">
+                            <label for="historyFrom">From</label>
+                            <input type="date" id="historyFrom" name="history_from" value="<?php echo htmlspecialchars($historyDateFrom, ENT_QUOTES, 'UTF-8'); ?>">
+                        </div>
+                        <div class="history-filter-group">
+                            <label for="historyTo">To</label>
+                            <input type="date" id="historyTo" name="history_to" value="<?php echo htmlspecialchars($historyDateTo, ENT_QUOTES, 'UTF-8'); ?>">
+                        </div>
+                        <div class="history-filter-actions">
+                            <button type="submit" class="history-filter-submit">Apply Filters</button>
+                            <a href="bookings-management.php" class="history-filter-clear">Clear</a>
+                        </div>
+                    </form>
+
+                    <?php if (!empty($bookingHistory)): ?>
+                        <div class="queue-shell">
+                            <div class="workflow-list">
+                                <?php foreach ($bookingHistory as $booking): ?>
+                                    <?php
+                                    $assignedTableSummary = trim((string) ($booking['assigned_table_numbers'] ?? '')) !== ''
+                                        ? 'T' . $booking['assigned_table_numbers']
+                                        : 'No table recorded';
+                                    $placementSummary = null;
+                                    if (!empty($booking['reservation_card_status'])) {
+                                        $placementSummary = getBookingPlacementLabel($booking['reservation_card_status']);
+                                    }
+                                    ?>
+                                    <article class="workflow-item">
+                                        <div class="workflow-main">
+                                            <div class="workflow-item-top">
+                                                <h4 class="workflow-item-name"><?php echo htmlspecialchars($booking['customer_name'], ENT_QUOTES, 'UTF-8'); ?></h4>
+                                                <span class="status-pill <?php echo htmlspecialchars(str_replace('_', '-', (string) $booking['status']), ENT_QUOTES, 'UTF-8'); ?>">
+                                                    <?php echo htmlspecialchars(getBookingStatusLabel($booking['status']), ENT_QUOTES, 'UTF-8'); ?>
+                                                </span>
+                                            </div>
+                                            <div class="workflow-item-meta">
+                                                <span><?php echo htmlspecialchars(date('D, j M Y', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span><?php echo htmlspecialchars(date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span><?php echo htmlspecialchars($assignedTableSummary, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span class="workflow-meta-accent">P<?php echo (int) $booking['number_of_guests']; ?></span>
+                                            </div>
+                                        </div>
+                                        <?php if ($placementSummary !== null): ?>
+                                            <div class="workflow-footer">
+                                                <div>
+                                                    <div class="workflow-hint"><i class="fa-solid fa-circle"></i><span><?php echo htmlspecialchars($placementSummary, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                    </article>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="empty-state">No past bookings or closed booking outcomes to show yet.</div>
                     <?php endif; ?>
                 </section>
             </section>
