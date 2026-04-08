@@ -719,6 +719,22 @@ $adminSidebarPathPrefix = '../';
             background: #e0e7ff;
         }
 
+        .booking-modal-success-small {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .booking-modal-success-small:hover {
+            background: #d1fae5;
+        }
+
         .booking-detail-topbar {
             display: flex;
             align-items: center;
@@ -873,6 +889,29 @@ $adminSidebarPathPrefix = '../';
             color: #374151;
             font-size: 12px;
             font-weight: 600;
+        }
+
+        .booking-meta-chip .booking-placement-dot {
+            box-shadow: none;
+        }
+
+        .booking-placement-dot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65);
+        }
+
+        .booking-placement-dot.not-placed {
+            background: #f97316;
+        }
+
+        .booking-placement-dot.placed {
+            background: #22c55e;
         }
 
         .table-label.clickable {
@@ -1419,6 +1458,10 @@ $adminSidebarPathPrefix = '../';
             flex-shrink: 0;
         }
 
+        .booking-placement-inline {
+            margin-right: 2px;
+        }
+
         .booking-name-text {
             font-size: 11px;
             font-weight: 700;
@@ -1695,7 +1738,10 @@ $adminSidebarPathPrefix = '../';
         <div class="booking-modal-header">
             <div>
                 <h5><i class="fa fa-clipboard-list"></i> Booking Details</h5>
-                <div class="booking-meta-chip" id="bookingDetailsMeta"></div>
+                <div class="booking-meta-chip">
+                    <span class="booking-placement-dot" id="bookingDetailsPlacementDot" style="display: none;" aria-hidden="true"></span>
+                    <span id="bookingDetailsMeta"></span>
+                </div>
             </div>
             <button type="button" class="booking-modal-close" id="closeBookingDetailsModalBtn" aria-label="Close">&times;</button>
         </div>
@@ -1705,6 +1751,7 @@ $adminSidebarPathPrefix = '../';
             <input type="hidden" id="bookingDetailsAction" value="save">
             <div class="booking-detail-topbar">
                 <button type="button" class="booking-modal-danger-small" id="cancelBookingActionBtn">Cancel Booking</button>
+                <button type="button" class="booking-modal-success-small" id="placementBookingActionBtn">Mark Placed</button>
                 <button type="button" class="booking-modal-secondary-small" id="completeBookingActionBtn">Mark Completed</button>
                 <button type="button" class="booking-modal-secondary-small" id="noShowBookingActionBtn">Mark No-show</button>
             </div>
@@ -1916,6 +1963,11 @@ $adminSidebarPathPrefix = '../';
             booking.assigned_table_numbers = nextAssignedTables.map(table => String(table.table_number));
             booking.table_id = nextAssignedTableIds.length ? Number(nextAssignedTableIds[0]) : null;
             booking.table_number = nextAssignedTables.length ? String(nextAssignedTables[0].table_number) : null;
+            if(!nextAssignedTableIds.length) {
+                booking.reservation_card_status = null;
+            } else if(!getBookingPlacementStatus(booking)) {
+                booking.reservation_card_status = 'not_placed';
+            }
         });
     }
 
@@ -2122,6 +2174,38 @@ $adminSidebarPathPrefix = '../';
         }
 
         return `${assignmentSummary} • ${statusLabel}`;
+    }
+
+    function getBookingPlacementStatus(booking) {
+        const normalizedPlacement = String(booking.reservation_card_status || '').toLowerCase();
+        return ['not_placed', 'placed'].includes(normalizedPlacement) ? normalizedPlacement : null;
+    }
+
+    function getBookingPlacementLabel(status) {
+        return status === 'placed' ? 'Placed' : 'Not placed';
+    }
+
+    function isPlacementTrackingAvailable(booking) {
+        const bookingStatus = String(booking.status || '').toLowerCase();
+        return bookingStatus !== 'cancelled' && getAssignedTableIds(booking).length > 0;
+    }
+
+    function getBookingDetailsMetaSummary(booking) {
+        const rawStatusLabel = String(booking.status || 'pending').toLowerCase();
+        const statusLabel = rawStatusLabel === 'no_show'
+            ? 'No-show'
+            : rawStatusLabel.charAt(0).toUpperCase() + rawStatusLabel.slice(1);
+        const assignmentSummary = getBookingAssignmentSummary(booking);
+        const placementStatus = getBookingPlacementStatus(booking);
+        const placementLabel = placementStatus ? getBookingPlacementLabel(placementStatus) : null;
+
+        if(!getAssignedTableIds(booking).length || !assignmentSummary) {
+            return `Unassigned • ${statusLabel}`;
+        }
+
+        return placementLabel
+            ? `${assignmentSummary} • ${statusLabel} • ${placementLabel}`
+            : `${assignmentSummary} • ${statusLabel}`;
     }
 
     function getBookedPeopleCountForArea(areaId = 'all') {
@@ -2818,6 +2902,7 @@ $adminSidebarPathPrefix = '../';
         const closeBtn = document.getElementById('closeBookingDetailsModalBtn');
         const cancelBtn = document.getElementById('cancelBookingDetailsBtn');
         const cancelBookingActionBtn = document.getElementById('cancelBookingActionBtn');
+        const placementBookingActionBtn = document.getElementById('placementBookingActionBtn');
         const completeBookingActionBtn = document.getElementById('completeBookingActionBtn');
         const noShowBookingActionBtn = document.getElementById('noShowBookingActionBtn');
         const form = document.getElementById('bookingDetailsForm');
@@ -2839,6 +2924,80 @@ $adminSidebarPathPrefix = '../';
         }
         if(cancelBtn) {
             cancelBtn.addEventListener('click', closeModal);
+        }
+
+        function syncBookingPlacementState(bookingIdx, data) {
+            if(bookingIdx === -1) {
+                return;
+            }
+
+            BOOKING_DATA[bookingIdx].reservation_card_status = data.reservation_card_status || null;
+        }
+
+        function updatePlacementButtonText(booking) {
+            if(!placementBookingActionBtn) {
+                return;
+            }
+
+            const placementStatus = getBookingPlacementStatus(booking);
+            placementBookingActionBtn.textContent = placementStatus === 'placed' ? 'Mark Not Placed' : 'Mark Placed';
+        }
+
+        function toggleBookingPlacement() {
+            const bookingId = document.getElementById('bookingDetailsId').value;
+            if(!bookingId || !placementBookingActionBtn) {
+                return;
+            }
+
+            const booking = BOOKING_DATA.find(item => item.booking_id == bookingId);
+            if(!booking || !isPlacementTrackingAvailable(booking)) {
+                return;
+            }
+
+            const currentPlacementStatus = getBookingPlacementStatus(booking);
+            const nextPlacementStatus = currentPlacementStatus === 'placed' ? 'not_placed' : 'placed';
+            const confirmMessage = nextPlacementStatus === 'placed'
+                ? `Mark ${booking.customer_name} as placed on the table?`
+                : `Mark ${booking.customer_name} as not placed yet?`;
+
+            if(!window.confirm(confirmMessage)) {
+                return;
+            }
+
+            errorBox.style.display = 'none';
+            placementBookingActionBtn.disabled = true;
+            placementBookingActionBtn.textContent = 'Saving...';
+
+            fetch('update-placement-status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    booking_id: bookingId,
+                    reservation_card_status: nextPlacementStatus,
+                })
+            })
+            .then(async response => {
+                const data = await response.json();
+                if(!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to update placement status');
+                }
+                return data;
+            })
+            .then(data => {
+                const bookingIdx = BOOKING_DATA.findIndex(item => item.booking_id == data.booking_id);
+                syncBookingPlacementState(bookingIdx, data);
+                renderTimeline();
+                closeModal();
+            })
+            .catch(error => {
+                errorBox.textContent = error.message;
+                errorBox.style.display = 'block';
+            })
+            .finally(() => {
+                placementBookingActionBtn.disabled = false;
+            });
         }
 
         function markBookingOutcome(nextStatus, buttonEl, loadingLabel, confirmMessage) {
@@ -2882,6 +3041,7 @@ $adminSidebarPathPrefix = '../';
                     BOOKING_DATA[bookingIdx].table_number = data.table_number || null;
                     BOOKING_DATA[bookingIdx].assigned_table_ids = Array.isArray(data.assigned_table_ids) ? data.assigned_table_ids.map(Number) : [];
                     BOOKING_DATA[bookingIdx].assigned_table_numbers = Array.isArray(data.assigned_table_numbers) ? data.assigned_table_numbers : [];
+                    syncBookingPlacementState(bookingIdx, data);
                 }
                 renderTimeline();
                 closeModal();
@@ -2953,6 +3113,9 @@ $adminSidebarPathPrefix = '../';
             completeBookingActionBtn.addEventListener('click', function() {
                 markBookingOutcome('completed', completeBookingActionBtn, 'Saving...', 'Mark %s as completed?');
             });
+        }
+        if(placementBookingActionBtn) {
+            placementBookingActionBtn.addEventListener('click', toggleBookingPlacement);
         }
         if(noShowBookingActionBtn) {
             noShowBookingActionBtn.addEventListener('click', function() {
@@ -3240,6 +3403,7 @@ $adminSidebarPathPrefix = '../';
 
         const modal = document.getElementById('bookingDetailsModal');
         const cancelActionBtn = document.getElementById('cancelBookingActionBtn');
+        const placementActionBtn = document.getElementById('placementBookingActionBtn');
         const completeActionBtn = document.getElementById('completeBookingActionBtn');
         const noShowActionBtn = document.getElementById('noShowBookingActionBtn');
         document.getElementById('bookingDetailsId').value = booking.booking_id;
@@ -3259,9 +3423,29 @@ $adminSidebarPathPrefix = '../';
         );
         document.getElementById('bookingDetailsNotes').value = booking.special_request || '';
         document.getElementById('bookingDetailsMeta').textContent = getBookingDetailsMetaSummary(booking);
+        const bookingDetailsPlacementDot = document.getElementById('bookingDetailsPlacementDot');
+        if(bookingDetailsPlacementDot) {
+            const placementStatus = getBookingPlacementStatus(booking);
+            bookingDetailsPlacementDot.classList.remove('placed', 'not-placed');
+            if(placementStatus) {
+                bookingDetailsPlacementDot.classList.add(placementStatus === 'placed' ? 'placed' : 'not-placed');
+                bookingDetailsPlacementDot.style.display = 'inline-flex';
+                bookingDetailsPlacementDot.title = getBookingPlacementLabel(placementStatus);
+                bookingDetailsPlacementDot.setAttribute('aria-label', getBookingPlacementLabel(placementStatus));
+            } else {
+                bookingDetailsPlacementDot.style.display = 'none';
+                bookingDetailsPlacementDot.removeAttribute('title');
+                bookingDetailsPlacementDot.removeAttribute('aria-label');
+            }
+        }
         document.getElementById('saveBookingDetailsBtn').textContent = isPending ? 'Confirm Booking' : 'Save Changes';
         if(cancelActionBtn) {
             cancelActionBtn.style.display = isPending || isConfirmed ? 'inline-flex' : 'none';
+        }
+        if(placementActionBtn) {
+            const placementTrackingAvailable = isPlacementTrackingAvailable(booking);
+            placementActionBtn.style.display = placementTrackingAvailable ? 'inline-flex' : 'none';
+            placementActionBtn.textContent = getBookingPlacementStatus(booking) === 'placed' ? 'Mark Not Placed' : 'Mark Placed';
         }
         if(completeActionBtn) {
             completeActionBtn.style.display = isConfirmed ? 'inline-flex' : 'none';
@@ -3380,6 +3564,10 @@ $adminSidebarPathPrefix = '../';
                 : '';
             const bookingStatus = String(booking.status || '').toLowerCase();
             const isLiveBooking = ['pending', 'confirmed'].includes(bookingStatus);
+            const placementStatus = getBookingPlacementStatus(booking);
+            const placementDot = placementStatus
+                ? `<span class="booking-placement-dot ${placementStatus === 'placed' ? 'placed' : 'not-placed'}" title="${getBookingPlacementLabel(placementStatus)}" aria-label="${getBookingPlacementLabel(placementStatus)}"></span>`
+                : '';
             const rightSideText = isPendingTab || isStandbyTab
                 ? `${pendingActionButton}<span class="booking-item-meta">P${booking.number_of_guests}</span>`
                 : `<span class="booking-item-table">${assignmentSummary}</span>`;
@@ -3394,6 +3582,7 @@ $adminSidebarPathPrefix = '../';
                     <div class="booking-item-top">
                         <span class="booking-item-top-left">
                             <span class="booking-item-time">${startTime}</span>
+                            ${!isPendingTab && !isStandbyTab ? placementDot : ''}
                             ${noteIcon}
                         </span>
                         <span class="booking-item-top-right">
@@ -3436,13 +3625,14 @@ $adminSidebarPathPrefix = '../';
         })
         .then(data => {
             const bookingIdx = BOOKING_DATA.findIndex(booking => String(booking.booking_id) === String(data.booking_id));
-            if(bookingIdx !== -1) {
-                BOOKING_DATA[bookingIdx].status = data.status || 'confirmed';
-                BOOKING_DATA[bookingIdx].table_id = data.table_id !== null ? Number(data.table_id) : null;
-                BOOKING_DATA[bookingIdx].table_number = data.table_number || null;
-                BOOKING_DATA[bookingIdx].assigned_table_ids = Array.isArray(data.assigned_table_ids) ? data.assigned_table_ids.map(Number) : [];
-                BOOKING_DATA[bookingIdx].assigned_table_numbers = Array.isArray(data.assigned_table_numbers) ? data.assigned_table_numbers : [];
-            }
+                if(bookingIdx !== -1) {
+                    BOOKING_DATA[bookingIdx].status = data.status || 'confirmed';
+                    BOOKING_DATA[bookingIdx].table_id = data.table_id !== null ? Number(data.table_id) : null;
+                    BOOKING_DATA[bookingIdx].table_number = data.table_number || null;
+                    BOOKING_DATA[bookingIdx].assigned_table_ids = Array.isArray(data.assigned_table_ids) ? data.assigned_table_ids.map(Number) : [];
+                    BOOKING_DATA[bookingIdx].assigned_table_numbers = Array.isArray(data.assigned_table_numbers) ? data.assigned_table_numbers : [];
+                    BOOKING_DATA[bookingIdx].reservation_card_status = data.reservation_card_status || null;
+                }
 
             renderTimeline();
             if(typeof window.refreshAdminPendingBookings === 'function') {
@@ -3733,6 +3923,11 @@ $adminSidebarPathPrefix = '../';
         const showTime = width >= 88;
         const showGuestCount = width >= 132;
         const showNoteButton = hasSpecialNote && width >= 156;
+        const placementStatus = getBookingPlacementStatus(booking);
+        const showPlacementDot = Boolean(placementStatus);
+        const placementBadgeHtml = showPlacementDot
+            ? `<span class="booking-placement-dot booking-placement-inline ${placementStatus === 'placed' ? 'placed' : 'not-placed'}" title="${getBookingPlacementLabel(placementStatus)}" aria-label="${getBookingPlacementLabel(placementStatus)}"></span>`
+            : '';
         const noteButtonHtml = showNoteButton
             ? `<button type="button" class="booking-note-btn" title="${booking.special_request.replace(/"/g, '&quot;')}" onclick="event.stopPropagation(); openBookingDetails(${booking.booking_id});" draggable="false"><i class="fa-solid fa-note-sticky"></i></button>`
             : '';
@@ -3775,6 +3970,7 @@ $adminSidebarPathPrefix = '../';
                     <div class="booking-top">
                         <span class="booking-top-left">
                             ${showTime ? `<span class="booking-time-text">${visibleTimeText}</span>` : ''}
+                            ${placementBadgeHtml}
                             ${noteButtonHtml}
                         </span>
                         <span class="booking-top-right">
@@ -3930,6 +4126,7 @@ $adminSidebarPathPrefix = '../';
                     BOOKING_DATA[bookingIdx].assigned_table_ids = Array.isArray(data.table_ids) ? data.table_ids.map(Number) : [];
                     BOOKING_DATA[bookingIdx].assigned_table_numbers = Array.isArray(data.table_numbers) ? data.table_numbers : [];
                     BOOKING_DATA[bookingIdx].status = data.status || 'confirmed';
+                    BOOKING_DATA[bookingIdx].reservation_card_status = data.reservation_card_status || null;
                     BOOKING_DATA[bookingIdx].start_time = newStartTime;
                     BOOKING_DATA[bookingIdx].end_time = newEndTime;
                 }
@@ -4102,6 +4299,7 @@ $adminSidebarPathPrefix = '../';
                 booking.table_number = data.table_number || null;
                 booking.assigned_table_ids = Array.isArray(data.table_ids) ? data.table_ids.map(Number) : [];
                 booking.assigned_table_numbers = Array.isArray(data.table_numbers) ? data.table_numbers : [];
+                booking.reservation_card_status = data.reservation_card_status || null;
                 renderTimeline();
             } else {
                 alert('Not updated: ' + (data.error || 'Conflict or invalid'));                

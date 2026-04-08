@@ -30,9 +30,6 @@ try {
         exit();
     }
 
-    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'confirmed' WHERE booking_id = ?");
-    $updateStmt->execute([$bookingId]);
-
     $assignedTablesStmt = $pdo->prepare("SELECT rt.table_id, rt.table_number FROM booking_table_assignments bta INNER JOIN restaurant_tables rt ON rt.table_id = bta.table_id WHERE bta.booking_id = ? ORDER BY rt.table_number + 0, rt.table_number ASC");
     $assignedTablesStmt->execute([$bookingId]);
     $assignedTables = $assignedTablesStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -44,6 +41,12 @@ try {
         return (string)$tableRow['table_number'];
     }, $assignedTables);
 
+    $hasAssignedTables = !empty($assignedTableIds);
+    $nextPlacementStatus = $hasAssignedTables ? 'not_placed' : null;
+
+    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'confirmed', reservation_card_status = ? WHERE booking_id = ?");
+    $updateStmt->execute([$nextPlacementStatus, $bookingId]);
+
     echo json_encode([
         'success' => true,
         'booking_id' => $bookingId,
@@ -52,6 +55,8 @@ try {
         'table_number' => !empty($assignedTableNumbers) ? $assignedTableNumbers[0] : null,
         'assigned_table_ids' => $assignedTableIds,
         'assigned_table_numbers' => $assignedTableNumbers,
+        'reservation_card_status' => $nextPlacementStatus,
+        'reservation_card_status_label' => $nextPlacementStatus !== null ? getBookingPlacementLabel($nextPlacementStatus) : null,
     ]);
 } catch(Throwable $e) {
     http_response_code(500);

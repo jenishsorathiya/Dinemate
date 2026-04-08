@@ -25,7 +25,7 @@ if ($bookingId < 1 || !in_array($nextStatus, $allowedTransitions, true)) {
 try {
     $pdo->beginTransaction();
 
-    $bookingStmt = $pdo->prepare("SELECT booking_id, status FROM bookings WHERE booking_id = ? LIMIT 1");
+    $bookingStmt = $pdo->prepare("SELECT booking_id, status, reservation_card_status FROM bookings WHERE booking_id = ? LIMIT 1");
     $bookingStmt->execute([$bookingId]);
     $booking = $bookingStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -47,11 +47,16 @@ try {
         $deleteAssignmentsStmt = $pdo->prepare("DELETE FROM booking_table_assignments WHERE booking_id = ?");
         $deleteAssignmentsStmt->execute([$bookingId]);
 
-        $updateStmt = $pdo->prepare("UPDATE bookings SET status = ?, table_id = NULL WHERE booking_id = ?");
+        $updateStmt = $pdo->prepare("UPDATE bookings SET status = ?, table_id = NULL, reservation_card_status = NULL WHERE booking_id = ?");
         $updateStmt->execute([$nextStatus, $bookingId]);
+        $nextPlacementStatus = null;
     } else {
         $updateStmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE booking_id = ?");
         $updateStmt->execute([$nextStatus, $bookingId]);
+        $currentPlacementStatus = strtolower((string) ($booking['reservation_card_status'] ?? ''));
+        $nextPlacementStatus = in_array($currentPlacementStatus, getBookingPlacementStatuses(), true)
+            ? $currentPlacementStatus
+            : null;
     }
 
     $pdo->commit();
@@ -73,6 +78,8 @@ try {
         'assigned_table_numbers' => array_map(static function ($tableRow) {
             return (string) $tableRow['table_number'];
         }, $assignedTables),
+        'reservation_card_status' => $nextPlacementStatus,
+        'reservation_card_status_label' => $nextPlacementStatus !== null ? getBookingPlacementLabel($nextPlacementStatus) : null,
     ]);
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {

@@ -118,13 +118,14 @@ try {
     }
 
     // Update booking
+    $nextPlacementStatus = !empty($new_table_ids) ? 'not_placed' : null;
     $updateStmt = $pdo->prepare("
         UPDATE bookings 
-        SET start_time = ?, end_time = ?, status = 'confirmed'
+        SET start_time = ?, end_time = ?, status = 'confirmed', reservation_card_status = ?
         WHERE booking_id = ?
     ");
 
-    $updateStmt->execute([$new_start_time, $new_end_time, $booking_id]);
+    $updateStmt->execute([$new_start_time, $new_end_time, $nextPlacementStatus, $booking_id]);
     $new_table_ids = syncBookingTableAssignments($pdo, $booking_id, $new_table_ids);
 
     $tableNumbers = array_map(static function ($tableRow) {
@@ -142,6 +143,8 @@ try {
         'total_capacity' => $totalCapacity,
         'over_capacity' => ((int) $booking['number_of_guests'] > $totalCapacity),
         'status' => 'confirmed',
+        'reservation_card_status' => $nextPlacementStatus,
+        'reservation_card_status_label' => $nextPlacementStatus !== null ? getBookingPlacementLabel($nextPlacementStatus) : null,
         'start_time' => $new_start_time,
         'end_time' => $new_end_time
     ]);

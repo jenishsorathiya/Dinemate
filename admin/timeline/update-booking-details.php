@@ -163,6 +163,16 @@ try {
     }
 
     $nextStatus = $confirmBooking ? 'confirmed' : $booking['status'];
+    if (empty($nextAssignedTableIds)) {
+        $nextPlacementStatus = null;
+    } elseif (in_array($nextStatus, ['pending', 'confirmed'], true)) {
+        $nextPlacementStatus = 'not_placed';
+    } else {
+        $currentPlacementStatus = strtolower((string) ($booking['reservation_card_status'] ?? ''));
+        $nextPlacementStatus = in_array($currentPlacementStatus, getBookingPlacementStatuses(), true)
+            ? $currentPlacementStatus
+            : 'not_placed';
+    }
 
     $pdo->beginTransaction();
 
@@ -175,7 +185,8 @@ try {
             end_time = ?,
             number_of_guests = ?,
             special_request = ?,
-            status = ?
+            status = ?,
+            reservation_card_status = ?
         WHERE booking_id = ?
     ");
     $updateStmt->execute([
@@ -187,6 +198,7 @@ try {
         $guestCount,
         $specialRequest !== '' ? $specialRequest : null,
         $nextStatus,
+        $nextPlacementStatus,
         $bookingId,
     ]);
 
@@ -211,6 +223,7 @@ try {
             'number_of_guests' => $guestCount,
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
             'status' => $nextStatus,
+            'reservation_card_status' => $nextPlacementStatus,
             'customer_name' => $customerName,
             'customer_name_override' => $customerName,
         ]

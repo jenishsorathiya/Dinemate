@@ -15,7 +15,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($bookingId > 0) {
         try {
             if ($action === 'confirm_pending') {
-                $stmt = $pdo->prepare("UPDATE bookings SET status = 'confirmed' WHERE booking_id = ? AND status = 'pending'");
+                $stmt = $pdo->prepare("
+                    UPDATE bookings b
+                    LEFT JOIN (
+                        SELECT DISTINCT booking_id
+                        FROM booking_table_assignments
+                    ) assigned ON assigned.booking_id = b.booking_id
+                    SET b.status = 'confirmed',
+                        b.reservation_card_status = CASE
+                            WHEN b.table_id IS NOT NULL OR assigned.booking_id IS NOT NULL THEN 'not_placed'
+                            ELSE NULL
+                        END
+                    WHERE b.booking_id = ? AND b.status = 'pending'
+                ");
                 $stmt->execute([$bookingId]);
 
                 if ($stmt->rowCount() > 0) {
@@ -29,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $deleteAssignmentsStmt = $pdo->prepare("DELETE FROM booking_table_assignments WHERE booking_id = ?");
                 $deleteAssignmentsStmt->execute([$bookingId]);
 
-                $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'cancelled', table_id = NULL WHERE booking_id = ? AND status = 'pending'");
+                $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'cancelled', table_id = NULL, reservation_card_status = NULL WHERE booking_id = ? AND status = 'pending'");
                 $updateStmt->execute([$bookingId]);
 
                 $pdo->commit();
@@ -46,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $deleteAssignmentsStmt = $pdo->prepare("DELETE FROM booking_table_assignments WHERE booking_id = ?");
                     $deleteAssignmentsStmt->execute([$bookingId]);
 
-                    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'cancelled', table_id = NULL WHERE booking_id = ? AND status = 'confirmed'");
+                    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'cancelled', table_id = NULL, reservation_card_status = NULL WHERE booking_id = ? AND status = 'confirmed'");
                     $updateStmt->execute([$bookingId]);
                     $successMessage = 'Confirmed booking cancelled.';
                     $warningMessage = 'That confirmed booking could not be cancelled.';
@@ -56,10 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $successMessage = 'Booking marked as completed.';
                     $warningMessage = 'That booking could not be marked as completed.';
                 } else {
-                    $deleteAssignmentsStmt = $pdo->prepare("DELETE FROM booking_table_assignments WHERE booking_id = ?");
-                    $deleteAssignmentsStmt->execute([$bookingId]);
-
-                    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'no_show', table_id = NULL WHERE booking_id = ? AND status = 'confirmed'");
+                    $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'no_show' WHERE booking_id = ? AND status = 'confirmed'");
                     $updateStmt->execute([$bookingId]);
                     $successMessage = 'Booking marked as no-show.';
                     $warningMessage = 'That booking could not be marked as no-show.';
@@ -104,6 +113,20 @@ $noShowTodayCount = (int) $pdo->query(
      FROM bookings
      WHERE status = 'no_show'
        AND booking_date = CURDATE()"
+)->fetchColumn();
+
+$notPlacedCount = (int) $pdo->query(
+    "SELECT COUNT(*)
+     FROM (
+        SELECT b.booking_id
+        FROM bookings b
+        LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
+        WHERE b.booking_date >= CURDATE()
+          AND b.status IN ('pending', 'confirmed')
+          AND b.reservation_card_status = 'not_placed'
+        GROUP BY b.booking_id
+        HAVING MAX(COALESCE(bta.table_id, b.table_id)) IS NOT NULL
+     ) not_placed_bookings"
 )->fetchColumn();
 
 $unassignedConfirmedCount = (int) $pdo->query(
@@ -862,6 +885,11 @@ $adminSidebarPathPrefix = '';
                         <div class="attention-label">Overlapping / Conflicts</div>
                         <div class="attention-value"><?php echo $conflictPairsCount; ?></div>
                         <p class="attention-note">Potential clashes in table assignments today.</p>
+                    </div>
+                    <div class="card-surface attention-card">
+                        <div class="attention-label">Not Placed</div>
+                        <div class="attention-value"><?php echo $notPlacedCount; ?></div>
+                        <p class="attention-note">Assigned bookings that still need a reservation card placed on the table.</p>
                     </div>
                     <div class="card-surface attention-card">
                         <div class="attention-label">Completed Today</div>

@@ -179,6 +179,20 @@ function getBookingStatusLabel($status) {
     return $labels[$normalizedStatus] ?? ucfirst($normalizedStatus ?: 'pending');
 }
 
+function getBookingPlacementStatuses() {
+    return ['not_placed', 'placed'];
+}
+
+function getBookingPlacementLabel($status) {
+    $normalizedStatus = strtolower(trim((string) $status));
+    $labels = [
+        'not_placed' => 'Not placed',
+        'placed' => 'Placed',
+    ];
+
+    return $labels[$normalizedStatus] ?? 'Not placed';
+}
+
 function ensureBookingStatusSchema($pdo) {
     $statusStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'status'");
     $statusColumn = $statusStmt->fetch(PDO::FETCH_ASSOC);
@@ -258,6 +272,9 @@ function ensureBookingRequestColumns($pdo) {
     $guestTokenStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'guest_access_token'");
     $guestTokenExists = $guestTokenStmt->rowCount() > 0;
 
+    $placementStatusStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'reservation_card_status'");
+    $placementStatusColumn = $placementStatusStmt->fetch(PDO::FETCH_ASSOC);
+
     // Handle legacy booking_time column which some older DBs still have
     $bookingTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'booking_time'");
     $bookingTimeColumn = $bookingTimeStmt->fetch(PDO::FETCH_ASSOC);
@@ -292,6 +309,17 @@ function ensureBookingRequestColumns($pdo) {
     if (!$guestTokenExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN guest_access_token VARCHAR(64) DEFAULT NULL AFTER customer_email");
         $pdo->exec("CREATE UNIQUE INDEX idx_bookings_guest_access_token ON bookings (guest_access_token)");
+    }
+
+    if (!$placementStatusColumn) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN reservation_card_status ENUM('not_placed', 'placed') DEFAULT NULL AFTER status");
+    } else {
+        $placementType = strtolower((string) ($placementStatusColumn['Type'] ?? ''));
+        $normalizedPlacementType = str_replace(['`', '"', ' '], '', $placementType);
+        $expectedPlacementType = "enum('not_placed','placed')";
+        if (strpos($placementType, 'enum(') === 0 && $normalizedPlacementType !== $expectedPlacementType) {
+            $pdo->exec("ALTER TABLE bookings MODIFY COLUMN reservation_card_status ENUM('not_placed', 'placed') DEFAULT NULL");
+        }
     }
 
     // If booking_time exists but is NOT NULL without a default, make it nullable to avoid insert failures
@@ -346,6 +374,29 @@ function ensureBookingRequestColumns($pdo) {
             $tokenUpdateStmt->execute([generateGuestAccessToken(), $bookingId]);
         }
     }
+
+    $pdo->exec("
+        UPDATE bookings b
+        LEFT JOIN (
+            SELECT DISTINCT booking_id
+            FROM booking_table_assignments
+        ) assigned ON assigned.booking_id = b.booking_id
+        SET b.reservation_card_status = 'not_placed'
+        WHERE b.reservation_card_status IS NULL
+          AND b.status IN ('pending', 'confirmed')
+          AND (b.table_id IS NOT NULL OR assigned.booking_id IS NOT NULL)
+    ");
+
+    $pdo->exec("
+        UPDATE bookings b
+        LEFT JOIN (
+            SELECT DISTINCT booking_id
+            FROM booking_table_assignments
+        ) assigned ON assigned.booking_id = b.booking_id
+        SET b.reservation_card_status = NULL
+        WHERE b.status = 'cancelled'
+           OR (b.table_id IS NULL AND assigned.booking_id IS NULL)
+    ");
 }
 
 function generateGuestAccessToken() {
