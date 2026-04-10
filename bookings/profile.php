@@ -164,8 +164,8 @@ $customerProfile = $customerProfile ?: [];
 
 .profile-card,
 .profile-side-card {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
@@ -186,20 +186,20 @@ $customerProfile = $customerProfile ?: [];
 .profile-card h3,
 .profile-side-card h3 {
     margin: 0;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .profile-header p,
 .profile-side-card p {
     margin: 10px 0 0;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 14px;
 }
 
 .profile-section {
     margin-top: 28px;
     padding-top: 24px;
-    border-top: 1px solid #eef2f7;
+    border-top: 1px solid var(--dm-border);
 }
 
 .profile-grid {
@@ -216,7 +216,7 @@ $customerProfile = $customerProfile ?: [];
     display: block;
     font-size: 13px;
     font-weight: 700;
-    color: #31415f;
+    color: var(--dm-text);
     margin-bottom: 8px;
 }
 
@@ -224,12 +224,12 @@ $customerProfile = $customerProfile ?: [];
 .profile-select,
 .profile-textarea {
     width: 100%;
-    border: 1px solid #d9e1ec;
+    border: 1px solid var(--dm-border-strong);
     border-radius: 8px;
     padding: 13px 14px;
     font: inherit;
-    color: #111827;
-    background: #ffffff;
+    color: var(--dm-text);
+    background: var(--dm-surface);
 }
 
 .profile-textarea {
@@ -241,7 +241,7 @@ $customerProfile = $customerProfile ?: [];
 .profile-select:focus,
 .profile-textarea:focus {
     outline: none;
-    border-color: #bdc9da;
+    border-color: var(--dm-border-strong);
     box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
 }
 
@@ -261,15 +261,15 @@ $customerProfile = $customerProfile ?: [];
 }
 
 .profile-btn-primary {
-    background: #1d2840;
-    color: #ffffff;
+    background: var(--dm-accent-dark);
+    color: var(--dm-surface);
     box-shadow: 0 4px 14px rgba(29, 40, 64, 0.16);
 }
 
 .profile-btn-secondary {
-    background: #ffffff;
-    border: 1px solid #d9e1ec;
-    color: #31415f;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border-strong);
+    color: var(--dm-text);
 }
 
 .toggle-row,
@@ -282,10 +282,10 @@ $customerProfile = $customerProfile ?: [];
 .toggle-item,
 .stat-item,
 .quick-link-card {
-    border: 1px solid #e7ecf3;
+    border: 1px solid var(--dm-border);
     border-radius: 8px;
     padding: 16px;
-    background: #f8fafc;
+    background: var(--dm-surface-muted);
 }
 
 .toggle-item {
@@ -299,7 +299,7 @@ $customerProfile = $customerProfile ?: [];
 .stat-item strong,
 .quick-link-card strong {
     display: block;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .toggle-copy span,
@@ -307,7 +307,7 @@ $customerProfile = $customerProfile ?: [];
 .quick-link-card span {
     display: block;
     margin-top: 6px;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 13px;
 }
 
@@ -416,7 +416,7 @@ $customerProfile = $customerProfile ?: [];
 
             <div class="profile-section">
                 <h3>Account Security</h3>
-                <p style="margin-top:8px;color:#64748b;">Change your password without leaving the customer portal.</p>
+                <p style="margin-top:8px;color:var(--dm-text-muted);">Change your password without leaving the customer portal.</p>
                 <form method="POST" style="margin-top:18px;">
                     <input type="hidden" name="action" value="password">
                     <div class="profile-grid">

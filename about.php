@@ -24,7 +24,7 @@
 
 .feature-card{
     background: white;
-    border: 1px solid #e7ecf3;
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     padding: 30px;
     text-align: center;
@@ -43,7 +43,7 @@
 
 .story-card {
     background: white;
-    border: 1px solid #e7ecf3;
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     padding: 40px;
     box-shadow: 0 4px 16px rgba(15,23,42,0.06);

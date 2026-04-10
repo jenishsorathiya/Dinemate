@@ -72,33 +72,6 @@ if (isLoggedIn() && $footerRole === 'customer') {
     </div>
 </footer>
 
-<style>
-.footer {
-.footer .col-md-4 {
-    margin-bottom: 24px;
-}
-.footer-brand {
-    max-width: 340px;
-}
-.footer ul {
-.footer .container {
-    max-width: 1320px;
-}
-
-.footer p {
-    line-height: 1.7;
-}
-
-.back-top:hover {
-    background: #f8fafc;
-}
-@media (max-width: 767px) {
-    .footer {
-        padding-top: 48px;
-    }
-}
-</style>
-
 <script>
 function scrollTopPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });

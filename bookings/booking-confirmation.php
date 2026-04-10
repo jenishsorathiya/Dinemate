@@ -75,7 +75,7 @@ margin-bottom:80px;
 
 .confirm-card{
 background:white;
-border:1px solid #e7ecf3;
+border:1px solid var(--dm-border);
 border-radius:10px;
 padding:36px;
 box-shadow:0 4px 16px rgba(15,23,42,0.06);
@@ -88,14 +88,14 @@ margin:auto;
 
 .success-icon{
 font-size:70px;
-color:#22c55e;
+color:var(--dm-success-strong);
 }
 
 /* Reservation ticket */
 
 .ticket{
-background:#f8fafc;
-border:1px solid #e7ecf3;
+background:var(--dm-surface-muted);
+border:1px solid var(--dm-border);
 border-radius:10px;
 padding:20px;
 margin-top:25px;
@@ -117,7 +117,7 @@ font-size:15px;
 .qr-box{
 padding:10px;
 background:white;
-border:1px solid #e7ecf3;
+border:1px solid var(--dm-border);
 border-radius:8px;
 box-shadow:0 4px 12px rgba(15,23,42,0.05);
 }
@@ -125,9 +125,9 @@ box-shadow:0 4px 12px rgba(15,23,42,0.05);
 /* Button */
 
 .btn-bookings{
-background:#1d2840;
-border:1px solid #1d2840;
-color:#ffffff;
+background:var(--dm-accent-dark);
+border:1px solid var(--dm-accent-dark);
+color:var(--dm-surface);
 padding:14px;
 border-radius:8px;
 font-weight:600;
@@ -135,7 +135,7 @@ margin-top:25px;
 }
 
 .btn-bookings:hover{
-background:#141d31;
+background:var(--dm-accent-dark-hover);
 }
 
 .confirm-grid{
@@ -147,21 +147,21 @@ text-align:left;
 }
 
 .confirm-side{
-border:1px solid #e7ecf3;
+border:1px solid var(--dm-border);
 border-radius:10px;
 padding:18px;
-background:#f8fafc;
+background:var(--dm-surface-muted);
 }
 
 .confirm-side h4{
 margin:0 0 12px;
 font-size:18px;
-color:#162033;
+color:var(--dm-text);
 }
 
 .confirm-side p{
 font-size:14px;
-color:#556176;
+color:var(--dm-text-muted);
 margin-bottom:10px;
 }
 

@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'phone' => $payload['phone'],
                 'role' => $payload['role'],
             ];
-            $redirectToManageUsers('#add-user-form');
+            $redirectToManageUsers('var(--dm-border-strong)-user-form');
         }
 
         $stmt = $pdo->prepare("
@@ -448,13 +448,13 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
 <head>
     <?php include __DIR__ . '/admin-head.php'; ?>
     <style>
-        :root { --users-bg: #f6f8fc; --users-card: #ffffff; --users-line: #e5ebf4; --users-text: #172033; --users-muted: #6b768b; --users-shadow: 0 8px 20px rgba(15, 23, 42, 0.08); --users-shadow-soft: 0 4px 12px rgba(15, 23, 42, 0.06); --users-primary: #1f3c88; --users-accent: #d8a230; --users-success: #1f8f63; --users-danger: #c94b62; --users-warning: #c9831f; }
+        :root { --users-bg: var(--dm-bg); --users-card: var(--dm-surface); --users-line: var(--dm-border); --users-text: var(--dm-text); --users-muted: var(--dm-text-muted); --users-shadow: var(--dm-shadow-md); --users-shadow-soft: var(--dm-shadow-sm); --users-primary: var(--dm-accent-dark); --users-accent: var(--dm-pending-text); --users-success: var(--dm-confirmed-text); --users-danger: var(--dm-danger-text); --users-warning: var(--dm-pending-text); }
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--users-bg); color: var(--users-text); }
         .main { flex: 1; overflow-y: auto; padding: 28px; }
         .users-shell { max-width: 1400px; margin: 0 auto; display: grid; gap: 22px; }
         .hero-card, .panel-card, .stat-card { background: var(--users-card); border: 1px solid var(--users-line); border-radius: 12px; box-shadow: var(--users-shadow-soft); }
-        .hero-card { padding: 28px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); background: #ffffff; }
+        .hero-card { padding: 28px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); background: var(--dm-surface); }
         .hero-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr); gap: 24px; align-items: end; }
         .eyebrow { display: none; }
         .hero-title { margin: 0; font-size: 22px; line-height: 1.03; letter-spacing: -0.01em; }
@@ -473,43 +473,43 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
         .panel-title { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0; }
         .panel-subtitle { margin: 6px 0 0; color: var(--users-muted); font-size: 13px; }
-        .inline-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 4px; background: #f7f9fc; border: 1px solid var(--users-line); color: #44506a; font-size: 11px; font-weight: 600; }
+        .inline-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 4px; background: var(--dm-surface-muted); border: 1px solid var(--users-line); color: var(--dm-text-muted); font-size: 11px; font-weight: 600; }
         .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
         .form-field { display: grid; gap: 8px; }
         .form-field.full { grid-column: 1 / -1; }
-        .form-label { font-size: 13px; font-weight: 700; color: #34405a; }
-        .form-control, .form-select { min-height: 36px; border-radius: 6px; border: 1px solid var(--users-line); background: #fbfcfe; padding: 7px 10px; box-shadow: none; }
-        .form-control:focus, .form-select:focus { border-color: #c99a32; box-shadow: 0 0 0 4px rgba(216, 162, 48, 0.14); background: #ffffff; }
+        .form-label { font-size: 13px; font-weight: 700; color: var(--dm-text); }
+        .form-control, .form-select { min-height: 36px; border-radius: 6px; border: 1px solid var(--users-line); background: var(--dm-surface-muted); padding: 7px 10px; box-shadow: none; }
+        .form-control:focus, .form-select:focus { border-color: var(--dm-pending-text); box-shadow: 0 0 0 4px rgba(216, 162, 48, 0.14); background: var(--dm-surface); }
         .form-help { color: var(--users-muted); font-size: 12px; line-height: 1.5; }
         .action-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
         .btn-surface, .btn-primary-soft, .btn-danger-soft, .btn-warning-soft { border: 1px solid var(--users-line); border-radius: 6px; min-height: 34px; padding: 0 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; cursor: pointer; transition: opacity 0.15s ease; }
         .btn-surface:hover, .btn-primary-soft:hover, .btn-danger-soft:hover, .btn-warning-soft:hover { opacity: 0.82; }
-        .btn-surface { background: #ffffff; color: #293750; }
-        .btn-primary-soft { background: #1f3c88; border-color: #1f3c88; color: #ffffff; }
-        .btn-danger-soft { background: #fff2f5; border-color: #ffd6df; color: var(--users-danger); }
-        .btn-warning-soft { background: #fff8ec; border-color: #f4dfb1; color: var(--users-warning); }
+        .btn-surface { background: var(--dm-surface); color: var(--dm-text); }
+        .btn-primary-soft { background: var(--dm-accent-dark); border-color: var(--dm-accent-dark); color: var(--dm-surface); }
+        .btn-danger-soft { background: var(--dm-danger-bg); border-color: var(--dm-danger-bg); color: var(--users-danger); }
+        .btn-warning-soft { background: var(--dm-standby-bg); border-color: var(--dm-standby-bg); color: var(--users-warning); }
         .alert { border-radius: 8px; border: 1px solid transparent; padding: 16px 18px; margin: 0; }
         .alert ul { margin: 0; padding-left: 18px; }
         .table-toolbar { display: grid; grid-template-columns: minmax(0, 1.1fr) repeat(3, minmax(160px, 0.45fr)); gap: 12px; margin-bottom: 18px; }
         .toolbar-field { position: relative; }
-        .toolbar-field i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #8a96ab; font-size: 13px; }
+        .toolbar-field i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--dm-text-soft); font-size: 13px; }
         .toolbar-field input { padding-left: 38px; }
-        .table-wrap { border: 1px solid var(--users-line); border-radius: 10px; overflow: hidden; background: #ffffff; }
+        .table-wrap { border: 1px solid var(--users-line); border-radius: 10px; overflow: hidden; background: var(--dm-surface); }
         .table-custom { width: 100%; border-collapse: collapse; }
-        .table-custom thead th { background: #f8fafd; color: #52607a; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid var(--users-line); white-space: nowrap; }
-        .table-custom tbody td { padding: 10px 14px; border-bottom: 1px solid #edf2f7; vertical-align: top; }
+        .table-custom thead th { background: var(--dm-surface-muted); color: var(--dm-text-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid var(--users-line); white-space: nowrap; }
+        .table-custom tbody td { padding: 10px 14px; border-bottom: 1px solid var(--dm-border); vertical-align: top; }
         .table-custom tbody tr:last-child td { border-bottom: 0; }
-        .table-custom tbody tr:hover { background: #fbfcff; }
+        .table-custom tbody tr:hover { background: var(--dm-surface-muted); }
         .user-name { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; }
         .user-meta { display: block; margin-top: 6px; color: var(--users-muted); font-size: 12px; }
         .tiny-badge, .role-badge, .booking-badge, .account-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .tiny-badge { background: #eaf1ff; color: #3658a5; }
-        .role-badge.role-admin { background: #edf2f7; color: #4a556a; }
-        .role-badge.role-customer { background: #e9f7ef; color: #1f8f63; }
-        .booking-badge.has-bookings { background: #eef4ff; color: #315cba; }
-        .booking-badge.no-bookings { background: #f5f7fb; color: #6c768d; }
-        .account-badge.active { background: #e9f7ef; color: #1f8f63; }
-        .account-badge.disabled { background: #fff0f3; color: #c94b62; }
+        .tiny-badge { background: var(--dm-neutral-bg); color: var(--dm-info-text); }
+        .role-badge.role-admin { background: var(--dm-border); color: var(--dm-text-muted); }
+        .role-badge.role-customer { background: var(--dm-confirmed-bg); color: var(--dm-confirmed-text); }
+        .booking-badge.has-bookings { background: var(--dm-neutral-bg); color: var(--dm-info-text); }
+        .booking-badge.no-bookings { background: var(--dm-surface-muted); color: var(--dm-text-muted); }
+        .account-badge.active { background: var(--dm-confirmed-bg); color: var(--dm-confirmed-text); }
+        .account-badge.disabled { background: var(--dm-danger-bg); color: var(--dm-danger-text); }
         .booking-badge.booking-trigger { border: 0; cursor: pointer; }
         .booking-badge.booking-trigger:hover { opacity: 0.86; }
         .table-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -522,14 +522,14 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         .modal-body { padding: 22px 24px 24px; }
         .modal-footer { padding: 0 24px 24px; }
         .history-list { display: grid; gap: 12px; }
-        .history-card { border: 1px solid var(--users-line); border-radius: 8px; padding: 16px 18px; background: #fbfcff; }
+        .history-card { border: 1px solid var(--users-line); border-radius: 8px; padding: 16px 18px; background: var(--dm-surface-muted); }
         .history-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
         .history-card-title { margin: 0; font-size: 15px; font-weight: 800; }
         .history-card-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 10px; color: var(--users-muted); font-size: 13px; }
         .history-card-note { margin-top: 10px; color: var(--users-muted); font-size: 12px; }
-        .history-empty { padding: 18px; border: 1px dashed var(--users-line); border-radius: 8px; background: #fbfcff; color: var(--users-muted); text-align: center; font-size: 14px; }
+        .history-empty { padding: 18px; border: 1px dashed var(--users-line); border-radius: 8px; background: var(--dm-surface-muted); color: var(--users-muted); text-align: center; font-size: 14px; }
         @media (max-width: 1200px) { .stats-grid, .table-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .content-grid, .hero-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .form-grid, .table-toolbar { grid-template-columns: 1fr; } .panel-heading, .results-footer { align-items: flex-start; flex-direction: column; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid #edf2f7; } .table-custom tbody td { padding: 8px 0; border: 0; } }
+        @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .form-grid, .table-toolbar { grid-template-columns: 1fr; } .panel-heading, .results-footer { align-items: flex-start; flex-direction: column; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid var(--dm-border); } .table-custom tbody td { padding: 8px 0; border: 0; } }
     </style>
     
 </head>

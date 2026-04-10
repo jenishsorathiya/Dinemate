@@ -86,20 +86,20 @@ body {
     border-radius: var(--dm-radius-sm);
     padding: 10px 12px;
     border: 1px solid var(--dm-border-strong);
-    background: #ffffff;
+    background: var(--dm-surface);
     transition: 0.3s;
 }
 
 .form-control:focus {
     background: white;
     box-shadow: var(--dm-focus-ring);
-    border-color: #bdc9da;
+    border-color: var(--dm-border-strong);
 }
 
 .btn-login {
     background: var(--dm-accent-dark);
     border: 1px solid var(--dm-accent-dark);
-    color: #ffffff;
+    color: var(--dm-surface);
     border-radius: var(--dm-radius-sm);
     padding: 10px 14px;
     font-weight: 600;

@@ -53,7 +53,7 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         align-items: center;
         justify-content: space-between;
         padding: 0 24px;
-        border-bottom: 1px solid #e7ecf3;
+        border-bottom: 1px solid var(--dm-border);
         box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
         backdrop-filter: blur(10px);
         flex-shrink: 0;
@@ -84,18 +84,18 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         align-items: center;
         gap: 10px;
         min-width: 0;
-        color: #162033;
+        color: var(--dm-text);
     }
 
     .topbar-page i {
-        color: #162033;
+        color: var(--dm-text);
         font-size: 18px;
     }
 
     .topbar-page-title {
         font-size: 20px;
         font-weight: 700;
-        color: #162033;
+        color: var(--dm-text);
         white-space: nowrap;
     }
 
@@ -108,10 +108,10 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         position: relative;
         width: 44px;
         height: 44px;
-        border: 1px solid #e7ecf3;
-        border-radius: 14px;
-        background: #ffffff;
-        color: #162033;
+        border: 1px solid var(--dm-border);
+        border-radius: var(--dm-radius-sm);
+        background: var(--dm-surface);
+        color: var(--dm-text);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -125,8 +125,8 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         min-width: 20px;
         height: 20px;
         padding: 0 6px;
-        border-radius: 999px;
-        background: #f15b67;
+        border-radius: 50%;
+        background: var(--dm-danger-text);
         color: #ffffff;
         font-size: 11px;
         font-weight: 700;
@@ -140,16 +140,16 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         align-items: center;
         gap: 10px;
         padding: 6px 10px 6px 6px;
-        border-radius: 16px;
-        border: 1px solid #e7ecf3;
-        background: #ffffff;
+        border-radius: var(--dm-radius-md);
+        border: 1px solid var(--dm-border);
+        background: var(--dm-surface);
     }
 
     .topbar-profile-icon {
         width: 32px;
         height: 32px;
-        border-radius: 999px;
-        background: #1d2840;
+        border-radius: 50%;
+        background: var(--dm-accent-dark);
         color: #ffffff;
         display: inline-flex;
         align-items: center;
@@ -158,7 +158,7 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     }
 
     .topbar-profile-name {
-        color: #445066;
+        color: var(--dm-text-muted);
         font-weight: 600;
     }
 
@@ -172,10 +172,10 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     }
 
     .topbar-action-button {
-        border: 1px solid #e7ecf3;
-        background: #ffffff;
-        color: #445066;
-        border-radius: 16px;
+        border: 1px solid var(--dm-border);
+        background: var(--dm-surface);
+        color: var(--dm-text-muted);
+        border-radius: var(--dm-radius-md);
         min-height: 42px;
         padding: 0 14px;
         font-size: 13px;
@@ -187,17 +187,16 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         gap: 8px;
         cursor: pointer;
         position: relative;
-        transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+        transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
     }
 
     .topbar-action-button:hover {
-        background: #f8fafc;
-        transform: translateY(-1px);
+        background: var(--dm-surface-muted);
     }
 
     .topbar-action-button.has-pending {
-        background: #fff0f2;
-        color: #c13f56;
+        background: var(--dm-danger-bg);
+        color: var(--dm-danger-text);
         border-color: #ffd5db;
         box-shadow: none;
     }
@@ -209,15 +208,15 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         min-width: 20px;
         height: 20px;
         padding: 0 6px;
-        border-radius: 999px;
-        background: #1d2840;
+        border-radius: 50%;
+        background: var(--dm-accent-dark);
         color: #ffffff;
         font-size: 11px;
         font-weight: 700;
     }
 
     .topbar-action-button.has-pending .topbar-action-badge {
-        background: #f15b67;
+        background: var(--dm-danger-text);
     }
 
     .topbar-pending-panel {
@@ -226,8 +225,8 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         right: 0;
         width: min(350px, 82vw);
         background: #ffffff;
-        border: 1px solid #e7ecf3;
-        border-radius: 16px;
+        border: 1px solid var(--dm-border);
+        border-radius: var(--dm-radius-md);
         box-shadow: 0 24px 54px rgba(15, 23, 42, 0.12);
         padding: 14px;
         display: none;
@@ -245,7 +244,7 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     .topbar-pending-title {
         font-size: 13px;
         font-weight: 700;
-        color: #162033;
+        color: var(--dm-text);
         letter-spacing: 0.01em;
     }
 
@@ -259,12 +258,12 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
 
     .topbar-pending-item {
         display: block;
-        border: 1px solid #eef2f7;
+        border: 1px solid var(--dm-border);
         background: #fbfcfe;
-        border-radius: 12px;
+        border-radius: var(--dm-radius-sm);
         padding: 10px 12px;
         text-decoration: none;
-        transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+        transition: border-color 0.18s ease, background 0.18s ease;
     }
 
     .topbar-pending-item:focus-visible {
@@ -273,9 +272,8 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     }
 
     .topbar-pending-item:hover {
-        border-color: #d9e1ec;
+        border-color: var(--dm-border-strong);
         background: #ffffff;
-        transform: translateY(-1px);
     }
 
     .topbar-pending-item-top {
@@ -289,26 +287,26 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
     .topbar-pending-item-name {
         font-size: 13px;
         font-weight: 600;
-        color: #162033;
+        color: var(--dm-text);
     }
 
     .topbar-pending-item-time {
         font-size: 12px;
         font-weight: 600;
-        color: #5a667d;
+        color: var(--dm-text-muted);
         white-space: nowrap;
     }
 
     .topbar-pending-item-meta {
         font-size: 12px;
-        color: #69758b;
+        color: var(--dm-text-muted);
         line-height: 1.4;
     }
 
     .topbar-pending-empty {
         font-size: 12px;
         font-weight: 600;
-        color: #69758b;
+        color: var(--dm-text-muted);
         padding: 12px 6px;
         text-align: center;
     }

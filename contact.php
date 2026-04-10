@@ -20,7 +20,7 @@
 .contact-card {
     background: white;
     padding: 35px;
-    border: 1px solid #e7ecf3;
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(15,23,42,0.06);
 }
@@ -34,15 +34,15 @@
     margin-right: 10px;
 }
 .btn-contact {
-    background: #1d2840;
-    border: 1px solid #1d2840;
-    color: #ffffff;
+    background: var(--dm-accent-dark);
+    border: 1px solid var(--dm-accent-dark);
+    color: var(--dm-surface);
     padding: 12px 25px;
     border-radius: 8px;
     font-weight: 600;
 }
 .btn-contact:hover {
-    background: #141d31;
+    background: var(--dm-accent-dark-hover);
 }
 .map {
     border-radius: 10px;

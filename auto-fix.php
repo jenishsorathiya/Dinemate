@@ -142,7 +142,7 @@ try {
         .section { margin: 20px 0; }
         .fixed-item { color: #1d7a53; padding: 10px 12px; margin: 8px 0; border: 1px solid #ccefdc; border-radius: 12px; background: #e6f7ee; }
         .error-item { color: #c13f56; padding: 10px 12px; margin: 8px 0; border: 1px solid #ffd1d7; border-radius: 12px; background: #ffe7ea; }
-        .summary { font-size: 18px; font-weight: bold; margin: 20px 0; padding: 15px; background: #f8fafc; border: 1px solid #e7ecf3; border-radius: 16px; }
+        .summary { font-size: 18px; font-weight: bold; margin: 20px 0; padding: 15px; background: var(--dm-surface-muted); border: 1px solid #e7ecf3; border-radius: 16px; }
         .success { color: #28a745; }
         .warning { color: #8c6a06; }
         .error { color: #dc3545; }

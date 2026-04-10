@@ -98,8 +98,8 @@ foreach ($bookings as $booking) {
 
 .bookings-shell,
 .booking-card {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
 }
 
@@ -118,12 +118,12 @@ foreach ($bookings as $booking) {
 
 .bookings-hero h2 {
     margin: 0;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .bookings-hero p {
     margin: 10px 0 0;
-    color: #64748b;
+    color: var(--dm-text-muted);
     max-width: 640px;
 }
 
@@ -146,15 +146,15 @@ foreach ($bookings as $booking) {
 }
 
 .btn-surface {
-    background: #ffffff;
-    border: 1px solid #d9e1ec;
-    color: #31415f;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border-strong);
+    color: var(--dm-text);
 }
 
 .btn-primary-solid {
-    background: #1d2840;
-    color: #ffffff;
-    border: 1px solid #1d2840;
+    background: var(--dm-accent-dark);
+    color: var(--dm-surface);
+    border: 1px solid var(--dm-accent-dark);
 }
 
 .view-tabs {
@@ -170,18 +170,18 @@ foreach ($bookings as $booking) {
     gap: 8px;
     border-radius: 8px;
     padding: 8px 12px;
-    background: #f8fafc;
-    border: 1px solid #dbe3ef;
-    color: #31415f;
+    background: var(--dm-surface-muted);
+    border: 1px solid var(--dm-border);
+    color: var(--dm-text);
     text-decoration: none;
     font-weight: 600;
     font-size: 13px;
 }
 
 .view-tab.is-active {
-    background: #1d2840;
-    border-color: #1d2840;
-    color: #ffffff;
+    background: var(--dm-accent-dark);
+    border-color: var(--dm-accent-dark);
+    color: var(--dm-surface);
 }
 
 .filter-row {
@@ -194,10 +194,10 @@ foreach ($bookings as $booking) {
 .filter-input,
 .filter-select {
     width: 100%;
-    border: 1px solid #d9e1ec;
+    border: 1px solid var(--dm-border-strong);
     border-radius: 8px;
     padding: 10px 12px;
-    background: #ffffff;
+    background: var(--dm-surface);
     font-size: 14px;
 }
 
@@ -225,12 +225,12 @@ foreach ($bookings as $booking) {
 .booking-card-title {
     font-size: 20px;
     font-weight: 700;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .booking-card-subtitle {
     margin-top: 6px;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 13px;
 }
 
@@ -249,37 +249,37 @@ foreach ($bookings as $booking) {
     align-items: center;
     gap: 6px;
     border-radius: 6px;
-    border: 1px solid #dbe3ef;
-    background: #f8fafc;
-    color: #31415f;
+    border: 1px solid var(--dm-border);
+    background: var(--dm-surface-muted);
+    color: var(--dm-text);
     padding: 5px 10px;
     font-size: 13px;
 }
 
 .booking-detail {
     width: 100%;
-    color: #475569;
+    color: var(--dm-text-muted);
     font-size: 14px;
     line-height: 1.55;
 }
 
 .empty-state {
     margin-top: 24px;
-    border: 1px dashed #d9e1ec;
+    border: 1px dashed var(--dm-border-strong);
     border-radius: 12px;
-    background: #f8fafc;
+    background: var(--dm-surface-muted);
     padding: 34px 22px;
     text-align: center;
-    color: #64748b;
+    color: var(--dm-text-muted);
 }
 
 .hint-card {
     margin-top: 20px;
     border-radius: 8px;
     background: #fafbfc;
-    border: 1px solid #e7ecf3;
+    border: 1px solid var(--dm-border);
     padding: 12px 16px;
-    color: #475569;
+    color: var(--dm-text-muted);
     font-size: 13px;
 }
 

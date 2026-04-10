@@ -51,8 +51,8 @@ try {
     <link href="assets/css/app.css" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background: #f5f7fb; padding: 32px 20px; }
-        .wrap { max-width: 1080px; margin: 0 auto; background: #ffffff; border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }
-        .panel { background: #ffffff; border: 1px solid #e7ecf3; border-radius: 16px; padding: 20px; margin-top: 18px; }
+        .wrap { max-width: 1080px; margin: 0 auto; background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }
+        .panel { background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 16px; padding: 20px; margin-top: 18px; }
         .flag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
         .flag.ok { background: #e6f7ee; color: #1d7a53; }
         .flag.error { background: #ffe7ea; color: #c13f56; }

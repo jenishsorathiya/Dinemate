@@ -97,8 +97,8 @@ $phoneCountryOptions = [
 }
 
 .booking-stage {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
     padding: 28px;
@@ -123,12 +123,12 @@ $phoneCountryOptions = [
     font-size: 28px;
     line-height: 1.05;
     font-weight: 700;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .booking-heading p {
     margin: 10px 0 0;
-    color: #69758b;
+    color: var(--dm-text-muted);
     font-size: 15px;
     max-width: 560px;
 }
@@ -145,7 +145,7 @@ $phoneCountryOptions = [
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    color: #94a3b8;
+    color: var(--dm-text-soft);
     font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
@@ -159,19 +159,19 @@ $phoneCountryOptions = [
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #e5e7eb;
-    color: #64748b;
+    background: var(--dm-border);
+    color: var(--dm-text-muted);
 }
 
 .booking-step.is-active,
 .booking-step.is-complete {
-    color: #111827;
+    color: var(--dm-text);
 }
 
 .booking-step.is-active .booking-step-dot,
 .booking-step.is-complete .booking-step-dot {
     background: #f4b400;
-    color: #111827;
+    color: var(--dm-text);
 }
 
 .booking-layout {
@@ -187,8 +187,8 @@ $phoneCountryOptions = [
 }
 
 .booking-calendar-panel {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
@@ -201,13 +201,13 @@ $phoneCountryOptions = [
 }
 
 .booking-selected-date {
-    background: #f8fafc;
-    color: #162033;
+    background: var(--dm-surface-muted);
+    color: var(--dm-text);
     padding: 22px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border-right: 1px solid #e7ecf3;
+    border-right: 1px solid var(--dm-border);
 }
 
 .booking-selected-year {
@@ -242,16 +242,16 @@ $phoneCountryOptions = [
 .booking-calendar-title {
     font-size: 20px;
     font-weight: 700;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .booking-calendar-nav {
     width: 42px;
     height: 42px;
-    border: 1px solid #e7ecf3;
-    background: #ffffff;
+    border: 1px solid var(--dm-border);
+    background: var(--dm-surface);
     border-radius: 8px;
-    color: #69758b;
+    color: var(--dm-text-muted);
     font-size: 17px;
     display: inline-flex;
     align-items: center;
@@ -260,8 +260,8 @@ $phoneCountryOptions = [
 }
 
 .booking-calendar-nav:hover {
-    background: #f8fafc;
-    color: #162033;
+    background: var(--dm-surface-muted);
+    color: var(--dm-text);
 }
 
 .booking-weekdays,
@@ -275,7 +275,7 @@ $phoneCountryOptions = [
     text-align: center;
     font-size: 13px;
     font-weight: 700;
-    color: #94a3b8;
+    color: var(--dm-text-soft);
     padding-bottom: 2px;
 }
 
@@ -291,13 +291,13 @@ $phoneCountryOptions = [
 }
 
 .booking-day:hover:not(:disabled) {
-    background: #f8fafc;
-    color: #162033;
+    background: var(--dm-surface-muted);
+    color: var(--dm-text);
 }
 
 .booking-day.is-selected {
-    background: #1d2840;
-    color: #ffffff;
+    background: var(--dm-accent-dark);
+    color: var(--dm-surface);
     box-shadow: 0 12px 22px rgba(29, 40, 64, 0.22);
 }
 
@@ -318,8 +318,8 @@ $phoneCountryOptions = [
 
 .booking-account-card {
     width: min(100%, 360px);
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     padding: 14px 16px;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
@@ -329,14 +329,14 @@ $phoneCountryOptions = [
     width: 100%;
     border-radius: 10px;
     padding: 14px 16px;
-    background: #ffffff;
+    background: var(--dm-surface);
 }
 
 .booking-account-copy {
     margin: 0;
     font-size: 13px;
     line-height: 1.45;
-    color: #64748b;
+    color: var(--dm-text-muted);
 }
 
 .booking-account-row {
@@ -355,14 +355,14 @@ $phoneCountryOptions = [
     margin: 0 0 4px;
     font-size: 14px;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--dm-accent-dark-hover);
 }
 
 .booking-account-title.is-inline {
     margin: 0;
     font-size: 12px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--dm-text-muted);
 }
 
 .booking-account-links {
@@ -373,14 +373,14 @@ $phoneCountryOptions = [
 }
 
 .booking-mini-link {
-    color: #1d2840;
+    color: var(--dm-accent-dark);
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
 }
 
 .booking-mini-link:hover {
-    color: #1d4ed8;
+    color: var(--dm-info-text);
 }
 
 .booking-mini-btn {
@@ -390,8 +390,8 @@ $phoneCountryOptions = [
     min-width: 92px;
     padding: 10px 14px;
     border-radius: 8px;
-    background: #f8fafc;
-    color: #162033;
+    background: var(--dm-surface-muted);
+    color: var(--dm-text);
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
@@ -399,12 +399,12 @@ $phoneCountryOptions = [
 }
 
 .booking-mini-btn:hover {
-    background: #e5e7eb;
+    background: var(--dm-border);
 }
 
 .booking-mini-btn.is-primary {
-    background: #1d2840;
-    color: #ffffff;
+    background: var(--dm-accent-dark);
+    color: var(--dm-surface);
 }
 
 .booking-benefits-top {
@@ -449,7 +449,7 @@ $phoneCountryOptions = [
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    color: #475569;
+    color: var(--dm-text-muted);
     font-size: 13px;
     line-height: 1.45;
 }
@@ -461,8 +461,8 @@ $phoneCountryOptions = [
 }
 
 .booking-step-card {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     padding: 24px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
@@ -484,12 +484,12 @@ $phoneCountryOptions = [
     margin: 0;
     font-size: 20px;
     font-weight: 700;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .booking-step-header p {
     margin: 8px 0 0;
-    color: #6b7280;
+    color: var(--dm-text-muted);
     font-size: 14px;
 }
 
@@ -500,7 +500,7 @@ $phoneCountryOptions = [
     padding: 7px 12px;
     border-radius: 6px;
     background: #eef2f6;
-    color: #556176;
+    color: var(--dm-text-muted);
     font-size: 12px;
     font-weight: 700;
 }
@@ -524,7 +524,7 @@ $phoneCountryOptions = [
 .booking-field label {
     font-size: 12px;
     font-weight: 700;
-    color: #475569;
+    color: var(--dm-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
@@ -534,10 +534,10 @@ $phoneCountryOptions = [
 .booking-textarea,
 .booking-guests-display {
     width: 100%;
-    border: 1px solid #dbe3ef;
+    border: 1px solid var(--dm-border);
     border-radius: 8px;
-    background: #ffffff;
-    color: #111827;
+    background: var(--dm-surface);
+    color: var(--dm-text);
     padding: 13px 15px;
     font: inherit;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
@@ -547,7 +547,7 @@ $phoneCountryOptions = [
 .booking-select:focus,
 .booking-textarea:focus {
     outline: none;
-    border-color: #bdc9da;
+    border-color: var(--dm-border-strong);
     box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
 }
 
@@ -578,8 +578,8 @@ $phoneCountryOptions = [
     height: 46px;
     border: none;
     border-radius: 50%;
-    background: #f3f4f6;
-    color: #64748b;
+    background: var(--dm-surface-muted);
+    color: var(--dm-text-muted);
     font-size: 24px;
     line-height: 1;
     display: inline-flex;
@@ -589,13 +589,13 @@ $phoneCountryOptions = [
 }
 
 .booking-guest-btn:hover {
-    background: #e5e7eb;
-    color: #111827;
+    background: var(--dm-border);
+    color: var(--dm-text);
 }
 
 .booking-guest-btn.is-primary {
-    background: #1d2840;
-    color: #ffffff;
+    background: var(--dm-accent-dark);
+    color: var(--dm-surface);
     box-shadow: 0 10px 24px rgba(29, 40, 64, 0.18);
 }
 
@@ -608,7 +608,7 @@ $phoneCountryOptions = [
 }
 
 .booking-hint {
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 13px;
     line-height: 1.45;
 }
@@ -619,8 +619,8 @@ $phoneCountryOptions = [
     margin-top: 6px;
     padding: 16px;
     border-radius: 10px;
-    background: #f8fafc;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface-muted);
+    border: 1px solid var(--dm-border);
 }
 
 .booking-summary-item {
@@ -633,7 +633,7 @@ $phoneCountryOptions = [
 .booking-summary-item span:first-child {
     font-size: 12px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--dm-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
@@ -642,7 +642,7 @@ $phoneCountryOptions = [
     text-align: right;
     font-size: 15px;
     font-weight: 600;
-    color: #111827;
+    color: var(--dm-text);
 }
 
 .booking-actions {
@@ -667,15 +667,15 @@ $phoneCountryOptions = [
 }
 
 .booking-btn-secondary {
-    background: #ffffff;
-    border: 1px solid #d9e1ec;
-    color: #556176;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border-strong);
+    color: var(--dm-text-muted);
 }
 
 .booking-btn-primary {
     margin-left: auto;
-    background: #1d2840;
-    color: #ffffff;
+    background: var(--dm-accent-dark);
+    color: var(--dm-surface);
     box-shadow: 0 16px 34px rgba(29, 40, 64, 0.18);
 }
 
@@ -683,7 +683,7 @@ $phoneCountryOptions = [
     border-radius: 8px;
     border: 1px solid #fecaca;
     background: #fff1f2;
-    color: #be123c;
+    color: var(--dm-danger-text);
     padding: 14px 16px;
     font-size: 14px;
     margin-bottom: 18px;
@@ -691,7 +691,7 @@ $phoneCountryOptions = [
 
 .booking-inline-error {
     display: none;
-    color: #be123c;
+    color: var(--dm-danger-text);
     font-size: 13px;
     font-weight: 600;
     margin-top: 6px;
@@ -801,7 +801,7 @@ $phoneCountryOptions = [
         <?php endif; ?>
 
         <?php if (isset($_GET['rebook'])): ?>
-            <div class="booking-alert" style="border-color:#c7d2fe;background:#eef2ff;color:#3730a3;">
+            <div class="booking-alert" style="border-color:#c7d2fe;background:var(--dm-neutral-bg);color:#3730a3;">
                 <i class="fa fa-repeat"></i>
                 Previous booking details have been prefilled for review.
             </div>

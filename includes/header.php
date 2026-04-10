@@ -52,17 +52,17 @@ $currentUserRole = getCurrentUserRole();
     <link href="<?php echo htmlspecialchars($navUrl('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: var(--dm-font-sans);
         }
 
         .navbar-toggler {
-            border-color: #d9e1ec;
-            border-radius: 8px;
+            border-color: var(--dm-border-strong);
+            border-radius: var(--dm-radius-sm);
             padding: 8px 10px;
         }
 
         .navbar-toggler:focus {
-            box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
+            box-shadow: var(--dm-focus-ring);
         }
     </style>
 </head>

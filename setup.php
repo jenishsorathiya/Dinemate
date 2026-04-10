@@ -15,10 +15,10 @@
     <link href="assets/css/app.css" rel="stylesheet">
     <style>
         body { background: #f5f7fb; min-height: 100vh; padding: 40px 20px; font-family: 'Inter', sans-serif; }
-        .container { background: #ffffff; border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08); padding: 40px; max-width: 960px; }
+        .container { background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08); padding: 40px; max-width: 960px; }
         h1 { color: #162033; margin-bottom: 18px; }
         h3 { color: #162033; margin-top: 30px; margin-bottom: 18px; font-size: 20px; font-weight: 600; }
-        .step { background: #ffffff; border: 1px solid #e7ecf3; padding: 20px; margin: 15px 0; border-radius: 18px; box-shadow: 0 12px 28px rgba(15,23,42,0.05); }
+        .step { background: var(--dm-surface); border: 1px solid #e7ecf3; padding: 20px; margin: 15px 0; border-radius: 18px; box-shadow: 0 12px 28px rgba(15,23,42,0.05); }
         .step-number { display: inline-flex; align-items: center; justify-content: center; background: #1d2840; color: white; width: 35px; height: 35px; border-radius: 999px; font-weight: 700; margin-right: 15px; }
         .btn-action { padding: 10px 25px; margin: 10px 5px 10px 0; font-weight: 600; }
         .check-list { list-style: none; padding: 0; }
@@ -28,7 +28,7 @@
         .alert-box { border-radius: 16px; padding: 15px; margin: 15px 0; }
         .success-box { background: #e6f7ee; border: 1px solid #ccefdc; color: #1d7a53; }
         .error-box { background: #ffe7ea; border: 1px solid #ffd1d7; color: #c13f56; }
-        .info-box { background: #f8fafc; border: 1px solid #e7ecf3; color: #556176; }
+        .info-box { background: var(--dm-surface-muted); border: 1px solid #e7ecf3; color: var(--dm-text-muted); }
         .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
     </style>
 </head>

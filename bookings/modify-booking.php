@@ -123,7 +123,7 @@ margin-bottom:80px;
 
 .modify-card{
 background:white;
-border:1px solid #e7ecf3;
+border:1px solid var(--dm-border);
 border-radius:10px;
 padding:34px;
 box-shadow:0 4px 16px rgba(15,23,42,0.06);
@@ -134,7 +134,7 @@ box-shadow:0 4px 16px rgba(15,23,42,0.06);
 .modify-title{
 font-weight:700;
 margin-bottom:25px;
-color:#162033;
+color:var(--dm-text);
 }
 
 /* LABEL */
@@ -149,21 +149,21 @@ margin-bottom:6px;
 .modern-input{
 border-radius:8px;
 padding:12px 14px;
-border:1px solid #d9e1ec;
+border:1px solid var(--dm-border-strong);
 transition:0.2s;
 }
 
 .modern-input:focus{
-border-color:#bdc9da;
+border-color:var(--dm-border-strong);
 box-shadow:0 0 0 4px rgba(29,40,64,0.12);
 }
 
 /* BUTTON */
 
 .btn-update{
-background:#1d2840;
-border:1px solid #1d2840;
-color:#ffffff;
+background:var(--dm-accent-dark);
+border:1px solid var(--dm-accent-dark);
+color:var(--dm-surface);
 padding:14px;
 border-radius:8px;
 font-weight:600;
@@ -172,8 +172,8 @@ transition:0.3s;
 }
 
 .btn-update:hover{
-background:#141d31;
-border-color:#141d31;
+background:var(--dm-accent-dark-hover);
+border-color:var(--dm-accent-dark-hover);
 }
 
 /* BACK BUTTON */

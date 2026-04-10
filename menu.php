@@ -25,12 +25,12 @@ foreach ($categories as $category) {
     text-align: center;
     margin-bottom: 50px;
     padding: 30px 0;
-    border-bottom: 3px solid #1f2d4d;
+    border-bottom: 3px solid var(--dm-accent-dark);
 }
 
 .menu-header h1 {
     font-size: 3em;
-    color: #162033;
+    color: var(--dm-text);
     margin: 0 0 10px 0;
     font-weight: 700;
     letter-spacing: 2px;
@@ -38,7 +38,7 @@ foreach ($categories as $category) {
 
 .menu-header p {
     font-size: 1.2em;
-    color: #64748b;
+    color: var(--dm-text-muted);
     margin: 0;
     font-style: italic;
 }
@@ -49,7 +49,7 @@ foreach ($categories as $category) {
 
 .section-title {
     font-size: 2.2em;
-    color: #1f2d4d;
+    color: var(--dm-accent-dark);
     text-align: center;
     margin-bottom: 10px;
     text-transform: uppercase;
@@ -66,12 +66,12 @@ foreach ($categories as $category) {
     transform: translateX(-50%);
     width: 100px;
     height: 2px;
-    background-color: #1f2d4d;
+    background-color: var(--dm-accent-dark);
 }
 
 .section-subtitle {
     text-align: center;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-style: italic;
     margin: -5px 0 25px 0;
 }
@@ -85,15 +85,15 @@ foreach ($categories as $category) {
 
 .menu-card {
     background: white;
-    border: 1px solid #e7ecf3;
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(15,23,42,0.06);
     overflow: hidden;
 }
 
 .menu-card.featured {
-    border-left: 3px solid #1f2d4d;
-    background: #f7f9fd;
+    border-left: 3px solid var(--dm-accent-dark);
+    background: var(--dm-surface-muted);
 }
 
 .card-image {
@@ -120,14 +120,14 @@ foreach ($categories as $category) {
 
 .card-header h3 {
     margin: 0;
-    color: #162033;
+    color: var(--dm-text);
     font-size: 1.3em;
     flex: 1;
     font-weight: 600;
 }
 
 .price {
-    color: #1f2d4d;
+    color: var(--dm-accent-dark);
     font-size: 1.4em;
     font-weight: 700;
     white-space: nowrap;
@@ -135,7 +135,7 @@ foreach ($categories as $category) {
 }
 
 .description {
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 0.95em;
     margin: 8px 0 10px 0;
     line-height: 1.4;
@@ -143,8 +143,8 @@ foreach ($categories as $category) {
 
 .badge {
     display: inline-block;
-    background-color: #e8eef8;
-    color: #1f2d4d;
+    background-color: var(--dm-border);
+    color: var(--dm-accent-dark);
     padding: 4px 10px;
     border-radius: 4px;
     font-size: 0.75em;
@@ -163,20 +163,20 @@ foreach ($categories as $category) {
 .side-item {
     background: white;
     padding: 15px;
-    border: 1px solid #e7ecf3;
+    border: 1px solid var(--dm-border);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(15,23,42,0.05);
 }
 
 .side-item h4 {
     margin: 0;
-    color: #162033;
+    color: var(--dm-text);
     font-size: 1.1em;
 }
 
 .sauces-note {
     text-align: center;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 0.95em;
     margin-top: 15px;
 }
@@ -184,15 +184,15 @@ foreach ($categories as $category) {
 .menu-legend {
     text-align: center;
     padding: 20px;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 0.95em;
-    border-top: 1px solid #e7ecf3;
+    border-top: 1px solid var(--dm-border);
     margin-top: 40px;
 }
 
 .badge-info {
     font-weight: 600;
-    color: #1f2d4d;
+    color: var(--dm-accent-dark);
 }
 
 @media (max-width: 768px) {

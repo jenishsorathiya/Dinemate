@@ -394,25 +394,25 @@ $adminSidebarPathPrefix = '';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
         :root {
-            --bg: #f4f6fb;
-            --bg-soft: #f8f9fd;
-            --card: #ffffff;
-            --line: #e6ebf3;
-            --text: #1b2740;
-            --muted: #6d7891;
-            --shadow: 0 24px 44px rgba(28, 39, 74, 0.08);
-            --shadow-soft: 0 10px 26px rgba(34, 48, 88, 0.06);
-            --nav-accent: #ffbf45;
-            --primary: #162544;
-            --success: #22b573;
-            --danger: #ef5f70;
-            --lavender: #8b73ee;
-            --green: #7ecf91;
-            --blue: #5fa9f3;
-            --amber: #ffbd67;
-            --pink: #ff77b7;
-            --mocha: #8b5e3c;
-            --radius: 22px;
+            --bg: var(--dm-bg);
+            --bg-soft: var(--dm-surface-muted);
+            --card: var(--dm-surface);
+            --line: var(--dm-border);
+            --text: var(--dm-text);
+            --muted: var(--dm-text-muted);
+            --shadow: var(--dm-shadow-md);
+            --shadow-soft: var(--dm-shadow-sm);
+            --nav-accent: var(--dm-standby-bg);
+            --primary: var(--dm-accent-dark);
+            --success: var(--dm-success-strong);
+            --danger: var(--dm-danger-strong);
+            --lavender: var(--dm-lavender);
+            --green: var(--dm-confirmed-text);
+            --blue: var(--dm-info-strong);
+            --amber: var(--dm-standby-bg);
+            --pink: var(--dm-danger-text);
+            --mocha: var(--dm-pending-text);
+            --radius: var(--dm-radius-md);
         }
 
         * {
@@ -520,7 +520,7 @@ $adminSidebarPathPrefix = '';
             border-radius: 12px;
             padding: 0 16px;
             border: 1px solid var(--line);
-            background: #ffffff;
+            background: var(--dm-surface);
             color: var(--text);
             font-size: 14px;
             font-weight: 700;
@@ -538,13 +538,13 @@ $adminSidebarPathPrefix = '';
 
         .button-primary {
             background: var(--primary);
-            color: #ffffff;
+            color: var(--dm-surface);
             border-color: var(--primary);
         }
 
         .button-accent {
-            background: #ffbf45;
-            color: #1d2434;
+            background: var(--dm-standby-bg);
+            color: var(--dm-text);
             border-color: transparent;
         }
 
@@ -556,7 +556,7 @@ $adminSidebarPathPrefix = '';
         }
 
         .button-ghost {
-            background: #f8fafe;
+            background: var(--dm-surface-muted);
             box-shadow: none;
         }
 
@@ -592,9 +592,9 @@ $adminSidebarPathPrefix = '';
         }
 
         .metric-icon.lavender { background: rgba(139, 115, 238, 0.12); color: var(--lavender); }
-        .metric-icon.green { background: rgba(126, 207, 145, 0.14); color: #2d9250; }
-        .metric-icon.blue { background: rgba(95, 169, 243, 0.12); color: #3573b8; }
-        .metric-icon.amber { background: rgba(255, 191, 69, 0.18); color: #c7861f; }
+        .metric-icon.green { background: rgba(126, 207, 145, 0.14); color: var(--dm-confirmed-text); }
+        .metric-icon.blue { background: rgba(95, 169, 243, 0.12); color: var(--dm-info-text); }
+        .metric-icon.amber { background: rgba(255, 191, 69, 0.18); color: var(--dm-pending-text); }
 
         .metric-label {
             margin: 0 0 6px;
@@ -645,7 +645,7 @@ $adminSidebarPathPrefix = '';
 
         .area-card {
             border: 1px solid var(--line);
-            background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+            background: linear-gradient(180deg, var(--dm-surface) 0%, var(--dm-surface-muted) 100%);
             border-radius: 16px;
             padding: 10px;
             display: grid;
@@ -691,13 +691,13 @@ $adminSidebarPathPrefix = '';
         }
 
         .tone-lavender { background: rgba(139, 115, 238, 0.12); color: var(--lavender); }
-        .tone-green { background: rgba(126, 207, 145, 0.15); color: #2d9250; }
-        .tone-blue { background: rgba(95, 169, 243, 0.14); color: #3573b8; }
-        .tone-amber { background: rgba(255, 191, 69, 0.18); color: #c7861f; }
-        .tone-pink { background: rgba(255, 119, 183, 0.16); color: #d14d8f; }
+        .tone-green { background: rgba(126, 207, 145, 0.15); color: var(--dm-confirmed-text); }
+        .tone-blue { background: rgba(95, 169, 243, 0.14); color: var(--dm-info-text); }
+        .tone-amber { background: rgba(255, 191, 69, 0.18); color: var(--dm-pending-text); }
+        .tone-pink { background: rgba(255, 119, 183, 0.16); color: var(--dm-danger-text); }
 
         .area-dots {
-            color: #9aa5bd;
+            color: var(--dm-text-soft);
             font-weight: 700;
             letter-spacing: 0.2em;
         }
@@ -719,7 +719,7 @@ $adminSidebarPathPrefix = '';
             width: fit-content;
             padding: 4px 8px;
             border-radius: 999px;
-            background: #f4f7fc;
+            background: var(--dm-surface-muted);
             border: 1px solid var(--line);
             color: var(--muted);
             font-size: 10px;
@@ -779,14 +779,14 @@ $adminSidebarPathPrefix = '';
             justify-content: space-between;
             gap: 10px;
             padding: 10px 11px;
-            background: #fbfcff;
+            background: var(--dm-surface-muted);
             border: 1px solid var(--line);
             border-radius: 12px;
             transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
         }
 
         .section-item.active {
-            background: #ffffff;
+            background: var(--dm-surface);
             border-color: rgba(22, 37, 68, 0.28);
             box-shadow: 0 10px 20px rgba(22, 37, 68, 0.08);
         }
@@ -845,7 +845,7 @@ $adminSidebarPathPrefix = '';
             height: 32px;
             border-radius: 10px;
             border: 1px solid var(--line);
-            background: #ffffff;
+            background: var(--dm-surface);
             color: var(--muted);
             cursor: pointer;
             display: grid;
@@ -863,7 +863,7 @@ $adminSidebarPathPrefix = '';
             height: 100%;
             min-height: 470px;
             border-radius: 18px;
-            border: 1px solid #dfe5ef;
+            border: 1px solid var(--dm-border);
             overflow: hidden;
             background:
                 linear-gradient(90deg, rgba(80, 92, 118, 0.04) 1px, transparent 1px),
@@ -920,7 +920,7 @@ $adminSidebarPathPrefix = '';
             border-radius: 9px;
             border: 1px solid rgba(213, 220, 232, 0.95);
             background: rgba(255, 255, 255, 0.94);
-            color: #586785;
+            color: var(--dm-text-muted);
             display: grid;
             place-items: center;
             box-shadow: 0 10px 18px rgba(26, 39, 66, 0.12);
@@ -982,7 +982,7 @@ $adminSidebarPathPrefix = '';
             text-transform: uppercase;
             background: rgba(255, 255, 255, 0.88);
          
-            color: #111111;
+            color: var(--dm-text);
             text-align: center;
             pointer-events: auto;
             touch-action: none;
@@ -1013,8 +1013,8 @@ $adminSidebarPathPrefix = '';
             width: 16px;
             height: 16px;
             border-radius: 4px;
-            border: 3px solid #111111;
-            background: #ffffff;
+            border: 3px solid var(--dm-text);
+            background: var(--dm-surface);
             box-shadow: 0 8px 16px rgba(17, 17, 17, 0.12);
             z-index: 2;
             touch-action: none;
@@ -1079,15 +1079,15 @@ $adminSidebarPathPrefix = '';
         .zone.zone-lavender { background: linear-gradient(180deg, rgba(139, 115, 238, 0.08), rgba(139, 115, 238, 0.03)); }
         .zone.zone-lavender .zone-label { color: var(--lavender); }
         .zone.zone-green { background: linear-gradient(180deg, rgba(126, 207, 145, 0.1), rgba(126, 207, 145, 0.04)); }
-        .zone.zone-green .zone-label { color: #2d9250; }
+        .zone.zone-green .zone-label { color: var(--dm-confirmed-text); }
         .zone.zone-blue { background: linear-gradient(180deg, rgba(95, 169, 243, 0.09), rgba(95, 169, 243, 0.04)); }
-        .zone.zone-blue .zone-label { color: #3573b8; }
+        .zone.zone-blue .zone-label { color: var(--dm-info-text); }
         .zone.zone-amber { background: linear-gradient(180deg, rgba(255, 191, 69, 0.1), rgba(255, 191, 69, 0.04)); }
-        .zone.zone-amber .zone-label { color: #c7861f; }
+        .zone.zone-amber .zone-label { color: var(--dm-pending-text); }
         .zone.zone-pink { background: linear-gradient(180deg, rgba(255, 119, 183, 0.09), rgba(255, 119, 183, 0.04)); }
-        .zone.zone-pink .zone-label { color: #d14d8f; }
+        .zone.zone-pink .zone-label { color: var(--dm-danger-text); }
         .zone.zone-mocha { background: linear-gradient(180deg, rgba(160, 120, 90, 0.1), rgba(160, 120, 90, 0.04)); }
-        .zone.zone-mocha .zone-label { color: #8b5e3c; }
+        .zone.zone-mocha .zone-label { color: var(--dm-pending-text); }
 
         .table-item {
             position: absolute;
@@ -1096,7 +1096,7 @@ $adminSidebarPathPrefix = '';
             display: grid;
             place-items: center;
             font-weight: 800;
-            color: #2d3a59;
+            color: var(--dm-text);
             user-select: none;
             touch-action: none;
             background: transparent;
@@ -1161,7 +1161,7 @@ $adminSidebarPathPrefix = '';
         .table-capacity {
             font-size: 9px;
             font-weight: 700;
-            color: #51607e;
+            color: var(--dm-text-muted);
         }
 
         .table-label {
@@ -1281,17 +1281,17 @@ $adminSidebarPathPrefix = '';
         }
 
         .table-tone-lavender { color: rgba(139, 115, 238, 0.42); }
-        .table-tone-lavender .table-top { background: linear-gradient(180deg, #f7f2ff, #f0e8ff); }
+        .table-tone-lavender .table-top { background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-neutral-bg)); }
         .table-tone-green { color: rgba(126, 207, 145, 0.52); }
-        .table-tone-green .table-top { background: linear-gradient(180deg, #f1fdef, #e2f7e4); }
+        .table-tone-green .table-top { background: linear-gradient(180deg, var(--dm-confirmed-bg), var(--dm-confirmed-bg)); }
         .table-tone-blue { color: rgba(95, 169, 243, 0.5); }
-        .table-tone-blue .table-top { background: linear-gradient(180deg, #f2f8ff, #ddecfb); }
+        .table-tone-blue .table-top { background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-border)); }
         .table-tone-amber { color: rgba(255, 191, 69, 0.6); }
-        .table-tone-amber .table-top { background: linear-gradient(180deg, #fff7eb, #ffe8cb); }
+        .table-tone-amber .table-top { background: linear-gradient(180deg, var(--dm-standby-bg), var(--dm-pending-bg)); }
         .table-tone-pink { color: rgba(255, 119, 183, 0.46); }
-        .table-tone-pink .table-top { background: linear-gradient(180deg, #fff1f7, #ffe4ef); }
+        .table-tone-pink .table-top { background: linear-gradient(180deg, var(--dm-danger-bg), var(--dm-danger-bg)); }
         .table-tone-mocha {  color: rgba(160, 120, 90, 0.5); }
-        .table-tone-mocha .table-top {  background: linear-gradient(180deg, #f8f4f1, #efe6df); }
+        .table-tone-mocha .table-top {  background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-pending-bg)); }
         .decor {
             position: absolute;
             pointer-events: none;
@@ -1317,8 +1317,8 @@ $adminSidebarPathPrefix = '';
             width: 184px;
             height: 118px;
             border-radius: 54px 18px 18px 24px;
-            background: linear-gradient(180deg, #f7f8fb, #d8dde8);
-            border: 1px solid #c8d1df;
+            background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-border));
+            border: 1px solid var(--dm-border);
             box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.7), 0 18px 30px rgba(98, 108, 126, 0.14);
         }
 
@@ -1346,7 +1346,7 @@ $adminSidebarPathPrefix = '';
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #8a96a8;
+            background: var(--dm-text-soft);
             box-shadow: 0 3px 6px rgba(40, 51, 74, 0.16);
         }
 
@@ -1369,8 +1369,8 @@ $adminSidebarPathPrefix = '';
             width: 44px;
             height: 44px;
             border-radius: 14px;
-            background: #f5f8fe;
-            color: #6980ad;
+            background: var(--dm-surface-muted);
+            color: var(--dm-text-muted);
             margin-bottom: 12px;
         }
 
@@ -1423,7 +1423,7 @@ $adminSidebarPathPrefix = '';
             height: 42px;
             border-radius: 12px;
             border: 1px solid var(--line);
-            background: #fbfcff;
+            background: var(--dm-surface-muted);
             padding: 0 12px;
             color: var(--text);
             outline: none;
@@ -1431,8 +1431,8 @@ $adminSidebarPathPrefix = '';
 
         .field input:focus,
         .field select:focus {
-            border-color: #b9c8e2;
-            background: #ffffff;
+            border-color: var(--dm-border-strong);
+            background: var(--dm-surface);
         }
 
         .split-field {
@@ -1447,7 +1447,7 @@ $adminSidebarPathPrefix = '';
             border-radius: 12px;
             display: grid;
             place-items: center;
-            background: #f6f8fc;
+            background: var(--dm-surface-muted);
             border: 1px solid var(--line);
             color: var(--muted);
             font-weight: 800;
@@ -1459,7 +1459,7 @@ $adminSidebarPathPrefix = '';
             justify-content: space-between;
             padding: 10px 12px;
             border-radius: 14px;
-            background: #f8fbff;
+            background: var(--dm-surface-muted);
             border: 1px solid var(--line);
         }
 
@@ -1479,7 +1479,7 @@ $adminSidebarPathPrefix = '';
             position: absolute;
             inset: 0;
             border-radius: 999px;
-            background: #cdd6e4;
+            background: var(--dm-border);
             cursor: pointer;
             transition: background 0.16s ease;
         }
@@ -1492,7 +1492,7 @@ $adminSidebarPathPrefix = '';
             left: 4px;
             top: 4px;
             border-radius: 50%;
-            background: #ffffff;
+            background: var(--dm-surface);
             box-shadow: 0 4px 10px rgba(30, 43, 66, 0.16);
             transition: transform 0.16s ease;
         }
@@ -1535,7 +1535,7 @@ $adminSidebarPathPrefix = '';
             gap: 8px;
             height: 38px;
             border: 1px solid var(--line);
-            background: #ffffff;
+            background: var(--dm-surface);
             border-radius: 12px;
             padding: 0 12px;
         }
@@ -1565,7 +1565,7 @@ $adminSidebarPathPrefix = '';
         td {
             text-align: left;
             padding: 12px 10px;
-            border-bottom: 1px solid #edf1f7;
+            border-bottom: 1px solid var(--dm-border);
             font-size: 13px;
         }
 
@@ -1593,23 +1593,23 @@ $adminSidebarPathPrefix = '';
         }
 
         .area-badge {
-            background: #f4f7fc;
+            background: var(--dm-surface-muted);
             border: 1px solid var(--line);
-            color: #46526d;
+            color: var(--dm-text-muted);
         }
 
         .status-pill.yes {
             background: rgba(34, 181, 115, 0.12);
-            color: #228756;
+            color: var(--dm-confirmed-text);
         }
 
         .status-pill.no {
             background: rgba(239, 95, 112, 0.12);
-            color: #bf4453;
+            color: var(--dm-danger-text);
         }
 
         .position-pill {
-            background: #f7f9fd;
+            background: var(--dm-surface-muted);
             color: var(--muted);
             border: 1px solid var(--line);
         }
@@ -1624,7 +1624,7 @@ $adminSidebarPathPrefix = '';
             height: 32px;
             border-radius: 10px;
             border: 1px solid var(--line);
-            background: #ffffff;
+            background: var(--dm-surface);
             color: var(--muted);
             cursor: pointer;
         }
@@ -1658,16 +1658,16 @@ $adminSidebarPathPrefix = '';
             place-items: center;
             border-radius: 10px;
             border: 1px solid var(--line);
-            background: #ffffff;
+            background: var(--dm-surface);
             color: var(--muted);
             font-weight: 700;
             cursor: pointer;
         }
 
         .page-pill.active {
-            background: #ffbf45;
-            border-color: #ffbf45;
-            color: #1f2534;
+            background: var(--dm-standby-bg);
+            border-color: var(--dm-standby-bg);
+            color: var(--dm-text);
         }
 
         .page-pill.icon {
@@ -1694,7 +1694,7 @@ $adminSidebarPathPrefix = '';
 
         .modal-card {
             width: min(460px, 100%);
-            background: #ffffff;
+            background: var(--dm-surface);
             border-radius: 24px;
             border: 1px solid var(--line);
             box-shadow: var(--shadow);
@@ -1717,7 +1717,7 @@ $adminSidebarPathPrefix = '';
         .modal-footer {
             border-top: 1px solid var(--line);
             justify-content: flex-end;
-            background: #fbfcff;
+            background: var(--dm-surface-muted);
         }
 
         .modal-body {
@@ -1731,8 +1731,8 @@ $adminSidebarPathPrefix = '';
             right: 24px;
             bottom: 24px;
             padding: 14px 16px;
-            background: #162544;
-            color: #ffffff;
+            background: var(--dm-accent-dark);
+            color: var(--dm-surface);
             border-radius: 16px;
             box-shadow: var(--shadow);
             opacity: 0;
@@ -2878,13 +2878,13 @@ $adminSidebarPathPrefix = '';
 
         function toneToColor(tone) {
             const colors = {
-                lavender: '#8b73ee',
-                green: '#54b96d',
-                blue: '#5fa9f3',
-                amber: '#ffbd67',
-                pink: '#ff77b7',
+                lavender: 'var(--dm-lavender)',
+                green: 'var(--dm-confirmed-text)',
+                blue: 'var(--dm-info-strong)',
+                amber: 'var(--dm-standby-bg)',
+                pink: 'var(--dm-danger-text)',
             };
-            return colors[tone] || '#5fa9f3';
+            return colors[tone] || 'var(--dm-info-strong)';
         }
 
         function handleDragStart(event) {
@@ -3517,7 +3517,7 @@ $adminSidebarPathPrefix = '';
 
         function showToast(message, isError = false) {
             toast.textContent = message;
-            toast.style.background = isError ? '#8f2130' : '#162544';
+            toast.style.background = isError ? 'var(--dm-danger-text)' : 'var(--dm-accent-dark)';
             toast.classList.add('show');
             window.clearTimeout(showToast.timeoutId);
             showToast.timeoutId = window.setTimeout(() => toast.classList.remove('show'), 2600);

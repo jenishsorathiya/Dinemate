@@ -137,7 +137,7 @@ try {
     <link href="assets/css/app.css" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; padding: 32px 20px; background: #f5f7fb; }
-        .container { max-width: 980px; margin: 0 auto; background: #ffffff; border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }
+        .container { max-width: 980px; margin: 0 auto; background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }
         .diag-box { background: white; padding: 18px; margin: 12px 0; border-radius: 16px; border: 1px solid #e7ecf3; }
         .status-OK { border-color: #ccefdc; background: #e6f7ee; }
         .status-ERROR { border-color: #ffd1d7; background: #ffe7ea; }
@@ -145,7 +145,7 @@ try {
         .key { font-weight: bold; }
         code { background: #eef2f6; padding: 2px 6px; border-radius: 6px; }
         h1, h2, h3 { color: #162033; }
-        pre { background: #f8fafc; padding: 12px; border-radius: 12px; overflow-x: auto; border: 1px solid #e7ecf3; }
+        pre { background: var(--dm-surface-muted); padding: 12px; border-radius: 12px; overflow-x: auto; border: 1px solid #e7ecf3; }
     </style>
 </head>
 <body>

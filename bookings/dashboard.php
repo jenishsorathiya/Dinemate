@@ -78,8 +78,8 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 
 .dashboard-hero,
 .dashboard-panel {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
@@ -90,20 +90,20 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
     grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr);
     gap: 20px;
     align-items: stretch;
-    background: #ffffff;
+    background: var(--dm-surface);
 }
 
 .hero-copy h1 {
     margin: 0;
     font-size: 36px;
     line-height: 1.04;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .hero-copy p {
     margin: 12px 0 0;
     max-width: 620px;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 15px;
 }
 
@@ -126,21 +126,21 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 }
 
 .btn-portal {
-    background: #1d2840;
-    color: #ffffff;
+    background: var(--dm-accent-dark);
+    color: var(--dm-surface);
     box-shadow: 0 14px 28px rgba(29, 40, 64, 0.16);
 }
 
 .btn-portal-secondary {
-    border: 1px solid #d9e1ec;
-    background: #ffffff;
-    color: #31415f;
+    border: 1px solid var(--dm-border-strong);
+    background: var(--dm-surface);
+    color: var(--dm-text);
 }
 
 .hero-focus {
     border-radius: 10px;
-    background: #172133;
-    color: #f8fafc;
+    background: var(--dm-text);
+    color: var(--dm-surface-muted);
     padding: 22px;
     display: grid;
     gap: 14px;
@@ -178,8 +178,8 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 }
 
 .metric-card {
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
@@ -189,7 +189,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-weight: 700;
 }
 
@@ -197,13 +197,13 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
     margin-top: 10px;
     font-size: 24px;
     line-height: 1;
-    color: #162033;
+    color: var(--dm-text);
     font-weight: 700;
 }
 
 .metric-meta {
     margin-top: 10px;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 13px;
     line-height: 1.5;
 }
@@ -231,13 +231,13 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 .panel-heading h2,
 .panel-heading h3 {
     margin: 0;
-    color: #162033;
+    color: var(--dm-text);
     font-size: 22px;
 }
 
 .panel-heading p {
     margin: 6px 0 0;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 14px;
 }
 
@@ -247,7 +247,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 }
 
 .timeline-card {
-    border: 1px solid #e7ecf3;
+    border: 1px solid var(--dm-border);
     border-radius: 10px;
     padding: 18px;
     display: grid;
@@ -272,13 +272,13 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 .timeline-card-title {
     font-size: 19px;
     font-weight: 700;
-    color: #162033;
+    color: var(--dm-text);
 }
 
 .timeline-card-subtitle,
 .history-meta,
 .tiny-copy {
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 13px;
 }
 
@@ -294,17 +294,17 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
     align-items: center;
     gap: 8px;
     border-radius: 6px;
-    background: #ffffff;
-    border: 1px solid #dbe3ef;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
     padding: 6px 10px;
     font-size: 13px;
-    color: #31415f;
+    color: var(--dm-text);
     width: fit-content;
 }
 
 .history-item {
     padding: 14px 0;
-    border-top: 1px solid #eef2f7;
+    border-top: 1px solid var(--dm-border);
 }
 
 .history-item:first-child {
@@ -328,21 +328,21 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 
 .profile-chip {
     border-radius: 10px;
-    border: 1px solid #e7ecf3;
-    background: #f8fafc;
+    border: 1px solid var(--dm-border);
+    background: var(--dm-surface-muted);
     padding: 14px;
 }
 
 .profile-chip strong {
     display: block;
-    color: #162033;
+    color: var(--dm-text);
     font-size: 14px;
 }
 
 .profile-chip span {
     display: block;
     margin-top: 6px;
-    color: #64748b;
+    color: var(--dm-text-muted);
     font-size: 13px;
 }
 
@@ -355,10 +355,10 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 
 .empty-state {
     border-radius: 8px;
-    background: #f8fafc;
-    border: 1px dashed #d9e1ec;
+    background: var(--dm-surface-muted);
+    border: 1px dashed var(--dm-border-strong);
     padding: 26px;
-    color: #64748b;
+    color: var(--dm-text-muted);
     text-align: center;
 }
 

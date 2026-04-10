@@ -214,20 +214,20 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --analytics-bg: linear-gradient(180deg, #f7f8fc 0%, #f4f7fb 48%, #f8fafc 100%);
-            --analytics-surface: rgba(255, 255, 255, 0.88);
-            --analytics-surface-strong: #ffffff;
-            --analytics-line: #e7ecf3;
-            --analytics-text: #162033;
-            --analytics-muted: #657189;
-            --analytics-soft: #8c96a8;
-            --analytics-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
-            --analytics-shadow-soft: 0 14px 30px rgba(15, 23, 42, 0.06);
-            --analytics-gold: #c8933d;
-            --analytics-sage: #4f8b79;
-            --analytics-rose: #cb6f7d;
-            --analytics-blue: #5a88c8;
-            --analytics-ink: #21314e;
+            --analytics-bg: var(--dm-bg);
+            --analytics-surface: var(--dm-surface);
+            --analytics-surface-strong: var(--dm-surface);
+            --analytics-line: var(--dm-border);
+            --analytics-text: var(--dm-text);
+            --analytics-muted: var(--dm-text-muted);
+            --analytics-soft: var(--dm-text-soft);
+            --analytics-shadow: var(--dm-shadow-md);
+            --analytics-shadow-soft: var(--dm-shadow-sm);
+            --analytics-gold: var(--dm-pending-text);
+            --analytics-sage: var(--dm-confirmed-text);
+            --analytics-rose: var(--dm-danger-text);
+            --analytics-blue: var(--dm-info-text);
+            --analytics-ink: var(--dm-accent-dark);
         }
 
         * {
@@ -275,13 +275,13 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             padding: 6px;
             border-radius: 8px;
             background: rgba(248, 250, 252, 0.96);
-            border: 1px solid #e7ecf3;
+            border: 1px solid var(--dm-border);
         }
 
         .analytics-range-chip {
             border: none;
             background: transparent;
-            color: #5a657b;
+            color: var(--dm-text-muted);
             min-height: 36px;
             padding: 0 14px;
             border-radius: 6px;
@@ -295,13 +295,13 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .analytics-range-chip:hover,
         .analytics-range-chip:focus-visible {
             background: rgba(29, 40, 64, 0.08);
-            color: #1d2840;
+            color: var(--dm-accent-dark);
             outline: none;
         }
 
         .analytics-range-chip.is-active {
-            background: #1d2840;
-            color: #ffffff;
+            background: var(--dm-accent-dark);
+            color: var(--dm-surface);
         }
 
         .analytics-topbar-selects {
@@ -318,12 +318,12 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             min-height: 44px;
             padding: 0 12px;
             border-radius: 8px;
-            border: 1px solid #e7ecf3;
-            background: #ffffff;
+            border: 1px solid var(--dm-border);
+            background: var(--dm-surface);
         }
 
         .analytics-topbar-select-icon {
-            color: #7a8496;
+            color: var(--dm-text-soft);
             font-size: 14px;
         }
 
@@ -332,7 +332,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             border: none;
             background: transparent;
             font: inherit;
-            color: #1d2840;
+            color: var(--dm-accent-dark);
             outline: none;
         }
 
@@ -343,9 +343,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             min-height: 44px;
             padding: 0 12px;
             border-radius: 8px;
-            border: 1px solid #e7ecf3;
-            background: #ffffff;
-            color: #6a768b;
+            border: 1px solid var(--dm-border);
+            background: var(--dm-surface);
+            color: var(--dm-text-muted);
             font-size: 13px;
             font-weight: 600;
         }
@@ -372,7 +372,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             overflow: hidden;
             padding: 32px;
             border-radius: 12px;
-            background: #ffffff;
+            background: var(--dm-surface);
             border: 1px solid rgba(231, 236, 243, 0.95);
             box-shadow: 0 1px 3px rgba(15,23,42,0.08);
             display: grid;
@@ -413,7 +413,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .hero-mini-card {
             padding: 18px 20px;
             border-radius: 10px;
-            background: #f8fafc;
+            background: var(--dm-surface-muted);
             border: 1px solid rgba(232, 236, 243, 0.9);
         }
 
@@ -500,7 +500,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .kpi-card:hover,
         .analytics-card:hover {
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-            border-color: #dde5f0;
+            border-color: var(--dm-border-strong);
         }
 
         .kpi-card {
@@ -543,20 +543,20 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 6px;
             padding: 3px 8px;
             border-radius: 4px;
-            background: #f6f8fb;
-            color: #445066;
+            background: var(--dm-surface-muted);
+            color: var(--dm-text-muted);
             font-size: 11px;
             font-weight: 700;
         }
 
         .kpi-trend.positive {
-            background: #e9f7ef;
-            color: #247251;
+            background: var(--dm-confirmed-bg);
+            color: var(--dm-confirmed-text);
         }
 
         .kpi-trend.negative {
-            background: #fff0f2;
-            color: #b24760;
+            background: var(--dm-danger-bg);
+            color: var(--dm-danger-text);
         }
 
         .panel-grid-large {
@@ -604,14 +604,14 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 6px;
             padding: 5px;
             border-radius: 8px;
-            background: #f5f7fb;
-            border: 1px solid #e7ecf3;
+            background: var(--dm-surface-muted);
+            border: 1px solid var(--dm-border);
         }
 
         .segment-button {
             border: none;
             background: transparent;
-            color: #607089;
+            color: var(--dm-text-muted);
             min-height: 34px;
             padding: 0 12px;
             border-radius: 8px;
@@ -623,8 +623,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         }
 
         .segment-button.is-active {
-            background: #ffffff;
-            color: #1d2840;
+            background: var(--dm-surface);
+            color: var(--dm-accent-dark);
             box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
         }
 
@@ -650,8 +650,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 10px;
             padding: 14px 16px;
             border-radius: 8px;
-            background: #f8fafc;
-            border: 1px solid #edf1f6;
+            background: var(--dm-surface-muted);
+            border: 1px solid var(--dm-border);
         }
 
         .metric-pill-label {
@@ -691,8 +691,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .sub-stat {
             padding: 16px;
             border-radius: 8px;
-            background: #f8fafc;
-            border: 1px solid #edf1f6;
+            background: var(--dm-surface-muted);
+            border: 1px solid var(--dm-border);
         }
 
         .sub-stat-label {
@@ -726,7 +726,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             padding: 14px 12px;
             border-radius: 10px;
             border: 1px solid rgba(226, 232, 240, 0.95);
-            background: #f8fafc;
+            background: var(--dm-surface-muted);
         }
 
         .heatmap-cell:hover {
@@ -757,7 +757,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             display: block;
             height: 100%;
             border-radius: inherit;
-            background: linear-gradient(90deg, #8fc7ba, #5b85c7, #c8933d);
+            background: linear-gradient(90deg, var(--dm-confirmed-text), var(--dm-info-text), var(--dm-pending-text));
         }
 
         .table-list {
@@ -772,8 +772,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 12px;
             padding: 12px 14px;
             border-radius: 8px;
-            background: #f8fafc;
-            border: 1px solid #edf1f6;
+            background: var(--dm-surface-muted);
+            border: 1px solid var(--dm-border);
         }
 
         .table-list-item strong {
@@ -799,9 +799,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 8px;
             padding: 10px 14px;
             border-radius: 6px;
-            background: #fbf7ee;
-            border: 1px solid #f0e3c5;
-            color: #8f6630;
+            background: var(--dm-standby-bg);
+            border: 1px solid var(--dm-standby-bg);
+            color: var(--dm-pending-text);
             font-size: 12px;
             font-weight: 700;
         }
@@ -818,8 +818,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             align-items: center;
             padding: 14px 16px;
             border-radius: 8px;
-            background: #f8fafc;
-            border: 1px solid #edf1f6;
+            background: var(--dm-surface-muted);
+            border: 1px solid var(--dm-border);
         }
 
         .zone-row.head {
@@ -847,7 +847,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             width: 100%;
             height: 8px;
             border-radius: 4px;
-            background: #e8edf5;
+            background: var(--dm-border);
             overflow: hidden;
         }
 
@@ -855,14 +855,14 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             display: block;
             height: 100%;
             border-radius: inherit;
-            background: linear-gradient(90deg, #7cb7aa, #5b85c7);
+            background: linear-gradient(90deg, var(--dm-confirmed-text), var(--dm-info-text));
         }
 
         .top-zone-card {
             padding: 22px;
             border-radius: 10px;
-            background: #1f2d4d;
-            color: #ffffff;
+            background: var(--dm-accent-dark);
+            color: var(--dm-surface);
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
         }
 
@@ -919,8 +919,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             align-items: start;
             padding: 14px 16px;
             border-radius: 8px;
-            background: #f8fafc;
-            border: 1px solid #edf1f6;
+            background: var(--dm-surface-muted);
+            border: 1px solid var(--dm-border);
             color: var(--analytics-muted);
             font-size: 13px;
             line-height: 1.6;
@@ -941,8 +941,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .customer-stat-card {
             padding: 16px;
             border-radius: 8px;
-            background: #f8fafc;
-            border: 1px solid #edf1f6;
+            background: var(--dm-surface-muted);
+            border: 1px solid var(--dm-border);
         }
 
         .customer-stat-card strong {
@@ -971,8 +971,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .operation-card {
             padding: 18px;
             border-radius: 10px;
-            background: #ffffff;
-            border: 1px solid #e8edf4;
+            background: var(--dm-surface);
+            border: 1px solid var(--dm-border);
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
         }
 
@@ -982,8 +982,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 8px;
             padding: 7px 10px;
             border-radius: 6px;
-            background: #f5f7fb;
-            color: #6b7689;
+            background: var(--dm-surface-muted);
+            color: var(--dm-text-muted);
             font-size: 11px;
             font-weight: 800;
             letter-spacing: 0.08em;
@@ -1011,7 +1011,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             padding: 48px 24px;
             border-radius: 12px;
             border: 1px solid var(--analytics-line);
-            background: #ffffff;
+            background: var(--dm-surface);
             box-shadow: 0 1px 3px rgba(15,23,42,0.06);
             text-align: center;
         }
@@ -1053,9 +1053,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             place-items: center;
             text-align: center;
             color: var(--analytics-muted);
-            border: 1px dashed #e3eaf3;
+            border: 1px dashed var(--dm-border);
             border-radius: 10px;
-            background: #fbfcfe;
+            background: var(--dm-surface-muted);
             padding: 24px;
         }
 
@@ -1431,7 +1431,7 @@ const cardTextPlugin = {
 
         ctx.save();
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#8c96a8';
+        ctx.fillStyle = 'var(--dm-text-soft)';
         ctx.font = '600 13px Inter';
         ctx.fillText('No data for this selection', (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2);
         ctx.restore();
@@ -2022,10 +2022,10 @@ function lineChartConfig(labels, values) {
             datasets: [{
                 label: 'Bookings',
                 data: values,
-                borderColor: '#5b85c7',
+                borderColor: 'var(--dm-info-text)',
                 backgroundColor: 'rgba(91, 133, 199, 0.14)',
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#5b85c7',
+                pointBackgroundColor: 'var(--dm-surface)',
+                pointBorderColor: 'var(--dm-info-text)',
                 borderWidth: 2.5,
                 pointHoverRadius: 5,
                 pointRadius: 3,
@@ -2040,13 +2040,13 @@ function lineChartConfig(labels, values) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1f2d47',
+                    backgroundColor: 'var(--dm-accent-dark)',
                     callbacks: { label(context) { return `Bookings: ${context.raw}`; } }
                 }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { color: '#7c889c' } },
-                y: { beginAtZero: true, border: { display: false }, grid: { color: 'rgba(227, 233, 242, 0.9)' }, ticks: { color: '#7c889c', precision: 0 } }
+                x: { grid: { display: false }, ticks: { color: 'var(--dm-text-soft)' } },
+                y: { beginAtZero: true, border: { display: false }, grid: { color: 'rgba(227, 233, 242, 0.9)' }, ticks: { color: 'var(--dm-text-soft)', precision: 0 } }
             }
         }
     };
@@ -2065,8 +2065,8 @@ function barChartConfig(labels, values, backgroundColor, horizontal = false, too
                 tooltip: { callbacks: tooltipFormatter ? { label: tooltipFormatter } : undefined }
             },
             scales: {
-                x: { beginAtZero: true, border: { display: false }, grid: { display: horizontal, color: 'rgba(227, 233, 242, 0.88)' }, ticks: { color: '#7c889c', precision: 0 } },
-                y: { border: { display: false }, grid: { display: false }, ticks: { color: '#7c889c' } }
+                x: { beginAtZero: true, border: { display: false }, grid: { display: horizontal, color: 'rgba(227, 233, 242, 0.88)' }, ticks: { color: 'var(--dm-text-soft)', precision: 0 } },
+                y: { border: { display: false }, grid: { display: false }, ticks: { color: 'var(--dm-text-soft)' } }
             }
         }
     };
@@ -2081,7 +2081,7 @@ function donutChartConfig(labels, values, colors) {
             maintainAspectRatio: false,
             cutout: '68%',
             plugins: {
-                legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 10, color: '#5e6b82' } }
+                legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 10, color: 'var(--dm-text-muted)' } }
             }
         }
     };
@@ -2093,18 +2093,18 @@ function stackedBarChartConfig(labels, completed, cancelled, noShow) {
         data: {
             labels,
             datasets: [
-                { label: 'Completed', data: completed, backgroundColor: '#7cb7aa', borderRadius: 10, borderSkipped: false },
-                { label: 'Cancelled', data: cancelled, backgroundColor: '#cb6f7d', borderRadius: 10, borderSkipped: false },
-                { label: 'No-show', data: noShow, backgroundColor: '#c8933d', borderRadius: 10, borderSkipped: false }
+                { label: 'Completed', data: completed, backgroundColor: 'var(--dm-confirmed-text)', borderRadius: 10, borderSkipped: false },
+                { label: 'Cancelled', data: cancelled, backgroundColor: 'var(--dm-danger-text)', borderRadius: 10, borderSkipped: false },
+                { label: 'No-show', data: noShow, backgroundColor: 'var(--dm-pending-text)', borderRadius: 10, borderSkipped: false }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'top', align: 'start', labels: { usePointStyle: true, pointStyle: 'circle', color: '#5e6b82' } } },
+            plugins: { legend: { position: 'top', align: 'start', labels: { usePointStyle: true, pointStyle: 'circle', color: 'var(--dm-text-muted)' } } },
             scales: {
-                x: { stacked: true, grid: { display: false }, ticks: { color: '#7c889c' } },
-                y: { stacked: true, beginAtZero: true, border: { display: false }, grid: { color: 'rgba(227, 233, 242, 0.9)' }, ticks: { color: '#7c889c', precision: 0 } }
+                x: { stacked: true, grid: { display: false }, ticks: { color: 'var(--dm-text-soft)' } },
+                y: { stacked: true, beginAtZero: true, border: { display: false }, grid: { color: 'rgba(227, 233, 242, 0.9)' }, ticks: { color: 'var(--dm-text-soft)', precision: 0 } }
             }
         }
     };
@@ -2307,7 +2307,7 @@ function renderDashboard() {
     createOrUpdateChart('tableUsageChart', barChartConfig(metrics.tableUsage.slice(0, 6).map((table) => `T${table.table_number || table.table_id}`), metrics.tableUsage.slice(0, 6).map((table) => table.bookings), 'rgba(91, 133, 199, 0.82)', true, (context) => `Bookings: ${context.raw}`));
     createOrUpdateChart('areaDemandChart', barChartConfig(metrics.areaMetrics.map((area) => area.area), metrics.areaMetrics.map((area) => area.bookings), 'rgba(79, 139, 121, 0.82)', false, (context) => `Bookings: ${context.raw}`));
     createOrUpdateChart('cancellationChart', stackedBarChartConfig(weekdayOrder, metrics.completedByWeekday, metrics.cancelledByWeekday, metrics.noShowByWeekday));
-    createOrUpdateChart('customerMixChart', donutChartConfig(['New', 'Returning'], [metrics.newCustomers, metrics.returningCustomers], ['#c8933d', '#5b85c7']));
+    createOrUpdateChart('customerMixChart', donutChartConfig(['New', 'Returning'], [metrics.newCustomers, metrics.returningCustomers], ['var(--dm-pending-text)', 'var(--dm-info-text)']));
     createOrUpdateChart('partySizeChart', barChartConfig(Object.keys(metrics.partyBuckets), Object.values(metrics.partyBuckets), 'rgba(79, 139, 121, 0.82)', false, (context) => `Bookings: ${context.raw}`));
 
     renderZoneTable(metrics);

@@ -114,7 +114,7 @@ $adminSidebarPathPrefix = '../';
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #f5f7fb;
+            background: var(--dm-surface-muted);
         }
 
         body.modal-open {
@@ -139,9 +139,9 @@ $adminSidebarPathPrefix = '../';
             gap: 0;
             margin-bottom: 14px;
             padding: 12px 14px;
-            border: 1px solid #e6ebf2;
+            border: 1px solid var(--dm-border);
             border-radius: 10px;
-            background: #ffffff;
+            background: var(--dm-surface);
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
         }
 
@@ -157,7 +157,7 @@ $adminSidebarPathPrefix = '../';
 
         .timeline-date-year {
             grid-area: year;
-            color: #6b7280;
+            color: var(--dm-text-muted);
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -168,7 +168,7 @@ $adminSidebarPathPrefix = '../';
 
         .timeline-date-primary {
             grid-area: date;
-            color: #1f2937;
+            color: var(--dm-accent-dark-hover);
             font-size: 13px;
             font-weight: 700;
             line-height: 1.2;
@@ -189,7 +189,7 @@ $adminSidebarPathPrefix = '../';
         .timeline-date-picker-trigger {
             border: none;
             background: transparent;
-            color: #374151;
+            color: var(--dm-text);
             width: 14px;
             min-width: 14px;
             height: 14px;
@@ -207,7 +207,7 @@ $adminSidebarPathPrefix = '../';
 
         .timeline-date-nav:hover,
         .timeline-date-picker-trigger:hover {
-            color: #111827;
+            color: var(--dm-text);
         }
 
         .calendar {
@@ -228,7 +228,7 @@ $adminSidebarPathPrefix = '../';
         .left-panel {
             width: 260px;
             background: white;
-            border: 1px solid #e6ebf2;
+            border: 1px solid var(--dm-border);
             border-radius: 10px;
             box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
             display: flex;
@@ -251,7 +251,7 @@ $adminSidebarPathPrefix = '../';
             line-height: 1.5;
             font-weight: 500;
             font-family: 'Poppins', sans-serif;
-            color: #6b7280;
+            color: var(--dm-text-muted);
             letter-spacing: 0.01em;
         }
 
@@ -269,9 +269,9 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-list-tab {
-            border: 1px solid #e5e7eb;
-            background: #f9fafb;
-            color: #374151;
+            border: 1px solid var(--dm-border);
+            background: var(--dm-surface-muted);
+            color: var(--dm-text);
             border-radius: 8px;
             padding: 9px 10px;
             font-size: 13px;
@@ -284,9 +284,9 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-list-tab.active {
-            background: #111827;
-            border-color: #111827;
-            color: #ffffff;
+            background: var(--dm-text);
+            border-color: var(--dm-text);
+            color: var(--dm-surface);
         }
 
         .booking-list-tab.pending-span {
@@ -294,17 +294,17 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-list-tab.pending-span.has-pending {
-            background: linear-gradient(135deg, #fff1f2, #ffe4e6);
-            border-color: #fb7185;
-            color: #be123c;
+            background: linear-gradient(135deg, var(--dm-danger-bg), var(--dm-danger-bg));
+            border-color: var(--dm-danger-strong);
+            color: var(--dm-danger-text);
             box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.2), 0 10px 22px rgba(244, 63, 94, 0.16);
             animation: pendingPulse 1.8s ease-in-out infinite;
         }
 
         .booking-list-tab.pending-span.has-pending.active {
-            background: linear-gradient(135deg, #e11d48, #be123c);
-            border-color: #be123c;
-            color: #ffffff;
+            background: linear-gradient(135deg, var(--dm-danger-text), var(--dm-danger-text));
+            border-color: var(--dm-danger-text);
+            color: var(--dm-surface);
             box-shadow: 0 0 0 1px rgba(225, 29, 72, 0.28), 0 12px 24px rgba(190, 24, 93, 0.28);
         }
 
@@ -321,9 +321,9 @@ $adminSidebarPathPrefix = '../';
             margin-bottom: 8px;
             min-height: var(--timeline-row-height);
             padding: 5px 8px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--dm-border);
             border-radius: 8px;
-            background: #f9fafb;
+            background: var(--dm-surface-muted);
             cursor: grab;
             display: flex;
             flex-direction: column;
@@ -353,7 +353,7 @@ $adminSidebarPathPrefix = '../';
         .booking-item-time {
             font-size: 11px;
             font-weight: 700;
-            color: #111827;
+            color: var(--dm-text);
             white-space: nowrap;
         }
 
@@ -361,7 +361,7 @@ $adminSidebarPathPrefix = '../';
             margin-top: 1px;
             font-size: 10px;
             font-weight: 600;
-            color: #111827;
+            color: var(--dm-text);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -378,7 +378,7 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-item-bottom-right {
-            color: #6b7280;
+            color: var(--dm-text-muted);
             font-size: 10px;
             font-weight: 700;
             white-space: nowrap;
@@ -386,14 +386,14 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-item-meta {
-            color: #6b7280;
+            color: var(--dm-text-muted);
             font-size: 10px;
             white-space: nowrap;
             flex-shrink: 0;
         }
 
         .booking-item-table {
-            color: #374151;
+            color: var(--dm-text);
             font-size: 10px;
             font-weight: 700;
             white-space: nowrap;
@@ -407,8 +407,8 @@ $adminSidebarPathPrefix = '../';
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #eef2ff;
-            color: #4f46e5;
+            background: var(--dm-neutral-bg);
+            color: var(--dm-info-text);
             font-size: 7px;
             flex-shrink: 0;
         }
@@ -418,9 +418,9 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-item-action-btn {
-            border: 1px solid #c7d2fe;
-            background: #eef2ff;
-            color: #1d4ed8;
+            border: 1px solid var(--dm-neutral-bg);
+            background: var(--dm-neutral-bg);
+            color: var(--dm-info-text);
             border-radius: 6px;
             padding: 4px 8px;
             font-size: 10px;
@@ -431,8 +431,8 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-item-action-btn:hover {
-            background: #dbeafe;
-            border-color: #93c5fd;
+            background: var(--dm-neutral-bg);
+            border-color: var(--dm-neutral-bg);
         }
 
         .booking-item-action-btn:disabled {
@@ -452,8 +452,8 @@ $adminSidebarPathPrefix = '../';
             width: 100%;
             border: none;
             border-radius: 8px;
-            background: #111827;
-            color: #fff;
+            background: var(--dm-text);
+            color: var(--dm-surface);
             padding: 9px 12px;
             font-weight: 600;
             display: inline-flex;
@@ -465,15 +465,15 @@ $adminSidebarPathPrefix = '../';
         }
 
         .add-booking-button:hover {
-            background: #1f2937;
+            background: var(--dm-accent-dark-hover);
         }
 
         .stats-card {
             margin-top: 12px;
             padding: 0;
-            border: 1px solid #e6ebf2;
+            border: 1px solid var(--dm-border);
             border-radius: 10px;
-            background: #ffffff;
+            background: var(--dm-surface);
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
             overflow: hidden;
         }
@@ -489,8 +489,8 @@ $adminSidebarPathPrefix = '../';
             align-items: center;
             gap: 8px;
             padding: 10px 12px;
-            background: #ffffff;
-            border-bottom: 1px solid #e8edf4;
+            background: var(--dm-surface);
+            border-bottom: 1px solid var(--dm-border);
         }
 
         .stats-item:last-child {
@@ -500,7 +500,7 @@ $adminSidebarPathPrefix = '../';
         .stats-item-label {
             font-size: 10px;
             font-weight: 700;
-            color: #7a8597;
+            color: var(--dm-text-soft);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             width: 52px;
@@ -514,7 +514,7 @@ $adminSidebarPathPrefix = '../';
             gap: 8px;
             font-size: 12px;
             font-weight: 700;
-            color: #111827;
+            color: var(--dm-text);
             line-height: 1.2;
             flex: 1;
             min-width: 0;
@@ -539,8 +539,8 @@ $adminSidebarPathPrefix = '../';
         .left-panel-footer {
             margin-top: auto;
             padding-top: 8px;
-            border-top: 1px solid #e5e7eb;
-            background: #ffffff;
+            border-top: 1px solid var(--dm-border);
+            background: var(--dm-surface);
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -564,7 +564,7 @@ $adminSidebarPathPrefix = '../';
 
         .booking-modal-card {
             width: min(100%, 460px);
-            background: #fff;
+            background: var(--dm-surface);
             border-radius: 12px;
             box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
             padding: 26px;
@@ -585,31 +585,31 @@ $adminSidebarPathPrefix = '../';
             justify-content: space-between;
             margin-bottom: 18px;
             padding-bottom: 14px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--dm-border);
         }
 
         .booking-modal-header h5 {
             margin: 0;
             font-size: 22px;
-            color: #111827;
+            color: var(--dm-text);
         }
 
         .booking-modal-close {
             border: none;
-            background: #f3f4f6;
+            background: var(--dm-surface-muted);
             width: 38px;
             height: 38px;
             border-radius: 50%;
             font-size: 22px;
             line-height: 1;
-            color: #6b7280;
+            color: var(--dm-text-muted);
             cursor: pointer;
             transition: background 0.2s ease, color 0.2s ease;
         }
 
         .booking-modal-close:hover {
-            background: #e5e7eb;
-            color: #111827;
+            background: var(--dm-border);
+            color: var(--dm-text);
         }
 
         .modal-form-group {
@@ -619,7 +619,7 @@ $adminSidebarPathPrefix = '../';
         .modal-form-group label {
             display: block;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--dm-accent-dark-hover);
             margin-bottom: 6px;
         }
 
@@ -627,7 +627,7 @@ $adminSidebarPathPrefix = '../';
         .modal-form-group select,
         .modal-form-group textarea {
             width: 100%;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--dm-border-strong);
             border-radius: 8px;
             padding: 10px 12px;
             font: inherit;
@@ -640,7 +640,7 @@ $adminSidebarPathPrefix = '../';
 
         .modal-helper-text {
             font-size: 13px;
-            color: #6b7280;
+            color: var(--dm-text-muted);
             margin-top: 4px;
         }
 
@@ -649,8 +649,8 @@ $adminSidebarPathPrefix = '../';
             margin-bottom: 14px;
             border-radius: 8px;
             padding: 10px 12px;
-            background: #fef2f2;
-            color: #b91c1c;
+            background: var(--dm-danger-bg);
+            color: var(--dm-danger-text);
             font-size: 14px;
         }
 
@@ -670,28 +670,28 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-modal-cancel {
-            background: #e5e7eb;
-            color: #111827;
+            background: var(--dm-border);
+            color: var(--dm-text);
         }
 
         .booking-modal-submit {
-            background: #f4b400;
-            color: #111827;
+            background: var(--dm-pending-text);
+            color: var(--dm-text);
         }
 
         .booking-modal-danger {
-            background: #dc2626;
-            color: #ffffff;
+            background: var(--dm-danger-text);
+            color: var(--dm-surface);
         }
 
         .booking-modal-danger:hover {
-            background: #b91c1c;
+            background: var(--dm-danger-text);
         }
 
         .booking-modal-danger-small {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
+            background: var(--dm-danger-bg);
+            color: var(--dm-danger-text);
+            border: 1px solid var(--dm-danger-bg);
             border-radius: 8px;
             padding: 8px 12px;
             font-size: 13px;
@@ -700,13 +700,13 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-modal-danger-small:hover {
-            background: #fecaca;
+            background: var(--dm-danger-bg);
         }
 
         .booking-modal-secondary-small {
-            background: #eef2ff;
-            color: #3730a3;
-            border: 1px solid #d9deff;
+            background: var(--dm-neutral-bg);
+            color: var(--dm-info-text);
+            border: 1px solid var(--dm-neutral-bg);
             border-radius: 8px;
             padding: 8px 12px;
             font-size: 13px;
@@ -716,13 +716,13 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-modal-secondary-small:hover {
-            background: #e0e7ff;
+            background: var(--dm-neutral-bg);
         }
 
         .booking-modal-success-small {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #bbf7d0;
+            background: var(--dm-confirmed-bg);
+            color: var(--dm-confirmed-text);
+            border: 1px solid var(--dm-confirmed-bg);
             border-radius: 8px;
             padding: 8px 12px;
             font-size: 13px;
@@ -732,7 +732,7 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-modal-success-small:hover {
-            background: #d1fae5;
+            background: var(--dm-confirmed-bg);
         }
 
         .booking-detail-topbar {
@@ -819,9 +819,9 @@ $adminSidebarPathPrefix = '../';
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            border: 1px dashed #d1d5db;
-            background: #f9fafb;
-            color: #374151;
+            border: 1px dashed var(--dm-border-strong);
+            background: var(--dm-surface-muted);
+            color: var(--dm-text);
             border-radius: 8px;
             padding: 10px 12px;
             font-size: 13px;
@@ -831,16 +831,16 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-inline-trigger:hover {
-            background: #f3f4f6;
-            border-color: #cbd5e1;
-            color: #111827;
+            background: var(--dm-surface-muted);
+            border-color: var(--dm-border-strong);
+            color: var(--dm-text);
         }
 
         .booking-inline-trigger.is-active {
             border-style: solid;
-            background: #eef2ff;
-            border-color: #c7d2fe;
-            color: #3730a3;
+            background: var(--dm-neutral-bg);
+            border-color: var(--dm-neutral-bg);
+            color: var(--dm-info-text);
         }
 
         .is-hidden {
@@ -852,10 +852,10 @@ $adminSidebarPathPrefix = '../';
             grid-template-columns: 1fr auto 1fr;
             gap: 8px;
             align-items: center;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--dm-border-strong);
             border-radius: 8px;
             padding: 6px 10px;
-            background: #ffffff;
+            background: var(--dm-surface);
         }
 
         .booking-time-pair input {
@@ -867,15 +867,15 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-time-pair-separator {
-            color: #6b7280;
+            color: var(--dm-text-muted);
             font-size: 12px;
             font-weight: 700;
             white-space: nowrap;
         }
 
         .booking-readonly-input {
-            background: #f8fafc;
-            color: #334155;
+            background: var(--dm-surface-muted);
+            color: var(--dm-text);
             font-weight: 600;
         }
 
@@ -885,8 +885,8 @@ $adminSidebarPathPrefix = '../';
             gap: 8px;
             padding: 6px 10px;
             border-radius: 6px;
-            background: #f3f4f6;
-            color: #374151;
+            background: var(--dm-surface-muted);
+            color: var(--dm-text);
             font-size: 12px;
             font-weight: 600;
         }
@@ -907,11 +907,11 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-placement-dot.not-placed {
-            background: #f97316;
+            background: var(--dm-pending-text);
         }
 
         .booking-placement-dot.placed {
-            background: #22c55e;
+            background: var(--dm-success-strong);
         }
 
         .table-label.clickable {
@@ -920,8 +920,8 @@ $adminSidebarPathPrefix = '../';
         }
 
         .table-label.clickable:hover {
-            background: #fff8db;
-            color: #b45309;
+            background: var(--dm-standby-bg);
+            color: var(--dm-pending-text);
         }
 
         @media (max-width: 520px) {
@@ -939,7 +939,7 @@ $adminSidebarPathPrefix = '../';
         }
 
         .add-table-row {
-            background: #eff6ff;
+            background: var(--dm-neutral-bg);
         }
 
         .add-table-inline-btn {
@@ -948,7 +948,7 @@ $adminSidebarPathPrefix = '../';
             justify-content: center;
             width: 28px;
             height: 28px;
-            background: #2563eb;
+            background: var(--dm-info-strong);
             color: white;
             border-radius: 50%;
             border: none;
@@ -959,13 +959,13 @@ $adminSidebarPathPrefix = '../';
         }
 
         .add-table-inline-btn:hover {
-            background: #1d4ed8;
+            background: var(--dm-info-text);
         }
 
         .calendar input {
             width: 100%;
             padding: 7px 10px;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--dm-border-strong);
             border-radius: 8px;
             font-size: 13px;
             font-weight: 600;
@@ -983,7 +983,7 @@ $adminSidebarPathPrefix = '../';
             padding: 0;
             font-size: 12px;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--dm-text-muted);
             cursor: pointer;
             white-space: nowrap;
         }
@@ -994,7 +994,7 @@ $adminSidebarPathPrefix = '../';
         }
 
         .today-button:hover {
-            color: #111827;
+            color: var(--dm-text);
         }
 
         @media (max-width: 1100px) {
@@ -1027,7 +1027,7 @@ $adminSidebarPathPrefix = '../';
         .tables-section h6 {
             font-weight: 600;
             margin-bottom: 15px;
-            color: #1f2937;
+            color: var(--dm-accent-dark-hover);
         }
 
         .table-list {
@@ -1040,8 +1040,8 @@ $adminSidebarPathPrefix = '../';
 
         .table-item {
             padding: 10px 12px;
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
+            background: var(--dm-surface-muted);
+            border: 1px solid var(--dm-border);
             border-radius: 6px;
             cursor: pointer;
             transition: 0.3s;
@@ -1050,14 +1050,14 @@ $adminSidebarPathPrefix = '../';
         }
 
         .table-item:hover {
-            background: #e5e7eb;
-            border-color: #d1d5db;
+            background: var(--dm-border);
+            border-color: var(--dm-border-strong);
         }
 
         .table-item.selected {
-            background: #f4b400;
+            background: var(--dm-pending-text);
             color: white;
-            border-color: #f4b400;
+            border-color: var(--dm-pending-text);
         }
 
         /* TIMELINE AREA */
@@ -1067,7 +1067,7 @@ $adminSidebarPathPrefix = '../';
             flex-direction: column;
             overflow: hidden;
             background: white;
-            border: 1px solid #e6ebf2;
+            border: 1px solid var(--dm-border);
             border-radius: 18px;
             box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
             min-width: 0;
@@ -1078,8 +1078,8 @@ $adminSidebarPathPrefix = '../';
             align-items: center;
             gap: 12px;
             padding: 14px 16px;
-            border-bottom: 1px solid #e8edf4;
-            background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+            border-bottom: 1px solid var(--dm-border);
+            background: linear-gradient(180deg, var(--dm-surface) 0%, var(--dm-surface-muted) 100%);
             overflow: hidden;
         }
 
@@ -1096,9 +1096,9 @@ $adminSidebarPathPrefix = '../';
         }
 
         .area-filter-chip {
-            border: 1px solid #dbe3ef;
-            background: #ffffff;
-            color: #334155;
+            border: 1px solid var(--dm-border);
+            background: var(--dm-surface);
+            color: var(--dm-text);
             border-radius: 999px;
             padding: 7px 12px;
             font-size: 12px;
@@ -1110,7 +1110,7 @@ $adminSidebarPathPrefix = '../';
         }
 
         .area-filter-chip:hover {
-            border-color: #c3d0e3;
+            border-color: var(--dm-border-strong);
             transform: translateY(-1px);
         }
 
@@ -1120,23 +1120,23 @@ $adminSidebarPathPrefix = '../';
         }
 
         .area-filter-chip.drop-before {
-            box-shadow: inset 3px 0 0 #2563eb;
+            box-shadow: inset 3px 0 0 var(--dm-info-strong);
         }
 
         .area-filter-chip.drop-after {
-            box-shadow: inset -3px 0 0 #2563eb;
+            box-shadow: inset -3px 0 0 var(--dm-info-strong);
         }
 
         .area-filter-chip.active {
-            background: #111827;
-            border-color: #111827;
-            color: #ffffff;
+            background: var(--dm-text);
+            border-color: var(--dm-text);
+            color: var(--dm-surface);
         }
 
         .area-filter-chip.secondary {
-            background: #f8fafc;
-            color: #2563eb;
-            border-color: #cfe0ff;
+            background: var(--dm-surface-muted);
+            color: var(--dm-info-strong);
+            border-color: var(--dm-neutral-bg);
         }
 
         .area-filter-add-btn {
@@ -1169,8 +1169,8 @@ $adminSidebarPathPrefix = '../';
         /* TIME HEADER */
         .time-header {
             display: flex;
-            border-bottom: 2px solid #e5e7eb;
-            background: #f9fafb;
+            border-bottom: 2px solid var(--dm-border);
+            background: var(--dm-surface-muted);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -1182,13 +1182,13 @@ $adminSidebarPathPrefix = '../';
         .time-header-spacer {
             width: 80px;
             min-width: 80px;
-            border-right: 1px solid #e5e7eb;
+            border-right: 1px solid var(--dm-border);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            color: #374151;
-            background: #f9fafb;
+            color: var(--dm-text);
+            background: var(--dm-surface-muted);
         }
 
         .time-slots {
@@ -1207,11 +1207,11 @@ $adminSidebarPathPrefix = '../';
             min-width: 80px;
             padding: 8px 5px;
             text-align: center;
-            border-right: 1px solid #e5e7eb;
+            border-right: 1px solid var(--dm-border);
             font-size: 12px;
             font-weight: 600;
-            color: #374151;
-            background: #f9fafb;
+            color: var(--dm-text);
+            background: var(--dm-surface-muted);
             height: 40px;
             line-height: 24px;
         }
@@ -1228,8 +1228,8 @@ $adminSidebarPathPrefix = '../';
         .table-labels {
             width: 80px;
             min-width: 80px;
-            border-right: 1px solid #e5e7eb;
-            background: #f9fafb;
+            border-right: 1px solid var(--dm-border);
+            background: var(--dm-surface-muted);
             display: flex;
             flex-direction: column;
             position: sticky;
@@ -1243,11 +1243,11 @@ $adminSidebarPathPrefix = '../';
             display: flex;
             align-items: center;
             justify-content: center;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--dm-border);
             font-size: 12px;
             font-weight: 700;
-            color: #1f2937;
-            background: #fff;
+            color: var(--dm-accent-dark-hover);
+            background: var(--dm-surface);
         }
 
         .table-label-inner {
@@ -1265,8 +1265,8 @@ $adminSidebarPathPrefix = '../';
             align-items: center;
             max-width: 100%;
             border-radius: 999px;
-            background: #eef2ff;
-            color: #4338ca;
+            background: var(--dm-neutral-bg);
+            color: var(--dm-info-text);
             font-size: 9px;
             font-weight: 700;
             padding: 2px 6px;
@@ -1279,14 +1279,14 @@ $adminSidebarPathPrefix = '../';
         .area-divider-row {
             height: 28px;
             min-height: 28px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--dm-border);
         }
 
         .area-label-row {
             align-items: center;
             justify-content: flex-start;
-            background: #f8fafc;
-            color: #0f172a;
+            background: var(--dm-surface-muted);
+            color: var(--dm-text);
             padding: 0 10px;
             font-size: 11px;
             font-weight: 800;
@@ -1301,7 +1301,7 @@ $adminSidebarPathPrefix = '../';
             display: flex;
             position: relative;
             min-width: max-content;
-            background: #f8fafc;
+            background: var(--dm-surface-muted);
         }
 
         .area-divider-row::after {
@@ -1314,19 +1314,19 @@ $adminSidebarPathPrefix = '../';
             font-weight: 800;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: #64748b;
+            color: var(--dm-text-muted);
             pointer-events: none;
         }
 
         .area-divider-cell {
             min-width: 80px;
-            border-right: 1px solid #eef2f7;
+            border-right: 1px solid var(--dm-border);
             background: transparent;
         }
 
         .timeline-empty-state {
             padding: 28px 24px;
-            color: #64748b;
+            color: var(--dm-text-muted);
             font-size: 13px;
             font-weight: 500;
         }
@@ -1336,7 +1336,7 @@ $adminSidebarPathPrefix = '../';
             flex-direction: column;
             flex: 1;
             min-width: max-content;
-            background: #fff;
+            background: var(--dm-surface);
             overflow: visible;
             position: relative;
         }
@@ -1345,7 +1345,7 @@ $adminSidebarPathPrefix = '../';
             display: flex;
             position: relative;
             height: var(--timeline-row-height);
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--dm-border);
             min-width: max-content;
         }
 
@@ -1356,14 +1356,14 @@ $adminSidebarPathPrefix = '../';
 
         .time-cell {
             min-width: 80px;
-            border-right: 1px solid #f3f4f6;
+            border-right: 1px solid var(--dm-surface-muted);
             position: relative;
-            background: #fff;
+            background: var(--dm-surface);
             height: 100%;
         }
 
         .time-cell:hover {
-            background: #f9fafb;
+            background: var(--dm-surface-muted);
         }
 
         .booking-block {
@@ -1538,27 +1538,27 @@ $adminSidebarPathPrefix = '../';
         }
 
         .booking-block.success {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
+            background: linear-gradient(135deg, var(--dm-success-strong), var(--dm-confirmed-text));
         }
 
         .booking-block.pending {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, var(--dm-pending-text), var(--dm-pending-text));
         }
 
         .booking-block.info {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background: linear-gradient(135deg, var(--dm-info-strong), var(--dm-info-strong));
         }
 
         .booking-block.completed {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, var(--dm-confirmed-text), var(--dm-confirmed-text));
         }
 
         .booking-block.no-show {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            background: linear-gradient(135deg, var(--dm-info-text), var(--dm-info-text));
         }
 
         .booking-block.over-capacity {
-            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            background: linear-gradient(135deg, var(--dm-pending-text), var(--dm-pending-text));
         }
 
         .booking-block.rescheduled {
@@ -1569,7 +1569,7 @@ $adminSidebarPathPrefix = '../';
         .current-time-line {
             position: absolute;
             width: 2px;
-            background: #ef4444;
+            background: var(--dm-danger-strong);
             top: 0;
             bottom: 0;
             z-index: 19;
@@ -1584,16 +1584,16 @@ $adminSidebarPathPrefix = '../';
         }
 
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: var(--dm-surface-muted);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #d1d5db;
+            background: var(--dm-border-strong);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
+            background: var(--dm-text-soft);
         }
     </style>
 </head>

@@ -160,8 +160,8 @@ $adminSidebarPathPrefix = '';
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         .form-group label { font-size: 12px; font-weight: 600; color: var(--mn-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-        .form-group input, .form-group select, .form-group textarea { padding: 9px 10px; border: 1px solid var(--dm-border-strong); border-radius: var(--dm-radius-sm); font-size: 13px; font-family: inherit; color: var(--mn-text); background: #ffffff; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #bdc9da; box-shadow: var(--dm-focus-ring); }
+        .form-group input, .form-group select, .form-group textarea { padding: 9px 10px; border: 1px solid var(--dm-border-strong); border-radius: var(--dm-radius-sm); font-size: 13px; font-family: inherit; color: var(--mn-text); background: var(--dm-surface); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--dm-border-strong); box-shadow: var(--dm-focus-ring); }
         .form-group textarea { resize: vertical; }
         .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
         .form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -171,7 +171,7 @@ $adminSidebarPathPrefix = '';
         .no-items { color: var(--mn-muted); font-size: 13px; font-style: italic; }
         .menu-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
         /* Item cards */
-        .menu-item-card { border: 1px solid var(--mn-line); border-radius: var(--dm-radius-sm); overflow: hidden; background: #ffffff; }
+        .menu-item-card { border: 1px solid var(--mn-line); border-radius: var(--dm-radius-sm); overflow: hidden; background: var(--dm-surface); }
         .menu-item-card.unavailable { opacity: 0.6; }
         .item-image { height: 140px; overflow: hidden; }
         .item-image img { width: 100%; height: 100%; object-fit: cover; }

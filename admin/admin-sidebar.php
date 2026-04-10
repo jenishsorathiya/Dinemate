@@ -26,7 +26,7 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
         width: 96px;
         min-height: 100vh;
         height: 100vh;
-        background: #162033;
+        background: var(--dm-accent-dark);
         color: #ffffff;
         padding: 18px 14px;
         overflow-y: auto;
@@ -55,9 +55,9 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
         align-items: center;
         justify-content: center;
         padding: 11px 14px;
-        color: #d5dceb;
+        color: rgba(255, 255, 255, 0.84);
         text-decoration: none;
-        border-radius: 14px;
+        border-radius: var(--dm-radius-sm);
         margin-bottom: 8px;
         transition: background 0.2s ease, color 0.2s ease, justify-content 0.2s ease;
         white-space: nowrap;

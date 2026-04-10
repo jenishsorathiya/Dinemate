@@ -57,7 +57,7 @@ padding:13px 32px;
 border-radius:var(--dm-radius-sm);
 font-weight:600;
 font-size:16px;
-color:#ffffff;
+color:var(--dm-surface);
 transition:opacity 0.15s;
 }
 
@@ -105,7 +105,7 @@ margin-bottom:8px;
 }
 
 .menu-desc{
-color:#6b7280;
+color:var(--dm-text-muted);
 font-size:15px;
 }
 
@@ -158,8 +158,8 @@ font-size:28px;
 margin-bottom:10px;
 }
 
-.available{color:#22c55e;}
-.booked{color:#ef4444;}
+.available{color:var(--dm-success-strong);}
+.booked{color:var(--dm-danger-strong);}
 
 /* REVIEWS */
 

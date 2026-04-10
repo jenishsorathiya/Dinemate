@@ -82,7 +82,7 @@ body {
 .form-control:focus {
     outline: none;
     box-shadow: var(--dm-focus-ring);
-    border-color: #bdc9da;
+    border-color: var(--dm-border-strong);
 }
 .btn-main {
     background: var(--dm-accent-dark);
@@ -90,7 +90,7 @@ body {
     border-radius: var(--dm-radius-sm);
     padding: 10px 14px;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--dm-surface);
     font-family: inherit;
     font-size: 14px;
     cursor: pointer;
@@ -100,7 +100,7 @@ body {
 .btn-main:hover {
     background: var(--dm-accent-dark-hover);
     border-color: var(--dm-accent-dark-hover);
-    color: #ffffff;
+    color: var(--dm-surface);
 }
 
 .password-wrapper {
@@ -148,7 +148,7 @@ body {
 }
 
 .social-btn:hover {
-    background: #f1f5f9;
+    background: var(--dm-surface-muted);
 }
 
 @media (max-width: 991px) {

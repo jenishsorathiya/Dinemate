@@ -22,17 +22,17 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--dm-bg); }
 .auth-right-content { position: absolute; bottom: 36px; left: 36px; color: white; }
 .auth-right-content h3 { margin: 0 0 6px; font-size: 20px; font-weight: 700; }
 .auth-right-content p { margin: 0; font-size: 14px; opacity: 0.85; }
-.form-control { border-radius: var(--dm-radius-sm); padding: 10px 12px; border: 1px solid var(--dm-border-strong); background: #ffffff; width: 100%; font-family: inherit; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
-.form-control:focus { outline: none; box-shadow: var(--dm-focus-ring); border-color: #bdc9da; background: white; }
-.btn-main { background: var(--dm-accent-dark); border: 1px solid var(--dm-accent-dark); border-radius: var(--dm-radius-sm); padding: 10px 14px; font-weight: 600; color: #ffffff; transition: background 0.15s; font-family: inherit; font-size: 14px; cursor: pointer; }
-.btn-main:hover { background: var(--dm-accent-dark-hover); border-color: var(--dm-accent-dark-hover); color: #ffffff; }
+.form-control { border-radius: var(--dm-radius-sm); padding: 10px 12px; border: 1px solid var(--dm-border-strong); background: var(--dm-surface); width: 100%; font-family: inherit; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
+.form-control:focus { outline: none; box-shadow: var(--dm-focus-ring); border-color: var(--dm-border-strong); background: white; }
+.btn-main { background: var(--dm-accent-dark); border: 1px solid var(--dm-accent-dark); border-radius: var(--dm-radius-sm); padding: 10px 14px; font-weight: 600; color: var(--dm-surface); transition: background 0.15s; font-family: inherit; font-size: 14px; cursor: pointer; }
+.btn-main:hover { background: var(--dm-accent-dark-hover); border-color: var(--dm-accent-dark-hover); color: var(--dm-surface); }
 .password-wrapper { position: relative; }
 .eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #8a9ab8; font-size: 14px; }
-.eye:hover { color: #4a5568; }
+.eye:hover { color: var(--dm-text-muted); }
 .strength { height: 4px; border-radius: 3px; margin-top: 6px; width: 0%; transition: 0.3s; }
-.strength.bg-danger { background: #ef4444; }
+.strength.bg-danger { background: var(--dm-danger-strong); }
 .strength.bg-warning { background: #f59e0b; }
-.strength.bg-success { background: #22c55e; }
+.strength.bg-success { background: var(--dm-success-strong); }
 .toast-box { position: fixed; top: 24px; right: 24px; background: var(--dm-accent-dark); color: white; padding: 12px 18px; border-radius: var(--dm-radius-sm); display: none; z-index: 999; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
 .success-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; color: white; font-size: 22px; font-weight: 700; z-index: 9999; backdrop-filter: blur(4px); }
 small { font-size: 12px; margin-top: 4px; display: block; }
