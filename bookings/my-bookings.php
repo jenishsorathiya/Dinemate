@@ -104,7 +104,7 @@ foreach ($bookings as $booking) {
 }
 
 .bookings-shell {
-    border-radius: 24px;
+    border-radius: 16px;
     padding: 28px;
 }
 
@@ -138,10 +138,11 @@ foreach ($bookings as $booking) {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    border-radius: 14px;
-    padding: 12px 16px;
+    border-radius: 8px;
+    padding: 10px 14px;
     text-decoration: none;
-    font-weight: 700;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 .btn-surface {
@@ -166,14 +167,15 @@ foreach ($bookings as $booking) {
 .view-tab {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    border-radius: 999px;
-    padding: 10px 14px;
+    gap: 8px;
+    border-radius: 8px;
+    padding: 8px 12px;
     background: #f8fafc;
     border: 1px solid #dbe3ef;
     color: #31415f;
     text-decoration: none;
-    font-weight: 700;
+    font-weight: 600;
+    font-size: 13px;
 }
 
 .view-tab.is-active {
@@ -193,9 +195,10 @@ foreach ($bookings as $booking) {
 .filter-select {
     width: 100%;
     border: 1px solid #d9e1ec;
-    border-radius: 14px;
-    padding: 13px 14px;
+    border-radius: 8px;
+    padding: 10px 12px;
     background: #ffffff;
+    font-size: 14px;
 }
 
 .booking-grid {
@@ -206,7 +209,7 @@ foreach ($bookings as $booking) {
 }
 
 .booking-card {
-    border-radius: 20px;
+    border-radius: 12px;
     padding: 20px;
     display: grid;
     gap: 16px;
@@ -231,21 +234,7 @@ foreach ($bookings as $booking) {
     font-size: 13px;
 }
 
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: 999px;
-    padding: 7px 12px;
-    font-size: 12px;
-    font-weight: 700;
-}
 
-.status-pill.pending { background: #fff4df; color: #b66a11; }
-.status-pill.confirmed { background: #e6f7ee; color: #1d7a53; }
-.status-pill.completed { background: #e6f7ee; color: #1d7a53; }
-.status-pill.cancelled { background: #ffe7ea; color: #c13f56; }
-.status-pill.no_show { background: #eef2ff; color: #4338ca; }
 
 .booking-chip-list,
 .booking-details-list,
@@ -258,12 +247,12 @@ foreach ($bookings as $booking) {
 .booking-chip {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    border-radius: 999px;
+    gap: 6px;
+    border-radius: 6px;
     border: 1px solid #dbe3ef;
     background: #f8fafc;
     color: #31415f;
-    padding: 8px 12px;
+    padding: 5px 10px;
     font-size: 13px;
 }
 
@@ -277,7 +266,7 @@ foreach ($bookings as $booking) {
 .empty-state {
     margin-top: 24px;
     border: 1px dashed #d9e1ec;
-    border-radius: 20px;
+    border-radius: 12px;
     background: #f8fafc;
     padding: 34px 22px;
     text-align: center;
@@ -286,12 +275,12 @@ foreach ($bookings as $booking) {
 
 .hint-card {
     margin-top: 20px;
-    border-radius: 18px;
-    background: #fffaf0;
-    border: 1px solid #f7e1b5;
-    padding: 16px 18px;
-    color: #6a5320;
-    font-size: 14px;
+    border-radius: 8px;
+    background: #fafbfc;
+    border: 1px solid #e7ecf3;
+    padding: 12px 16px;
+    color: #475569;
+    font-size: 13px;
 }
 
 @media (max-width: 991px) {
@@ -306,7 +295,7 @@ foreach ($bookings as $booking) {
         <div class="bookings-hero">
             <div>
                 <h2><i class="fa fa-calendar-check text-warning"></i> My Reservations</h2>
-                <p>Track upcoming tables, review past visit outcomes, filter by booking status, and rebook a previous reservation without starting from scratch.</p>
+                <p>View, filter, and manage your reservations.</p>
             </div>
             <div class="hero-actions">
                 <a href="dashboard.php" class="btn-surface"><i class="fa fa-gauge"></i> Dashboard</a>
@@ -338,7 +327,7 @@ foreach ($bookings as $booking) {
         </form>
 
         <div class="hint-card">
-            Pending and confirmed bookings can still be rescheduled or cancelled. Completed, cancelled, and no-show bookings stay in your history so you can review outcomes and rebook faster.
+            Active bookings can be rescheduled or cancelled.
         </div>
 
         <?php if (!empty($filteredBookings)): ?>
@@ -361,14 +350,14 @@ foreach ($bookings as $booking) {
                                 <div class="booking-card-title"><?php echo htmlspecialchars(date('D, j M Y', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
                                 <div class="booking-card-subtitle"><?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8'); ?> to <?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></div>
                             </div>
-                            <span class="status-pill <?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>">
+                            <span class="status-tag <?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>">
                                 <?php echo htmlspecialchars(getBookingStatusLabel($status), ENT_QUOTES, 'UTF-8'); ?>
                             </span>
                         </div>
 
                         <div class="booking-chip-list">
                             <span class="booking-chip"><i class="fa fa-users"></i> <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</span>
-                            <span class="booking-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Table assignment pending'; ?></span>
+                            <span class="booking-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Pending assignment'; ?></span>
                             <span class="booking-chip"><i class="fa fa-location-dot"></i> <?php echo htmlspecialchars(getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed'), ENT_QUOTES, 'UTF-8'); ?></span>
                             <span class="booking-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                         </div>
@@ -397,7 +386,7 @@ foreach ($bookings as $booking) {
             </div>
         <?php else: ?>
             <div class="empty-state">
-                <p>No reservations matched this view yet.</p>
+                <p>No reservations found.</p>
                 <a href="book-table.php" class="btn-primary-solid" style="margin-top:10px;"><i class="fa fa-calendar-plus"></i> Book Your Next Table</a>
             </div>
         <?php endif; ?>

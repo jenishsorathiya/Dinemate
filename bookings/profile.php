@@ -166,8 +166,8 @@ $customerProfile = $customerProfile ?: [];
 .profile-side-card {
     background: #ffffff;
     border: 1px solid #e7ecf3;
-    border-radius: 24px;
-    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
 .profile-card {
@@ -225,7 +225,7 @@ $customerProfile = $customerProfile ?: [];
 .profile-textarea {
     width: 100%;
     border: 1px solid #d9e1ec;
-    border-radius: 14px;
+    border-radius: 8px;
     padding: 13px 14px;
     font: inherit;
     color: #111827;
@@ -255,7 +255,7 @@ $customerProfile = $customerProfile ?: [];
 
 .profile-btn {
     border: none;
-    border-radius: 14px;
+    border-radius: 8px;
     padding: 12px 18px;
     font-weight: 700;
 }
@@ -263,7 +263,7 @@ $customerProfile = $customerProfile ?: [];
 .profile-btn-primary {
     background: #1d2840;
     color: #ffffff;
-    box-shadow: 0 14px 28px rgba(29, 40, 64, 0.16);
+    box-shadow: 0 4px 14px rgba(29, 40, 64, 0.16);
 }
 
 .profile-btn-secondary {
@@ -283,7 +283,7 @@ $customerProfile = $customerProfile ?: [];
 .stat-item,
 .quick-link-card {
     border: 1px solid #e7ecf3;
-    border-radius: 18px;
+    border-radius: 8px;
     padding: 16px;
     background: #f8fafc;
 }
@@ -330,7 +330,7 @@ $customerProfile = $customerProfile ?: [];
         <div class="profile-card">
             <div class="profile-header">
                 <h2><i class="fa fa-user text-warning"></i> My Profile And Preferences</h2>
-                <p>Update your contact details, reminder preferences, saved dining notes, and account password from one place.</p>
+                <p>Manage your profile, preferences, and password.</p>
             </div>
 
             <?php if ($error !== ''): ?>
@@ -442,7 +442,7 @@ $customerProfile = $customerProfile ?: [];
 
         <aside class="profile-side-card">
             <h3>Profile Snapshot</h3>
-            <p>Your saved customer profile also links older guest and admin-entered bookings into one history whenever the details match.</p>
+            <p>Profile and booking summary.</p>
 
             <div class="stats-list" style="margin-top:18px;">
                 <div class="stat-item">
@@ -455,24 +455,24 @@ $customerProfile = $customerProfile ?: [];
                 </div>
                 <div class="stat-item">
                     <strong>Last Booking</strong>
-                    <span><?php echo $lastBookingDate !== '' ? htmlspecialchars(date('j M Y', strtotime($lastBookingDate)), ENT_QUOTES, 'UTF-8') : 'No bookings yet'; ?></span>
+                    <span><?php echo $lastBookingDate !== '' ? htmlspecialchars(date('j M Y', strtotime($lastBookingDate)), ENT_QUOTES, 'UTF-8') : 'None'; ?></span>
                 </div>
                 <div class="stat-item">
                     <strong>Customer Profile ID</strong>
-                    <span><?php echo !empty($customerProfile['customer_profile_id']) ? '#' . (int) $customerProfile['customer_profile_id'] : 'Creating on first save'; ?></span>
+                    <span><?php echo !empty($customerProfile['customer_profile_id']) ? '#' . (int) $customerProfile['customer_profile_id'] : 'Pending'; ?></span>
                 </div>
             </div>
 
             <div class="quick-links" style="margin-top:22px;">
                 <div class="quick-link-card">
-                    <strong>Need to rebook quickly?</strong>
-                    <span>Jump into your booking history and repeat a previous reservation in one step.</span>
-                    <div style="margin-top:12px;"><a href="my-bookings.php?view=past">Open booking history</a></div>
+                    <strong>Booking History</strong>
+                    <span>Review previous reservations and rebook from history.</span>
+                    <div style="margin-top:12px;"><a href="my-bookings.php?view=past">View history</a></div>
                 </div>
                 <div class="quick-link-card">
-                    <strong>Have a reservation already?</strong>
-                    <span>Use the dashboard to find your next table, reschedule it, or review reminders.</span>
-                    <div style="margin-top:12px;"><a href="dashboard.php">Go to dashboard</a></div>
+                    <strong>Current Reservations</strong>
+                    <span>View and manage your upcoming bookings.</span>
+                    <div style="margin-top:12px;"><a href="dashboard.php">View dashboard</a></div>
                 </div>
             </div>
         </aside>

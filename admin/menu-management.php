@@ -134,307 +134,58 @@ $adminSidebarPathPrefix = '';
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Menu Management | DineMate Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="../assets/css/dashboard-theme.css" rel="stylesheet">
+    <?php include __DIR__ . '/admin-head.php'; ?>
     <style>
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fb;
+        :root {
+            --mn-bg: #f6f8fc;
+            --mn-surface: #ffffff;
+            --mn-line: #e7ecf3;
+            --mn-text: #1b2640;
+            --mn-muted: #63708a;
+            --mn-navy: #1f2d4d;
+            --mn-radius: 10px;
+            --mn-shadow: 0 8px 20px rgba(15,23,42,0.06);
         }
-
-        .admin-layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .admin-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px;
-            background-color: #f8f9fa;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border: 1px solid #e7ecf3;
-            border-radius: 18px;
-            box-shadow: 0 16px 36px rgba(15,23,42,0.06);
-        }
-
-        .admin-header h1 {
-            color: #2c3e50;
-            margin: 0;
-        }
-
-        .menu-form-container {
-            background: white;
-            padding: 25px;
-            border: 1px solid #e7ecf3;
-            border-radius: 18px;
-            box-shadow: 0 16px 36px rgba(15,23,42,0.06);
-            margin-bottom: 30px;
-        }
-
-        .menu-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #2c3e50;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: normal !important;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2980b9;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-
-        .btn-sm {
-            padding: 5px 10px;
-            font-size: 12px;
-        }
-
-        .btn-edit {
-            background: #f39c12;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #e67e22;
-        }
-
-        .btn-delete {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #c0392b;
-        }
-
-        .menu-category {
-            background: white;
-            padding: 25px;
-            border: 1px solid #e7ecf3;
-            border-radius: 18px;
-            box-shadow: 0 16px 36px rgba(15,23,42,0.06);
-            margin-bottom: 20px;
-        }
-
-        .menu-category h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-
-        .no-items {
-            color: #7f8c8d;
-            font-style: italic;
-        }
-
-        .menu-items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .menu-item-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            background: white;
-            transition: all 0.3s;
-        }
-
-        .menu-item-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-
-        .menu-item-card.unavailable {
-            opacity: 0.6;
-            border-color: #e74c3c;
-        }
-
-        .item-image {
-            height: 150px;
-            overflow: hidden;
-        }
-
-        .item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .item-details {
-            padding: 15px;
-        }
-
-        .item-details h4 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-        }
-
-        .description {
-            color: #7f8c8d;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .item-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .price {
-            font-weight: bold;
-            color: #27ae60;
-            font-size: 16px;
-        }
-
-        .dietary {
-            background: #ecf0f1;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 12px;
-            color: #2c3e50;
-        }
-
-        .status {
-            font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-
-        .status.available {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status.unavailable {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .item-actions {
-            padding: 10px 15px;
-            background: #f8f9fa;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 88px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .admin-container {
-                padding: 20px;
-            }
-
-            .admin-header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .menu-items-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        * { box-sizing: border-box; }
+        body { background: var(--mn-bg); color: var(--mn-text); }
+        .admin-container { padding: 24px; }
+        .mn-page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+        .mn-page-header h1 { font-size: 20px; font-weight: 700; margin: 0; color: var(--mn-text); }
+        /* Form card */
+        .menu-form-container { background: var(--mn-surface); border: 1px solid var(--mn-line); border-radius: var(--mn-radius); padding: 20px 24px; margin-bottom: 20px; box-shadow: var(--mn-shadow); }
+        .menu-form-container h3 { font-size: 14px; font-weight: 700; color: var(--mn-muted); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 16px; }
+        .menu-form { display: grid; gap: 14px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 12px; font-weight: 600; color: var(--mn-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .form-group input, .form-group select, .form-group textarea { padding: 9px 10px; border: 1px solid var(--mn-line); border-radius: 6px; font-size: 13px; font-family: inherit; color: var(--mn-text); background: #ffffff; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #a0aec0; box-shadow: 0 0 0 3px rgba(29,40,64,0.08); }
+        .form-group textarea { resize: vertical; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+        .form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        /* Category blocks */
+        .menu-category { background: var(--mn-surface); border: 1px solid var(--mn-line); border-radius: var(--mn-radius); padding: 20px 24px; margin-bottom: 16px; box-shadow: var(--mn-shadow); }
+        .menu-category h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--mn-muted); margin: 0 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--mn-line); }
+        .no-items { color: var(--mn-muted); font-size: 13px; font-style: italic; }
+        .menu-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+        /* Item cards */
+        .menu-item-card { border: 1px solid var(--mn-line); border-radius: 8px; overflow: hidden; background: #ffffff; }
+        .menu-item-card.unavailable { opacity: 0.6; }
+        .item-image { height: 140px; overflow: hidden; }
+        .item-image img { width: 100%; height: 100%; object-fit: cover; }
+        .item-details { padding: 12px; }
+        .item-details h4 { margin: 0 0 6px; font-size: 14px; font-weight: 600; color: var(--mn-text); }
+        .description { color: var(--mn-muted); margin: 0 0 10px; font-size: 13px; }
+        .item-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .price { font-weight: 700; color: var(--mn-text); font-size: 14px; }
+        .dietary { background: #f0f4fa; padding: 2px 7px; border-radius: 4px; font-size: 11px; color: var(--mn-muted); }
+        .status { font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+        .status.available { background: #eaf6f1; color: #1a6845; border: 1px solid #b6deca; }
+        .status.unavailable { background: #fdf0f0; color: #9e1f2e; border: 1px solid #e4b0b7; }
+        .item-actions { padding: 8px 12px; background: #f9fafc; border-top: 1px solid var(--mn-line); display: flex; gap: 8px; justify-content: flex-end; }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .admin-container { padding: 16px; } .menu-items-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -446,11 +197,9 @@ $adminSidebarPathPrefix = '';
         <?php include __DIR__ . '/admin-topbar.php'; ?>
 
         <div class="admin-container">
-            <div class="admin-header">
-                <h1><i class="fas fa-utensils"></i> Menu Management</h1>
-                <a href="dashboard.php" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Analytics
-                </a>
+            <div class="mn-page-header">
+                <h1>Menu Management</h1>
+                <a href="dashboard.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Analytics</a>
             </div>
 
             <!-- Add/Edit Form -->
@@ -536,7 +285,7 @@ $adminSidebarPathPrefix = '';
                 <div class="menu-category">
                     <h3><?php echo $category; ?> (<?php echo count($items); ?> items)</h3>
                     <?php if (empty($items)): ?>
-                        <p class="no-items">No items in this category yet.</p>
+                        <p class="no-items">No items in this category.</p>
                     <?php else: ?>
                         <div class="menu-items-grid">
                             <?php foreach ($items as $item): ?>

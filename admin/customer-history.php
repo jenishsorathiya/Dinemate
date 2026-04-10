@@ -337,18 +337,10 @@ $flash = getFlashMessage();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Customer History | DineMate Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="../assets/css/dashboard-theme.css" rel="stylesheet">
+    <?php include __DIR__ . '/admin-head.php'; ?>
     <style>
         :root { --page-bg: #f6f8fc; --surface: #ffffff; --line: #e5ebf4; --text-main: #172033; --text-muted: #6b768b; --shadow-soft: 0 12px 26px rgba(15, 23, 42, 0.05); --shadow-card: 0 24px 48px rgba(15, 23, 42, 0.08); --primary: #1f3c88; --accent: #d8a230; --success: #1f8f63; --danger: #c94b62; --warning: #c9831f; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(180deg, #f5f7fb 0%, #eff4fb 100%); color: var(--text-main); }
-        .admin-layout { display: flex; min-height: 100vh; }
-        .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .main { flex: 1; overflow-y: auto; padding: 28px; }
         .page-shell { max-width: 1440px; margin: 0 auto; display: grid; gap: 22px; }
         .hero-card, .panel-card, .stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow-soft); }
@@ -402,6 +394,30 @@ $flash = getFlashMessage();
         @media (max-width: 1200px) { .stats-grid, .layout-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .search-row { grid-template-columns: 1fr; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid #edf2f7; } .table-custom tbody td { padding: 8px 0; border: 0; } }
     </style>
+    <style>
+        /* Override: flatten visual chrome */
+        body { background: #f6f8fc; }
+        .hero-card { background: #ffffff !important; box-shadow: 0 1px 3px rgba(15,23,42,0.06) !important; border-radius: 12px !important; padding: 18px 20px !important; }
+        .eyebrow { display: none !important; }
+        .hero-title { font-size: 22px !important; font-weight: 700 !important; letter-spacing: -0.01em !important; }
+        .hero-copy { font-size: 14px !important; line-height: 1.5 !important; }
+        .stat-card { border-radius: 8px !important; }
+        .stat-value { font-size: 24px !important; font-weight: 700 !important; letter-spacing: -0.02em !important; margin-top: 8px !important; }
+        .stat-meta { font-size: 12px !important; margin-top: 4px !important; }
+        .panel-card { border-radius: 12px !important; }
+        .panel-title { font-size: 16px !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+        .tiny-badge, .status-pill { border-radius: 4px !important; padding: 2px 7px !important; font-size: 11px !important; font-weight: 600 !important; gap: 4px !important; }
+        .inline-chip { border-radius: 4px !important; padding: 4px 10px !important; font-size: 11px !important; }
+        .table-wrap { border-radius: 10px !important; }
+        .table-custom thead th { font-size: 11px !important; font-weight: 700 !important; padding: 10px 14px !important; }
+        .table-custom tbody td { padding: 10px 14px !important; }
+        .btn-primary-soft, .btn-surface { border-radius: 6px !important; min-height: 34px !important; padding: 0 12px !important; font-size: 12px !important; }
+        .search-input { border-radius: 6px !important; min-height: 36px !important; padding: 7px 10px !important; }
+        .form-select, .form-control { border-radius: 6px !important; min-height: 36px !important; padding: 7px 10px !important; }
+        .history-card { border-radius: 8px !important; }
+        .empty-state { border-radius: 8px !important; }
+        .alert { border-radius: 8px !important; }
+    </style>
 </head>
 <body>
 <div class="admin-layout">
@@ -418,8 +434,8 @@ $flash = getFlashMessage();
 
                 <section class="hero-card">
                     <div class="eyebrow"><i class="fa-solid fa-address-book"></i> Customer Profiles</div>
-                    <h1 class="hero-title">Track every real customer, even when they never create an account.</h1>
-                    <p class="hero-copy">This view groups bookings into reusable customer profiles so phone bookings, email bookings, guest web bookings, and registered account bookings can be seen as one customer history whenever the details match.</p>
+                    <h1 class="hero-title">Customer Profiles</h1>
+                    <p class="hero-copy">View customer profiles and linked booking history.</p>
                 </section>
 
                 <section class="stats-grid">
@@ -432,7 +448,7 @@ $flash = getFlashMessage();
                 <section class="layout-grid">
                     <article class="panel-card">
                         <div class="panel-heading">
-                            <div><h2 class="panel-title">Customer Search</h2><p class="panel-subtitle">Search by name, email, or phone to find customer histories outside registered accounts.</p></div>
+                            <div><h2 class="panel-title">Customer Search</h2><p class="panel-subtitle">Search by name, email, or phone.</p></div>
                             <span class="inline-chip"><i class="fa-solid fa-users-viewfinder"></i> <?php echo number_format($totalProfiles); ?> matches</span>
                         </div>
 
@@ -463,14 +479,14 @@ $flash = getFlashMessage();
                                             <tr>
                                                 <td>
                                                     <div class="profile-name"><?php echo htmlspecialchars((string) $profile['name'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                                    <span class="profile-meta"><?php echo htmlspecialchars((string) (($profile['email'] ?? '') !== '' ? $profile['email'] : 'No email'), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span class="profile-meta"><?php echo htmlspecialchars((string) (($profile['phone'] ?? '') !== '' ? $profile['phone'] : 'No phone'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <span class="profile-meta"><?php echo htmlspecialchars((string) (($profile['email'] ?? '') !== '' ? $profile['email'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <span class="profile-meta"><?php echo htmlspecialchars((string) (($profile['phone'] ?? '') !== '' ? $profile['phone'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
                                                     <?php if (!empty($profile['linked_user_id'])): ?>
                                                         <span class="profile-meta">Linked account: <?php echo htmlspecialchars((string) ($profile['linked_user_name'] ?? 'User'), ENT_QUOTES, 'UTF-8'); ?></span>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td><span class="tiny-badge"><i class="fa-solid fa-calendar-check"></i><?php echo number_format((int) ($profile['booking_count'] ?? 0)); ?> bookings</span></td>
-                                                <td><?php echo $lastBookingTs !== false ? htmlspecialchars(date('M d, Y', $lastBookingTs), ENT_QUOTES, 'UTF-8') : 'No bookings yet'; ?></td>
+                                                <td><?php echo $lastBookingTs !== false ? htmlspecialchars(date('M d, Y', $lastBookingTs), ENT_QUOTES, 'UTF-8') : '-'; ?></td>
                                                 <td>
                                                     <span class="profile-meta"><?php echo (int) ($profile['admin_booking_count'] ?? 0); ?> admin</span>
                                                     <span class="profile-meta"><?php echo (int) ($profile['guest_booking_count'] ?? 0); ?> guest web</span>
@@ -480,7 +496,7 @@ $flash = getFlashMessage();
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <tr><td colspan="5"><div class="empty-state">No customer profiles matched that search yet.</div></td></tr>
+                                        <tr><td colspan="5"><div class="empty-state">No customer profiles matched your search.</div></td></tr>
                                     <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -494,9 +510,9 @@ $flash = getFlashMessage();
                                 <h2 class="panel-title"><?php echo $selectedProfile ? htmlspecialchars((string) $selectedProfile['name'], ENT_QUOTES, 'UTF-8') : 'Customer History'; ?></h2>
                                 <p class="panel-subtitle">
                                     <?php if ($selectedProfile): ?>
-                                        Full booking history for this customer profile, including phone/email/admin-entered bookings.
+                                        Booking history for this customer profile.
                                     <?php else: ?>
-                                        Choose a customer profile from the left to inspect the full booking history.
+                                        Select a customer profile to view booking history.
                                     <?php endif; ?>
                                 </p>
                             </div>
@@ -510,8 +526,8 @@ $flash = getFlashMessage();
                                 <div class="history-card">
                                     <div class="history-card-title">Profile Details</div>
                                     <div class="history-card-meta">
-                                        <span><?php echo htmlspecialchars((string) (($selectedProfile['email'] ?? '') !== '' ? $selectedProfile['email'] : 'No email'), ENT_QUOTES, 'UTF-8'); ?></span>
-                                        <span><?php echo htmlspecialchars((string) (($selectedProfile['phone'] ?? '') !== '' ? $selectedProfile['phone'] : 'No phone'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <span><?php echo htmlspecialchars((string) (($selectedProfile['email'] ?? '') !== '' ? $selectedProfile['email'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <span><?php echo htmlspecialchars((string) (($selectedProfile['phone'] ?? '') !== '' ? $selectedProfile['phone'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
                                         <span><?php echo !empty($selectedProfile['linked_user_id']) ? htmlspecialchars('Linked account: ' . ((string) ($selectedProfile['linked_user_name'] ?? 'User')), ENT_QUOTES, 'UTF-8') : 'No linked account'; ?></span>
                                     </div>
                                     <div class="link-form">
@@ -570,7 +586,7 @@ $flash = getFlashMessage();
                                         <input type="hidden" name="action" value="save_notes">
                                         <input type="hidden" name="customer_profile_id" value="<?php echo (int) $selectedProfile['customer_profile_id']; ?>">
                                         <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery, ENT_QUOTES, 'UTF-8'); ?>">
-                                        <textarea name="notes" class="form-control" placeholder="Add internal notes like VIP preferences, allergies, seating preferences, or service reminders..."><?php echo htmlspecialchars((string) ($selectedProfile['notes'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                        <textarea name="notes" class="form-control" placeholder="Add internal notes."><?php echo htmlspecialchars((string) ($selectedProfile['notes'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
                                         <div class="link-actions">
                                             <button type="submit" class="btn-primary-soft">
                                                 <i class="fa-solid fa-floppy-disk"></i> Save Notes
@@ -581,7 +597,7 @@ $flash = getFlashMessage();
 
                                 <div class="history-card">
                                     <div class="history-card-title">Merge Customer Profile</div>
-                                    <div class="history-card-note">Use this when the same person ended up with duplicate customer profiles from different phone, email, or guest booking entries.</div>
+                                    <div class="history-card-note">Merge duplicate customer profiles.</div>
                                     <form method="POST" class="link-form">
                                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                         <input type="hidden" name="action" value="merge_profile">
@@ -613,7 +629,7 @@ $flash = getFlashMessage();
                                         }
                                         $tableSummary = trim((string) ($booking['assigned_table_numbers'] ?? '')) !== ''
                                             ? 'Table ' . $booking['assigned_table_numbers']
-                                            : 'No table recorded';
+                                            : 'Unassigned';
                                         $placementSummary = !empty($booking['reservation_card_status'])
                                             ? getBookingPlacementLabel($booking['reservation_card_status'])
                                             : '';
@@ -639,11 +655,11 @@ $flash = getFlashMessage();
                                         </article>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <div class="empty-state">This customer profile exists, but there are no bookings linked to it yet.</div>
+                                    <div class="empty-state">No bookings are linked to this profile.</div>
                                 <?php endif; ?>
                             </div>
                         <?php else: ?>
-                            <div class="empty-state">Select a customer from the left to see a combined booking history across guest, phone/email, admin-entered, and registered-account bookings.</div>
+                            <div class="empty-state">Select a customer profile to view booking history.</div>
                         <?php endif; ?>
                     </article>
                 </section>

@@ -99,8 +99,8 @@ $phoneCountryOptions = [
 .booking-stage {
     background: #ffffff;
     border: 1px solid #e7ecf3;
-    border-radius: 20px;
-    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
     padding: 28px;
 }
 
@@ -155,7 +155,7 @@ $phoneCountryOptions = [
 .booking-step-dot {
     width: 32px;
     height: 32px;
-    border-radius: 999px;
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -189,9 +189,9 @@ $phoneCountryOptions = [
 .booking-calendar-panel {
     background: #ffffff;
     border: 1px solid #e7ecf3;
-    border-radius: 18px;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
 }
 
 .booking-calendar-top {
@@ -250,7 +250,7 @@ $phoneCountryOptions = [
     height: 42px;
     border: 1px solid #e7ecf3;
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 8px;
     color: #69758b;
     font-size: 17px;
     display: inline-flex;
@@ -282,18 +282,17 @@ $phoneCountryOptions = [
 .booking-day {
     aspect-ratio: 1;
     border: none;
-    border-radius: 16px;
+    border-radius: 8px;
     background: transparent;
     color: #334155;
     font-size: 16px;
     font-weight: 600;
-    transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+    transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
 }
 
 .booking-day:hover:not(:disabled) {
     background: #f8fafc;
     color: #162033;
-    transform: translateY(-1px);
 }
 
 .booking-day.is-selected {
@@ -321,14 +320,14 @@ $phoneCountryOptions = [
     width: min(100%, 360px);
     background: #ffffff;
     border: 1px solid #e7ecf3;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 14px 16px;
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .booking-account-card.is-benefits {
     width: 100%;
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 14px 16px;
     background: #ffffff;
 }
@@ -390,18 +389,17 @@ $phoneCountryOptions = [
     justify-content: center;
     min-width: 92px;
     padding: 10px 14px;
-    border-radius: 12px;
+    border-radius: 8px;
     background: #f8fafc;
     color: #162033;
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
-    transition: background 0.18s ease, transform 0.18s ease;
+    transition: background 0.18s ease;
 }
 
 .booking-mini-btn:hover {
     background: #e5e7eb;
-    transform: translateY(-1px);
 }
 
 .booking-mini-btn.is-primary {
@@ -418,14 +416,13 @@ $phoneCountryOptions = [
 .booking-benefits-icon {
     width: 34px;
     height: 34px;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #ffe58f 0%, #ffd60a 100%);
+    border-radius: 50%;
+    background: #ffd60a;
     color: #8a5a00;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
 }
 
 .booking-benefits-copy {
@@ -466,9 +463,9 @@ $phoneCountryOptions = [
 .booking-step-card {
     background: #ffffff;
     border: 1px solid #e7ecf3;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 24px;
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
 .booking-step-card[hidden] {
@@ -500,8 +497,8 @@ $phoneCountryOptions = [
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 9px 14px;
-    border-radius: 999px;
+    padding: 7px 12px;
+    border-radius: 6px;
     background: #eef2f6;
     color: #556176;
     font-size: 12px;
@@ -538,12 +535,12 @@ $phoneCountryOptions = [
 .booking-guests-display {
     width: 100%;
     border: 1px solid #dbe3ef;
-    border-radius: 16px;
+    border-radius: 8px;
     background: #ffffff;
     color: #111827;
     padding: 13px 15px;
     font: inherit;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .booking-input:focus,
@@ -567,7 +564,7 @@ $phoneCountryOptions = [
 }
 
 .booking-phone-country {
-    border-radius: 16px;
+    border-radius: 8px;
 }
 
 .booking-guests-control {
@@ -580,7 +577,7 @@ $phoneCountryOptions = [
     width: 46px;
     height: 46px;
     border: none;
-    border-radius: 999px;
+    border-radius: 50%;
     background: #f3f4f6;
     color: #64748b;
     font-size: 24px;
@@ -588,13 +585,12 @@ $phoneCountryOptions = [
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    transition: background 0.18s ease, color 0.18s ease;
 }
 
 .booking-guest-btn:hover {
     background: #e5e7eb;
     color: #111827;
-    transform: translateY(-1px);
 }
 
 .booking-guest-btn.is-primary {
@@ -622,7 +618,7 @@ $phoneCountryOptions = [
     gap: 12px;
     margin-top: 6px;
     padding: 16px;
-    border-radius: 18px;
+    border-radius: 10px;
     background: #f8fafc;
     border: 1px solid #e7ecf3;
 }
@@ -659,15 +655,15 @@ $phoneCountryOptions = [
 .booking-btn {
     min-width: 122px;
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 14px 20px;
     font-size: 15px;
     font-weight: 700;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    transition: box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .booking-btn:hover {
-    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
 .booking-btn-secondary {
@@ -684,7 +680,7 @@ $phoneCountryOptions = [
 }
 
 .booking-alert {
-    border-radius: 18px;
+    border-radius: 8px;
     border: 1px solid #fecaca;
     background: #fff1f2;
     color: #be123c;
@@ -742,7 +738,7 @@ $phoneCountryOptions = [
 
     .booking-stage {
         padding: 18px;
-        border-radius: 22px;
+        border-radius: 10px;
     }
 
     .booking-heading h2 {
@@ -755,7 +751,7 @@ $phoneCountryOptions = [
 
     .booking-step-card {
         padding: 18px;
-        border-radius: 20px;
+        border-radius: 10px;
     }
 
     .booking-actions {
@@ -790,7 +786,7 @@ $phoneCountryOptions = [
                 <?php if ($showAccountPrompt): ?>
                     <div class="booking-account-card">
                         <div class="booking-account-row is-inline">
-                            <p class="booking-account-title is-inline">Have an Account? <a class="booking-mini-link" href="../auth/login.php">Log in</a> for a faster booking.</p>
+                            <p class="booking-account-title is-inline">Have an account? <a class="booking-mini-link" href="../auth/login.php">Log in</a> to continue.</p>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -807,7 +803,7 @@ $phoneCountryOptions = [
         <?php if (isset($_GET['rebook'])): ?>
             <div class="booking-alert" style="border-color:#c7d2fe;background:#eef2ff;color:#3730a3;">
                 <i class="fa fa-repeat"></i>
-                Rebooking mode is on. We have prefilled your previous booking details so you can adjust them before confirming.
+                Previous booking details have been prefilled for review.
             </div>
         <?php endif; ?>
 

@@ -10,17 +10,18 @@
     --dm-text-soft: #8a94a6;
     --dm-shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.05);
     --dm-shadow-md: 0 16px 40px rgba(15, 23, 42, 0.08);
-    --dm-radius-sm: 14px;
-    --dm-radius-md: 16px;
-    --dm-radius-lg: 18px;
+    --dm-radius-xs: 6px;
+    --dm-radius-sm: 8px;
+    --dm-radius-md: 10px;
+    --dm-radius-lg: 12px;
     --dm-space-1: 8px;
     --dm-space-2: 12px;
     --dm-space-3: 16px;
     --dm-space-4: 20px;
     --dm-space-5: 24px;
     --dm-space-6: 32px;
-    --dm-accent-dark: #1d2840;
-    --dm-accent-dark-hover: #141d31;
+    --dm-accent-dark: #1f2d4d;
+    --dm-accent-dark-hover: #162240;
     --dm-pending-bg: #fff2df;
     --dm-pending-text: #b66a11;
     --dm-confirmed-bg: #e6f7ee;
@@ -168,21 +169,21 @@ a {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 42px;
-    padding: 10px 16px;
-    border-radius: 12px;
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 8px;
     border: 1px solid transparent;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     text-decoration: none;
-    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    transition: opacity 0.15s;
 }
 
 .dm-button:hover,
 .dm-button-secondary:hover,
 .dm-button-danger:hover,
 .dm-button-warn:hover {
-    transform: translateY(-1px);
+    opacity: 0.84;
 }
 
 .dm-button {
@@ -223,8 +224,8 @@ a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 10px;
-    border-radius: 999px;
+    padding: 4px 10px;
+    border-radius: var(--dm-radius-xs);
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.03em;
@@ -269,12 +270,13 @@ input[type='time'],
 input[type='tel'],
 select,
 textarea {
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px solid var(--dm-border-strong);
     background: #ffffff;
     color: var(--dm-text);
-    padding: 12px 14px;
+    padding: 10px 12px;
     box-shadow: none;
+    font-size: 14px;
 }
 
 .form-control:focus,
@@ -316,7 +318,7 @@ label,
 }
 
 .modal-content {
-    border-radius: 18px;
+    border-radius: 12px;
     border: 1px solid var(--dm-border);
     box-shadow: 0 24px 56px rgba(15, 23, 42, 0.14);
 }
@@ -327,7 +329,7 @@ label,
 }
 
 .alert {
-    border-radius: 14px;
+    border-radius: 8px;
     border: 1px solid var(--dm-border);
 }
 
@@ -367,8 +369,8 @@ label,
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    padding: 10px 14px;
-    border-radius: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
     transition: background 0.18s ease, color 0.18s ease;
 }
 
@@ -380,8 +382,8 @@ label,
 
 .nav-links .btn-book,
 .nav-links .btn-logout {
-    padding: 10px 16px;
-    border-radius: 12px;
+    padding: 8px 14px;
+    border-radius: 8px;
     border: 1px solid transparent;
     font-size: 14px;
     font-weight: 600;
@@ -410,7 +412,7 @@ label,
 .site-card {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 18px;
+    border-radius: 12px;
     box-shadow: var(--dm-shadow-md);
 }
 
@@ -454,7 +456,7 @@ label,
 .social-icons a {
     width: 36px;
     height: 36px;
-    border-radius: 999px;
+    border-radius: 50%;
     background: var(--dm-surface-muted);
     color: var(--dm-text);
     display: inline-flex;
@@ -469,7 +471,7 @@ label,
     border: 1px solid var(--dm-border-strong);
     background: #ffffff;
     color: var(--dm-text);
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 10px 16px;
     font-weight: 600;
 }
@@ -490,4 +492,239 @@ label,
     .dm-page-shell {
         padding: 16px;
     }
+}
+
+/* ============================================================
+   ADMIN LAYOUT
+   Shared across all admin pages (sidebar + topbar + content)
+   ============================================================ */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.admin-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+@media (max-width: 768px) {
+    .admin-container { padding: 16px; }
+}
+
+/* ============================================================
+   SHARED BUTTONS
+   Override Bootstrap defaults with app design language.
+   Use .btn-primary, .btn-secondary, .btn-edit, .btn-delete.
+   ============================================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 6px;
+    padding: 7px 13px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    border: 1px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    opacity: 0.82;
+    transform: none;
+}
+
+.btn-primary {
+    background: var(--dm-accent-dark);
+    color: #ffffff;
+    border-color: var(--dm-accent-dark);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: var(--dm-accent-dark-hover);
+    color: #ffffff;
+}
+
+.btn-secondary {
+    background: #ffffff;
+    color: var(--dm-text-muted);
+    border-color: var(--dm-border-strong);
+}
+
+.btn-secondary:hover {
+    background: var(--dm-surface-muted);
+    color: var(--dm-text);
+}
+
+.btn-edit {
+    background: #ffffff;
+    color: #6b4e00;
+    border-color: #e8d5a0;
+}
+
+.btn-delete {
+    background: #ffffff;
+    color: #9e1f2e;
+    border-color: #e4b0b7;
+}
+
+.btn-sm {
+    padding: 4px 9px;
+    font-size: 11px;
+}
+
+.btn-lg {
+    padding: 10px 18px;
+    font-size: 14px;
+}
+
+/* ============================================================
+   SHARED STATUS TAGS
+   Use: <span class="status-tag pending">Pending</span>
+   Modifiers: pending confirmed completed cancelled no_show
+              seated available unavailable
+   ============================================================ */
+.status-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+.status-tag.pending    { background: var(--dm-pending-bg);   color: var(--dm-pending-text);   border: 1px solid #f6d8a8; }
+.status-tag.confirmed  { background: var(--dm-confirmed-bg); color: var(--dm-confirmed-text); border: 1px solid #b6deca; }
+.status-tag.completed  { background: var(--dm-confirmed-bg); color: var(--dm-confirmed-text); border: 1px solid #b6deca; }
+.status-tag.cancelled  { background: var(--dm-danger-bg);    color: var(--dm-danger-text);    border: 1px solid #f5c2c7; }
+.status-tag.no_show    { background: var(--dm-neutral-bg);   color: var(--dm-neutral-text);   border: 1px solid #d0d9e8; }
+.status-tag.seated     { background: var(--dm-standby-bg);   color: var(--dm-standby-text);   border: 1px solid #f4e2a2; }
+.status-tag.available  { background: var(--dm-confirmed-bg); color: var(--dm-confirmed-text); border: 1px solid #b6deca; }
+.status-tag.unavailable { background: var(--dm-danger-bg);   color: var(--dm-danger-text);    border: 1px solid #f5c2c7; }
+
+/* ============================================================
+   SHARED CARDS
+   Use .app-card > .app-card-header + .app-card-body
+   ============================================================ */
+.app-card {
+    background: #ffffff;
+    border: 1px solid var(--dm-border);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.app-card-body {
+    padding: 20px 24px;
+}
+
+.app-card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--dm-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.app-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dm-text);
+    margin: 0;
+}
+
+/* ============================================================
+   SHARED PAGE HEADER
+   Use inside .admin-container at the top of each admin page.
+   ============================================================ */
+.app-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.app-page-header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--dm-text);
+}
+
+.app-page-header p {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--dm-text-muted);
+}
+
+/* ============================================================
+   SHARED STATS STRIP
+   Use .app-stats-strip > .app-stat-cell * n
+   ============================================================ */
+.app-stats-strip {
+    display: flex;
+    background: #ffffff;
+    border: 1px solid var(--dm-border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.app-stat-cell {
+    flex: 1;
+    padding: 14px 18px;
+    border-right: 1px solid var(--dm-border);
+    min-width: 0;
+}
+
+.app-stat-cell:last-child {
+    border-right: none;
+}
+
+.app-stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--dm-text-soft);
+}
+
+.app-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dm-text);
+    letter-spacing: -0.03em;
+    margin-top: 3px;
+}
+
+.app-stat-note {
+    font-size: 11px;
+    color: var(--dm-text-muted);
+    margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+    .app-stats-strip { flex-direction: column; }
+    .app-stat-cell { border-right: none; border-bottom: 1px solid var(--dm-border); }
+    .app-stat-cell:last-child { border-bottom: none; }
 }

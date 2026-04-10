@@ -80,8 +80,8 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 .dashboard-panel {
     background: #ffffff;
     border: 1px solid #e7ecf3;
-    border-radius: 24px;
-    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
 .dashboard-hero {
@@ -90,9 +90,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
     grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr);
     gap: 20px;
     align-items: stretch;
-    background:
-        radial-gradient(circle at top right, rgba(244, 180, 0, 0.16), transparent 35%),
-        linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    background: #ffffff;
 }
 
 .hero-copy h1 {
@@ -121,7 +119,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    border-radius: 14px;
+    border-radius: 8px;
     padding: 12px 16px;
     text-decoration: none;
     font-weight: 700;
@@ -140,7 +138,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 }
 
 .hero-focus {
-    border-radius: 20px;
+    border-radius: 10px;
     background: #172133;
     color: #f8fafc;
     padding: 22px;
@@ -182,9 +180,9 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 .metric-card {
     background: #ffffff;
     border: 1px solid #e7ecf3;
-    border-radius: 20px;
+    border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .metric-label {
@@ -197,7 +195,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 
 .metric-value {
     margin-top: 10px;
-    font-size: 34px;
+    font-size: 24px;
     line-height: 1;
     color: #162033;
     font-weight: 700;
@@ -250,7 +248,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 
 .timeline-card {
     border: 1px solid #e7ecf3;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 18px;
     display: grid;
     gap: 12px;
@@ -284,21 +282,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
     font-size: 13px;
 }
 
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: 999px;
-    padding: 7px 12px;
-    font-size: 12px;
-    font-weight: 700;
-}
 
-.status-pill.pending { background: #fff4df; color: #b66a11; }
-.status-pill.confirmed { background: #e6f7ee; color: #1d7a53; }
-.status-pill.completed { background: #e6f7ee; color: #1d7a53; }
-.status-pill.cancelled { background: #ffe7ea; color: #c13f56; }
-.status-pill.no_show { background: #eef2ff; color: #4338ca; }
 
 .timeline-card-meta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -309,10 +293,10 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    border-radius: 999px;
+    border-radius: 6px;
     background: #ffffff;
     border: 1px solid #dbe3ef;
-    padding: 8px 12px;
+    padding: 6px 10px;
     font-size: 13px;
     color: #31415f;
     width: fit-content;
@@ -343,7 +327,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 }
 
 .profile-chip {
-    border-radius: 16px;
+    border-radius: 10px;
     border: 1px solid #e7ecf3;
     background: #f8fafc;
     padding: 14px;
@@ -363,14 +347,14 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
 }
 
 .notes-card {
-    border-radius: 18px;
+    border-radius: 8px;
     background: #fffaf0;
     border: 1px solid #f7e1b5;
     padding: 16px;
 }
 
 .empty-state {
-    border-radius: 18px;
+    border-radius: 8px;
     background: #f8fafc;
     border: 1px dashed #d9e1ec;
     padding: 26px;
@@ -393,7 +377,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
         <section class="dashboard-hero">
             <div class="hero-copy">
                 <h1>Welcome back, <?php echo htmlspecialchars((string) getCurrentUserName(), ENT_QUOTES, 'UTF-8'); ?></h1>
-                <p>Your customer portal keeps upcoming reservations, past visits, saved preferences, and rebooking shortcuts in one place so you can manage everything without calling the restaurant.</p>
+                <p>Manage your bookings, profile, and dining preferences.</p>
                 <div class="hero-actions">
                     <a class="btn-portal" href="book-table.php"><i class="fa fa-calendar-plus"></i> New Booking</a>
                     <a class="btn-portal-secondary" href="my-bookings.php"><i class="fa fa-clock-rotate-left"></i> View Booking History</a>
@@ -406,16 +390,16 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                     <div class="hero-focus-title"><?php echo htmlspecialchars(date('D, j M', strtotime((string) $nextBooking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?> at <?php echo htmlspecialchars(date('g:i A', strtotime((string) $nextBooking['start_time'])), ENT_QUOTES, 'UTF-8'); ?></div>
                     <div class="hero-focus-meta">
                         <span><i class="fa fa-users"></i> <?php echo (int) ($nextBooking['number_of_guests'] ?? 0); ?> guests</span>
-                        <span><i class="fa fa-table-cells-large"></i> <?php echo !empty($nextBooking['table_number']) ? 'Table ' . htmlspecialchars((string) $nextBooking['table_number'], ENT_QUOTES, 'UTF-8') : 'Table assignment pending'; ?></span>
+                        <span><i class="fa fa-table-cells-large"></i> <?php echo !empty($nextBooking['table_number']) ? 'Table ' . htmlspecialchars((string) $nextBooking['table_number'], ENT_QUOTES, 'UTF-8') : 'Pending assignment'; ?></span>
                         <span><i class="fa fa-circle-info"></i> <?php echo htmlspecialchars(getBookingStatusLabel($nextBooking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <div>
                         <a class="btn-portal-secondary" href="modify-booking.php?id=<?php echo (int) $nextBooking['booking_id']; ?>"><i class="fa fa-pen"></i> Reschedule</a>
                     </div>
                 <?php else: ?>
-                    <div class="hero-focus-title">No upcoming booking yet</div>
+                    <div class="hero-focus-title">No upcoming bookings</div>
                     <div class="hero-focus-meta">
-                        <span>Your next table is only a few clicks away.</span>
+                        <span>No upcoming reservations scheduled.</span>
                     </div>
                 <?php endif; ?>
             </aside>
@@ -425,22 +409,22 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
             <article class="metric-card">
                 <div class="metric-label">Completed Visits</div>
                 <div class="metric-value"><?php echo number_format($visitCount); ?></div>
-                <div class="metric-meta">Dining visits marked completed and counted toward your running history.</div>
+                <div class="metric-meta">Completed reservations in your history.</div>
             </article>
             <article class="metric-card">
                 <div class="metric-label">Upcoming</div>
                 <div class="metric-value"><?php echo number_format(count($upcomingBookings)); ?></div>
-                <div class="metric-meta">Active pending or confirmed reservations still ahead of you.</div>
+                <div class="metric-meta">Pending and confirmed reservations.</div>
             </article>
             <article class="metric-card">
                 <div class="metric-label">Average Party</div>
                 <div class="metric-value"><?php echo htmlspecialchars(number_format($averagePartySize, $averagePartySize == floor($averagePartySize) ? 0 : 1), ENT_QUOTES, 'UTF-8'); ?></div>
-                <div class="metric-meta">Useful when you want to quickly rebook with the kind of table you usually need.</div>
+                <div class="metric-meta">Average guests per booking.</div>
             </article>
             <article class="metric-card">
                 <div class="metric-label">Shared History</div>
                 <div class="metric-value"><?php echo number_format($guestHistoryCount + $adminCreatedCount); ?></div>
-                <div class="metric-meta">Older guest-web and admin-entered bookings already folded into your customer profile.</div>
+                <div class="metric-meta">Bookings linked to your customer profile.</div>
             </article>
         </section>
 
@@ -448,8 +432,8 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
             <article class="dashboard-panel">
                 <div class="panel-heading">
                     <div>
-                        <h2>Upcoming And Quick Rebook</h2>
-                        <p>Manage your next table and repeat a favourite booking from your recent history.</p>
+                        <h2>Upcoming And Rebook</h2>
+                        <p>Manage upcoming reservations and rebook recent visits.</p>
                     </div>
                     <a class="btn-portal-secondary" href="my-bookings.php?view=upcoming">Open My Bookings</a>
                 </div>
@@ -463,13 +447,13 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                                         <div class="timeline-card-title"><?php echo htmlspecialchars(date('l, j F', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
                                         <div class="timeline-card-subtitle"><?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8'); ?> to <?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></div>
                                     </div>
-                                    <span class="status-pill <?php echo htmlspecialchars((string) ($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>">
+                                    <span class="status-tag <?php echo htmlspecialchars((string) ($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>">
                                         <?php echo htmlspecialchars(getBookingStatusLabel($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>
                                     </span>
                                 </div>
                                 <div class="timeline-card-meta">
                                     <span class="timeline-meta-chip"><i class="fa fa-users"></i> <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</span>
-                                    <span class="timeline-meta-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Assignment pending'; ?></span>
+                                    <span class="timeline-meta-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Pending assignment'; ?></span>
                                     <span class="timeline-meta-chip"><i class="fa fa-location-dot"></i> <?php echo htmlspecialchars(getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed'), ENT_QUOTES, 'UTF-8'); ?></span>
                                     <span class="timeline-meta-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                 </div>
@@ -481,7 +465,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <div class="empty-state">You do not have an active booking right now. Use the quick booking button above to lock in your next table.</div>
+                    <div class="empty-state">You do not have any active bookings.</div>
                 <?php endif; ?>
             </article>
 
@@ -489,13 +473,13 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                 <div class="panel-heading">
                     <div>
                         <h3>Customer Snapshot</h3>
-                        <p>Saved preferences and a quick read on how you usually book.</p>
+                        <p>Saved profile and booking preferences.</p>
                     </div>
                 </div>
                 <div class="profile-grid">
                     <div class="profile-chip">
                         <strong>Preferred Time</strong>
-                        <span><?php echo htmlspecialchars($favouriteBookingTime !== '' ? ucfirst(str_replace('_', ' ', $favouriteBookingTime)) : 'Not set yet', ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span><?php echo htmlspecialchars($favouriteBookingTime !== '' ? ucfirst(str_replace('_', ' ', $favouriteBookingTime)) : 'Not set', ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <div class="profile-chip">
                         <strong>Seating Preference</strong>
@@ -514,11 +498,11 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                 <div class="profile-notes" style="margin-top:16px;">
                     <div class="notes-card">
                         <strong>Dietary Notes</strong>
-                        <div class="tiny-copy" style="margin-top:8px;"><?php echo htmlspecialchars($dietaryNotes !== '' ? $dietaryNotes : 'No dietary notes saved yet.', ENT_QUOTES, 'UTF-8'); ?></div>
+                        <div class="tiny-copy" style="margin-top:8px;"><?php echo htmlspecialchars($dietaryNotes !== '' ? $dietaryNotes : 'None', ENT_QUOTES, 'UTF-8'); ?></div>
                     </div>
                     <div class="notes-card">
                         <strong>Staff Notes</strong>
-                        <div class="tiny-copy" style="margin-top:8px;"><?php echo htmlspecialchars($notes !== '' ? $notes : 'No customer notes on your profile yet.', ENT_QUOTES, 'UTF-8'); ?></div>
+                        <div class="tiny-copy" style="margin-top:8px;"><?php echo htmlspecialchars($notes !== '' ? $notes : 'None', ENT_QUOTES, 'UTF-8'); ?></div>
                     </div>
                 </div>
             </article>
@@ -529,7 +513,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                 <div class="panel-heading">
                     <div>
                         <h3>Recent Visit History</h3>
-                        <p>Past outcomes, source tracking, and one-click rebook shortcuts from your recent visits.</p>
+                        <p>Recent bookings and rebooking access.</p>
                     </div>
                     <a class="btn-portal-secondary" href="my-bookings.php?view=past">See Full History</a>
                 </div>
@@ -552,7 +536,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                                         <div class="timeline-card-title" style="font-size:17px;"><?php echo htmlspecialchars(date('D, j M Y', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
                                         <div class="history-meta"><?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8'); ?>, <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</div>
                                     </div>
-                                    <span class="status-pill <?php echo htmlspecialchars((string) ($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>">
+                                    <span class="status-tag <?php echo htmlspecialchars((string) ($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>">
                                         <?php echo htmlspecialchars(getBookingStatusLabel($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>
                                     </span>
                                 </div>
@@ -565,7 +549,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <div class="empty-state">Once you have completed visits, they will show here with quick rebook actions and outcome history.</div>
+                    <div class="empty-state">Completed visits will appear here.</div>
                 <?php endif; ?>
             </article>
 
@@ -573,13 +557,13 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                 <div class="panel-heading">
                     <div>
                         <h3>Loyalty Snapshot</h3>
-                        <p>Simple progress-style stats that make your booking history easier to read at a glance.</p>
+                        <p>Summary of your booking activity.</p>
                     </div>
                 </div>
                 <div class="mini-stat-list">
                     <div class="profile-chip">
                         <strong>Last Completed Visit</strong>
-                        <span><?php echo $lastCompletedBooking ? htmlspecialchars(date('j M Y', strtotime((string) $lastCompletedBooking['booking_date'])), ENT_QUOTES, 'UTF-8') : 'No completed visit yet'; ?></span>
+                        <span><?php echo $lastCompletedBooking ? htmlspecialchars(date('j M Y', strtotime((string) $lastCompletedBooking['booking_date'])), ENT_QUOTES, 'UTF-8') : 'None'; ?></span>
                     </div>
                     <div class="profile-chip">
                         <strong>Cancelled Bookings</strong>

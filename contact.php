@@ -21,8 +21,8 @@
     background: white;
     padding: 35px;
     border: 1px solid #e7ecf3;
-    border-radius: 18px;
-    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(15,23,42,0.06);
 }
 .form-control {
     border-radius: 10px;
@@ -38,23 +38,23 @@
     border: 1px solid #1d2840;
     color: #ffffff;
     padding: 12px 25px;
-    border-radius: 12px;
+    border-radius: 8px;
     font-weight: 600;
 }
 .btn-contact:hover {
     background: #141d31;
 }
 .map {
-    border-radius: 18px;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
+    box-shadow: 0 4px 16px rgba(15,23,42,0.06);
 }
 </style>
 
 <section class="contact-hero">
     <div>
         <h1>Contact Us</h1>
-        <p>We Would lovw to hear from your</p>
+        <p>We would love to hear from you</p>
     </div>
 </section>
 
@@ -63,7 +63,7 @@
         <div class="row g-4">
             <div class="col-md-5">
                 <div class="contact-info">
-                    <<h4 class="mb-4">Restaurant Information</h4>
+                    <h4 class="mb-4">Restaurant Information</h4>
                     <p><i class="fa fa-location-dot contact-icon"></i> Old Canberra Inn, 195 Mouat St, Lyneham ACT 2602, Australia</p>
                     <p><i class="fa fa-phone contact-icon"></i> +61 421108735</p>
                     <p><i class="fa fa-envelope contact-icon"></i> info@oldcanberrainn.com</p>

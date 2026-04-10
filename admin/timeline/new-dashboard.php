@@ -102,15 +102,9 @@ $adminSidebarPathPrefix = '../';
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DineMate - Timeline Booking Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="../../assets/css/dashboard-theme.css" rel="stylesheet">
+    <?php include __DIR__ . '/admin-head.php'; ?>
     <style>
         * {
             margin: 0;
@@ -146,7 +140,7 @@ $adminSidebarPathPrefix = '../';
             margin-bottom: 14px;
             padding: 12px 14px;
             border: 1px solid #e6ebf2;
-            border-radius: 14px;
+            border-radius: 10px;
             background: #ffffff;
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
         }
@@ -235,8 +229,8 @@ $adminSidebarPathPrefix = '../';
             width: 260px;
             background: white;
             border: 1px solid #e6ebf2;
-            border-radius: 18px;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -278,7 +272,7 @@ $adminSidebarPathPrefix = '../';
             border: 1px solid #e5e7eb;
             background: #f9fafb;
             color: #374151;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 9px 10px;
             font-size: 13px;
             font-weight: 700;
@@ -412,7 +406,7 @@ $adminSidebarPathPrefix = '../';
             justify-content: center;
             width: 12px;
             height: 12px;
-            border-radius: 999px;
+            border-radius: 50%;
             background: #eef2ff;
             color: #4f46e5;
             font-size: 7px;
@@ -427,7 +421,7 @@ $adminSidebarPathPrefix = '../';
             border: 1px solid #c7d2fe;
             background: #eef2ff;
             color: #1d4ed8;
-            border-radius: 999px;
+            border-radius: 6px;
             padding: 4px 8px;
             font-size: 10px;
             font-weight: 700;
@@ -457,7 +451,7 @@ $adminSidebarPathPrefix = '../';
         .add-booking-button {
             width: 100%;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             background: #111827;
             color: #fff;
             padding: 9px 12px;
@@ -466,20 +460,19 @@ $adminSidebarPathPrefix = '../';
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: background 0.2s ease, transform 0.2s ease;
+            transition: background 0.2s ease;
             font-size: 12px;
         }
 
         .add-booking-button:hover {
             background: #1f2937;
-            transform: translateY(-1px);
         }
 
         .stats-card {
             margin-top: 12px;
             padding: 0;
             border: 1px solid #e6ebf2;
-            border-radius: 14px;
+            border-radius: 10px;
             background: #ffffff;
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
             overflow: hidden;
@@ -572,8 +565,8 @@ $adminSidebarPathPrefix = '../';
         .booking-modal-card {
             width: min(100%, 460px);
             background: #fff;
-            border-radius: 22px;
-            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.28);
+            border-radius: 12px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
             padding: 26px;
             border: 1px solid rgba(229, 231, 235, 0.9);
             transform: translateY(18px) scale(0.98);
@@ -606,7 +599,7 @@ $adminSidebarPathPrefix = '../';
             background: #f3f4f6;
             width: 38px;
             height: 38px;
-            border-radius: 999px;
+            border-radius: 50%;
             font-size: 22px;
             line-height: 1;
             color: #6b7280;
@@ -635,7 +628,7 @@ $adminSidebarPathPrefix = '../';
         .modal-form-group textarea {
             width: 100%;
             border: 1px solid #d1d5db;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 10px 12px;
             font: inherit;
         }
@@ -654,7 +647,7 @@ $adminSidebarPathPrefix = '../';
         .modal-error {
             display: none;
             margin-bottom: 14px;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 10px 12px;
             background: #fef2f2;
             color: #b91c1c;
@@ -670,7 +663,7 @@ $adminSidebarPathPrefix = '../';
 
         .booking-modal-actions button {
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 10px 16px;
             font-weight: 600;
             cursor: pointer;
@@ -699,7 +692,7 @@ $adminSidebarPathPrefix = '../';
             background: #fee2e2;
             color: #b91c1c;
             border: 1px solid #fecaca;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 8px 12px;
             font-size: 13px;
             font-weight: 700;
@@ -714,7 +707,7 @@ $adminSidebarPathPrefix = '../';
             background: #eef2ff;
             color: #3730a3;
             border: 1px solid #d9deff;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 8px 12px;
             font-size: 13px;
             font-weight: 700;
@@ -730,7 +723,7 @@ $adminSidebarPathPrefix = '../';
             background: #ecfdf5;
             color: #047857;
             border: 1px solid #bbf7d0;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 8px 12px;
             font-size: 13px;
             font-weight: 700;
@@ -829,7 +822,7 @@ $adminSidebarPathPrefix = '../';
             border: 1px dashed #d1d5db;
             background: #f9fafb;
             color: #374151;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 10px 12px;
             font-size: 13px;
             font-weight: 700;
@@ -860,7 +853,7 @@ $adminSidebarPathPrefix = '../';
             gap: 8px;
             align-items: center;
             border: 1px solid #d1d5db;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 6px 10px;
             background: #ffffff;
         }
@@ -891,7 +884,7 @@ $adminSidebarPathPrefix = '../';
             align-items: center;
             gap: 8px;
             padding: 6px 10px;
-            border-radius: 999px;
+            border-radius: 6px;
             background: #f3f4f6;
             color: #374151;
             font-size: 12px;
@@ -908,7 +901,7 @@ $adminSidebarPathPrefix = '../';
             justify-content: center;
             width: 8px;
             height: 8px;
-            border-radius: 999px;
+            border-radius: 50%;
             flex-shrink: 0;
             box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65);
         }
@@ -957,7 +950,7 @@ $adminSidebarPathPrefix = '../';
             height: 28px;
             background: #2563eb;
             color: white;
-            border-radius: 999px;
+            border-radius: 50%;
             border: none;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.12);
@@ -973,7 +966,7 @@ $adminSidebarPathPrefix = '../';
             width: 100%;
             padding: 7px 10px;
             border: 1px solid #d1d5db;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 13px;
             font-weight: 600;
             background: white;
@@ -1716,7 +1709,7 @@ $adminSidebarPathPrefix = '../';
                 <div class="modal-form-group">
                     <label for="adminBookingTime">Time</label>
                     <input type="time" id="adminBookingTime" min="10:00" max="21:00" step="1800" value="12:00" required>
-                    <div class="modal-helper-text">Creates a 60-minute pending booking.</div>
+                    <div class="modal-helper-text">Default duration: 60 minutes.</div>
                 </div>
                 <div class="modal-form-group full-width">
                     <button type="button" class="booking-inline-trigger" id="toggleAdminBookingEmailBtn">
@@ -1833,7 +1826,7 @@ $adminSidebarPathPrefix = '../';
             <div class="modal-form-group">
                 <label for="tableDetailsNumber">Table</label>
                 <input type="text" id="tableDetailsNumber" required>
-                <div class="modal-helper-text" id="tableDetailsNumberHelp">Use a short table number like 1, 12, or A3.</div>
+                <div class="modal-helper-text" id="tableDetailsNumberHelp">Enter the table number.</div>
             </div>
             <div class="modal-form-group">
                 <label for="tableDetailsCapacity">Capacity</label>
@@ -1842,7 +1835,7 @@ $adminSidebarPathPrefix = '../';
             <div class="modal-form-group">
                 <label for="tableDetailsArea">Area</label>
                 <select id="tableDetailsArea" required></select>
-                <div class="modal-helper-text">Move this table into a venue section like Patio, Bar, or Dining Room.</div>
+                <div class="modal-helper-text">Select the assigned area.</div>
             </div>
             <div class="modal-form-group">
                 <label for="tableDetailsSortOrder">Order In Area</label>
@@ -1877,12 +1870,12 @@ $adminSidebarPathPrefix = '../';
             <div class="modal-form-group">
                 <label for="areaDetailsStartNumber">Table Number Starts At</label>
                 <input type="number" id="areaDetailsStartNumber" min="1" step="1" placeholder="Optional">
-                <div class="modal-helper-text">Use this if tables in this area should begin from a specific number, like 20.</div>
+                <div class="modal-helper-text">Optional starting number for tables in this area.</div>
             </div>
             <div class="modal-form-group">
                 <label for="areaDetailsEndNumber">Table Number Ends At</label>
                 <input type="number" id="areaDetailsEndNumber" min="1" step="1" placeholder="Optional">
-                <div class="modal-helper-text">Optional upper bound. The + button will stop once the area reaches this number.</div>
+                <div class="modal-helper-text">Optional ending number for tables in this area.</div>
             </div>
             <div class="booking-modal-actions">
                 <button type="button" class="booking-modal-danger-small" id="deleteAreaBtn">Delete Area</button>
@@ -3879,8 +3872,8 @@ $adminSidebarPathPrefix = '../';
 
         if(layout.visibleTables.length === 0) {
             const emptyLabel = activeAreaFilter === 'all'
-                ? 'No tables found yet. Add your first table to start using the timeline.'
-                : 'No tables found for this area yet. Add one to start organizing this section.';
+                ? 'No tables available.'
+                : 'No tables in this area.';
             const emptyAreaId = activeAreaFilter === 'all' ? (getSortedAreas()[0]?.area_id || '') : activeAreaFilter;
             timelineGrid.innerHTML = `<div class="timeline-empty-state">${emptyLabel}<div style="margin-top:12px;"><button type="button" class="add-table-inline-btn" data-add-table-trigger="true" data-area-id="${emptyAreaId}" title="Add table">+</button></div></div>`;
             bindAddTableButton();

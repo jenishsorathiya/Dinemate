@@ -13,6 +13,207 @@ foreach ($categories as $category) {
 }
 ?>
 
+<style>
+.menu-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background-color: transparent;
+}
+
+.menu-header {
+    text-align: center;
+    margin-bottom: 50px;
+    padding: 30px 0;
+    border-bottom: 3px solid #1f2d4d;
+}
+
+.menu-header h1 {
+    font-size: 3em;
+    color: #162033;
+    margin: 0 0 10px 0;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.menu-header p {
+    font-size: 1.2em;
+    color: #64748b;
+    margin: 0;
+    font-style: italic;
+}
+
+.menu-section {
+    margin-bottom: 60px;
+}
+
+.section-title {
+    font-size: 2.2em;
+    color: #1f2d4d;
+    text-align: center;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 2px;
+    background-color: #1f2d4d;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    margin: -5px 0 25px 0;
+}
+
+.menu-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 20px;
+}
+
+.menu-card {
+    background: white;
+    border: 1px solid #e7ecf3;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(15,23,42,0.06);
+    overflow: hidden;
+}
+
+.menu-card.featured {
+    border-left: 3px solid #1f2d4d;
+    background: #f7f9fd;
+}
+
+.card-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #162033;
+    font-size: 1.3em;
+    flex: 1;
+    font-weight: 600;
+}
+
+.price {
+    color: #1f2d4d;
+    font-size: 1.4em;
+    font-weight: 700;
+    white-space: nowrap;
+    margin-left: 15px;
+}
+
+.description {
+    color: #64748b;
+    font-size: 0.95em;
+    margin: 8px 0 10px 0;
+    line-height: 1.4;
+}
+
+.badge {
+    display: inline-block;
+    background-color: #e8eef8;
+    color: #1f2d4d;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.sides-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.side-item {
+    background: white;
+    padding: 15px;
+    border: 1px solid #e7ecf3;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(15,23,42,0.05);
+}
+
+.side-item h4 {
+    margin: 0;
+    color: #162033;
+    font-size: 1.1em;
+}
+
+.sauces-note {
+    text-align: center;
+    color: #64748b;
+    font-size: 0.95em;
+    margin-top: 15px;
+}
+
+.menu-legend {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+    font-size: 0.95em;
+    border-top: 1px solid #e7ecf3;
+    margin-top: 40px;
+}
+
+.badge-info {
+    font-weight: 600;
+    color: #1f2d4d;
+}
+
+@media (max-width: 768px) {
+    .menu-header h1 {
+        font-size: 2em;
+    }
+
+    .section-title {
+        font-size: 1.6em;
+    }
+
+    .menu-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .sides-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+
 <div class="menu-container">
     <div class="menu-header">
         <h1>Our Menu</h1>
@@ -78,217 +279,3 @@ foreach ($categories as $category) {
 <?php
 include 'includes/footer.php';
 ?>
-
-<style>
-.menu-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-    background-color: transparent;
-}
-
-.menu-header {
-    text-align: center;
-    margin-bottom: 50px;
-    padding: 30px 0;
-    border-bottom: 3px solid #8b7355;
-}
-
-.menu-header h1 {
-    font-size: 3em;
-    color: #2c2c2c;
-    margin: 0 0 10px 0;
-    font-weight: 700;
-    letter-spacing: 2px;
-}
-
-.menu-header p {
-    font-size: 1.2em;
-    color: #666;
-    margin: 0;
-    font-style: italic;
-}
-
-.menu-section {
-    margin-bottom: 60px;
-}
-
-.section-title {
-    font-size: 2.2em;
-    color: #8b7355;
-    text-align: center;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    position: relative;
-    padding-bottom: 15px;
-}
-
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 2px;
-    background-color: #8b7355;
-}
-
-.section-subtitle {
-    text-align: center;
-    color: #666;
-    font-style: italic;
-    margin: -5px 0 25px 0;
-}
-
-.menu-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-    margin-bottom: 20px;
-}
-
-.menu-card {
-    background: white;
-    border: 1px solid #e7ecf3;
-    border-radius: 18px;
-    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
-    transition: all 0.3s ease;
-    border-left: 1px solid #e7ecf3;
-    overflow: hidden;
-}
-
-.menu-card:hover {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    transform: translateY(-3px);
-}
-
-.menu-card.featured {
-    border-left-color: #8b7355;
-    background: #faf8f3;
-}
-
-.card-image {
-    height: 200px;
-    overflow: hidden;
-}
-
-.card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.menu-card:hover .card-image img {
-    transform: scale(1.05);
-}
-
-.card-content {
-    padding: 20px;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 10px;
-}
-
-.card-header h3 {
-    margin: 0;
-    color: #2c2c2c;
-    font-size: 1.3em;
-    flex: 1;
-    font-weight: 600;
-}
-
-.price {
-    color: #8b7355;
-    font-size: 1.4em;
-    font-weight: 700;
-    white-space: nowrap;
-    margin-left: 15px;
-}
-
-.description {
-    color: #666;
-    font-size: 0.95em;
-    margin: 8px 0 10px 0;
-    line-height: 1.4;
-}
-
-.badge {
-    display: inline-block;
-    background-color: #e8dcc8;
-    color: #5f4f38;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 0.75em;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-top: 8px;
-}
-
-.sides-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.side-item {
-    background: white;
-    padding: 15px;
-    border: 1px solid #e7ecf3;
-    border-radius: 16px;
-    box-shadow: 0 12px 28px rgba(15,23,42,0.06);
-}
-
-.side-item h4 {
-    margin: 0;
-    color: #2c2c2c;
-    font-size: 1.1em;
-}
-
-.sauces-note {
-    text-align: center;
-    color: #666;
-    font-size: 0.95em;
-    margin-top: 15px;
-}
-
-.menu-legend {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-    font-size: 0.95em;
-    border-top: 1px solid #ddd;
-    margin-top: 40px;
-}
-
-.badge-info {
-    font-weight: 600;
-    color: #5f4f38;
-}
-
-@media (max-width: 768px) {
-    .menu-header h1 {
-        font-size: 2em;
-    }
-
-    .section-title {
-        font-size: 1.6em;
-    }
-
-    .menu-cards {
-        grid-template-columns: 1fr;
-    }
-
-    .sides-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-</style>
-           

@@ -9,7 +9,8 @@ session_start();
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="../assets/css/dashboard-theme.css" rel="stylesheet">
+<link href="../assets/css/app.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <style>
 body {
@@ -30,10 +31,10 @@ body {
     max-width: 1080px;
     background: #ffffff;
     border: 1px solid #e7ecf3;
-    border-radius: 20px;
+    border-radius: 16px;
     display: flex;
     overflow: hidden;
-    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
 .auth-left {
@@ -72,23 +73,32 @@ body {
     color: white;
 }
 .form-control {
-    border-radius: 12px;
-    padding: 13px 14px;
+    border-radius: 8px;
+    padding: 11px 13px;
+    border: 1px solid #d9e1ec;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(29,40,64,0.10);
+    border-color: #b0bdd0;
 }
 .btn-main {
     background: #1d2840;
     border: 1px solid #1d2840;
-    border-radius: 12px;
-    padding: 12px;
+    border-radius: 8px;
+    padding: 11px 14px;
     font-weight: 600;
     color: #ffffff;
-    transition: 0.18s ease;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.15s;
 }
 
 .btn-main:hover {
-    background: #141d31;
-    border-color: #141d31;
-    transform: translateY(-1px);
+    opacity: 0.86;
 }
 
 .password-wrapper {
@@ -122,21 +132,21 @@ body {
 }
 
 .social-btn {
-    border-radius: 12px;
-     border: 1px solid #d9e1ec;
-     padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d9e1ec;
+    padding: 10px 12px;
     background: white;
-    transition: 0.3s;
+    transition: background 0.15s;
     font-weight: 500;
-    display: flex;            
-    align-items: center;       
-    justify-content: center;   
-    gap: 10px;  
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
 .social-btn:hover {
-    background: #f8fafc;
-    transform: translateY(-2px);
+    background: #f1f5f9;
 }
 
 @media (max-width: 991px) {
@@ -176,7 +186,7 @@ body {
                 </div>
                  <div class="mb-3 password-wrapper">
                     <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
-                    <span class="eye-icon" onclick="togglePassword()">👁</span>
+                    <span class="eye-icon" onclick="togglePassword()"><i class="fa-regular fa-eye"></i></span>
                 </div>
                 
                 <button class="btn btn-main w-100">Login</button>

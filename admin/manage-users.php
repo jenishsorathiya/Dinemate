@@ -446,19 +446,11 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Manage Users | DineMate Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="../assets/css/dashboard-theme.css" rel="stylesheet">
+    <?php include __DIR__ . '/admin-head.php'; ?>
     <style>
         :root { --users-bg: linear-gradient(180deg, #f5f7fb 0%, #eff4fb 100%); --users-card: #ffffff; --users-line: #e5ebf4; --users-text: #172033; --users-muted: #6b768b; --users-shadow: 0 24px 48px rgba(15, 23, 42, 0.08); --users-shadow-soft: 0 12px 26px rgba(15, 23, 42, 0.05); --users-primary: #1f3c88; --users-accent: #d8a230; --users-success: #1f8f63; --users-danger: #c94b62; --users-warning: #c9831f; }
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--users-bg); color: var(--users-text); }
-        .admin-layout { display: flex; min-height: 100vh; }
-        .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .main { flex: 1; overflow-y: auto; padding: 28px; }
         .users-shell { max-width: 1400px; margin: 0 auto; display: grid; gap: 22px; }
         .hero-card, .panel-card, .stat-card { background: var(--users-card); border: 1px solid var(--users-line); border-radius: 24px; box-shadow: var(--users-shadow-soft); }
@@ -539,6 +531,34 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         @media (max-width: 1200px) { .stats-grid, .table-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .content-grid, .hero-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .form-grid, .table-toolbar { grid-template-columns: 1fr; } .panel-heading, .results-footer { align-items: flex-start; flex-direction: column; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid #edf2f7; } .table-custom tbody td { padding: 8px 0; border: 0; } }
     </style>
+    <style>
+        /* Override: flatten visual chrome */
+        body { background: #f6f8fc; }
+        .hero-card { background: #ffffff !important; box-shadow: 0 1px 3px rgba(15,23,42,0.06) !important; border-radius: 12px !important; }
+        .eyebrow { display: none !important; }
+        .hero-title { font-size: 22px !important; font-weight: 700 !important; letter-spacing: -0.01em !important; }
+        .hero-copy { font-size: 14px !important; }
+        .hero-note-card { border-radius: 8px !important; }
+        .hero-note-card strong { font-size: 22px !important; letter-spacing: -0.02em !important; font-weight: 700 !important; }
+        .stat-card { border-radius: 8px !important; }
+        .stat-card::before { display: none !important; }
+        .stat-value { font-size: 24px !important; font-weight: 700 !important; letter-spacing: -0.02em !important; margin-top: 8px !important; }
+        .stat-meta { font-size: 12px !important; margin-top: 4px !important; }
+        .panel-card { border-radius: 12px !important; }
+        .panel-title { font-size: 16px !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+        .tiny-badge, .role-badge, .booking-badge, .account-badge { border-radius: 4px !important; padding: 2px 7px !important; font-size: 11px !important; font-weight: 600 !important; }
+        .table-wrap { border-radius: 10px !important; }
+        .table-custom thead th { font-size: 11px !important; font-weight: 700 !important; padding: 10px 14px !important; }
+        .table-custom tbody td { padding: 10px 14px !important; }
+        .btn-surface, .btn-primary-soft, .btn-danger-soft, .btn-warning-soft { border-radius: 6px !important; transform: none !important; box-shadow: none !important; transition: opacity 0.15s !important; min-height: 34px !important; padding: 0 12px !important; font-size: 12px !important; }
+        .btn-surface:hover, .btn-primary-soft:hover, .btn-danger-soft:hover, .btn-warning-soft:hover { transform: none !important; opacity: 0.82 !important; }
+        .btn-table { min-height: 30px !important; padding: 0 10px !important; font-size: 11px !important; }
+        .inline-chip { border-radius: 4px !important; padding: 4px 10px !important; font-size: 11px !important; font-weight: 600 !important; }
+        .form-control, .form-select { border-radius: 6px !important; min-height: 36px !important; padding: 7px 10px !important; }
+        .alert { border-radius: 8px !important; }
+        .history-card { border-radius: 8px !important; }
+        .modal-content { border-radius: 12px !important; }
+    </style>
 </head>
 <body>
 <div class="admin-layout">
@@ -551,10 +571,10 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                     <div class="hero-grid">
                         <div>
                             <div class="eyebrow"><i class="fa-solid fa-user-shield"></i> Account Management</div>
-                            <h1 class="hero-title">Registered users only, with the admin tools this page was missing.</h1>
-                            <p class="hero-copy">This view now excludes booking placeholder accounts, highlights the real customer and admin base, and uses safer account actions with hashed passwords for new admin-created users.</p>
+                            <h1 class="hero-title">Manage Registered User Accounts</h1>
+                            <p class="hero-copy">View and manage customer and admin accounts.</p>
                         </div>
-                        <div class="hero-note-card"><strong><?php echo number_format($totalUsers); ?></strong><span>Visible registered accounts across customers and admins. Booking-only placeholder users are excluded from this page.</span></div>
+                        <div class="hero-note-card"><strong><?php echo number_format($totalUsers); ?></strong><span>Registered customer and admin accounts.</span></div>
                     </div>
                 </section>
 
@@ -563,17 +583,17 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                 <?php endif; ?>
 
                 <section class="stats-grid">
-                    <article class="stat-card"><div class="stat-label">Registered</div><div class="stat-value"><?php echo number_format($totalUsers); ?></div><div class="stat-meta">All visible customer and admin accounts.</div></article>
-                    <article class="stat-card"><div class="stat-label">Customers</div><div class="stat-value"><?php echo number_format($customerCount); ?></div><div class="stat-meta">Real registered customer accounts only.</div></article>
-                    <article class="stat-card"><div class="stat-label">Admins</div><div class="stat-value"><?php echo number_format($adminCount); ?></div><div class="stat-meta">Accounts with staff-level access.</div></article>
-                    <article class="stat-card"><div class="stat-label">With Bookings</div><div class="stat-value"><?php echo number_format($usersWithBookings); ?></div><div class="stat-meta">Registered users who have placed bookings.</div></article>
-                    <article class="stat-card"><div class="stat-label">Last 30 Days</div><div class="stat-value"><?php echo number_format($recentUsers); ?></div><div class="stat-meta">Fresh registrations and recently created accounts.</div></article>
+                    <article class="stat-card"><div class="stat-label">Registered</div><div class="stat-value"><?php echo number_format($totalUsers); ?></div><div class="stat-meta">All registered accounts.</div></article>
+                    <article class="stat-card"><div class="stat-label">Customers</div><div class="stat-value"><?php echo number_format($customerCount); ?></div><div class="stat-meta">Registered customers.</div></article>
+                    <article class="stat-card"><div class="stat-label">Admins</div><div class="stat-value"><?php echo number_format($adminCount); ?></div><div class="stat-meta">Administrator accounts.</div></article>
+                    <article class="stat-card"><div class="stat-label">With Bookings</div><div class="stat-value"><?php echo number_format($usersWithBookings); ?></div><div class="stat-meta">Accounts with booking history.</div></article>
+                    <article class="stat-card"><div class="stat-label">Last 30 Days</div><div class="stat-value"><?php echo number_format($recentUsers); ?></div><div class="stat-meta">Recent registrations.</div></article>
                 </section>
 
                 <section class="content-grid">
                     <article class="panel-card" id="add-user-form">
                         <div class="panel-heading">
-                            <div><h2 class="panel-title">Add New User</h2><p class="panel-subtitle">Create a customer or admin account manually. Passwords are now stored securely using hashing.</p></div>
+                            <div><h2 class="panel-title">Add New User</h2><p class="panel-subtitle">Create a customer or admin account.</p></div>
                             <span class="inline-chip"><i class="fa-solid fa-lock"></i> Secure password storage</span>
                         </div>
 
@@ -589,7 +609,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                                 <div class="form-field"><label class="form-label" for="add-email">Email</label><input type="email" id="add-email" name="email" class="form-control" maxlength="150" value="<?php echo htmlspecialchars((string) ($addUserData['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required></div>
                                 <div class="form-field"><label class="form-label" for="add-phone">Phone</label><input type="text" id="add-phone" name="phone" class="form-control" maxlength="30" value="<?php echo htmlspecialchars((string) ($addUserData['phone'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"></div>
                                 <div class="form-field"><label class="form-label" for="add-role">Role</label><select id="add-role" name="role" class="form-select"><option value="customer" <?php echo (($addUserData['role'] ?? 'customer') === 'customer') ? 'selected' : ''; ?>>Customer</option><option value="admin" <?php echo (($addUserData['role'] ?? '') === 'admin') ? 'selected' : ''; ?>>Admin</option></select></div>
-                                <div class="form-field full"><label class="form-label" for="add-password">Password</label><input type="password" id="add-password" name="password" class="form-control" minlength="6" maxlength="255" required><div class="form-help">Use at least 6 characters. This password will be hashed before it is saved.</div></div>
+                                <div class="form-field full"><label class="form-label" for="add-password">Password</label><input type="password" id="add-password" name="password" class="form-control" minlength="6" maxlength="255" required><div class="form-help">Minimum 6 characters.</div></div>
                             </div>
                             <div class="action-row"><button type="submit" class="btn-primary-soft"><i class="fa-solid fa-user-plus"></i> Create User</button><button type="reset" class="btn-surface"><i class="fa-solid fa-rotate-left"></i> Reset</button></div>
                         </form>
@@ -597,7 +617,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
 
                     <article class="panel-card">
                         <div class="panel-heading">
-                            <div><h2 class="panel-title">Registered Users</h2><p class="panel-subtitle">Search, filter, and manage customers and admins without mixing in booking placeholder records.</p></div>
+                            <div><h2 class="panel-title">Registered Users</h2><p class="panel-subtitle">Search, filter, and manage user accounts.</p></div>
                             <span class="inline-chip"><i class="fa-solid fa-users"></i> <?php echo number_format($totalUsers); ?> visible accounts</span>
                         </div>
 
@@ -628,7 +648,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                                                         </span>
                                                     </div>
                                                     <span class="user-meta"><?php echo htmlspecialchars((string) $user['email'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span class="user-meta"><?php echo htmlspecialchars((string) (($user['phone'] ?? '') !== '' ? $user['phone'] : 'No phone number'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <span class="user-meta"><?php echo htmlspecialchars((string) (($user['phone'] ?? '') !== '' ? $user['phone'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
                                                 </td>
                                                 <td><span class="role-badge role-<?php echo htmlspecialchars((string) $user['role'], ENT_QUOTES, 'UTF-8'); ?>"><i class="fa-solid fa-<?php echo $user['role'] === 'admin' ? 'crown' : 'user'; ?>"></i><?php echo htmlspecialchars(ucfirst((string) $user['role']), ENT_QUOTES, 'UTF-8'); ?></span></td>
                                                 <td>
@@ -641,7 +661,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                                                     <?php endif; ?>
                                                 </td>
                                                 <td><?php echo $joinedTs !== false ? htmlspecialchars(date('M d, Y', $joinedTs), ENT_QUOTES, 'UTF-8') : '-'; ?><span class="user-meta"><?php echo $joinedTs !== false ? htmlspecialchars(date('g:i A', $joinedTs), ENT_QUOTES, 'UTF-8') : ''; ?></span></td>
-                                                <td><?php echo $lastBookingTs !== false ? htmlspecialchars(date('M d, Y', $lastBookingTs), ENT_QUOTES, 'UTF-8') : 'No booking yet'; ?></td>
+                                                <td><?php echo $lastBookingTs !== false ? htmlspecialchars(date('M d, Y', $lastBookingTs), ENT_QUOTES, 'UTF-8') : '-'; ?></td>
                                                 <td>
                                                     <div class="table-actions">
                                                         <?php if ($isSelf): ?>
@@ -683,7 +703,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <div><h2 class="panel-title mb-1">Edit User</h2><p class="panel-subtitle mb-0">Update account details, role, or optionally reset this password.</p></div>
+                    <div><h2 class="panel-title mb-1">Edit User</h2><p class="panel-subtitle mb-0">Update account details and password.</p></div>
                     <button type="button" class="btn-close" aria-label="Close" onclick="window.location.href='manage-users.php'"></button>
                 </div>
                 <div class="modal-body">
@@ -776,17 +796,17 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         const bookings = Array.isArray(USER_BOOKING_HISTORY[String(userId)]) ? USER_BOOKING_HISTORY[String(userId)] : [];
         bookingHistoryModalTitle.textContent = `${userName} Booking History`;
         bookingHistoryModalSubtitle.textContent = bookings.length
-            ? `${bookings.length} past booking${bookings.length === 1 ? '' : 's'} recorded for this registered user.`
-            : 'No past bookings recorded for this registered user.';
+            ? `${bookings.length} booking${bookings.length === 1 ? '' : 's'}`
+            : 'No booking history';
 
         if (!bookings.length) {
-            bookingHistoryList.innerHTML = `<div class="history-empty">No past bookings recorded for this user yet.</div>`;
+            bookingHistoryList.innerHTML = `<div class="history-empty">No booking history.</div>`;
             bookingHistoryModal.show();
             return;
         }
 
         bookingHistoryList.innerHTML = bookings.map((booking) => {
-            const tableSummary = booking.assigned_table_numbers ? `Table ${escapeHtml(booking.assigned_table_numbers)}` : 'No table recorded';
+            const tableSummary = booking.assigned_table_numbers ? `Table ${escapeHtml(booking.assigned_table_numbers)}` : 'Unassigned';
             const placementSummary = booking.reservation_card_status_label ? escapeHtml(booking.reservation_card_status_label) : '';
             const sourceSummary = booking.booking_source === 'admin_manual' && booking.created_by_name
                 ? `${escapeHtml(booking.booking_source_label)} by ${escapeHtml(booking.created_by_name)}`

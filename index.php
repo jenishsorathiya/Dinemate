@@ -51,36 +51,18 @@ margin:20px 0 30px;
 }
 
 .btn-book{
-background:#f4b400;
+background:#1d2840;
 border:none;
-padding:16px 40px;
-border-radius:40px;
+padding:13px 32px;
+border-radius:8px;
 font-weight:600;
-font-size:18px;
-transition:0.3s;
+font-size:16px;
+color:#ffffff;
+transition:opacity 0.15s;
 }
 
 .btn-book:hover{
-transform:scale(1.05);
-background:#e0a800;
-}
-
-/* FLOATING ICONS */
-
-.floating{
-position:absolute;
-font-size:40px;
-animation:float 6s ease-in-out infinite;
-}
-
-.food1{top:20%;left:10%;}
-.food2{top:70%;right:12%;animation-delay:1s;}
-.food3{top:40%;right:25%;animation-delay:2s;}
-
-@keyframes float{
-0%{transform:translateY(0px)}
-50%{transform:translateY(-20px)}
-100%{transform:translateY(0px)}
+opacity:0.86;
 }
 
 /* SECTION */
@@ -93,16 +75,16 @@ padding:80px 0;
 
 .menu-card{
 background:white;
-border-radius:18px;
+border-radius:10px;
 overflow:hidden;
-box-shadow:0 20px 40px rgba(0,0,0,0.1);
-transition:0.4s;
+border:1px solid #e7ecf3;
+box-shadow:0 4px 16px rgba(0,0,0,0.06);
+transition:box-shadow 0.2s;
 height:100%;
 }
 
 .menu-card:hover{
-transform:translateY(-12px) scale(1.02);
-box-shadow:0 25px 50px rgba(0,0,0,0.2);
+box-shadow:0 8px 24px rgba(0,0,0,0.10);
 }
 
 .menu-card img{
@@ -131,16 +113,11 @@ font-size:15px;
 
 .feature-card{
 background:white;
-padding:30px;
+padding:24px;
 border:1px solid #e7ecf3;
-border-radius:18px;
-box-shadow:0 16px 36px rgba(15,23,42,0.06);
+border-radius:10px;
+box-shadow:0 4px 16px rgba(15,23,42,0.05);
 text-align:center;
-transition:0.3s;
-}
-
-.feature-card:hover{
-transform:translateY(-6px);
 }
 
 .feature-icon{
@@ -153,10 +130,10 @@ margin-bottom:15px;
 
 .about-box{
 background:white;
-padding:100px;
+padding:48px;
 border:1px solid #e7ecf3;
-border-radius:18px;
-box-shadow:0 16px 36px rgba(15,23,42,0.06);
+border-radius:12px;
+box-shadow:0 4px 16px rgba(15,23,42,0.05);
 }
 
 /* TABLE AVAILABILITY */
@@ -170,15 +147,10 @@ gap:20px;
 .table-card{
 background:white;
 border:1px solid #e7ecf3;
-border-radius:18px;
-padding:25px;
+border-radius:10px;
+padding:20px;
 text-align:center;
-box-shadow:0 16px 36px rgba(15,23,42,0.06);
-transition:0.3s;
-}
-
-.table-card:hover{
-transform:translateY(-5px);
+box-shadow:0 4px 16px rgba(15,23,42,0.05);
 }
 
 .table-icon{
@@ -194,10 +166,10 @@ margin-bottom:10px;
 .review-card{
 background:white;
 border:1px solid #e7ecf3;
-border-radius:18px;
-padding:30px;
+border-radius:10px;
+padding:24px;
 text-align:center;
-box-shadow:0 16px 36px rgba(15,23,42,0.06);
+box-shadow:0 4px 16px rgba(15,23,42,0.05);
 }
 
 .review-img{
@@ -222,7 +194,7 @@ margin-bottom:15px;
 
 <div class="hero-content">
 
-<h1>Experience Dining <br><span class="typed-text"></span></h1>
+<h1>Experience Dining<br>Like Never Before</h1>
 
 <p>Reserve your table instantly at Old Canberra Inn.</p>
 
@@ -231,10 +203,6 @@ margin-bottom:15px;
 </a>
 
 </div>
-
-<div class="floating food1">🍽</div>
-<div class="floating food2">🍷</div>
-<div class="floating food3">🍔</div>
 
 </section>
 
@@ -517,60 +485,6 @@ Chef special burger with smoked cheddar.
 
 
 <?php include "includes/footer.php"; ?>
-
-<script>
-
-const words=["Like Never Before","Without Waiting","In Seconds"];
-let wordIndex=0;
-let charIndex=0;
-
-const typedText=document.querySelector(".typed-text");
-
-function typeEffect(){
-
-if(charIndex < words[wordIndex].length){
-
-typedText.textContent += words[wordIndex].charAt(charIndex);
-charIndex++;
-
-setTimeout(typeEffect,70);
-
-}else{
-
-setTimeout(eraseEffect,1500);
-
-}
-
-}
-
-function eraseEffect(){
-
-if(charIndex>0){
-
-typedText.textContent=words[wordIndex].substring(0,charIndex-1);
-charIndex--;
-
-setTimeout(eraseEffect,40);
-
-}else{
-
-wordIndex++;
-
-if(wordIndex>=words.length){wordIndex=0;}
-
-setTimeout(typeEffect,200);
-
-}
-
-}
-
-document.addEventListener("DOMContentLoaded",function(){
-
-setTimeout(typeEffect,500);
-
-});
-
-</script>
 
 </body>
 </html>

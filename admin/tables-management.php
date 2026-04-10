@@ -389,13 +389,9 @@ $adminSidebarPathPrefix = '';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DineMate - Table Operations (Visual Layout)</title>
+    <?php include __DIR__ . '/admin-head.php'; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
             --bg: #f4f6fb;
@@ -1590,8 +1586,8 @@ $adminSidebarPathPrefix = '';
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 10px;
-            border-radius: 999px;
+            padding: 4px 10px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
         }
@@ -1868,7 +1864,7 @@ $adminSidebarPathPrefix = '';
                 <header class="page-header">
                     <div>
                         <h1 class="page-title">Table Operations</h1>
-                        <p class="page-subtitle">Configure your venue layout, table setup, and section structure.</p>
+                        <p class="page-subtitle">Manage venue layout and table settings.</p>
                     </div>
                     <div class="header-actions">
                         <button class="button" id="headerAddTable" type="button"><i class="fa-solid fa-plus"></i> Add Table</button>
@@ -1881,7 +1877,7 @@ $adminSidebarPathPrefix = '';
                     <div class="section-head">
                         <div>
                             <h2 class="section-title">Area Overview</h2>
-                            <p class="section-note">Manage your venue sections and review table distribution at a glance.</p>
+                            <p class="section-note">Review and manage venue areas.</p>
                         </div>
                         <button class="button button-ghost" id="addAreaButton" type="button"><i class="fa-solid fa-plus"></i> Add Area</button>
                     </div>
@@ -1909,7 +1905,7 @@ $adminSidebarPathPrefix = '';
                         <div class="canvas-toolbar">
                             <div>
                                 <h2 class="section-title">Visual Floor Plan</h2>
-                                <p class="section-note">Interactive seating map with realistic zones, drag positioning, and quick edits.</p>
+                                <p class="section-note">Interactive seating map.</p>
                             </div>
                             <div class="canvas-toolbar-actions">
                                 <div class="toolbar-group zoom-group">

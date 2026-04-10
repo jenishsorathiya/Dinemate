@@ -42,7 +42,9 @@ if($isLoggedInCustomer) {
 $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if(!$booking){
-    die("Booking not found.");
+    $_SESSION['error'] = 'Booking confirmation not found.';
+    header('Location: book-table.php');
+    exit();
 }
 
 $tableLabel = $booking['table_number'] ? 'Table ' . $booking['table_number'] : 'To be assigned by staff';
@@ -74,9 +76,9 @@ margin-bottom:80px;
 .confirm-card{
 background:white;
 border:1px solid #e7ecf3;
-border-radius:20px;
+border-radius:10px;
 padding:36px;
-box-shadow:0 18px 42px rgba(15,23,42,0.08);
+box-shadow:0 4px 16px rgba(15,23,42,0.06);
 text-align:center;
 max-width:700px;
 margin:auto;
@@ -87,13 +89,6 @@ margin:auto;
 .success-icon{
 font-size:70px;
 color:#22c55e;
-animation:pop 0.6s ease;
-}
-
-@keyframes pop{
-0%{transform:scale(0)}
-70%{transform:scale(1.2)}
-100%{transform:scale(1)}
 }
 
 /* Reservation ticket */
@@ -101,7 +96,7 @@ animation:pop 0.6s ease;
 .ticket{
 background:#f8fafc;
 border:1px solid #e7ecf3;
-border-radius:16px;
+border-radius:10px;
 padding:20px;
 margin-top:25px;
 display:flex;
@@ -123,8 +118,8 @@ font-size:15px;
 padding:10px;
 background:white;
 border:1px solid #e7ecf3;
-border-radius:14px;
-box-shadow:0 10px 24px rgba(15,23,42,0.06);
+border-radius:8px;
+box-shadow:0 4px 12px rgba(15,23,42,0.05);
 }
 
 /* Button */
@@ -134,7 +129,7 @@ background:#1d2840;
 border:1px solid #1d2840;
 color:#ffffff;
 padding:14px;
-border-radius:12px;
+border-radius:8px;
 font-weight:600;
 margin-top:25px;
 }
@@ -153,7 +148,7 @@ text-align:left;
 
 .confirm-side{
 border:1px solid #e7ecf3;
-border-radius:16px;
+border-radius:10px;
 padding:18px;
 background:#f8fafc;
 }
@@ -224,9 +219,9 @@ Your request has been saved. A table will be assigned by the admin team.
 </div>
 
 <aside class="confirm-side">
-<h4>What Happens Next</h4>
-<p>Your booking stays in your portal so you can reschedule, cancel, or rebook from history later.</p>
-<p>Table assignment and reservation-card placement are handled by staff. Once you are logged in, guest and account bookings can continue to collect under the same customer profile.</p>
+<h4>Booking Status</h4>
+<p>Your booking is available in your account for future updates.</p>
+<p>Table assignment and reservation-card placement are managed by staff.</p>
 <?php if ($isLoggedInCustomer && $customerProfile): ?>
 <p><strong>Reminder preferences:</strong> <?= !empty($customerProfile['email_reminders_enabled']) ? 'Email reminders on' : 'Email reminders off'; ?>, <?= !empty($customerProfile['sms_reminders_enabled']) ? 'SMS reminders on' : 'SMS reminders off'; ?>.</p>
 <?php endif; ?>

@@ -22,7 +22,9 @@ $stmt->execute([$booking_id, getCurrentUserId()]);
 $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if(!$booking){
-    die("Booking not found.");
+    $_SESSION['error'] = 'Booking not found or you do not have permission to modify it.';
+    header('Location: my-bookings.php');
+    exit();
 }
 
 $error = "";
@@ -122,14 +124,9 @@ margin-bottom:80px;
 .modify-card{
 background:white;
 border:1px solid #e7ecf3;
-border-radius:20px;
+border-radius:10px;
 padding:34px;
-box-shadow:0 18px 42px rgba(15,23,42,0.08);
-transition:0.3s;
-}
-
-.modify-card:hover{
-transform:translateY(-3px);
+box-shadow:0 4px 16px rgba(15,23,42,0.06);
 }
 
 /* TITLE */
@@ -150,7 +147,7 @@ margin-bottom:6px;
 /* INPUT */
 
 .modern-input{
-border-radius:12px;
+border-radius:8px;
 padding:12px 14px;
 border:1px solid #d9e1ec;
 transition:0.2s;
@@ -168,7 +165,7 @@ background:#1d2840;
 border:1px solid #1d2840;
 color:#ffffff;
 padding:14px;
-border-radius:12px;
+border-radius:8px;
 font-weight:600;
 font-size:16px;
 transition:0.3s;
@@ -177,13 +174,12 @@ transition:0.3s;
 .btn-update:hover{
 background:#141d31;
 border-color:#141d31;
-transform:translateY(-1px);
 }
 
 /* BACK BUTTON */
 
 .btn-back{
-border-radius:12px;
+border-radius:8px;
 padding:10px 18px;
 }
 

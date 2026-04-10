@@ -208,14 +208,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Analytics | DineMate Admin</title>
+    <?php include __DIR__ . '/admin-head.php'; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="../assets/css/dashboard-theme.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
         :root {
@@ -278,10 +273,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             align-items: center;
             gap: 8px;
             padding: 6px;
-            border-radius: 18px;
+            border-radius: 8px;
             background: rgba(248, 250, 252, 0.96);
             border: 1px solid #e7ecf3;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
         }
 
         .analytics-range-chip {
@@ -290,12 +284,12 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             color: #5a657b;
             min-height: 36px;
             padding: 0 14px;
-            border-radius: 12px;
+            border-radius: 6px;
             font: inherit;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+            transition: background 0.18s ease, color 0.18s ease;
         }
 
         .analytics-range-chip:hover,
@@ -308,7 +302,6 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .analytics-range-chip.is-active {
             background: #1d2840;
             color: #ffffff;
-            box-shadow: 0 10px 18px rgba(29, 40, 64, 0.22);
         }
 
         .analytics-topbar-selects {
@@ -324,10 +317,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 10px;
             min-height: 44px;
             padding: 0 12px;
-            border-radius: 16px;
+            border-radius: 8px;
             border: 1px solid #e7ecf3;
             background: #ffffff;
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
         }
 
         .analytics-topbar-select-icon {
@@ -350,10 +342,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 8px;
             min-height: 44px;
             padding: 0 12px;
-            border-radius: 16px;
+            border-radius: 8px;
             border: 1px solid #e7ecf3;
             background: #ffffff;
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
             color: #6a768b;
             font-size: 13px;
             font-weight: 600;
@@ -380,13 +371,10 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             position: relative;
             overflow: hidden;
             padding: 32px;
-            border-radius: 28px;
-            background:
-                radial-gradient(circle at top right, rgba(200, 147, 61, 0.16), transparent 28%),
-                radial-gradient(circle at bottom left, rgba(90, 136, 200, 0.12), transparent 34%),
-                linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(249, 251, 255, 0.86));
+            border-radius: 12px;
+            background: #ffffff;
             border: 1px solid rgba(231, 236, 243, 0.95);
-            box-shadow: var(--analytics-shadow);
+            box-shadow: 0 1px 3px rgba(15,23,42,0.08);
             display: grid;
             grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
             gap: 22px;
@@ -394,40 +382,25 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         }
 
         .analytics-hero::after {
-            content: '';
-            position: absolute;
-            inset: auto -70px -120px auto;
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(200, 147, 61, 0.14), rgba(200, 147, 61, 0));
-            pointer-events: none;
+            display: none;
         }
 
         .hero-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin: 0 0 12px;
-            color: var(--analytics-gold);
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
+            display: none;
         }
 
         .hero-title {
             margin: 0;
-            font-size: clamp(32px, 4vw, 44px);
+            font-size: clamp(20px, 2.8vw, 28px);
             line-height: 1.02;
-            letter-spacing: -0.04em;
+            letter-spacing: -0.02em;
         }
 
         .hero-subtitle {
             margin: 12px 0 0;
             max-width: 720px;
             color: var(--analytics-muted);
-            font-size: 16px;
+            font-size: 14px;
             line-height: 1.7;
         }
 
@@ -439,11 +412,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .hero-mini-card {
             padding: 18px 20px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.78);
+            border-radius: 10px;
+            background: #f8fafc;
             border: 1px solid rgba(232, 236, 243, 0.9);
-            box-shadow: 0 16px 24px rgba(15, 23, 42, 0.05);
-            backdrop-filter: blur(10px);
         }
 
         .hero-mini-label {
@@ -456,8 +427,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .hero-mini-value {
             margin-top: 8px;
-            font-size: 28px;
-            font-weight: 800;
+            font-size: 22px;
+            font-weight: 700;
             letter-spacing: -0.03em;
             color: var(--analytics-ink);
         }
@@ -521,15 +492,14 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .analytics-card {
             background: var(--analytics-surface-strong);
             border: 1px solid var(--analytics-line);
-            border-radius: 24px;
+            border-radius: 10px;
             box-shadow: var(--analytics-shadow-soft);
-            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+            transition: box-shadow 0.22s ease, border-color 0.22s ease;
         }
 
         .kpi-card:hover,
         .analytics-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 24px 38px rgba(15, 23, 42, 0.1);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
             border-color: #dde5f0;
         }
 
@@ -540,12 +510,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         }
 
         .kpi-card::before {
-            content: '';
-            position: absolute;
-            inset: 0 auto auto 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, rgba(200, 147, 61, 0.18), rgba(90, 136, 200, 0.5));
+            display: none;
         }
 
         .kpi-label {
@@ -558,9 +523,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .kpi-value {
             margin-top: 12px;
-            font-size: 34px;
-            font-weight: 800;
-            letter-spacing: -0.05em;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
             color: var(--analytics-ink);
         }
 
@@ -576,11 +541,11 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 7px 10px;
-            border-radius: 999px;
+            padding: 3px 8px;
+            border-radius: 4px;
             background: #f6f8fb;
             color: #445066;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
         }
 
@@ -638,7 +603,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             align-items: center;
             gap: 6px;
             padding: 5px;
-            border-radius: 16px;
+            border-radius: 8px;
             background: #f5f7fb;
             border: 1px solid #e7ecf3;
         }
@@ -649,18 +614,18 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             color: #607089;
             min-height: 34px;
             padding: 0 12px;
-            border-radius: 12px;
+            border-radius: 8px;
             font: inherit;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+            transition: background 0.18s ease, color 0.18s ease;
         }
 
         .segment-button.is-active {
             background: #ffffff;
             color: #1d2840;
-            box-shadow: 0 8px 14px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
         }
 
         .chart-shell {
@@ -684,7 +649,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             justify-content: space-between;
             gap: 10px;
             padding: 14px 16px;
-            border-radius: 18px;
+            border-radius: 8px;
             background: #f8fafc;
             border: 1px solid #edf1f6;
         }
@@ -725,7 +690,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .sub-stat {
             padding: 16px;
-            border-radius: 18px;
+            border-radius: 8px;
             background: #f8fafc;
             border: 1px solid #edf1f6;
         }
@@ -759,15 +724,13 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .heatmap-cell {
             padding: 14px 12px;
-            border-radius: 16px;
+            border-radius: 10px;
             border: 1px solid rgba(226, 232, 240, 0.95);
             background: #f8fafc;
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
         }
 
         .heatmap-cell:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 18px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06);
         }
 
         .heatmap-cell-label {
@@ -785,7 +748,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .heatmap-bar {
             margin-top: 12px;
             height: 8px;
-            border-radius: 999px;
+            border-radius: 4px;
             background: rgba(90, 136, 200, 0.14);
             overflow: hidden;
         }
@@ -808,7 +771,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             justify-content: space-between;
             gap: 12px;
             padding: 12px 14px;
-            border-radius: 16px;
+            border-radius: 8px;
             background: #f8fafc;
             border: 1px solid #edf1f6;
         }
@@ -835,7 +798,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             align-items: center;
             gap: 8px;
             padding: 10px 14px;
-            border-radius: 999px;
+            border-radius: 6px;
             background: #fbf7ee;
             border: 1px solid #f0e3c5;
             color: #8f6630;
@@ -854,7 +817,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 12px;
             align-items: center;
             padding: 14px 16px;
-            border-radius: 18px;
+            border-radius: 8px;
             background: #f8fafc;
             border: 1px solid #edf1f6;
         }
@@ -883,7 +846,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .progress-track {
             width: 100%;
             height: 8px;
-            border-radius: 999px;
+            border-radius: 4px;
             background: #e8edf5;
             overflow: hidden;
         }
@@ -897,10 +860,10 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .top-zone-card {
             padding: 22px;
-            border-radius: 24px;
-            background: linear-gradient(155deg, rgba(33, 49, 78, 0.96), rgba(41, 62, 96, 0.92));
+            border-radius: 10px;
+            background: #1f2d4d;
             color: #ffffff;
-            box-shadow: 0 24px 34px rgba(33, 49, 78, 0.22);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
         }
 
         .top-zone-label {
@@ -955,7 +918,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 12px;
             align-items: start;
             padding: 14px 16px;
-            border-radius: 18px;
+            border-radius: 8px;
             background: #f8fafc;
             border: 1px solid #edf1f6;
             color: var(--analytics-muted);
@@ -977,7 +940,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .customer-stat-card {
             padding: 16px;
-            border-radius: 18px;
+            border-radius: 8px;
             background: #f8fafc;
             border: 1px solid #edf1f6;
         }
@@ -1007,10 +970,10 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .operation-card {
             padding: 18px;
-            border-radius: 20px;
-            background: linear-gradient(180deg, #ffffff, #fbfcff);
+            border-radius: 10px;
+            background: #ffffff;
             border: 1px solid #e8edf4;
-            box-shadow: 0 14px 24px rgba(15, 23, 42, 0.05);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
         }
 
         .operation-pill {
@@ -1018,7 +981,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             align-items: center;
             gap: 8px;
             padding: 7px 10px;
-            border-radius: 999px;
+            border-radius: 6px;
             background: #f5f7fb;
             color: #6b7689;
             font-size: 11px;
@@ -1046,10 +1009,10 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             place-items: center;
             min-height: 460px;
             padding: 48px 24px;
-            border-radius: 28px;
+            border-radius: 12px;
             border: 1px solid var(--analytics-line);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
-            box-shadow: var(--analytics-shadow);
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.06);
             text-align: center;
         }
 
@@ -1060,11 +1023,11 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .empty-icon {
             width: 82px;
             height: 82px;
-            border-radius: 26px;
+            border-radius: 10px;
             display: inline-grid;
             place-items: center;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, rgba(200, 147, 61, 0.16), rgba(90, 136, 200, 0.14));
+            background: rgba(31, 45, 77, 0.08);
             color: var(--analytics-ink);
             font-size: 34px;
         }
@@ -1091,7 +1054,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             text-align: center;
             color: var(--analytics-muted);
             border: 1px dashed #e3eaf3;
-            border-radius: 22px;
+            border-radius: 10px;
             background: #fbfcfe;
             padding: 24px;
         }
@@ -1158,7 +1121,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             .analytics-card,
             .kpi-card,
             .empty-state-shell {
-                border-radius: 22px;
+                border-radius: 10px;
             }
 
             .analytics-hero {
@@ -1186,6 +1149,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             }
         }
     </style>
+
 </head>
 <body>
 <div class="admin-layout">
@@ -1200,7 +1164,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                     <div>
                         <p class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> Premium operations overview</p>
                         <h1 class="hero-title">Analytics</h1>
-                        <p class="hero-subtitle">Track bookings, table utilisation, customer trends, and service performance.</p>
+                        <p class="hero-subtitle">Booking, table, and customer performance.</p>
                     </div>
                     <div class="hero-overview">
                         <div class="hero-mini-card">
@@ -1219,8 +1183,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                 <section class="empty-state-shell" id="globalEmptyState" hidden>
                     <div>
                         <div class="empty-icon"><i class="fa-solid fa-chart-column"></i></div>
-                        <h2>No analytics available yet</h2>
-                        <p>Data will appear once bookings and table activity are recorded.</p>
+                        <h2>No analytics available</h2>
+                        <p>Analytics will appear when data is available.</p>
                     </div>
                 </section>
 
@@ -1229,7 +1193,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                         <div class="section-heading">
                             <div class="section-title-wrap">
                                 <h2>KPI Summary</h2>
-                                <p>Quick operational signals for bookings, occupancy, customer fit, attendance, and dwell time.</p>
+                                <p>Key booking and occupancy metrics.</p>
                             </div>
                             <div class="section-note" id="kpiSectionNote">Comparing the selected period against the previous one.</div>
                         </div>
@@ -1237,8 +1201,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                             <article class="kpi-card">
                                 <div class="kpi-label">Total Bookings</div>
                                 <div class="kpi-value" id="kpiTotalBookings">0</div>
-                                <div class="kpi-trend" id="kpiTotalTrend">No comparison yet</div>
-                                <div class="kpi-meta">Overall booking demand across the selected period.</div>
+                                <div class="kpi-trend" id="kpiTotalTrend">No comparison</div>
+                                <div class="kpi-meta">Bookings in the selected period.</div>
                             </article>
                             <article class="kpi-card">
                                 <div class="kpi-label">Occupancy Rate</div>
@@ -1256,7 +1220,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                                 <div class="kpi-label">No-show Rate</div>
                                 <div class="kpi-value" id="kpiNoShowRate">0%</div>
                                 <div class="kpi-trend" id="kpiNoShowTrend">Lower is better</div>
-                                <div class="kpi-meta">Estimated attendance risk based on booking patterns.</div>
+                                <div class="kpi-meta">Recorded no-show rate.</div>
                             </article>
                             <article class="kpi-card">
                                 <div class="kpi-label">Average Dwell Time</div>
@@ -1271,7 +1235,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                         <div class="section-heading">
                             <div class="section-title-wrap">
                                 <h2>Booking Trends</h2>
-                                <p>Track demand over time and identify when booking pressure concentrates.</p>
+                                <p>Booking volume over time.</p>
                             </div>
                         </div>
                         <div class="panel-grid-large">
@@ -1279,7 +1243,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                                 <div class="card-header">
                                     <div>
                                         <h3 class="card-title">Booking Trends</h3>
-                                        <p class="card-subtitle">The trend chart follows the selected daily, weekly, monthly, or yearly period.</p>
+                                        <p class="card-subtitle">Selected reporting period.</p>
                                     </div>
                                 </div>
                                 <div class="chart-shell">
@@ -1291,7 +1255,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                                 <div class="card-header">
                                     <div>
                                         <h3 class="card-title">Peak demand</h3>
-                                        <p class="card-subtitle">Operational pressure points across dayparts and weekdays.</p>
+                                        <p class="card-subtitle">Busiest booking periods.</p>
                                     </div>
                                 </div>
                                 <div class="metrics-stack">
@@ -1310,14 +1274,14 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                         <div class="section-heading">
                             <div class="section-title-wrap">
                                 <h2>Table Utilisation</h2>
-                                <p>See which tables turn fastest, where idle time builds up, and whether allocation is balanced.</p>
+                                <p>Table usage and turnover.</p>
                             </div>
                         </div>
                         <article class="analytics-card">
                             <div class="card-header">
                                 <div>
                                     <h3 class="card-title">Table Utilisation</h3>
-                                    <p class="card-subtitle">Which tables are most efficient, which sit idle, and how well demand is distributed.</p>
+                                    <p class="card-subtitle">Table activity across the selected period.</p>
                                 </div>
                             </div>
                             <div class="utilisation-summary">
@@ -1331,7 +1295,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                                     <div class="insight-tags" id="utilisationInsightTags"></div>
                                 </div>
                                 <div>
-                                    <div class="card-header" style="margin-bottom: 12px;"><div><h3 class="card-title" style="font-size: 16px;">Utilisation heatmap</h3><p class="card-subtitle">Relative usage by table across the selected period.</p></div></div>
+                                    <div class="card-header" style="margin-bottom: 12px;"><div><h3 class="card-title" style="font-size: 16px;">Utilisation heatmap</h3><p class="card-subtitle">Relative table usage.</p></div></div>
                                     <div class="heatmap-grid" id="tableHeatmap"></div>
                                     <div class="card-header" style="margin: 18px 0 12px;"><div><h3 class="card-title" style="font-size: 16px;">Least used tables</h3></div></div>
                                     <div class="table-list" id="leastUsedTablesList"></div>
@@ -1344,16 +1308,16 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                         <div class="section-heading">
                             <div class="section-title-wrap">
                                 <h2>Zone Performance</h2>
-                                <p>Compare booking performance across your actual restaurant areas.</p>
+                                <p>Performance by venue area.</p>
                             </div>
                         </div>
                         <div class="panel-grid-half">
                             <article class="analytics-card">
-                                <div class="card-header"><div><h3 class="card-title">Zone Performance</h3><p class="card-subtitle">Bookings, occupancy, table usage, and party mix by area.</p></div></div>
+                                <div class="card-header"><div><h3 class="card-title">Zone Performance</h3><p class="card-subtitle">Bookings and occupancy by area.</p></div></div>
                                 <div class="zone-table" id="zonePerformanceTable"></div>
                             </article>
                             <article class="analytics-card">
-                                <div class="card-header"><div><h3 class="card-title">Area Highlights</h3><p class="card-subtitle">Highlight the strongest area and where operational attention should go next.</p></div></div>
+                                <div class="card-header"><div><h3 class="card-title">Area Highlights</h3><p class="card-subtitle">Top area performance indicators.</p></div></div>
                                 <div class="area-highlight-layout">
                                     <div>
                                         <div class="metric-grid-quad">
@@ -1364,7 +1328,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                                         </div>
                                         <div class="chart-shell small"><canvas id="areaDemandChart"></canvas></div>
                                     </div>
-                                    <div class="top-zone-card"><div class="top-zone-label">Top Performing Area</div><div class="top-zone-name" id="topZoneNameCard">-</div><div class="top-zone-copy" id="topZoneCopy">Strong occupancy and consistent booking demand this period.</div></div>
+                                    <div class="top-zone-card"><div class="top-zone-label">Top Performing Area</div><div class="top-zone-name" id="topZoneNameCard">-</div><div class="top-zone-copy" id="topZoneCopy">Best overall area performance for the selected period.</div></div>
                                 </div>
                             </article>
                         </div>
@@ -1374,12 +1338,12 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                         <div class="section-heading">
                             <div class="section-title-wrap">
                                 <h2>Cancellations &amp; No-shows</h2>
-                                <p>Track where bookings break down and where reminder or allocation changes can help.</p>
+                                <p>Cancellation and no-show activity.</p>
                             </div>
                         </div>
                         <div class="panel-grid-half">
                             <article class="analytics-card">
-                                <div class="card-header"><div><h3 class="card-title">Cancellations &amp; No-shows</h3><p class="card-subtitle">Actual cancelled, completed, and no-show outcomes across the selected period.</p></div></div>
+                                <div class="card-header"><div><h3 class="card-title">Cancellations &amp; No-shows</h3><p class="card-subtitle">Booking outcomes for the selected period.</p></div></div>
                                 <div class="metric-grid-quad">
                                     <div class="sub-stat"><div class="sub-stat-label">Cancellation rate</div><div class="sub-stat-value" id="cancellationRateValue">0%</div><div class="sub-stat-note">Share of bookings cancelled before service.</div></div>
                                     <div class="sub-stat"><div class="sub-stat-label">No-show rate</div><div class="sub-stat-value" id="cancellationNoShowValue">0%</div><div class="sub-stat-note">Estimated from short lead times and service patterns.</div></div>
@@ -1390,7 +1354,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                                 <div class="insights-list" id="cancellationInsights"></div>
                             </article>
                             <article class="analytics-card">
-                                <div class="card-header"><div><h3 class="card-title">Customer Insights</h3><p class="card-subtitle">Understand guest loyalty, lead times, and the party sizes you serve most often.</p></div></div>
+                                <div class="card-header"><div><h3 class="card-title">Customer Insights</h3><p class="card-subtitle">Guest mix and booking patterns.</p></div></div>
                                 <div class="customer-stat-row">
                                     <div class="customer-stat-card"><span>New vs returning</span><strong id="customerMixValue">0 / 0</strong></div>
                                     <div class="customer-stat-card"><span>Average lead time</span><strong id="leadTimeValue">0 days</strong></div>
@@ -1738,7 +1702,7 @@ function getPreviousRange(range) {
 
 function comparePeriods(currentValue, previousValue) {
     if (!previousValue) {
-        return { value: null, text: 'No comparison yet', state: '' };
+        return { value: null, text: 'No comparison', state: '' };
     }
 
     const delta = ((currentValue - previousValue) / previousValue) * 100;
@@ -2200,7 +2164,7 @@ function renderLeastUsedTables(metrics) {
     const container = document.getElementById('leastUsedTablesList');
     const tables = metrics.leastUsedTables.length ? metrics.leastUsedTables : metrics.tableUsage.slice(-3);
     if (!tables.length) {
-        container.innerHTML = '<div class="section-empty"><div><i class="fa-regular fa-clock"></i>No table utilisation data yet.</div></div>';
+        container.innerHTML = '<div class="section-empty"><div><i class="fa-regular fa-clock"></i>No table utilisation data.</div></div>';
         return;
     }
 
@@ -2251,14 +2215,14 @@ function renderCancellationInsights(metrics) {
 function renderOperationalInsights(metrics) {
     const topArea = metrics.topArea ? metrics.topArea.area : 'Main Bar';
     const cards = [
-        { label: 'Capacity', title: `${topArea} is leading this period.`, copy: `${topArea} shows the strongest mix of occupancy and table efficiency. Consider protecting that inventory during peak windows.` },
-        { label: 'Turnover', title: `${formatNumber(metrics.turnoverRate, 1)}x average turnover across active tables.`, copy: '4-seat tables and fast dinner seatings are creating the cleanest table rotation.' },
-        { label: 'Peak periods', title: `${metrics.peakDay} and ${metrics.peakHour} are the main pressure points.`, copy: `${metrics.peakService} service is carrying the highest booking concentration in the selected range.` },
-        { label: 'Attendance risk', title: `No-show rate is ${formatPercent(metrics.noShowRate, 0)}.`, copy: 'These are now based on real recorded no-show outcomes instead of estimates.' }
+        { label: 'Capacity', title: `${topArea} is leading this period.`, copy: `${topArea} has the highest combined occupancy and table efficiency.` },
+        { label: 'Turnover', title: `${formatNumber(metrics.turnoverRate, 1)}x average turnover across active tables.`, copy: 'Turnover is strongest across the most frequently used table groups.' },
+        { label: 'Peak periods', title: `${metrics.peakDay} at ${metrics.peakHour} is the busiest period.`, copy: `${metrics.peakService} service has the highest booking volume in the selected range.` },
+        { label: 'Attendance risk', title: `No-show rate is ${formatPercent(metrics.noShowRate, 0)}.`, copy: 'Based on recorded booking outcomes.' }
     ];
 
     if (metrics.largeTableMismatchCount > 0) {
-        cards.splice(2, 0, { label: 'Allocation', title: 'Large tables are often assigned to groups of 2 to 3.', copy: 'Tightening assignment rules for large tables would improve peak-capacity efficiency.' });
+        cards.splice(2, 0, { label: 'Allocation', title: 'Large tables are frequently assigned to small groups.', copy: 'Review table allocation to improve capacity usage.' });
     }
 
     document.getElementById('operationalInsightsGrid').innerHTML = cards.slice(0, 5).map((card) => `

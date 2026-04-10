@@ -15,7 +15,7 @@
     margin-top: 90px;
 }
 .about-hero h1{
-    front-weight: 700;
+    font-weight: 700;
 }  
 
 .section {
@@ -25,15 +25,14 @@
 .feature-card{
     background: white;
     border: 1px solid #e7ecf3;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 30px;
     text-align: center;
-    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
-    transition: 0.3s;
+    box-shadow: 0 4px 16px rgba(15,23,42,0.06);
 }
 
 .feature-card:hover {
-    transform: translateY(-6px);
+    box-shadow: 0 8px 24px rgba(15,23,42,0.10);
 }
 
 .feature-icon {
@@ -45,15 +44,15 @@
 .story-card {
     background: white;
     border: 1px solid #e7ecf3;
-    border-radius: 18px;
+    border-radius: 10px;
     padding: 40px;
-    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
+    box-shadow: 0 4px 16px rgba(15,23,42,0.06);
 
 }
 
 .about-img {
-    border-radius: 18px;
-    box-shadow: 0 16px 36px rgba(15,23,42,0.06);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(15,23,42,0.06);
 }
 
 </style>

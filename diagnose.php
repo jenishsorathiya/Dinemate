@@ -134,7 +134,7 @@ try {
     <title>DineMate Diagnostics</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/dashboard-theme.css" rel="stylesheet">
+    <link href="assets/css/app.css" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; padding: 32px 20px; background: #f5f7fb; }
         .container { max-width: 980px; margin: 0 auto; background: #ffffff; border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }

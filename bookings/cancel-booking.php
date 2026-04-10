@@ -19,6 +19,7 @@ WHERE booking_id=? AND user_id=? AND status IN ('pending', 'confirmed')
 
 $stmt->execute([$id, getCurrentUserId()]);
 
+$_SESSION['success'] = 'Your booking has been cancelled.';
 header("Location: my-bookings.php");
 exit();
 ?>
