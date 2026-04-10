@@ -448,61 +448,61 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
 <head>
     <?php include __DIR__ . '/admin-head.php'; ?>
     <style>
-        :root { --users-bg: linear-gradient(180deg, #f5f7fb 0%, #eff4fb 100%); --users-card: #ffffff; --users-line: #e5ebf4; --users-text: #172033; --users-muted: #6b768b; --users-shadow: 0 24px 48px rgba(15, 23, 42, 0.08); --users-shadow-soft: 0 12px 26px rgba(15, 23, 42, 0.05); --users-primary: #1f3c88; --users-accent: #d8a230; --users-success: #1f8f63; --users-danger: #c94b62; --users-warning: #c9831f; }
+        :root { --users-bg: #f6f8fc; --users-card: #ffffff; --users-line: #e5ebf4; --users-text: #172033; --users-muted: #6b768b; --users-shadow: 0 8px 20px rgba(15, 23, 42, 0.08); --users-shadow-soft: 0 4px 12px rgba(15, 23, 42, 0.06); --users-primary: #1f3c88; --users-accent: #d8a230; --users-success: #1f8f63; --users-danger: #c94b62; --users-warning: #c9831f; }
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--users-bg); color: var(--users-text); }
         .main { flex: 1; overflow-y: auto; padding: 28px; }
         .users-shell { max-width: 1400px; margin: 0 auto; display: grid; gap: 22px; }
-        .hero-card, .panel-card, .stat-card { background: var(--users-card); border: 1px solid var(--users-line); border-radius: 24px; box-shadow: var(--users-shadow-soft); }
-        .hero-card { padding: 28px; box-shadow: var(--users-shadow); background: radial-gradient(circle at top right, rgba(216, 162, 48, 0.18), transparent 28%), radial-gradient(circle at bottom left, rgba(31, 60, 136, 0.14), transparent 34%), #ffffff; }
+        .hero-card, .panel-card, .stat-card { background: var(--users-card); border: 1px solid var(--users-line); border-radius: 12px; box-shadow: var(--users-shadow-soft); }
+        .hero-card { padding: 28px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); background: #ffffff; }
         .hero-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr); gap: 24px; align-items: end; }
-        .eyebrow { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--users-accent); font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
-        .hero-title { margin: 0; font-size: clamp(30px, 4vw, 42px); line-height: 1.03; letter-spacing: -0.04em; }
-        .hero-copy { margin: 12px 0 0; max-width: 780px; color: var(--users-muted); font-size: 15px; line-height: 1.7; }
-        .hero-note-card { padding: 20px; border-radius: 20px; background: rgba(248, 250, 253, 0.9); border: 1px solid var(--users-line); }
-        .hero-note-card strong { display: block; font-size: 28px; letter-spacing: -0.04em; }
+        .eyebrow { display: none; }
+        .hero-title { margin: 0; font-size: 22px; line-height: 1.03; letter-spacing: -0.01em; }
+        .hero-copy { margin: 12px 0 0; max-width: 780px; color: var(--users-muted); font-size: 14px; line-height: 1.6; }
+        .hero-note-card { padding: 20px; border-radius: 8px; background: rgba(248, 250, 253, 0.9); border: 1px solid var(--users-line); }
+        .hero-note-card strong { display: block; font-size: 22px; letter-spacing: -0.02em; }
         .hero-note-card span { display: block; margin-top: 8px; color: var(--users-muted); font-size: 13px; line-height: 1.6; }
         .stats-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
-        .stat-card { padding: 20px; position: relative; overflow: hidden; }
-        .stat-card::before { content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 4px; background: linear-gradient(90deg, rgba(216, 162, 48, 0.95), rgba(31, 60, 136, 0.8)); }
+        .stat-card { padding: 20px; position: relative; overflow: hidden; border-radius: 8px; }
+        .stat-card::before { display: none; }
         .stat-label { color: var(--users-muted); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
-        .stat-value { margin-top: 14px; font-size: 34px; font-weight: 800; letter-spacing: -0.05em; }
-        .stat-meta { margin-top: 8px; color: var(--users-muted); font-size: 13px; }
+        .stat-value { margin-top: 8px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+        .stat-meta { margin-top: 4px; color: var(--users-muted); font-size: 12px; }
         .content-grid { display: grid; grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.65fr); gap: 22px; align-items: start; }
-        .panel-card { padding: 24px; }
+        .panel-card { padding: 24px; border-radius: 12px; }
         .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-        .panel-title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+        .panel-title { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0; }
         .panel-subtitle { margin: 6px 0 0; color: var(--users-muted); font-size: 13px; }
-        .inline-chip { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; background: #f7f9fc; border: 1px solid var(--users-line); color: #44506a; font-size: 12px; font-weight: 700; }
+        .inline-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 4px; background: #f7f9fc; border: 1px solid var(--users-line); color: #44506a; font-size: 11px; font-weight: 600; }
         .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
         .form-field { display: grid; gap: 8px; }
         .form-field.full { grid-column: 1 / -1; }
         .form-label { font-size: 13px; font-weight: 700; color: #34405a; }
-        .form-control, .form-select { min-height: 46px; border-radius: 14px; border: 1px solid var(--users-line); background: #fbfcfe; padding: 12px 14px; box-shadow: none; }
+        .form-control, .form-select { min-height: 36px; border-radius: 6px; border: 1px solid var(--users-line); background: #fbfcfe; padding: 7px 10px; box-shadow: none; }
         .form-control:focus, .form-select:focus { border-color: #c99a32; box-shadow: 0 0 0 4px rgba(216, 162, 48, 0.14); background: #ffffff; }
         .form-help { color: var(--users-muted); font-size: 12px; line-height: 1.5; }
         .action-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-        .btn-surface, .btn-primary-soft, .btn-danger-soft, .btn-warning-soft { border: 1px solid var(--users-line); border-radius: 14px; min-height: 42px; padding: 0 16px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease; }
-        .btn-surface:hover, .btn-primary-soft:hover, .btn-danger-soft:hover, .btn-warning-soft:hover { transform: translateY(-1px); box-shadow: var(--users-shadow-soft); }
+        .btn-surface, .btn-primary-soft, .btn-danger-soft, .btn-warning-soft { border: 1px solid var(--users-line); border-radius: 6px; min-height: 34px; padding: 0 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; cursor: pointer; transition: opacity 0.15s ease; }
+        .btn-surface:hover, .btn-primary-soft:hover, .btn-danger-soft:hover, .btn-warning-soft:hover { opacity: 0.82; }
         .btn-surface { background: #ffffff; color: #293750; }
         .btn-primary-soft { background: #1f3c88; border-color: #1f3c88; color: #ffffff; }
         .btn-danger-soft { background: #fff2f5; border-color: #ffd6df; color: var(--users-danger); }
         .btn-warning-soft { background: #fff8ec; border-color: #f4dfb1; color: var(--users-warning); }
-        .alert { border-radius: 16px; border: 1px solid transparent; padding: 16px 18px; margin: 0; }
+        .alert { border-radius: 8px; border: 1px solid transparent; padding: 16px 18px; margin: 0; }
         .alert ul { margin: 0; padding-left: 18px; }
         .table-toolbar { display: grid; grid-template-columns: minmax(0, 1.1fr) repeat(3, minmax(160px, 0.45fr)); gap: 12px; margin-bottom: 18px; }
         .toolbar-field { position: relative; }
         .toolbar-field i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #8a96ab; font-size: 13px; }
         .toolbar-field input { padding-left: 38px; }
-        .table-wrap { border: 1px solid var(--users-line); border-radius: 20px; overflow: hidden; background: #ffffff; }
+        .table-wrap { border: 1px solid var(--users-line); border-radius: 10px; overflow: hidden; background: #ffffff; }
         .table-custom { width: 100%; border-collapse: collapse; }
-        .table-custom thead th { background: #f8fafd; color: #52607a; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 16px 18px; border-bottom: 1px solid var(--users-line); white-space: nowrap; }
-        .table-custom tbody td { padding: 18px; border-bottom: 1px solid #edf2f7; vertical-align: top; }
+        .table-custom thead th { background: #f8fafd; color: #52607a; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid var(--users-line); white-space: nowrap; }
+        .table-custom tbody td { padding: 10px 14px; border-bottom: 1px solid #edf2f7; vertical-align: top; }
         .table-custom tbody tr:last-child td { border-bottom: 0; }
         .table-custom tbody tr:hover { background: #fbfcff; }
         .user-name { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; }
         .user-meta { display: block; margin-top: 6px; color: var(--users-muted); font-size: 12px; }
-        .tiny-badge, .role-badge, .booking-badge, .account-badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+        .tiny-badge, .role-badge, .booking-badge, .account-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
         .tiny-badge { background: #eaf1ff; color: #3658a5; }
         .role-badge.role-admin { background: #edf2f7; color: #4a556a; }
         .role-badge.role-customer { background: #e9f7ef; color: #1f8f63; }
@@ -511,54 +511,27 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         .account-badge.active { background: #e9f7ef; color: #1f8f63; }
         .account-badge.disabled { background: #fff0f3; color: #c94b62; }
         .booking-badge.booking-trigger { border: 0; cursor: pointer; }
-        .booking-badge.booking-trigger:hover { transform: translateY(-1px); box-shadow: var(--users-shadow-soft); }
+        .booking-badge.booking-trigger:hover { opacity: 0.86; }
         .table-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .table-actions form, .table-actions a { margin: 0; }
-        .btn-table { min-height: 36px; padding: 0 12px; border-radius: 12px; font-size: 12px; }
+        .btn-table { min-height: 30px; padding: 0 10px; border-radius: 6px; font-size: 11px; }
         .results-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; color: var(--users-muted); font-size: 13px; }
         .results-empty { display: none; padding: 28px 18px; text-align: center; color: var(--users-muted); font-size: 14px; }
-        .modal-content { border: 0; border-radius: 24px; box-shadow: var(--users-shadow); }
+        .modal-content { border: 0; border-radius: 12px; box-shadow: var(--users-shadow); }
         .modal-header, .modal-footer { border: 0; padding: 22px 24px 0; }
         .modal-body { padding: 22px 24px 24px; }
         .modal-footer { padding: 0 24px 24px; }
         .history-list { display: grid; gap: 12px; }
-        .history-card { border: 1px solid var(--users-line); border-radius: 18px; padding: 16px 18px; background: #fbfcff; }
+        .history-card { border: 1px solid var(--users-line); border-radius: 8px; padding: 16px 18px; background: #fbfcff; }
         .history-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
         .history-card-title { margin: 0; font-size: 15px; font-weight: 800; }
         .history-card-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 10px; color: var(--users-muted); font-size: 13px; }
         .history-card-note { margin-top: 10px; color: var(--users-muted); font-size: 12px; }
-        .history-empty { padding: 18px; border: 1px dashed var(--users-line); border-radius: 18px; background: #fbfcff; color: var(--users-muted); text-align: center; font-size: 14px; }
+        .history-empty { padding: 18px; border: 1px dashed var(--users-line); border-radius: 8px; background: #fbfcff; color: var(--users-muted); text-align: center; font-size: 14px; }
         @media (max-width: 1200px) { .stats-grid, .table-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .content-grid, .hero-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .form-grid, .table-toolbar { grid-template-columns: 1fr; } .panel-heading, .results-footer { align-items: flex-start; flex-direction: column; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid #edf2f7; } .table-custom tbody td { padding: 8px 0; border: 0; } }
     </style>
-    <style>
-        /* Override: flatten visual chrome */
-        body { background: #f6f8fc; }
-        .hero-card { background: #ffffff !important; box-shadow: 0 1px 3px rgba(15,23,42,0.06) !important; border-radius: 12px !important; }
-        .eyebrow { display: none !important; }
-        .hero-title { font-size: 22px !important; font-weight: 700 !important; letter-spacing: -0.01em !important; }
-        .hero-copy { font-size: 14px !important; }
-        .hero-note-card { border-radius: 8px !important; }
-        .hero-note-card strong { font-size: 22px !important; letter-spacing: -0.02em !important; font-weight: 700 !important; }
-        .stat-card { border-radius: 8px !important; }
-        .stat-card::before { display: none !important; }
-        .stat-value { font-size: 24px !important; font-weight: 700 !important; letter-spacing: -0.02em !important; margin-top: 8px !important; }
-        .stat-meta { font-size: 12px !important; margin-top: 4px !important; }
-        .panel-card { border-radius: 12px !important; }
-        .panel-title { font-size: 16px !important; font-weight: 700 !important; letter-spacing: 0 !important; }
-        .tiny-badge, .role-badge, .booking-badge, .account-badge { border-radius: 4px !important; padding: 2px 7px !important; font-size: 11px !important; font-weight: 600 !important; }
-        .table-wrap { border-radius: 10px !important; }
-        .table-custom thead th { font-size: 11px !important; font-weight: 700 !important; padding: 10px 14px !important; }
-        .table-custom tbody td { padding: 10px 14px !important; }
-        .btn-surface, .btn-primary-soft, .btn-danger-soft, .btn-warning-soft { border-radius: 6px !important; transform: none !important; box-shadow: none !important; transition: opacity 0.15s !important; min-height: 34px !important; padding: 0 12px !important; font-size: 12px !important; }
-        .btn-surface:hover, .btn-primary-soft:hover, .btn-danger-soft:hover, .btn-warning-soft:hover { transform: none !important; opacity: 0.82 !important; }
-        .btn-table { min-height: 30px !important; padding: 0 10px !important; font-size: 11px !important; }
-        .inline-chip { border-radius: 4px !important; padding: 4px 10px !important; font-size: 11px !important; font-weight: 600 !important; }
-        .form-control, .form-select { border-radius: 6px !important; min-height: 36px !important; padding: 7px 10px !important; }
-        .alert { border-radius: 8px !important; }
-        .history-card { border-radius: 8px !important; }
-        .modal-content { border-radius: 12px !important; }
-    </style>
+    
 </head>
 <body>
 <div class="admin-layout">

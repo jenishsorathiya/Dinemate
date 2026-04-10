@@ -47,7 +47,7 @@ $error = "Admin account not found.";
 body {
     margin: 0;
     font-family: 'Inter', sans-serif;
-    background: #f5f7fb;
+    background: var(--dm-bg);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -58,11 +58,11 @@ body {
     width: 100%;
     max-width: 1050px;
     display: flex;
-    border-radius: 20px;
+    border-radius: var(--dm-radius-lg);
     overflow: hidden;
-    background: white;
-    border: 1px solid #e7ecf3;
-    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
+    box-shadow: var(--dm-shadow-md);
 }
 
 .admin-left {
@@ -73,43 +73,42 @@ body {
 .admin-left h2 {
     font-size: 28px;
     font-weight: 700;
-    color: #162033;
+    color: var(--dm-text);
     margin-bottom: 8px;
 }
 
 .admin-left p {
-    color: #69758b;
+    color: var(--dm-text-muted);
     margin-bottom: 30px;
 }
 
 .form-control {
-    border-radius: 12px;
-    padding: 13px 14px;
-    border: 1px solid #d9e1ec;
+    border-radius: var(--dm-radius-sm);
+    padding: 10px 12px;
+    border: 1px solid var(--dm-border-strong);
     background: #ffffff;
     transition: 0.3s;
 }
 
 .form-control:focus {
     background: white;
-    box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
+    box-shadow: var(--dm-focus-ring);
     border-color: #bdc9da;
 }
 
 .btn-login {
-    background: #1d2840;
-    border: 1px solid #1d2840;
+    background: var(--dm-accent-dark);
+    border: 1px solid var(--dm-accent-dark);
     color: #ffffff;
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: var(--dm-radius-sm);
+    padding: 10px 14px;
     font-weight: 600;
-    transition: 0.18s ease;
+    transition: background 0.18s ease;
 }
 
 .btn-login:hover {
-    background: #141d31;
-    border-color: #141d31;
-    transform: translateY(-1px);
+    background: var(--dm-accent-dark-hover);
+    border-color: var(--dm-accent-dark-hover);
 }
 
 .password-wrapper {
@@ -171,7 +170,7 @@ body {
 }
 
 .alert {
-    border-radius: 12px;
+    border-radius: var(--dm-radius-sm);
 }    
 </style>
 </head>

@@ -16,7 +16,7 @@ session_start();
 body {
     margin: 0;
     font-family: 'Inter', sans-serif;
-    background: #f5f7fb;
+    background: var(--dm-bg);
 }
 
 .auth-wrapper {
@@ -29,12 +29,12 @@ body {
 .auth-box {
     width: 100%;
     max-width: 1080px;
-    background: #ffffff;
-    border: 1px solid #e7ecf3;
-    border-radius: 16px;
+    background: var(--dm-surface);
+    border: 1px solid var(--dm-border);
+    border-radius: var(--dm-radius-lg);
     display: flex;
     overflow: hidden;
-    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--dm-shadow-md);
 }
 
 .auth-left {
@@ -45,13 +45,13 @@ body {
 .auth-left h2 {
     font-size: 28px;
     font-weight: 700;
-    color: #162033;
+    color: var(--dm-text);
     margin-bottom: 10px;
 }
 
 .auth-left p,
 .auth-left .text-muted {
-    color: #69758b !important;
+    color: var(--dm-text-muted) !important;
 }
 
 .auth-right {
@@ -73,22 +73,22 @@ body {
     color: white;
 }
 .form-control {
-    border-radius: 8px;
-    padding: 11px 13px;
-    border: 1px solid #d9e1ec;
+    border-radius: var(--dm-radius-sm);
+    padding: 10px 12px;
+    border: 1px solid var(--dm-border-strong);
     font-size: 14px;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 .form-control:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(29,40,64,0.10);
-    border-color: #b0bdd0;
+    box-shadow: var(--dm-focus-ring);
+    border-color: #bdc9da;
 }
 .btn-main {
-    background: #1d2840;
-    border: 1px solid #1d2840;
-    border-radius: 8px;
-    padding: 11px 14px;
+    background: var(--dm-accent-dark);
+    border: 1px solid var(--dm-accent-dark);
+    border-radius: var(--dm-radius-sm);
+    padding: 10px 14px;
     font-weight: 600;
     color: #ffffff;
     font-family: inherit;
@@ -98,7 +98,9 @@ body {
 }
 
 .btn-main:hover {
-    opacity: 0.86;
+    background: var(--dm-accent-dark-hover);
+    border-color: var(--dm-accent-dark-hover);
+    color: #ffffff;
 }
 
 .password-wrapper {
@@ -132,8 +134,8 @@ body {
 }
 
 .social-btn {
-    border-radius: 8px;
-    border: 1px solid #d9e1ec;
+    border-radius: var(--dm-radius-sm);
+    border: 1px solid var(--dm-border-strong);
     padding: 10px 12px;
     background: white;
     transition: background 0.15s;

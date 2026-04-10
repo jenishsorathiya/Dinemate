@@ -10,22 +10,22 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <link href="../assets/css/app.css" rel="stylesheet">
 <style>
-body { margin: 0; font-family: 'Inter', sans-serif; background: #f5f7fb; }
+body { margin: 0; font-family: 'Inter', sans-serif; background: var(--dm-bg); }
 .auth-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 28px; }
-.auth-box { width: 100%; max-width: 1100px; background: #ffffff; border: 1px solid #e7ecf3; border-radius: 16px; overflow: hidden; display: flex; box-shadow: 0 16px 40px rgba(15,23,42,0.08); }
+.auth-box { width: 100%; max-width: 1100px; background: var(--dm-surface); border: 1px solid var(--dm-border); border-radius: var(--dm-radius-lg); overflow: hidden; display: flex; box-shadow: var(--dm-shadow-md); }
 .auth-left { flex: 1; padding: 48px 52px; }
-.auth-left h2 { font-size: 24px; font-weight: 700; color: #162033; margin: 0 0 6px; }
-.auth-left > p { color: #69758b; margin: 0 0 24px; font-size: 14px; }
-.auth-left p, .auth-left a, #emailMsg, #matchMsg { color: #69758b; }
+.auth-left h2 { font-size: 24px; font-weight: 700; color: var(--dm-text); margin: 0 0 6px; }
+.auth-left > p { color: var(--dm-text-muted); margin: 0 0 24px; font-size: 14px; }
+.auth-left p, .auth-left a, #emailMsg, #matchMsg { color: var(--dm-text-muted); }
 .auth-right { flex: 1; background: url('https://images.unsplash.com/photo-1528605248644-14dd04022da1') center/cover no-repeat; position: relative; }
 .auth-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(22,32,51,0.22), rgba(22,32,51,0.64)); }
 .auth-right-content { position: absolute; bottom: 36px; left: 36px; color: white; }
 .auth-right-content h3 { margin: 0 0 6px; font-size: 20px; font-weight: 700; }
 .auth-right-content p { margin: 0; font-size: 14px; opacity: 0.85; }
-.form-control { border-radius: 8px; padding: 11px 13px; border: 1px solid #d9e1ec; background: #ffffff; width: 100%; font-family: inherit; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
-.form-control:focus { outline: none; box-shadow: 0 0 0 3px rgba(29,40,64,0.10); border-color: #b0bdd0; background: white; }
-.btn-main { background: #1d2840; border: 1px solid #1d2840; border-radius: 8px; padding: 11px 14px; font-weight: 600; color: #ffffff; transition: opacity 0.15s; font-family: inherit; font-size: 14px; cursor: pointer; }
-.btn-main:hover { opacity: 0.86; }
+.form-control { border-radius: var(--dm-radius-sm); padding: 10px 12px; border: 1px solid var(--dm-border-strong); background: #ffffff; width: 100%; font-family: inherit; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
+.form-control:focus { outline: none; box-shadow: var(--dm-focus-ring); border-color: #bdc9da; background: white; }
+.btn-main { background: var(--dm-accent-dark); border: 1px solid var(--dm-accent-dark); border-radius: var(--dm-radius-sm); padding: 10px 14px; font-weight: 600; color: #ffffff; transition: background 0.15s; font-family: inherit; font-size: 14px; cursor: pointer; }
+.btn-main:hover { background: var(--dm-accent-dark-hover); border-color: var(--dm-accent-dark-hover); color: #ffffff; }
 .password-wrapper { position: relative; }
 .eye { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #8a9ab8; font-size: 14px; }
 .eye:hover { color: #4a5568; }
@@ -33,7 +33,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: #f5f7fb; }
 .strength.bg-danger { background: #ef4444; }
 .strength.bg-warning { background: #f59e0b; }
 .strength.bg-success { background: #22c55e; }
-.toast-box { position: fixed; top: 24px; right: 24px; background: #1d2840; color: white; padding: 12px 18px; border-radius: 8px; display: none; z-index: 999; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+.toast-box { position: fixed; top: 24px; right: 24px; background: var(--dm-accent-dark); color: white; padding: 12px 18px; border-radius: var(--dm-radius-sm); display: none; z-index: 999; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
 .success-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; color: white; font-size: 22px; font-weight: 700; z-index: 9999; backdrop-filter: blur(4px); }
 small { font-size: 12px; margin-top: 4px; display: block; }
 a { color: #3d6bdf; text-decoration: none; font-weight: 500; }

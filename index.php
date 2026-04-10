@@ -7,7 +7,7 @@
 
 body{
 font-family:'Inter',sans-serif;
-background:#f8f9fa;
+background:var(--dm-bg);
 margin:0;
 }
 
@@ -51,10 +51,10 @@ margin:20px 0 30px;
 }
 
 .btn-book{
-background:#1d2840;
+background:var(--dm-accent-dark);
 border:none;
 padding:13px 32px;
-border-radius:8px;
+border-radius:var(--dm-radius-sm);
 font-weight:600;
 font-size:16px;
 color:#ffffff;
@@ -74,10 +74,10 @@ padding:80px 0;
 /* MENU CARDS */
 
 .menu-card{
-background:white;
-border-radius:10px;
+background:var(--dm-surface);
+border-radius:var(--dm-radius-md);
 overflow:hidden;
-border:1px solid #e7ecf3;
+border:1px solid var(--dm-border);
 box-shadow:0 4px 16px rgba(0,0,0,0.06);
 transition:box-shadow 0.2s;
 height:100%;
@@ -112,10 +112,10 @@ font-size:15px;
 /* FEATURE CARDS */
 
 .feature-card{
-background:white;
+background:var(--dm-surface);
 padding:24px;
-border:1px solid #e7ecf3;
-border-radius:10px;
+border:1px solid var(--dm-border);
+border-radius:var(--dm-radius-md);
 box-shadow:0 4px 16px rgba(15,23,42,0.05);
 text-align:center;
 }
@@ -129,10 +129,10 @@ margin-bottom:15px;
 /* ABOUT */
 
 .about-box{
-background:white;
+background:var(--dm-surface);
 padding:48px;
-border:1px solid #e7ecf3;
-border-radius:12px;
+border:1px solid var(--dm-border);
+border-radius:var(--dm-radius-lg);
 box-shadow:0 4px 16px rgba(15,23,42,0.05);
 }
 
@@ -145,9 +145,9 @@ gap:20px;
 }
 
 .table-card{
-background:white;
-border:1px solid #e7ecf3;
-border-radius:10px;
+background:var(--dm-surface);
+border:1px solid var(--dm-border);
+border-radius:var(--dm-radius-md);
 padding:20px;
 text-align:center;
 box-shadow:0 4px 16px rgba(15,23,42,0.05);
@@ -164,9 +164,9 @@ margin-bottom:10px;
 /* REVIEWS */
 
 .review-card{
-background:white;
-border:1px solid #e7ecf3;
-border-radius:10px;
+background:var(--dm-surface);
+border:1px solid var(--dm-border);
+border-radius:var(--dm-radius-md);
 padding:24px;
 text-align:center;
 box-shadow:0 4px 16px rgba(15,23,42,0.05);

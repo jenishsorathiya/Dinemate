@@ -139,14 +139,14 @@ $adminSidebarPathPrefix = '';
     <?php include __DIR__ . '/admin-head.php'; ?>
     <style>
         :root {
-            --mn-bg: #f6f8fc;
-            --mn-surface: #ffffff;
-            --mn-line: #e7ecf3;
-            --mn-text: #1b2640;
-            --mn-muted: #63708a;
-            --mn-navy: #1f2d4d;
-            --mn-radius: 10px;
-            --mn-shadow: 0 8px 20px rgba(15,23,42,0.06);
+            --mn-bg: var(--dm-bg);
+            --mn-surface: var(--dm-surface);
+            --mn-line: var(--dm-border);
+            --mn-text: var(--dm-text);
+            --mn-muted: var(--dm-text-muted);
+            --mn-navy: var(--dm-accent-dark);
+            --mn-radius: var(--dm-radius-md);
+            --mn-shadow: var(--dm-shadow-sm);
         }
         * { box-sizing: border-box; }
         body { background: var(--mn-bg); color: var(--mn-text); }
@@ -160,8 +160,8 @@ $adminSidebarPathPrefix = '';
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         .form-group label { font-size: 12px; font-weight: 600; color: var(--mn-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-        .form-group input, .form-group select, .form-group textarea { padding: 9px 10px; border: 1px solid var(--mn-line); border-radius: 6px; font-size: 13px; font-family: inherit; color: var(--mn-text); background: #ffffff; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #a0aec0; box-shadow: 0 0 0 3px rgba(29,40,64,0.08); }
+        .form-group input, .form-group select, .form-group textarea { padding: 9px 10px; border: 1px solid var(--dm-border-strong); border-radius: var(--dm-radius-sm); font-size: 13px; font-family: inherit; color: var(--mn-text); background: #ffffff; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #bdc9da; box-shadow: var(--dm-focus-ring); }
         .form-group textarea { resize: vertical; }
         .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
         .form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -171,7 +171,7 @@ $adminSidebarPathPrefix = '';
         .no-items { color: var(--mn-muted); font-size: 13px; font-style: italic; }
         .menu-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
         /* Item cards */
-        .menu-item-card { border: 1px solid var(--mn-line); border-radius: 8px; overflow: hidden; background: #ffffff; }
+        .menu-item-card { border: 1px solid var(--mn-line); border-radius: var(--dm-radius-sm); overflow: hidden; background: #ffffff; }
         .menu-item-card.unavailable { opacity: 0.6; }
         .item-image { height: 140px; overflow: hidden; }
         .item-image img { width: 100%; height: 100%; object-fit: cover; }
@@ -181,10 +181,7 @@ $adminSidebarPathPrefix = '';
         .item-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .price { font-weight: 700; color: var(--mn-text); font-size: 14px; }
         .dietary { background: #f0f4fa; padding: 2px 7px; border-radius: 4px; font-size: 11px; color: var(--mn-muted); }
-        .status { font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
-        .status.available { background: #eaf6f1; color: #1a6845; border: 1px solid #b6deca; }
-        .status.unavailable { background: #fdf0f0; color: #9e1f2e; border: 1px solid #e4b0b7; }
-        .item-actions { padding: 8px 12px; background: #f9fafc; border-top: 1px solid var(--mn-line); display: flex; gap: 8px; justify-content: flex-end; }
+        .item-actions { padding: 8px 12px; background: var(--dm-surface-muted); border-top: 1px solid var(--mn-line); display: flex; gap: 8px; justify-content: flex-end; }
         @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .admin-container { padding: 16px; } .menu-items-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -303,7 +300,7 @@ $adminSidebarPathPrefix = '';
                                             <?php if (!empty($item['dietary_info'])): ?>
                                                 <span class="dietary"><?php echo htmlspecialchars($item['dietary_info']); ?></span>
                                             <?php endif; ?>
-                                            <span class="status <?php echo $item['is_available'] ? 'available' : 'unavailable'; ?>">
+                                            <span class="status-tag <?php echo $item['is_available'] ? 'available' : 'unavailable'; ?>">
                                                 <?php echo $item['is_available'] ? 'Available' : 'Unavailable'; ?>
                                             </span>
                                         </div>

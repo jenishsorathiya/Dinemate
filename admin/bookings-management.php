@@ -365,23 +365,23 @@ $adminSidebarPathPrefix = '';
     <?php include __DIR__ . '/admin-head.php'; ?>
     <style>
         :root {
-            --page-bg: #f6f8fc;
-            --surface: rgba(255, 255, 255, 0.94);
-            --surface-strong: #ffffff;
-            --surface-muted: #f8fafc;
-            --border-soft: #e6ebf4;
-            --border-strong: #d9e1ee;
-            --text-main: #1b2640;
-            --text-muted: #63708a;
-            --shadow-soft: 0 18px 38px rgba(52, 72, 105, 0.10);
-            --shadow-card: 0 10px 24px rgba(52, 72, 105, 0.08);
+            --page-bg: var(--dm-bg);
+            --surface: var(--dm-surface);
+            --surface-strong: var(--dm-surface);
+            --surface-muted: var(--dm-surface-muted);
+            --border-soft: var(--dm-border);
+            --border-strong: var(--dm-border-strong);
+            --text-main: var(--dm-text);
+            --text-muted: var(--dm-text-muted);
+            --shadow-soft: var(--dm-shadow-sm);
+            --shadow-card: var(--dm-shadow-md);
             --accent-gold: #f6b100;
             --accent-gold-soft: #fff3cf;
             --accent-red: #f15b67;
             --accent-red-soft: #ffe7ea;
             --accent-green: #1f9d74;
             --accent-green-soft: #dff7ee;
-            --accent-navy: #1f2d4d;
+            --accent-navy: var(--dm-accent-dark);
         }
 
         body {
@@ -470,7 +470,7 @@ $adminSidebarPathPrefix = '';
         .card-surface {
             background: var(--surface);
             border: 1px solid var(--border-soft);
-            border-radius: 18px;
+            border-radius: 10px;
             box-shadow: var(--shadow-soft);
         }
 
@@ -544,7 +544,7 @@ $adminSidebarPathPrefix = '';
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            border-radius: 14px;
+            border-radius: 8px;
             border: 1px solid var(--border-soft);
             background: rgba(255, 255, 255, 0.88);
             padding: 8px 12px;
@@ -562,7 +562,7 @@ $adminSidebarPathPrefix = '';
         .panel-filter .dots span {
             width: 6px;
             height: 6px;
-            border-radius: 999px;
+            border-radius: 50%;
             background: #ffc130;
             display: block;
         }
@@ -752,7 +752,7 @@ $adminSidebarPathPrefix = '';
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            border-radius: 14px;
+            border-radius: 8px;
             border: 1px solid var(--border-soft);
             background: rgba(255, 255, 255, 0.86);
             padding: 9px 13px;
@@ -789,14 +789,14 @@ $adminSidebarPathPrefix = '';
         .load-bar-track {
             width: 100%;
             height: 10px;
-            border-radius: 999px;
+            border-radius: 4px;
             background: #e7edf7;
             overflow: hidden;
         }
 
         .load-bar-fill {
             height: 100%;
-            border-radius: 999px;
+            border-radius: 4px;
             background: linear-gradient(90deg, #ffb000, #ffc73a);
         }
 
@@ -818,7 +818,7 @@ $adminSidebarPathPrefix = '';
         .empty-state {
             padding: 16px 18px;
             border: 1px dashed var(--border-strong);
-            border-radius: 18px;
+            border-radius: 10px;
             text-align: left;
             color: var(--text-muted);
             background: rgba(255, 255, 255, 0.9);
@@ -847,7 +847,7 @@ $adminSidebarPathPrefix = '';
         .history-filter-group select {
             width: 100%;
             border: 1px solid var(--border-strong);
-            border-radius: 12px;
+            border-radius: 8px;
             background: #fff;
             color: var(--text-main);
             padding: 10px 12px;
@@ -866,10 +866,10 @@ $adminSidebarPathPrefix = '';
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 42px;
-            border-radius: 12px;
-            padding: 0 14px;
-            font-size: 13px;
+            min-height: 34px;
+            border-radius: 6px;
+            padding: 0 12px;
+            font-size: 12px;
             font-weight: 700;
             text-decoration: none;
             cursor: pointer;
@@ -889,7 +889,7 @@ $adminSidebarPathPrefix = '';
 
         .alert {
             margin-bottom: 0;
-            border-radius: 16px;
+            border-radius: 8px;
         }
 
         @media (max-width: 1180px) {
