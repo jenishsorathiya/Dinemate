@@ -1,5 +1,6 @@
 <?php
-require_once "config/db.php";
+require_once __DIR__ . "/../config/db.php";
+require_once __DIR__ . "/../includes/functions.php";
 
 $checks = [
     ['label' => 'PHP runtime', 'status' => 'ok', 'message' => 'XAMPP PHP is working'],
@@ -25,7 +26,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DineMate System Test</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/app.css" rel="stylesheet">
+    <link href="<?php echo htmlspecialchars(appPath('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background: #f5f7fb; padding: 32px 20px; }
         .wrap { max-width: 760px; margin: 0 auto; background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }
@@ -47,7 +48,7 @@ try {
                 <span><?php echo htmlspecialchars($check['message'], ENT_QUOTES, 'UTF-8'); ?></span>
             </div>
         <?php endforeach; ?>
-        <a href="index.php" class="dm-button" style="margin-top:12px;">Back to Home</a>
+        <a href="<?php echo htmlspecialchars(appPath('public/index.php'), ENT_QUOTES, 'UTF-8'); ?>" class="dm-button" style="margin-top:12px;">Back to Home</a>
     </div>
 </body>
 </html>

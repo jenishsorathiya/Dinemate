@@ -2,6 +2,13 @@
 $adminSidebarActive = $adminSidebarActive ?? '';
 $adminSidebarPathPrefix = $adminSidebarPathPrefix ?? '';
 
+if ($adminSidebarPathPrefix === '') {
+    $adminSidebarRequestUri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($adminSidebarRequestUri, '/admin/pages/') !== false || strpos($adminSidebarRequestUri, '/admin/timeline/') !== false) {
+        $adminSidebarPathPrefix = '../';
+    }
+}
+
 $adminSidebarLink = static function (string $path) use ($adminSidebarPathPrefix): string {
     return $adminSidebarPathPrefix . $path;
 };
@@ -113,25 +120,25 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
 <div class="sidebar-shell">
     <div class="sidebar">
         <h4><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></h4>
-        <a href="<?php echo htmlspecialchars($adminSidebarLink('dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('dashboard'), ENT_QUOTES, 'UTF-8'); ?>">
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/analytics.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('dashboard'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-chart-line"></i><span class="nav-label">Analytics</span>
         </a>
-        <a href="<?php echo htmlspecialchars($adminSidebarLink('timeline/new-dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('timeline'), ENT_QUOTES, 'UTF-8'); ?>">
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('timeline/timeline.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('timeline'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-calendar-days"></i><span class="nav-label">Timeline</span>
         </a>
-        <a href="<?php echo htmlspecialchars($adminSidebarLink('bookings-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('bookings'), ENT_QUOTES, 'UTF-8'); ?>">
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/bookings-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('bookings'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
         </a>
-        <a href="<?php echo htmlspecialchars($adminSidebarLink('tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('tables'), ENT_QUOTES, 'UTF-8'); ?>">
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('tables'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
         </a>
-        <a href="<?php echo htmlspecialchars($adminSidebarLink('menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('menu'), ENT_QUOTES, 'UTF-8'); ?>">
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('menu'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>
         </a>
-        <a href="<?php echo htmlspecialchars($adminSidebarLink('manage-users.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('users'), ENT_QUOTES, 'UTF-8'); ?>">
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/manage-users.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('users'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-users"></i><span class="nav-label">Users</span>
         </a>
-        <a href="<?php echo htmlspecialchars($adminSidebarLink('customer-history.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('customers'), ENT_QUOTES, 'UTF-8'); ?>">
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/customer-history.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('customers'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-address-book"></i><span class="nav-label">Customers</span>
         </a>
         <a href="<?php echo htmlspecialchars($adminSidebarLink('../auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>">
@@ -139,3 +146,5 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
         </a>
     </div>
 </div>
+
+

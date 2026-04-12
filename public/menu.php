@@ -1,6 +1,24 @@
 <?php
-include 'includes/header.php';
-include 'config/db.php';
+include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/../config/db.php';
+
+$resolveMenuImageUrl = static function ($imagePath): string {
+    $path = trim((string) $imagePath);
+    if ($path === '') {
+        return '';
+    }
+
+    if (preg_match('#^(https?:)?//#i', $path) || stripos($path, 'data:') === 0) {
+        return $path;
+    }
+
+    if ($path[0] === '/') {
+        return $path;
+    }
+
+    $normalizedPath = preg_replace('#^(?:\.\.?/)+#', '', $path);
+    return appPath($normalizedPath ?: $path);
+};
 
 // Fetch menu items grouped by category
 $categories = ['Small Plates', 'Large Plates', 'House Specials', 'Burgers', 'Sides', 'Kiddies', 'Desserts'];
@@ -247,7 +265,7 @@ foreach ($categories as $category) {
                             <div class="menu-card <?php echo ($category === 'House Specials') ? 'featured' : ''; ?>">
                                 <?php if (!empty($item['image'])): ?>
                                     <div class="card-image">
-                                        <img src="<?php echo $item['image']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <img src="<?php echo htmlspecialchars($resolveMenuImageUrl($item['image']), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                     </div>
                                 <?php endif; ?>
                                 <div class="card-content">
@@ -277,5 +295,5 @@ foreach ($categories as $category) {
 </div>
 
 <?php
-include 'includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>

@@ -389,7 +389,7 @@ $adminSidebarPathPrefix = '';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include __DIR__ . '/admin-head.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
@@ -1854,10 +1854,10 @@ $adminSidebarPathPrefix = '';
 </head>
 <body>
     <div class="visual-shell">
-        <?php require __DIR__ . '/admin-sidebar.php'; ?>
+        <?php require __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
         <div class="main-content">
-            <?php require __DIR__ . '/admin-topbar.php'; ?>
+            <?php require __DIR__ . '/../partials/admin-topbar.php'; ?>
 
             <main class="visual-main">
                 <div class="page-stack">
@@ -3607,3 +3607,5 @@ $adminSidebarPathPrefix = '';
     </script>
 </body>
 </html>
+
+

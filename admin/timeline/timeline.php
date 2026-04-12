@@ -1601,11 +1601,11 @@ $adminSidebarPathPrefix = '../';
 
 <div class="container-fluid">
     <!-- SIDEBAR -->
-    <?php include __DIR__ . '/../admin-sidebar.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
-        <?php include __DIR__ . '/../admin-topbar.php'; ?>
+        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
 
         <!-- CONTENT -->
         <div class="content">
@@ -4513,3 +4513,4 @@ $adminSidebarPathPrefix = '../';
 
 </body>
 </html>
+

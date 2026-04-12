@@ -7,28 +7,28 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $footerRole = getCurrentUserRole();
 $footerLinks = [
-    ['label' => 'Home', 'path' => 'index.php'],
-    ['label' => 'Book a Table', 'path' => 'bookings/book-table.php'],
+    ['label' => 'Home', 'path' => 'public/index.php'],
+    ['label' => 'Book a Table', 'path' => 'customer/book-table.php'],
     ['label' => 'Login', 'path' => 'auth/login.php'],
     ['label' => 'Register', 'path' => 'auth/register.php'],
-    ['label' => 'Contact Us', 'path' => 'contact.php'],
+    ['label' => 'Contact Us', 'path' => 'public/contact.php'],
 ];
 
 if (isLoggedIn() && $footerRole === 'customer') {
     $footerLinks = [
-        ['label' => 'Dashboard', 'path' => 'bookings/dashboard.php'],
-        ['label' => 'Home', 'path' => 'index.php'],
-        ['label' => 'Book', 'path' => 'bookings/book-table.php'],
-        ['label' => 'My Bookings', 'path' => 'bookings/my-bookings.php'],
-        ['label' => 'Profile', 'path' => 'bookings/profile.php'],
+        ['label' => 'Dashboard', 'path' => 'customer/dashboard.php'],
+        ['label' => 'Home', 'path' => 'public/index.php'],
+        ['label' => 'Book', 'path' => 'customer/book-table.php'],
+        ['label' => 'My Bookings', 'path' => 'customer/my-bookings.php'],
+        ['label' => 'Profile', 'path' => 'customer/profile.php'],
         ['label' => 'Logout', 'path' => 'auth/logout.php'],
     ];
 } elseif (isLoggedIn() && $footerRole === 'admin') {
     $footerLinks = [
-        ['label' => 'Timeline', 'path' => 'admin/timeline/new-dashboard.php'],
-        ['label' => 'Bookings Management', 'path' => 'admin/bookings-management.php'],
-        ['label' => 'Tables Management', 'path' => 'admin/tables-management.php'],
-        ['label' => 'Menu Management', 'path' => 'admin/menu-management.php'],
+        ['label' => 'Timeline', 'path' => 'admin/timeline/timeline.php'],
+        ['label' => 'Bookings Management', 'path' => 'admin/pages/bookings-management.php'],
+        ['label' => 'Tables Management', 'path' => 'admin/pages/tables-management.php'],
+        ['label' => 'Menu Management', 'path' => 'admin/pages/menu-management.php'],
         ['label' => 'Logout', 'path' => 'auth/logout.php'],
     ];
 }
@@ -84,3 +84,4 @@ function scrollTopPage() {
 
 
     
+

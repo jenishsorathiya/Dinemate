@@ -4,6 +4,7 @@ require_once "../includes/functions.php";
 require_once "../includes/session-check.php";
 
 ensureBookingRequestColumns($pdo);
+ensureBookingTableAssignmentsTable($pdo);
 
 requireCustomer();
 if(!isset($_GET['id'])){
@@ -67,41 +68,53 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             if((int)$capacityStmt->fetchColumn() === 0) {
                 $error = "We do not currently have a table that can accommodate that many guests.";
             } else {
-                $stmt = $pdo->prepare("
-                UPDATE bookings
-                SET table_id = NULL,
-                    booking_date = ?,
-                    start_time = ?,
-                    end_time = ?,
-                    requested_start_time = ?,
-                    requested_end_time = ?,
-                    number_of_guests = ?,
-                    special_request = ?,
-                    status = 'pending'
-                WHERE booking_id = ? AND user_id = ?
-                ");
+                try {
+                    $pdo->beginTransaction();
+                    syncBookingTableAssignments($pdo, $booking_id, []);
 
-                $stmt->execute([
-                    $date,
-                    $start_time,
-                    $end_time,
-                    $start_time,
-                    $end_time,
-                    $guests,
-                    $special,
-                    $booking_id,
-                    getCurrentUserId()
-                ]);
+                    $stmt = $pdo->prepare("
+                    UPDATE bookings
+                    SET booking_date = ?,
+                        start_time = ?,
+                        end_time = ?,
+                        requested_start_time = ?,
+                        requested_end_time = ?,
+                        number_of_guests = ?,
+                        special_request = ?,
+                        status = 'pending',
+                        reservation_card_status = NULL
+                    WHERE booking_id = ? AND user_id = ?
+                    ");
 
-                $success = "Booking request updated. Table assignment will be handled by staff.";
+                    $stmt->execute([
+                        $date,
+                        $start_time,
+                        $end_time,
+                        $start_time,
+                        $end_time,
+                        $guests,
+                        $special,
+                        $booking_id,
+                        getCurrentUserId()
+                    ]);
 
-                $stmt = $pdo->prepare("
-                SELECT * FROM bookings 
-                WHERE booking_id = ?
-                ");
+                    $pdo->commit();
+                    $success = "Booking request updated. Table assignment will be handled by staff.";
 
-                $stmt->execute([$booking_id]);
-                $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $stmt = $pdo->prepare("
+                    SELECT * FROM bookings 
+                    WHERE booking_id = ?
+                    ");
+
+                    $stmt->execute([$booking_id]);
+                    $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+                } catch (Throwable $e) {
+                    if ($pdo->inTransaction()) {
+                        $pdo->rollBack();
+                    }
+
+                    $error = "Unable to update your booking right now.";
+                }
             }
         }
     }

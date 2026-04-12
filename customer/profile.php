@@ -123,7 +123,7 @@ $profileStmt->execute([$userId]);
 $profile = $profileStmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$profile) {
-    header("Location: ../index.php");
+    header("Location: ../public/index.php");
     exit();
 }
 

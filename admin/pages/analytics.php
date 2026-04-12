@@ -208,7 +208,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include __DIR__ . '/admin-head.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
@@ -1153,10 +1153,10 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 </head>
 <body>
 <div class="admin-layout">
-    <?php include __DIR__ . '/admin-sidebar.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <div class="main-content">
-        <?php include __DIR__ . '/admin-topbar.php'; ?>
+        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
 
         <main class="analytics-main">
             <div class="analytics-shell">
@@ -1395,7 +1395,7 @@ const analyticsSource = {
 
 const weekdayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const serviceOrder = ['Lunch', 'Dinner', 'Late Service'];
-const dashboardState = {
+const analyticsState = {
     period: 'daily',
     area: 'all',
     startValue: null,
@@ -1559,11 +1559,11 @@ function formatDuration(totalMinutes) {
 
 function getSelectedRange() {
     const today = parseDate(analyticsSource.today);
-    const period = dashboardState.period;
+    const period = analyticsState.period;
 
     if (period === 'weekly') {
-        const startValue = dashboardState.startValue || formatWeekValue(today);
-        const endValue = dashboardState.endValue || startValue;
+        const startValue = analyticsState.startValue || formatWeekValue(today);
+        const endValue = analyticsState.endValue || startValue;
         const startDate = parseWeekValue(startValue);
         const endDate = parseWeekValue(endValue);
         return {
@@ -1574,8 +1574,8 @@ function getSelectedRange() {
     }
 
     if (period === 'monthly') {
-        const startValue = dashboardState.startValue || formatMonthValue(today);
-        const endValue = dashboardState.endValue || startValue;
+        const startValue = analyticsState.startValue || formatMonthValue(today);
+        const endValue = analyticsState.endValue || startValue;
         return {
             start: startOfMonthFromValue(startValue),
             end: endOfMonthFromValue(endValue),
@@ -1584,8 +1584,8 @@ function getSelectedRange() {
     }
 
     if (period === 'yearly') {
-        const startValue = dashboardState.startValue || String(today.getFullYear());
-        const endValue = dashboardState.endValue || startValue;
+        const startValue = analyticsState.startValue || String(today.getFullYear());
+        const endValue = analyticsState.endValue || startValue;
         return {
             start: startOfYearFromValue(startValue),
             end: endOfYearFromValue(endValue),
@@ -1593,8 +1593,8 @@ function getSelectedRange() {
         };
     }
 
-    const startValue = dashboardState.startValue || analyticsSource.today;
-    const endValue = dashboardState.endValue || startValue;
+    const startValue = analyticsState.startValue || analyticsSource.today;
+    const endValue = analyticsState.endValue || startValue;
     return {
         start: startOfDay(parseDate(startValue)),
         end: endOfDay(parseDate(endValue)),
@@ -1605,11 +1605,11 @@ function getSelectedRange() {
 }
 
 function matchesArea(booking) {
-    if (dashboardState.area === 'all') {
+    if (analyticsState.area === 'all') {
         return true;
     }
 
-    return String(booking.area_key || '') === dashboardState.area;
+    return String(booking.area_key || '') === analyticsState.area;
 }
 
 function filterBookingsByRange(bookings, range) {
@@ -1620,11 +1620,11 @@ function filterBookingsByRange(bookings, range) {
 }
 
 function filterTablesByArea(tables) {
-    if (dashboardState.area === 'all') {
+    if (analyticsState.area === 'all') {
         return tables;
     }
 
-    return tables.filter((table) => String(table.area_key || '') === dashboardState.area);
+    return tables.filter((table) => String(table.area_key || '') === analyticsState.area);
 }
 
 function getBookingWeightForNoShow(booking) {
@@ -2234,7 +2234,7 @@ function renderOperationalInsights(metrics) {
     `).join('');
 }
 
-function renderDashboard() {
+function renderAnalytics() {
     const range = getSelectedRange();
     const filteredBookings = filterBookingsByRange(analyticsSource.bookings, range);
     const previousBookings = filterBookingsByRange(analyticsSource.bookings, getPreviousRange(range));
@@ -2257,7 +2257,7 @@ function renderDashboard() {
     analyticsContent.classList.add('is-refreshing');
 
     const metrics = buildMetrics(filteredBookings, previousBookings, analyticsSource.bookings, filteredTables, range);
-    const trendSeries = buildTrendSeries(filteredBookings, range, dashboardState.period);
+    const trendSeries = buildTrendSeries(filteredBookings, range, analyticsState.period);
 
     document.getElementById('kpiSectionNote').textContent = `${metrics.currentRangeLabel} compared with the previous equivalent period.`;
     document.getElementById('kpiTotalBookings').textContent = formatNumber(metrics.totalBookings);
@@ -2337,34 +2337,34 @@ function syncPeriodInputs() {
 
     inputGroups.forEach((input) => input.classList.add('is-hidden'));
 
-    if (dashboardState.period === 'weekly') {
+    if (analyticsState.period === 'weekly') {
         periodStartWeek.classList.remove('is-hidden');
         periodEndWeek.classList.remove('is-hidden');
-        dashboardState.startValue = periodStartWeek.value;
-        dashboardState.endValue = periodEndWeek.value;
+        analyticsState.startValue = periodStartWeek.value;
+        analyticsState.endValue = periodEndWeek.value;
         return;
     }
 
-    if (dashboardState.period === 'monthly') {
+    if (analyticsState.period === 'monthly') {
         periodStartMonth.classList.remove('is-hidden');
         periodEndMonth.classList.remove('is-hidden');
-        dashboardState.startValue = periodStartMonth.value;
-        dashboardState.endValue = periodEndMonth.value;
+        analyticsState.startValue = periodStartMonth.value;
+        analyticsState.endValue = periodEndMonth.value;
         return;
     }
 
-    if (dashboardState.period === 'yearly') {
+    if (analyticsState.period === 'yearly') {
         periodStartYear.classList.remove('is-hidden');
         periodEndYear.classList.remove('is-hidden');
-        dashboardState.startValue = periodStartYear.value;
-        dashboardState.endValue = periodEndYear.value;
+        analyticsState.startValue = periodStartYear.value;
+        analyticsState.endValue = periodEndYear.value;
         return;
     }
 
     periodStartDate.classList.remove('is-hidden');
     periodEndDate.classList.remove('is-hidden');
-    dashboardState.startValue = periodStartDate.value;
-    dashboardState.endValue = periodEndDate.value;
+    analyticsState.startValue = periodStartDate.value;
+    analyticsState.endValue = periodEndDate.value;
 }
 
 function applyDefaultPeriodValues() {
@@ -2383,30 +2383,33 @@ function applyDefaultPeriodValues() {
 
 document.querySelectorAll('[data-period]').forEach((button) => {
     button.addEventListener('click', () => {
-        dashboardState.period = button.getAttribute('data-period');
+        analyticsState.period = button.getAttribute('data-period');
         document.querySelectorAll('[data-period]').forEach((chip) => {
             chip.classList.toggle('is-active', chip === button);
         });
         syncPeriodInputs();
-        renderDashboard();
+        renderAnalytics();
     });
 });
 
 [periodStartDate, periodEndDate, periodStartWeek, periodEndWeek, periodStartMonth, periodEndMonth, periodStartYear, periodEndYear].forEach((input) => {
     input.addEventListener('change', () => {
         syncPeriodInputs();
-        renderDashboard();
+        renderAnalytics();
     });
 });
 
 areaFilter.addEventListener('change', () => {
-    dashboardState.area = areaFilter.value;
-    renderDashboard();
+    analyticsState.area = areaFilter.value;
+    renderAnalytics();
 });
 
 applyDefaultPeriodValues();
 
-renderDashboard();
+renderAnalytics();
 </script>
 </body>
 </html>
+
+
+

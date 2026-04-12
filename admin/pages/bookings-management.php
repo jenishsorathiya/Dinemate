@@ -362,7 +362,7 @@ $adminSidebarPathPrefix = '';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include __DIR__ . '/admin-head.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <style>
         :root {
             --page-bg: var(--dm-bg);
@@ -1055,10 +1055,10 @@ $adminSidebarPathPrefix = '';
 </head>
 <body>
 <div class="admin-layout">
-    <?php include __DIR__ . '/admin-sidebar.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <div class="main-content">
-        <?php include __DIR__ . '/admin-topbar.php'; ?>
+        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
 
         <div class="page-shell">
             <?php if ($flash): ?>
@@ -1072,7 +1072,7 @@ $adminSidebarPathPrefix = '';
                     <h1>Bookings</h1>
                     <p>Review requests, assign tables, and record service outcomes.</p>
                 </div>
-                <a href="timeline/new-dashboard.php" class="btn-workflow is-confirm">Open Timeline</a>
+                <a href="../timeline/timeline.php" class="btn-workflow is-confirm">Open Timeline</a>
             </div>
 
             <div class="stats-strip">
@@ -1139,7 +1139,7 @@ $adminSidebarPathPrefix = '';
                                     <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
                                     <button type="submit" class="btn-workflow is-reject">Reject</button>
                                 </form>
-                                <a class="btn-link-workflow" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList">Edit</a>
+                                <a class="btn-link-workflow" href="../timeline/timeline.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList">Edit</a>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -1171,7 +1171,7 @@ $adminSidebarPathPrefix = '';
                                 <?php endif; ?>
                             </div>
                             <div class="bk-actions">
-                                <a class="btn-workflow is-confirm" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#timelineGrid">Assign Table</a>
+                                <a class="btn-workflow is-confirm" href="../timeline/timeline.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#timelineGrid">Assign Table</a>
                                 <form method="POST" class="inline-form" onsubmit="return confirm('Mark this booking as completed?');">
                                     <input type="hidden" name="action" value="mark_completed">
                                     <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
@@ -1187,7 +1187,7 @@ $adminSidebarPathPrefix = '';
                                     <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
                                     <button type="submit" class="btn-workflow is-reject">Cancel</button>
                                 </form>
-                                <a class="btn-link-workflow" href="timeline/new-dashboard.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList">View</a>
+                                <a class="btn-link-workflow" href="../timeline/timeline.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList">View</a>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -1210,7 +1210,7 @@ $adminSidebarPathPrefix = '';
                                 <div class="today-num-label">Seats</div>
                             </div>
                         </div>
-                        <a class="side-link" href="timeline/new-dashboard.php">Open Timeline &rarr;</a>
+                        <a class="side-link" href="../timeline/timeline.php">Open Timeline &rarr;</a>
                     </div>
 
                     <?php if (!empty($serviceLoadRows)): ?>
@@ -1327,3 +1327,6 @@ $adminSidebarPathPrefix = '';
 </div>
 </body>
 </html>
+
+
+

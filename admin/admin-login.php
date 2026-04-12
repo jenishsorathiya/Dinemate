@@ -1,38 +1,16 @@
 <?php
-require_once "../config/db.php";
 require_once "../includes/functions.php";
-session_start();
 
-ensureUserAccountSchema($pdo);
-
-$error = "";
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-$email = sanitize($_POST['email']);
-$password = $_POST['password'];
-
-$stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role='admin'");
-$stmt->execute([$email]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if ($user && !empty($user['is_disabled'])) {
-    $error = "This admin account has been disabled.";
-} elseif ($user && $password === $user['password']) {
-
-    $_SESSION['user_id'] = $user['user_id'];
-    $_SESSION['role'] = $user['role'];
-
-    header("Location: dashboard.php");
-    exit;
-
-} else {
-    $error = "Invalid admin credentials.";
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
-} else {
-$error = "Admin account not found.";
+if (isLoggedIn() && getCurrentUserRole() === 'admin') {
+    redirect(appPath('admin/pages/analytics.php'));
 }
+
+$error = $_SESSION['admin_error'] ?? '';
+unset($_SESSION['admin_error']);
 ?>
 <!DOCTYPE html>
 <html>
@@ -181,13 +159,13 @@ body {
 <div class="admin-left">
 
 <h2>Admin Login</h2>
-<p>Access the DineMate management dashboard.</p>
+<p>Access the DineMate management analytics panel.</p>
 
 <?php if($error): ?>
 <div class="alert alert-danger"><?= $error ?></div>
 <?php endif; ?>
 
-<form method="POST">
+<form method="POST" action="process-admin-login.php">
 
 <div class="mb-3">
 <input type="email" name="email" class="form-control" placeholder="Admin Email" required>
@@ -238,3 +216,4 @@ pass.type="password";
 </script>
 
 </body>
+

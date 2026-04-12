@@ -1,7 +1,7 @@
 <?php
 ?>
 
-<?php include "includes/header.php"; ?>
+<?php include __DIR__ . "/../includes/header.php"; ?>
 
 <style>
 
@@ -181,10 +181,6 @@ margin-bottom:15px;
 
 </style>
 
-</head>
-
-<body>
-
 
 <!-- HERO -->
 
@@ -198,7 +194,7 @@ margin-bottom:15px;
 
 <p>Reserve your table instantly at Old Canberra Inn.</p>
 
-<a href="bookings/book-table.php" class="btn btn-book">
+<a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-book">
 <i class="fa fa-calendar-check"></i> Book a Table
 </a>
 
@@ -484,7 +480,7 @@ Chef special burger with smoked cheddar.
 </section>
 
 
-<?php include "includes/footer.php"; ?>
+<?php include __DIR__ . "/../includes/footer.php"; ?>
 
 </body>
 </html>

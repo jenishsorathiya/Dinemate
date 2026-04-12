@@ -1,9 +1,27 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../includes/functions.php';
-require_once __DIR__ . '/../includes/session-check.php';
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../includes/session-check.php';
 
 requireAdmin();
+
+$resolveMenuImageUrl = static function ($imagePath): string {
+    $path = trim((string) $imagePath);
+    if ($path === '') {
+        return '';
+    }
+
+    if (preg_match('#^(https?:)?//#i', $path) || stripos($path, 'data:') === 0) {
+        return $path;
+    }
+
+    if ($path[0] === '/') {
+        return $path;
+    }
+
+    $normalizedPath = preg_replace('#^(?:\.\.?/)+#', '', $path);
+    return appPath($normalizedPath ?: $path);
+};
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
@@ -12,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $imagePath = '';
 
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../assets/images/menu/';
+            $uploadDir = __DIR__ . '/../../assets/images/menu/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0755, true);
             }
@@ -43,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $imagePath = $_POST['current_image'] ?? '';
 
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../assets/images/menu/';
+            $uploadDir = __DIR__ . '/../../assets/images/menu/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0755, true);
             }
@@ -53,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
             if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
                 if (!empty($_POST['current_image'])) {
-                    $oldImagePath = __DIR__ . '/../' . $_POST['current_image'];
+                    $oldImagePath = __DIR__ . '/../../' . $_POST['current_image'];
                     if (is_file($oldImagePath)) {
                         unlink($oldImagePath);
                     }
@@ -86,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $existingItem = $imageStmt->fetch(PDO::FETCH_ASSOC);
 
         if (!empty($existingItem['image'])) {
-            $imageFilePath = __DIR__ . '/../' . $existingItem['image'];
+            $imageFilePath = __DIR__ . '/../../' . $existingItem['image'];
             if (is_file($imageFilePath)) {
                 unlink($imageFilePath);
             }
@@ -146,7 +164,7 @@ $adminSidebarPathPrefix = '';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include __DIR__ . '/admin-head.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <style>
         :root {
             --mn-bg: var(--dm-bg);
@@ -667,10 +685,10 @@ $adminSidebarPathPrefix = '';
 <body>
 
 <div class="admin-layout">
-    <?php include __DIR__ . '/admin-sidebar.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <div class="main-content">
-        <?php include __DIR__ . '/admin-topbar.php'; ?>
+        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
 
         <div class="admin-container">
             <div class="mn-shell">
@@ -682,8 +700,8 @@ $adminSidebarPathPrefix = '';
                     </div>
 
                     <div class="mn-header-actions">
-                        <a href="dashboard.php" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        <a href="analytics.php" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Analytics
                         </a>
                         <?php if ($editItem): ?>
                             <a href="menu-management.php" class="btn btn-primary">
@@ -798,7 +816,7 @@ $adminSidebarPathPrefix = '';
                                                     >
                                                         <div class="mn-item-image">
                                                             <?php if (!empty($item['image'])): ?>
-                                                                <img src="../<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo $itemName; ?>">
+                                                                <img src="<?php echo htmlspecialchars($resolveMenuImageUrl($item['image']), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo $itemName; ?>">
                                                             <?php else: ?>
                                                                 <div class="mn-item-image-placeholder">No image uploaded</div>
                                                             <?php endif; ?>
@@ -947,7 +965,7 @@ $adminSidebarPathPrefix = '';
 
                                             <?php if ($editItem && !empty($editItem['image'])): ?>
                                                 <div class="mn-current-image">
-                                                    <img src="../<?php echo htmlspecialchars($editItem['image']); ?>" alt="Current image">
+                                                    <img src="<?php echo htmlspecialchars($resolveMenuImageUrl($editItem['image']), ENT_QUOTES, 'UTF-8'); ?>" alt="Current image">
                                                     <div>
                                                         <small>Current image attached.</small>
                                                         <small>Leave this field empty to keep it.</small>
@@ -1056,3 +1074,6 @@ $adminSidebarPathPrefix = '';
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+
+

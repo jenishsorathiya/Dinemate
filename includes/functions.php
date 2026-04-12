@@ -42,14 +42,14 @@ function consumeRedirectUrl() {
 
 function getDefaultRedirectForRole($role) {
     if ($role === 'admin') {
-        return appPath('admin/timeline/new-dashboard.php');
+        return appPath('admin/timeline/timeline.php');
     }
 
     if ($role === 'customer') {
-        return appPath('bookings/dashboard.php');
+        return appPath('customer/dashboard.php');
     }
 
-    return appPath('index.php');
+    return appPath('public/index.php');
 }
 
 function getPostLoginRedirect($role) {
@@ -1036,3 +1036,4 @@ function logout() {
     session_destroy();
 }
 ?>
+

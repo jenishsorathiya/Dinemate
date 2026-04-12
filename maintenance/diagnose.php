@@ -4,7 +4,8 @@
  * Access: http://localhost/dinemate/diagnose.php
  */
 
-require_once "config/db.php";
+require_once __DIR__ . "/../config/db.php";
+require_once __DIR__ . "/../includes/functions.php";
 
 // Enable error reporting
 error_reporting(E_ALL);
@@ -134,7 +135,7 @@ try {
     <title>DineMate Diagnostics</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/app.css" rel="stylesheet">
+    <link href="<?php echo htmlspecialchars(appPath('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; padding: 32px 20px; background: #f5f7fb; }
         .container { max-width: 980px; margin: 0 auto; background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }
@@ -178,10 +179,11 @@ try {
             <li>If database errors exist, check <code>config/db.php</code></li>
             <li>If columns are missing, run <code>auto-fix.php</code> to repair the schema</li>
             <li>If queries fail, check MySQL user permissions</li>
-            <li>Visit <code>bookings/book-table.php</code> and <code>admin/timeline/new-dashboard.php</code> to test the pending-booking flow</li>
+            <li>Visit <a href="<?php echo htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>"><code>customer/book-table.php</code></a> and <a href="<?php echo htmlspecialchars(appPath('admin/timeline/timeline.php'), ENT_QUOTES, 'UTF-8'); ?>"><code>admin/timeline/timeline.php</code></a> to test the pending-booking flow</li>
         </ul>
     </div>
 </body>
 </html>
 <?php
 ?>
+

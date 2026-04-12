@@ -3,6 +3,7 @@
  * DineMate Booking System - Quick Start & Troubleshooting
  * Visit: http://localhost/dinemate/setup.php
  */
+require_once __DIR__ . "/../includes/functions.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,7 +13,7 @@
     <title>DineMate - Quick Start Guide</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/app.css" rel="stylesheet">
+    <link href="<?php echo htmlspecialchars(appPath('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <style>
         body { background: #f5f7fb; min-height: 100vh; padding: 40px 20px; font-family: 'Inter', sans-serif; }
         .container { background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08); padding: 40px; max-width: 960px; }
@@ -46,7 +47,7 @@
             <strong>Run Auto-Fix</strong>
             <p class="mt-2">This script automatically detects and fixes database issues:</p>
             <div class="button-group">
-                <a href="auto-fix.php" class="btn btn-primary btn-action" target="_blank">
+                <a href="<?php echo htmlspecialchars(appPath('maintenance/auto-fix.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-primary btn-action" target="_blank">
                     🔧 Run Auto-Fix Now
                 </a>
             </div>
@@ -66,10 +67,10 @@
             <span class="step-number">2</span>
             <strong>Test Booking System</strong>
             <div class="button-group">
-                <a href="bookings/book-table.php" class="btn btn-success btn-action" target="_blank">
+                <a href="<?php echo htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-success btn-action" target="_blank">
                     📅 Book a Reservation
                 </a>
-                <a href="bookings/my-bookings.php" class="btn btn-info btn-action" target="_blank">
+                <a href="<?php echo htmlspecialchars(appPath('customer/my-bookings.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-info btn-action" target="_blank">
                     📋 View My Bookings
                 </a>
             </div>
@@ -80,7 +81,7 @@
             <strong>Run Diagnostics</strong>
             <p class="mt-2">If you encounter issues, check detailed system status:</p>
             <div class="button-group">
-                <a href="diagnose.php" class="btn btn-warning btn-action" target="_blank">
+                <a href="<?php echo htmlspecialchars(appPath('maintenance/diagnose.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-warning btn-action" target="_blank">
                     🔍 Run Diagnostics
                 </a>
             </div>
@@ -181,9 +182,9 @@ status (VARCHAR)
         <div class="text-center mt-4">
             <p class="text-muted">For more help, run the Auto-Fix tool or visit the Diagnostics page</p>
             <div class="button-group justify-content-center">
-                <a href="auto-fix.php" class="btn btn-primary btn-lg" target="_blank">Auto-Fix</a>
-                <a href="diagnose.php" class="btn btn-warning btn-lg" target="_blank">Diagnostics</a>
-                <a href="index.php" class="btn btn-secondary btn-lg">Home</a>
+                <a href="<?php echo htmlspecialchars(appPath('maintenance/auto-fix.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-primary btn-lg" target="_blank">Auto-Fix</a>
+                <a href="<?php echo htmlspecialchars(appPath('maintenance/diagnose.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-warning btn-lg" target="_blank">Diagnostics</a>
+                <a href="<?php echo htmlspecialchars(appPath('public/index.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-secondary btn-lg">Home</a>
             </div>
         </div>
     </div>

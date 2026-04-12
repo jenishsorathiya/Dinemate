@@ -1,4 +1,4 @@
-<?php include "includes/header.php"; ?>
+<?php include __DIR__ . "/../includes/header.php"; ?>
 
 <style>
 .about-hero {
@@ -111,4 +111,4 @@
     </div>
 </section>
 
-<?php include "includes/footer.php"; ?>
+<?php include __DIR__ . "/../includes/footer.php"; ?>

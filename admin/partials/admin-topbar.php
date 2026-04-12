@@ -38,12 +38,16 @@ if (isset($pdo)) {
 }
 
 $adminPendingBookingCount = count($adminPendingBookings);
-$adminTimelineBasePath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/') !== false
-    ? 'new-dashboard.php'
-    : 'timeline/new-dashboard.php';
-$adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/') !== false
+$adminRequestUri = $_SERVER['REQUEST_URI'] ?? '';
+$isTimelineContext = strpos($adminRequestUri, '/admin/timeline/') !== false;
+$isPagesContext = strpos($adminRequestUri, '/admin/pages/') !== false;
+
+$adminTimelineBasePath = $isTimelineContext
+    ? 'timeline.php'
+    : ($isPagesContext ? '../timeline/timeline.php' : 'timeline/timeline.php');
+$adminPendingFeedPath = $isTimelineContext
     ? '../pending-bookings-feed.php'
-    : 'pending-bookings-feed.php';
+    : ($isPagesContext ? '../pending-bookings-feed.php' : 'pending-bookings-feed.php');
 ?>
 <style>
     .topbar {
@@ -539,3 +543,4 @@ $adminPendingFeedPath = strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/timeline/'
         window.setInterval(refreshPendingBookings, 15000);
     })();
 </script>
+

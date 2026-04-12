@@ -70,34 +70,34 @@ $currentUserRole = getCurrentUserRole();
 
 <nav class="navbar navbar-modern navbar-expand-lg">
     <div class="container-fluid">
-        <a class="logo" href="<?php echo htmlspecialchars($navUrl('index.php'), ENT_QUOTES, 'UTF-8'); ?>">DineMate</a>
+        <a class="logo" href="<?php echo htmlspecialchars($navUrl('public/index.php'), ENT_QUOTES, 'UTF-8'); ?>">DineMate</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navMenu">
             <div class="nav-links">
                 <?php if($isLoggedInUser && $currentUserRole === 'admin'): ?>
-                    <a href="<?php echo htmlspecialchars($navUrl('admin/timeline/new-dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/timeline/new-dashboard.php']) ? 'is-active' : ''; ?>">Timeline</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('admin/bookings-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/bookings-management.php']) ? 'is-active' : ''; ?>">Bookings Management</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('admin/tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/tables-management.php']) ? 'is-active' : ''; ?>">Tables Management</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('admin/menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/menu-management.php']) ? 'is-active' : ''; ?>">Menu Management</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('admin/timeline/timeline.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/timeline/timeline.php']) ? 'is-active' : ''; ?>">Timeline</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('admin/pages/bookings-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/bookings-management.php']) ? 'is-active' : ''; ?>">Bookings Management</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('admin/pages/tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/tables-management.php']) ? 'is-active' : ''; ?>">Tables Management</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('admin/pages/menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/menu-management.php']) ? 'is-active' : ''; ?>">Menu Management</a>
                     <a href="<?php echo htmlspecialchars($navUrl('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-logout">Logout</a>
                 <?php elseif($isLoggedInUser && $currentUserRole === 'customer'): ?>
-                    <a href="<?php echo htmlspecialchars($navUrl('bookings/dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['bookings/dashboard.php']) ? 'is-active' : ''; ?>">Dashboard</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('index.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['', 'index.php']) ? 'is-active' : ''; ?>">Home</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('menu.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['menu.php']) ? 'is-active' : ''; ?>">Menu</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('bookings/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-book <?php echo $isActivePath(['bookings/book-table.php', 'bookings/booking-confirmation.php']) ? 'is-active' : ''; ?>">
+                    <a href="<?php echo htmlspecialchars($navUrl('customer/dashboard.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['customer/dashboard.php']) ? 'is-active' : ''; ?>">Dashboard</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('public/index.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['public/index.php']) ? 'is-active' : ''; ?>">Home</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('public/menu.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['public/menu.php']) ? 'is-active' : ''; ?>">Menu</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('customer/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-book <?php echo $isActivePath(['customer/book-table.php', 'customer/booking-confirmation.php']) ? 'is-active' : ''; ?>">
                         <i class="fa fa-calendar-check"></i> Book
                     </a>
-                    <a href="<?php echo htmlspecialchars($navUrl('bookings/my-bookings.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['bookings/my-bookings.php', 'bookings/modify-booking.php']) ? 'is-active' : ''; ?>">My Bookings</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('bookings/profile.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['bookings/profile.php']) ? 'is-active' : ''; ?>">Profile</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('customer/my-bookings.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['customer/my-bookings.php', 'customer/modify-booking.php']) ? 'is-active' : ''; ?>">My Bookings</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('customer/profile.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['customer/profile.php']) ? 'is-active' : ''; ?>">Profile</a>
                     <a href="<?php echo htmlspecialchars($navUrl('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-logout">Logout</a>
                 <?php else: ?>
-                    <a href="<?php echo htmlspecialchars($navUrl('index.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['', 'index.php']) ? 'is-active' : ''; ?>">Home</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('menu.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['menu.php']) ? 'is-active' : ''; ?>">Menu</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('about.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['about.php']) ? 'is-active' : ''; ?>">About</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('contact.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['contact.php']) ? 'is-active' : ''; ?>">Contact</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('bookings/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-book <?php echo $isActivePath(['bookings/book-table.php', 'bookings/booking-confirmation.php']) ? 'is-active' : ''; ?>">
+                    <a href="<?php echo htmlspecialchars($navUrl('public/index.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['public/index.php']) ? 'is-active' : ''; ?>">Home</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('public/menu.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['public/menu.php']) ? 'is-active' : ''; ?>">Menu</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('public/about.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['public/about.php']) ? 'is-active' : ''; ?>">About</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('public/contact.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['public/contact.php']) ? 'is-active' : ''; ?>">Contact</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('customer/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-book <?php echo $isActivePath(['customer/book-table.php', 'customer/booking-confirmation.php']) ? 'is-active' : ''; ?>">
                         <i class="fa fa-calendar-check"></i> Book a Table
                     </a>
                     <a href="<?php echo htmlspecialchars($navUrl('auth/login.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['auth/login.php']) ? 'is-active' : ''; ?>">Login</a>
@@ -106,3 +106,4 @@ $currentUserRole = getCurrentUserRole();
         </div>
     </div>
 </nav>
+

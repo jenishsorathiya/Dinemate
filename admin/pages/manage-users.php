@@ -446,7 +446,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include __DIR__ . '/admin-head.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <style>
         :root { --users-bg: var(--dm-bg); --users-card: var(--dm-surface); --users-line: var(--dm-border); --users-text: var(--dm-text); --users-muted: var(--dm-text-muted); --users-shadow: var(--dm-shadow-md); --users-shadow-soft: var(--dm-shadow-sm); --users-primary: var(--dm-accent-dark); --users-accent: var(--dm-pending-text); --users-success: var(--dm-confirmed-text); --users-danger: var(--dm-danger-text); --users-warning: var(--dm-pending-text); }
         * { box-sizing: border-box; }
@@ -535,9 +535,9 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
 </head>
 <body>
 <div class="admin-layout">
-    <?php include __DIR__ . '/admin-sidebar.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
     <div class="main-content">
-        <?php include __DIR__ . '/admin-topbar.php'; ?>
+        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
         <div class="main">
             <div class="users-shell">
                 <section class="hero-card">
@@ -867,3 +867,5 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+

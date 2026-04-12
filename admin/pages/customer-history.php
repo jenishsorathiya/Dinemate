@@ -337,7 +337,7 @@ $flash = getFlashMessage();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include __DIR__ . '/admin-head.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <style>
         :root { --page-bg: var(--dm-bg); --surface: var(--dm-surface); --line: var(--dm-border); --text-main: var(--dm-text); --text-muted: var(--dm-text-muted); --shadow-soft: var(--dm-shadow-sm); --shadow-card: var(--dm-shadow-md); --primary: var(--dm-accent-dark); --accent: var(--dm-pending-text); --success: var(--dm-confirmed-text); --danger: var(--dm-danger-text); --warning: var(--dm-pending-text); }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--dm-surface-muted); color: var(--text-main); }
@@ -392,9 +392,9 @@ $flash = getFlashMessage();
 </head>
 <body>
 <div class="admin-layout">
-    <?php include __DIR__ . '/admin-sidebar.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
     <div class="main-content">
-        <?php include __DIR__ . '/admin-topbar.php'; ?>
+        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
         <div class="main">
             <div class="page-shell">
                 <?php if ($flash): ?>
@@ -504,7 +504,7 @@ $flash = getFlashMessage();
                                     <div class="link-form">
                                         <div class="link-actions">
                                             <a
-                                                href="timeline/new-dashboard.php?<?php echo htmlspecialchars(http_build_query([
+                                                href="../timeline/timeline.php?<?php echo htmlspecialchars(http_build_query([
                                                     'date' => date('Y-m-d'),
                                                     'prefill_customer_profile_id' => (int) $selectedProfile['customer_profile_id'],
                                                     'prefill_customer_name' => (string) ($selectedProfile['name'] ?? ''),
@@ -640,3 +640,6 @@ $flash = getFlashMessage();
 </div>
 </body>
 </html>
+
+
+
