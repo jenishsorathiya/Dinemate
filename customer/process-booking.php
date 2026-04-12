@@ -233,6 +233,7 @@ try {
     ]);
     
     $booking_id = $pdo->lastInsertId();
+    notifyBookingEvent($pdo, (int)$booking_id, 'booking_request_received');
     redirect("booking-confirmation.php?id=" . $booking_id . "&token=" . urlencode($guestAccessToken));
     
 } catch(PDOException $e) {

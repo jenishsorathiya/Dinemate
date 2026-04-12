@@ -46,6 +46,7 @@ try {
 
     $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'confirmed', reservation_card_status = ? WHERE booking_id = ?");
     $updateStmt->execute([$nextPlacementStatus, $bookingId]);
+    notifyBookingEvent($pdo, $bookingId, 'booking_confirmed');
 
     echo json_encode([
         'success' => true,

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../config/notifications.php';
+
 // existing functions
 function redirect($location) {
     header("Location: $location");
@@ -806,6 +808,173 @@ function getBookingSettings($pdo): array {
         'allow_table_request' => getBooleanSetting($pdo, 'allow_table_request', true),
         'allow_booking_modification' => getBooleanSetting($pdo, 'allow_booking_modification', true),
     ];
+}
+
+function getCustomerProfileById($pdo, int $customerProfileId) {
+    $customerProfileId = max(0, $customerProfileId);
+    if ($customerProfileId < 1) {
+        return null;
+    }
+
+    $stmt = $pdo->prepare("SELECT * FROM customer_profiles WHERE customer_profile_id = ? LIMIT 1");
+    $stmt->execute([$customerProfileId]);
+    $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $profile ?: null;
+}
+
+function getBookingById($pdo, int $bookingId) {
+    $bookingId = max(0, $bookingId);
+    if ($bookingId < 1) {
+        return null;
+    }
+
+    $stmt = $pdo->prepare("SELECT * FROM bookings WHERE booking_id = ? LIMIT 1");
+    $stmt->execute([$bookingId]);
+    $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $booking ?: null;
+}
+
+function getAssignedTableNumbersForBooking($pdo, int $bookingId): array {
+    $stmt = $pdo->prepare("SELECT rt.table_number FROM booking_table_assignments bta INNER JOIN restaurant_tables rt ON rt.table_id = bta.table_id WHERE bta.booking_id = ? ORDER BY rt.table_number + 0, rt.table_number ASC");
+    $stmt->execute([$bookingId]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return array_map(static function ($row) {
+        return (string) ($row['table_number'] ?? '');
+    }, $rows ?: []);
+}
+
+function sendEmail(string $to, string $subject, string $bodyHtml): bool {
+    if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $from = defined('NOTIFICATION_EMAIL_FROM') ? NOTIFICATION_EMAIL_FROM : 'no-reply@dinemate.local';
+    $headers = [];
+    $headers[] = 'MIME-Version: 1.0';
+    $headers[] = 'Content-type: text/html; charset=UTF-8';
+    $headers[] = 'From: ' . $from;
+    $headers[] = 'Reply-To: ' . $from;
+
+    $ok = mail($to, $subject, $bodyHtml, implode("\r\n", $headers));
+    if (!$ok) {
+        error_log("Email send failed to {$to} with subject {$subject}");
+    }
+
+    return $ok;
+}
+
+function sendSms(string $to, string $message): bool {
+    if (!defined('TWILIO_ACCOUNT_SID') || !defined('TWILIO_AUTH_TOKEN') || !defined('TWILIO_FROM_NUMBER')) {
+        error_log('SMS provider is not configured.');
+        return false;
+    }
+
+    $cleaned = normalizeCustomerProfilePhone($to);
+    if ($cleaned === '') {
+        return false;
+    }
+
+    if ($cleaned[0] !== '+') {
+        $cleaned = '+' . ltrim($cleaned, '+');
+    }
+
+    $url = 'https://api.twilio.com/2010-04-01/Accounts/' . urlencode(TWILIO_ACCOUNT_SID) . '/Messages.json';
+    $postFields = http_build_query([
+        'From' => TWILIO_FROM_NUMBER,
+        'To' => $cleaned,
+        'Body' => $message,
+    ]);
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+    curl_setopt($ch, CURLOPT_USERPWD, TWILIO_ACCOUNT_SID . ':' . TWILIO_AUTH_TOKEN);
+    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($response === false || $httpCode >= 400) {
+        error_log('SMS send failed to ' . $cleaned . ' http=' . $httpCode . ' curl=' . $curlError . ' response=' . substr((string)$response, 0, 1000));
+        return false;
+    }
+
+    return true;
+}
+
+function formatBookingNotificationBody(array $booking, array $assignedTableNumbers, string $event, ?string $customNote = null): array {
+    $customerName = trim((string) ($booking['customer_name'] ?? 'Customer')) ?: 'Customer';
+    $date = isset($booking['booking_date']) ? date('j F Y', strtotime($booking['booking_date'])) : 'Unknown date';
+    $startTime = isset($booking['start_time']) ? date('g:i A', strtotime($booking['start_time'])) : 'Unknown time';
+    $endTime = isset($booking['end_time']) ? date('g:i A', strtotime($booking['end_time'])) : 'Unknown time';
+    $tableLabel = !empty($assignedTableNumbers) ? 'Table ' . implode(', ', $assignedTableNumbers) : 'Team will assign your table shortly';
+
+    switch ($event) {
+        case 'booking_confirmed':
+            $subject = 'Your booking is confirmed';
+            $bodyText = "Hi {$customerName},\n\nYour booking is confirmed for {$date} at {$startTime} - {$endTime}. {$tableLabel}.\n\nThanks for choosing us.";
+            $bodyHtml = "<p>Hi {$customerName},</p><p>Your booking is <strong>confirmed</strong> for <strong>{$date}</strong> at <strong>{$startTime} - {$endTime}</strong>.</p><p><strong>{$tableLabel}</strong></p>";
+            break;
+        case 'booking_cancelled':
+            $subject = 'Your booking has been cancelled';
+            $bodyText = "Hi {$customerName},\n\nYour booking for {$date} at {$startTime} has been cancelled. If this was a mistake, please contact us to rebook.";
+            $bodyHtml = "<p>Hi {$customerName},</p><p>Your booking for <strong>{$date}</strong> at <strong>{$startTime}</strong> has been cancelled.</p><p>If you'd like to rebook, please contact us or visit the site.</p>";
+            break;
+        case 'booking_updated':
+            $subject = 'Your booking has been updated';
+            $bodyText = "Hi {$customerName},\n\nYour booking has been updated to {$date} at {$startTime} - {$endTime}. {$tableLabel}.\n\nThank you.";
+            $bodyHtml = "<p>Hi {$customerName},</p><p>Your booking has been updated to <strong>{$date}</strong> at <strong>{$startTime} - {$endTime}</strong>.</p><p><strong>{$tableLabel}</strong></p>";
+            break;
+        default:
+            $subject = 'Booking request received';
+            $bodyText = "Hi {$customerName},\n\nWe received your booking request for {$date} at {$startTime} - {$endTime}. We'll follow up once it is confirmed.";
+            $bodyHtml = "<p>Hi {$customerName},</p><p>We received your booking request for <strong>{$date}</strong> at <strong>{$startTime} - {$endTime}</strong>. We will follow up once it is confirmed.</p>";
+            break;
+    }
+
+    if ($customNote !== null) {
+        $safeNote = htmlspecialchars($customNote, ENT_QUOTES, 'UTF-8');
+        $bodyHtml .= "<p>{$safeNote}</p>";
+        $bodyText .= "\n\n{$customNote}";
+    }
+
+    return ['subject' => $subject, 'bodyText' => $bodyText, 'bodyHtml' => $bodyHtml];
+}
+
+function notifyBookingEvent($pdo, int $bookingId, string $event, ?string $customNote = null): void {
+    try {
+        $booking = getBookingById($pdo, $bookingId);
+        if (!$booking) {
+            return;
+        }
+
+        $assignedTableNumbers = getAssignedTableNumbersForBooking($pdo, $bookingId);
+        $profile = null;
+        if (!empty($booking['customer_profile_id'])) {
+            $profile = getCustomerProfileById($pdo, (int) $booking['customer_profile_id']);
+        }
+
+        $notification = formatBookingNotificationBody($booking, $assignedTableNumbers, $event, $customNote);
+
+        if (!empty($booking['customer_email']) && filter_var($booking['customer_email'], FILTER_VALIDATE_EMAIL)) {
+            sendEmail($booking['customer_email'], $notification['subject'], $notification['bodyHtml']);
+        }
+
+        $sendSms = false;
+        if ($profile && !empty($profile['sms_reminders_enabled'])) {
+            $sendSms = true;
+        }
+
+        if ($sendSms && !empty($booking['customer_phone'])) {
+            sendSms($booking['customer_phone'], strip_tags(str_replace(['<br>', '<br/>', '<p>', '</p>'], ["\n", "\n", "\n", "\n"], $notification['bodyHtml'])));
+        }
+    } catch (Throwable $e) {
+        error_log('Booking notification failure: ' . $e->getMessage());
+    }
 }
 
 function findAvailableTableForBooking($pdo, string $bookingDate, string $startTime, string $endTime, int $guests): ?int {

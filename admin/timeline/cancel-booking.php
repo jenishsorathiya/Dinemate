@@ -39,6 +39,7 @@ try {
     $updateStmt->execute([$bookingId]);
 
     $pdo->commit();
+    notifyBookingEvent($pdo, $bookingId, 'booking_cancelled');
 
     echo json_encode([
         'success' => true,
