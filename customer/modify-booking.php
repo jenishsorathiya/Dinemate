@@ -5,6 +5,14 @@ require_once "../includes/session-check.php";
 
 ensureBookingRequestColumns($pdo);
 ensureBookingTableAssignmentsTable($pdo);
+ensureSettingsSchema($pdo);
+$bookingSettings = getBookingSettings($pdo);
+
+if (!$bookingSettings['allow_booking_modification']) {
+    $_SESSION['error'] = 'Booking modifications are currently disabled.';
+    header('Location: my-bookings.php');
+    exit();
+}
 
 requireCustomer();
 if(!isset($_GET['id'])){
@@ -40,10 +48,21 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $guests = intval($_POST['number_of_guests']);
     $special = sanitize($_POST['special_request']);
 
+    if (!$bookingSettings['allow_table_request']) {
+        $special = '';
+    }
+
+    $minGuests = max(1, intval($bookingSettings['min_party_size']));
+    $maxGuests = max($minGuests, intval($bookingSettings['max_party_size']));
+    $minimumAdvanceMinutes = max(0, intval($bookingSettings['minimum_advanced_booking_minutes']));
+    $durationMinutesConfig = max(30, intval($bookingSettings['booking_duration_minutes']));
+
     if(empty($date) || empty($start_time) || empty($end_time) || empty($guests)){
         $error = "All fields are required.";
-    } elseif($guests < 1) {
-        $error = "Number of guests must be at least 1.";
+    } elseif($guests < $minGuests) {
+        $error = "Number of guests must be at least {$minGuests}.";
+    } elseif($guests > $maxGuests) {
+        $error = "Number of guests cannot exceed {$maxGuests}.";
     } else {
         $start_time = date('H:i:s', strtotime($start_time));
         $end_time = date('H:i:s', strtotime($end_time));
@@ -51,16 +70,19 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $restaurantClose = '22:00:00';
         $durationMinutes = (strtotime($end_time) - strtotime($start_time)) / 60;
 
-        if($start_time < $restaurantOpen) {
+        $requestedDateTime = strtotime($date . ' ' . $start_time);
+        if ($requestedDateTime === false) {
+            $error = "Please enter a valid booking date and time.";
+        } elseif ($requestedDateTime < time() + ($minimumAdvanceMinutes * 60)) {
+            $error = "Bookings must be made at least {$minimumAdvanceMinutes} minutes in advance.";
+        } elseif($start_time < $restaurantOpen) {
             $error = "Start time cannot be before restaurant opening time (10:00).";
         } elseif($end_time > $restaurantClose) {
             $error = "End time cannot be after restaurant closing time (22:00).";
         } elseif($end_time <= $start_time) {
             $error = "End time must be after start time.";
-        } elseif($durationMinutes < 60) {
-            $error = "Booking duration must be at least 60 minutes.";
-        } elseif($durationMinutes > 180) {
-            $error = "Booking duration cannot exceed 180 minutes.";
+        } elseif($durationMinutes !== $durationMinutesConfig) {
+            $error = "Booking duration must be exactly {$durationMinutesConfig} minutes.";
         } else {
             $capacityStmt = $pdo->prepare("SELECT COUNT(*) FROM restaurant_tables WHERE status = 'available' AND capacity >= ?");
             $capacityStmt->execute([$guests]);
@@ -272,7 +294,8 @@ name="number_of_guests"
 class="form-control modern-input"
 value="<?= $booking['number_of_guests'] ?>"
 required
-min="1">
+min="<?php echo htmlspecialchars((string) $bookingSettings['min_party_size'], ENT_QUOTES, 'UTF-8'); ?>"
+max="<?php echo htmlspecialchars((string) $bookingSettings['max_party_size'], ENT_QUOTES, 'UTF-8'); ?>">
 
 </div>
 
@@ -287,13 +310,17 @@ Any booking changes return the reservation to the unassigned queue so staff can 
 
 <div class="col-12 mb-4">
 
-<label class="form-label">
-<i class="fa fa-note-sticky"></i> Special Request
-</label>
+<?php if ($bookingSettings['allow_table_request']): ?>
+    <label class="form-label">
+        <i class="fa fa-note-sticky"></i> Special Request
+    </label>
 
-<textarea name="special_request"
-class="form-control modern-input"
-rows="3"><?= $booking['special_request'] ?></textarea>
+    <textarea name="special_request"
+    class="form-control modern-input"
+    rows="3"><?= htmlspecialchars((string) $booking['special_request'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+<?php else: ?>
+    <input type="hidden" name="special_request" value="">
+<?php endif; ?>
 
 </div>
 

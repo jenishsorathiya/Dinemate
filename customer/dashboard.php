@@ -5,6 +5,8 @@ require_once "../includes/session-check.php";
 
 requireCustomer();
 ensureBookingRequestColumns($pdo);
+ensureSettingsSchema($pdo);
+$bookingSettings = getBookingSettings($pdo);
 
 $userId = (int) getCurrentUserId();
 $customerProfile = ensureCustomerProfileForUser($pdo, $userId);
@@ -379,7 +381,9 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                 <h1>Welcome back, <?php echo htmlspecialchars((string) getCurrentUserName(), ENT_QUOTES, 'UTF-8'); ?></h1>
                 <p>Manage your bookings, profile, and dining preferences.</p>
                 <div class="hero-actions">
-                    <a class="btn-portal" href="book-table.php"><i class="fa fa-calendar-plus"></i> New Booking</a>
+                    <?php if ($bookingSettings['enable_online_bookings']): ?>
+                        <a class="btn-portal" href="book-table.php"><i class="fa fa-calendar-plus"></i> New Booking</a>
+                    <?php endif; ?>
                     <a class="btn-portal-secondary" href="my-bookings.php"><i class="fa fa-clock-rotate-left"></i> View Booking History</a>
                     <a class="btn-portal-secondary" href="profile.php"><i class="fa fa-user-gear"></i> Update Profile</a>
                 </div>
@@ -394,7 +398,9 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                         <span><i class="fa fa-circle-info"></i> <?php echo htmlspecialchars(getBookingStatusLabel($nextBooking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <div>
-                        <a class="btn-portal-secondary" href="modify-booking.php?id=<?php echo (int) $nextBooking['booking_id']; ?>"><i class="fa fa-pen"></i> Reschedule</a>
+                        <?php if ($bookingSettings['allow_booking_modification']): ?>
+                            <a class="btn-portal-secondary" href="modify-booking.php?id=<?php echo (int) $nextBooking['booking_id']; ?>"><i class="fa fa-pen"></i> Reschedule</a>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="hero-focus-title">No upcoming bookings</div>
@@ -458,7 +464,9 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                                     <span class="timeline-meta-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                 </div>
                                 <div class="hero-actions" style="margin-top:0;">
-                                    <a class="btn-portal-secondary" href="modify-booking.php?id=<?php echo (int) $booking['booking_id']; ?>"><i class="fa fa-pen"></i> Reschedule</a>
+                                    <?php if ($bookingSettings['allow_booking_modification']): ?>
+                                        <a class="btn-portal-secondary" href="modify-booking.php?id=<?php echo (int) $booking['booking_id']; ?>"><i class="fa fa-pen"></i> Reschedule</a>
+                                    <?php endif; ?>
                                     <a class="btn-portal-secondary" href="cancel-booking.php?id=<?php echo (int) $booking['booking_id']; ?>" onclick="return confirm('Cancel this booking request?');"><i class="fa fa-ban"></i> Cancel</a>
                                 </div>
                             </article>

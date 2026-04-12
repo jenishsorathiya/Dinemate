@@ -761,6 +761,75 @@ function ensureBookingTableAssignmentsTable($pdo) {
     ");
 }
 
+function ensureSettingsSchema($pdo) {
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS booking_settings (
+            setting_key VARCHAR(100) NOT NULL PRIMARY KEY,
+            setting_value TEXT NULL DEFAULT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+}
+
+function getSettingValue($pdo, string $key, $default = null) {
+    ensureSettingsSchema($pdo);
+    $stmt = $pdo->prepare("SELECT setting_value FROM booking_settings WHERE setting_key = ? LIMIT 1");
+    $stmt->execute([$key]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$row) {
+        return $default;
+    }
+    return $row['setting_value'];
+}
+
+function getBooleanSetting($pdo, string $key, bool $default = false): bool {
+    $value = getSettingValue($pdo, $key, $default ? '1' : '0');
+    return in_array((string) $value, ['1', 'true', 'yes', 'on'], true);
+}
+
+function setSettingValue($pdo, string $key, $value): void {
+    ensureSettingsSchema($pdo);
+    $stmt = $pdo->prepare("REPLACE INTO booking_settings (setting_key, setting_value) VALUES (?, ?)");
+    $stmt->execute([$key, (string) $value]);
+}
+
+function getBookingSettings($pdo): array {
+    ensureSettingsSchema($pdo);
+
+    return [
+        'enable_online_bookings' => getBooleanSetting($pdo, 'enable_online_bookings', true),
+        'min_party_size' => max(1, intval(getSettingValue($pdo, 'min_party_size', 1))),
+        'max_party_size' => max(1, intval(getSettingValue($pdo, 'max_party_size', 12))),
+        'minimum_advanced_booking_minutes' => max(0, intval(getSettingValue($pdo, 'minimum_advanced_booking_minutes', 120))),
+        'booking_duration_minutes' => max(30, intval(getSettingValue($pdo, 'booking_duration_minutes', 60))),
+        'auto_table_assignment' => getBooleanSetting($pdo, 'auto_table_assignment', false),
+        'allow_table_request' => getBooleanSetting($pdo, 'allow_table_request', true),
+        'allow_booking_modification' => getBooleanSetting($pdo, 'allow_booking_modification', true),
+    ];
+}
+
+function findAvailableTableForBooking($pdo, string $bookingDate, string $startTime, string $endTime, int $guests): ?int {
+    ensureBookingRequestColumns($pdo);
+
+    $stmt = $pdo->prepare("SELECT rt.table_id
+        FROM restaurant_tables rt
+        WHERE rt.status = 'available'
+          AND rt.capacity >= ?
+          AND NOT EXISTS (
+              SELECT 1 FROM bookings b
+              WHERE b.table_id = rt.table_id
+                AND b.booking_date = ?
+                AND b.status IN ('pending', 'confirmed')
+                AND NOT (b.end_time <= ? OR b.start_time >= ?)
+          )
+        ORDER BY rt.capacity ASC, rt.table_number ASC
+        LIMIT 1");
+
+    $stmt->execute([$guests, $bookingDate, $startTime, $endTime]);
+    $tableId = $stmt->fetchColumn();
+    return $tableId !== false ? (int) $tableId : null;
+}
+
 function ensureTableAreasSchema($pdo) {
     $pdo->exec(" 
         CREATE TABLE IF NOT EXISTS table_areas (

@@ -7,6 +7,13 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 ensureBookingRequestColumns($pdo);
+ensureSettingsSchema($pdo);
+$bookingSettings = getBookingSettings($pdo);
+
+if (!$bookingSettings['enable_online_bookings']) {
+    setFlashMessage('error', 'Online bookings are currently disabled.');
+    redirect(appPath('public/index.php'));
+}
 
 $prefillName = '';
 $prefillEmail = '';
@@ -34,14 +41,19 @@ if(isLoggedIn() && getCurrentUserRole() === 'customer') {
     }
 }
 
+if (!$bookingSettings['allow_table_request']) {
+    $prefillSpecialRequest = '';
+}
+
+$bookingDurationMinutes = max(30, intval($bookingSettings['booking_duration_minutes']));
 $showAccountPrompt = !(isLoggedIn() && getCurrentUserRole() === 'customer');
 
 // Restaurant hours configuration
 $restaurantHours = [
     'open' => '10:00',
     'close' => '22:00',
-    'minDuration' => 60, // Minimum booking duration in minutes
-    'maxDuration' => 180  // Maximum booking duration in minutes
+    'minDuration' => $bookingDurationMinutes,
+    'maxDuration' => $bookingDurationMinutes
 ];
 
 $pageError = $_SESSION['error'] ?? '';
@@ -52,7 +64,7 @@ $defaultStartTime = trim((string) ($_GET['time'] ?? '12:00'));
 $defaultGuests = max(1, (int) ($_GET['guests'] ?? 2));
 $timeOptions = [];
 $timeCursor = strtotime($restaurantHours['open']);
-$timeLastSlot = strtotime($restaurantHours['close'] . ' -60 minutes');
+$timeLastSlot = strtotime($restaurantHours['close'] . ' -' . $bookingDurationMinutes . ' minutes');
 
 while ($timeCursor <= $timeLastSlot) {
     $timeOptions[] = date('H:i', $timeCursor);
@@ -875,7 +887,7 @@ $phoneCountryOptions = [
                             </div>
                             <span class="booking-card-pill">
                                 <i class="fa fa-clock"></i>
-                                60-minute request
+                                <?php echo htmlspecialchars((int) $bookingDurationMinutes, ENT_QUOTES, 'UTF-8'); ?>-minute request
                             </span>
                         </div>
 
@@ -884,7 +896,7 @@ $phoneCountryOptions = [
                                 <label for="number-of-guests">How many people are coming?</label>
                                 <div class="booking-guests-control">
                                     <button type="button" class="booking-guest-btn" id="decreaseGuestsBtn" aria-label="Decrease guests">−</button>
-                                    <input type="number" name="number_of_guests" id="number-of-guests" class="booking-guests-display" min="1" value="<?php echo (int) $defaultGuests; ?>" required>
+                                    <input type="number" name="number_of_guests" id="number-of-guests" class="booking-guests-display" min="<?php echo htmlspecialchars((string) $bookingSettings['min_party_size'], ENT_QUOTES, 'UTF-8'); ?>" max="<?php echo htmlspecialchars((string) $bookingSettings['max_party_size'], ENT_QUOTES, 'UTF-8'); ?>" value="<?php echo (int) $defaultGuests; ?>" required>
                                     <button type="button" class="booking-guest-btn is-primary" id="increaseGuestsBtn" aria-label="Increase guests">+</button>
                                 </div>
                                 <div class="booking-inline-error" id="guest-count-error"></div>
@@ -959,10 +971,14 @@ $phoneCountryOptions = [
                                     <input type="tel" id="customer-phone-local" class="booking-input" inputmode="tel" placeholder="Mobile*" value="<?= htmlspecialchars($prefillPhoneLocal) ?>" required>
                                 </div>
                             </div>
-                            <div class="booking-field full-width">
-                                <label for="special-request">Add Note or Special Requirements</label>
-                                <textarea name="special_request" id="special-request" class="booking-textarea" placeholder="Birthday celebration, pram space, allergy note, preferred seating, or anything the team should know."><?php echo htmlspecialchars($prefillSpecialRequest, ENT_QUOTES, 'UTF-8'); ?></textarea>
-                            </div>
+                            <?php if ($bookingSettings['allow_table_request']): ?>
+                                <div class="booking-field full-width">
+                                    <label for="special-request">Add Note or Special Requirements</label>
+                                    <textarea name="special_request" id="special-request" class="booking-textarea" placeholder="Birthday celebration, pram space, allergy note, preferred seating, or anything the team should know."><?php echo htmlspecialchars($prefillSpecialRequest, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                </div>
+                            <?php else: ?>
+                                <input type="hidden" name="special_request" value="">
+                            <?php endif; ?>
                         </div>
 
                         <div class="booking-actions">
