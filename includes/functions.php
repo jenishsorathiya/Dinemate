@@ -523,6 +523,7 @@ function ensureBookingRequestColumns($pdo) {
     ensureBookingStatusSchema($pdo);
     ensureUserAccountSchema($pdo);
     ensureCustomerProfilesSchema($pdo);
+    ensureBookingSpendSchema($pdo);
 
     $startTimeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
     $startTimeExists = $startTimeStmt->rowCount() > 0;
@@ -738,6 +739,13 @@ function ensureBookingRequestColumns($pdo) {
         WHERE b.status = 'cancelled'
            OR (b.table_id IS NULL AND assigned.booking_id IS NULL)
     ");
+}
+
+function ensureBookingSpendSchema($pdo) {
+    $spendStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'spend_amount'");
+    if ($spendStmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN spend_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER number_of_guests");
+    }
 }
 
 function generateGuestAccessToken() {
