@@ -200,6 +200,7 @@ $profileSql = "
         linked_user.name AS linked_user_name,
         linked_user.email AS linked_user_email,
         COUNT(b.booking_id) AS booking_count,
+        SUM(COALESCE(b.spend_amount, 0.00)) AS total_spend,
         MAX(b.booking_date) AS last_booking_date,
         SUM(CASE WHEN b.booking_source = 'admin_manual' THEN 1 ELSE 0 END) AS admin_booking_count,
         SUM(CASE WHEN b.booking_source = 'guest_web' THEN 1 ELSE 0 END) AS guest_booking_count,
@@ -235,6 +236,22 @@ $profilesStmt = $pdo->prepare($profileSql);
 $profilesStmt->execute($profileParams);
 $profiles = $profilesStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
+$topSpendersStmt = $pdo->query("
+    SELECT
+        cp.customer_profile_id,
+        cp.name,
+        cp.email,
+        cp.phone,
+        COUNT(b.booking_id) AS booking_count,
+        SUM(COALESCE(b.spend_amount, 0.00)) AS total_spend
+    FROM customer_profiles cp
+    LEFT JOIN bookings b ON b.customer_profile_id = cp.customer_profile_id
+    GROUP BY cp.customer_profile_id, cp.name, cp.email, cp.phone
+    ORDER BY total_spend DESC, booking_count DESC, cp.name ASC
+    LIMIT 10
+");
+$topSpenders = $topSpendersStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
 $linkableUsersStmt = $pdo->query("
     SELECT user_id, name, email
     FROM users
@@ -250,14 +267,17 @@ $profilesWithLinkedAccounts = 0;
 $profilesWithAdminBookings = 0;
 $profilesGuestOnly = 0;
 $totalBookingsAcrossProfiles = 0;
+$totalSpendAcrossProfiles = 0.0;
 
 foreach ($profiles as $profileRow) {
     $bookingCount = (int) ($profileRow['booking_count'] ?? 0);
     $adminBookingCount = (int) ($profileRow['admin_booking_count'] ?? 0);
     $guestBookingCount = (int) ($profileRow['guest_booking_count'] ?? 0);
     $accountBookingCount = (int) ($profileRow['account_booking_count'] ?? 0);
+    $profileSpend = (float) ($profileRow['total_spend'] ?? 0.0);
 
     $totalBookingsAcrossProfiles += $bookingCount;
+    $totalSpendAcrossProfiles += $profileSpend;
     if (!empty($profileRow['linked_user_id'])) {
         $profilesWithLinkedAccounts++;
     }
@@ -302,6 +322,7 @@ if ($selectedProfileId > 0) {
                 b.status,
                 b.booking_source,
                 b.reservation_card_status,
+                b.spend_amount,
                 creator.name AS created_by_name,
                 GROUP_CONCAT(DISTINCT rt.table_number ORDER BY rt.table_number + 0, rt.table_number SEPARATOR ', ') AS assigned_table_numbers
             FROM bookings b
@@ -318,11 +339,19 @@ if ($selectedProfileId > 0) {
                 b.status,
                 b.booking_source,
                 b.reservation_card_status,
+                b.spend_amount,
                 creator.name
             ORDER BY b.booking_date DESC, b.start_time DESC, b.booking_id DESC
         ");
         $selectedBookingsStmt->execute([$selectedProfileId]);
         $selectedProfileBookings = $selectedBookingsStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+}
+
+$selectedProfileTotalSpend = 0.0;
+if (!empty($selectedProfileBookings)) {
+    foreach ($selectedProfileBookings as $bookingRow) {
+        $selectedProfileTotalSpend += (float) ($bookingRow['spend_amount'] ?? 0.0);
     }
 }
 
@@ -413,7 +442,44 @@ $flash = getFlashMessage();
                     <article class="stat-card"><div class="stat-label">Profiles</div><div class="stat-value"><?php echo number_format($totalProfiles); ?></div><div class="stat-meta">Customer identities currently visible in search results.</div></article>
                     <article class="stat-card"><div class="stat-label">Bookings</div><div class="stat-value"><?php echo number_format($totalBookingsAcrossProfiles); ?></div><div class="stat-meta">Bookings tied to the customer profiles in this result set.</div></article>
                     <article class="stat-card"><div class="stat-label">With Account</div><div class="stat-value"><?php echo number_format($profilesWithLinkedAccounts); ?></div><div class="stat-meta">Profiles already linked to a registered DineMate user.</div></article>
+                    <article class="stat-card"><div class="stat-label">Total Spend</div><div class="stat-value">$<?php echo number_format($totalSpendAcrossProfiles, 2); ?></div><div class="stat-meta">Combined spend for currently visible customer profiles.</div></article>
                     <article class="stat-card"><div class="stat-label">Admin Entered</div><div class="stat-value"><?php echo number_format($profilesWithAdminBookings); ?></div><div class="stat-meta">Profiles with at least one booking entered manually by admin.</div></article>
+                </section>
+
+                <section class="panel-card">
+                    <div class="panel-heading">
+                        <div><h2 class="panel-title">Top Customers by Spend</h2><p class="panel-subtitle">Highest food and beverage spend across customer profiles.</p></div>
+                    </div>
+                    <div class="table-wrap">
+                        <div class="table-responsive">
+                            <table class="table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Bookings</th>
+                                        <th>Spend</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($topSpenders)): ?>
+                                        <?php foreach ($topSpenders as $topCustomer): ?>
+                                            <tr>
+                                                <td>
+                                                    <div class="profile-name"><?php echo htmlspecialchars((string) $topCustomer['name'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                                    <span class="profile-meta"><?php echo htmlspecialchars((string) (($topCustomer['email'] ?? '') !== '' ? $topCustomer['email'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <span class="profile-meta"><?php echo htmlspecialchars((string) (($topCustomer['phone'] ?? '') !== '' ? $topCustomer['phone'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                </td>
+                                                <td><span class="tiny-badge"><i class="fa-solid fa-calendar-check"></i><?php echo number_format((int) ($topCustomer['booking_count'] ?? 0)); ?></span></td>
+                                                <td>$<?php echo number_format((float) ($topCustomer['total_spend'] ?? 0.0), 2); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr><td colspan="3"><div class="empty-state">No spend data available yet.</div></td></tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </section>
 
                 <section class="layout-grid">
@@ -438,6 +504,7 @@ $flash = getFlashMessage();
                                         <tr>
                                             <th>Customer</th>
                                             <th>Bookings</th>
+                                            <th>Spend</th>
                                             <th>Last Booking</th>
                                             <th>Channels</th>
                                             <th>History</th>
@@ -457,6 +524,7 @@ $flash = getFlashMessage();
                                                     <?php endif; ?>
                                                 </td>
                                                 <td><span class="tiny-badge"><i class="fa-solid fa-calendar-check"></i><?php echo number_format((int) ($profile['booking_count'] ?? 0)); ?> bookings</span></td>
+                                                <td>$<?php echo number_format((float) ($profile['total_spend'] ?? 0.0), 2); ?></td>
                                                 <td><?php echo $lastBookingTs !== false ? htmlspecialchars(date('M d, Y', $lastBookingTs), ENT_QUOTES, 'UTF-8') : '-'; ?></td>
                                                 <td>
                                                     <span class="profile-meta"><?php echo (int) ($profile['admin_booking_count'] ?? 0); ?> admin</span>
@@ -499,6 +567,7 @@ $flash = getFlashMessage();
                                     <div class="history-card-meta">
                                         <span><?php echo htmlspecialchars((string) (($selectedProfile['email'] ?? '') !== '' ? $selectedProfile['email'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
                                         <span><?php echo htmlspecialchars((string) (($selectedProfile['phone'] ?? '') !== '' ? $selectedProfile['phone'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <span>Total spend: $<?php echo number_format($selectedProfileTotalSpend, 2); ?></span>
                                         <span><?php echo !empty($selectedProfile['linked_user_id']) ? htmlspecialchars('Linked account: ' . ((string) ($selectedProfile['linked_user_name'] ?? 'User')), ENT_QUOTES, 'UTF-8') : 'No linked account'; ?></span>
                                     </div>
                                     <div class="link-form">

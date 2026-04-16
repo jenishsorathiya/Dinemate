@@ -60,6 +60,9 @@ try {
     }
 
     $pdo->commit();
+    if ($nextStatus === 'cancelled') {
+        notifyBookingEvent($pdo, $bookingId, 'booking_cancelled');
+    }
 
     $assignedTablesStmt = $pdo->prepare("SELECT rt.table_id, rt.table_number FROM booking_table_assignments bta INNER JOIN restaurant_tables rt ON rt.table_id = bta.table_id WHERE bta.booking_id = ? ORDER BY rt.table_number + 0, rt.table_number ASC");
     $assignedTablesStmt->execute([$bookingId]);

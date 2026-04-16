@@ -5,6 +5,8 @@ require_once "../includes/session-check.php";
 
 requireCustomer();
 ensureBookingRequestColumns($pdo);
+ensureSettingsSchema($pdo);
+$bookingSettings = getBookingSettings($pdo);
 
 $userId = (int) getCurrentUserId();
 $bookings = getCustomerPortalBookings($pdo, $userId);
@@ -335,7 +337,7 @@ foreach ($bookings as $booking) {
                 <?php foreach ($filteredBookings as $booking): ?>
                     <?php
                     $status = strtolower((string) ($booking['status'] ?? 'pending'));
-                    $isEditable = in_array($status, getBookingActiveStatuses(), true);
+                    $isEditable = in_array($status, getBookingActiveStatuses(), true) && $bookingSettings['allow_booking_modification'];
                     $rebookUrl = 'book-table.php?' . http_build_query([
                         'rebook' => (int) $booking['booking_id'],
                         'date' => (string) ($booking['booking_date'] ?? ''),

@@ -127,6 +127,7 @@ try {
 
     $updateStmt->execute([$new_start_time, $new_end_time, $nextPlacementStatus, $booking_id]);
     $new_table_ids = syncBookingTableAssignments($pdo, $booking_id, $new_table_ids);
+    notifyBookingEvent($pdo, $booking_id, 'booking_updated');
 
     $tableNumbers = array_map(static function ($tableRow) {
         return (string) $tableRow['table_number'];

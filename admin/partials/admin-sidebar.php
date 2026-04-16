@@ -132,6 +132,9 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
         <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('tables'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-chair"></i><span class="nav-label">Tables</span>
         </a>
+        <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/settings.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('settings'), ENT_QUOTES, 'UTF-8'); ?>">
+            <i class="fa fa-gear"></i><span class="nav-label">Settings</span>
+        </a>
         <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('menu'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="fa fa-utensils"></i><span class="nav-label">Menu</span>
         </a>

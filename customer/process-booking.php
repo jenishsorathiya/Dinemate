@@ -9,6 +9,8 @@ if (session_status() === PHP_SESSION_NONE) {
 // Ensure start_time and end_time columns exist
 try {
     ensureBookingRequestColumns($pdo);
+    ensureSettingsSchema($pdo);
+    $bookingSettings = getBookingSettings($pdo);
 
     // First, try to query the columns
     $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
@@ -65,11 +67,20 @@ $start_time = sanitize($_POST['start_time']);
 $guests = intval($_POST['number_of_guests']);
 $special = isset($_POST['special_request']) ? sanitize($_POST['special_request']) : '';
 
+// Ensure booking is enabled
+if (!$bookingSettings['enable_online_bookings']) {
+    $_SESSION['error'] = 'Online bookings are currently disabled.';
+    redirect("book-table.php");
+}
+
 // Restaurant hours configuration (should match frontend)
 $restaurantOpen = '10:00';
 $restaurantClose = '22:00';
-$minDuration = 60; // minutes
-$maxDuration = 180; // minutes
+$minDuration = max(30, intval($bookingSettings['booking_duration_minutes']));
+$maxDuration = $minDuration;
+$minGuests = max(1, intval($bookingSettings['min_party_size']));
+$maxGuests = max($minGuests, intval($bookingSettings['max_party_size']));
+$minimumAdvanceMinutes = max(0, intval($bookingSettings['minimum_advanced_booking_minutes']));
 
 // Validate all required fields
 if(empty($customer_name) || empty($customer_email) || empty($customer_phone) || empty($date) || empty($start_time) || empty($guests)){
@@ -102,12 +113,33 @@ if (strlen(preg_replace('/\D+/', '', $customer_phone)) < 6 || strlen($customer_p
     redirect("book-table.php");
 }
 
-if($guests < 1){
-    $_SESSION['error'] = 'Number of guests must be at least 1.';
+if($guests < $minGuests){
+    $_SESSION['error'] = 'Number of guests must be at least ' . $minGuests . '.';
     redirect("book-table.php");
 }
 
-// Convert the selected arrival time into a fixed 60-minute booking request.
+if($guests > $maxGuests){
+    $_SESSION['error'] = 'Number of guests cannot exceed ' . $maxGuests . '.';
+    redirect("book-table.php");
+}
+
+$requestedDateTime = strtotime($date . ' ' . $start_time);
+if ($requestedDateTime === false) {
+    $_SESSION['error'] = 'Please choose a valid booking date and time.';
+    redirect("book-table.php");
+}
+
+$minimumAdvanceSeconds = $minimumAdvanceMinutes * 60;
+if ($requestedDateTime < time() + $minimumAdvanceSeconds) {
+    $_SESSION['error'] = 'Bookings must be made at least ' . $minimumAdvanceMinutes . ' minutes in advance.';
+    redirect("book-table.php");
+}
+
+if (!$bookingSettings['allow_table_request']) {
+    $special = '';
+}
+
+// Convert the selected arrival time into a fixed booking duration request.
 $start_time = date('H:i:s', strtotime($start_time));
 $end_time = date('H:i:s', strtotime($start_time . ' +' . $minDuration . ' minutes'));
 
@@ -161,34 +193,47 @@ $customerProfileId = upsertCustomerProfile(
     $user_id
 );
 
+$assignedTableId = null;
+if ($bookingSettings['auto_table_assignment']) {
+    $assignedTableId = findAvailableTableForBooking(
+        $pdo,
+        $date,
+        $start_time,
+        $end_time,
+        $guests
+    );
+}
+
 $stmt = $pdo->prepare("
     INSERT INTO bookings 
     (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status, booking_source, created_by_user_id)
-    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
 ");
 
 try {
     $guestAccessToken = generateGuestAccessToken();
 
     $stmt->execute([
-        $user_id, 
+        $user_id,
         $customerProfileId,
         $customer_name,
         $customer_phone,
         $customer_email,
         $guestAccessToken,
-        $date, 
-        $start_time, 
-        $end_time, 
+        $assignedTableId,
+        $date,
         $start_time,
         $end_time,
-        $guests, 
+        $start_time,
+        $end_time,
+        $guests,
         $special,
         $bookingSource,
         $createdByUserId
     ]);
     
     $booking_id = $pdo->lastInsertId();
+    notifyBookingEvent($pdo, (int)$booking_id, 'booking_request_received');
     redirect("booking-confirmation.php?id=" . $booking_id . "&token=" . urlencode($guestAccessToken));
     
 } catch(PDOException $e) {

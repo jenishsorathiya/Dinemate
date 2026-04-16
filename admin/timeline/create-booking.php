@@ -117,6 +117,7 @@ try {
     ]);
 
     $bookingId = $pdo->lastInsertId();
+    notifyBookingEvent($pdo, $bookingId, 'booking_request_received');
 
     echo json_encode([
         'success' => true,

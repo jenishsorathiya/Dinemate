@@ -51,6 +51,23 @@ try {
     } else {
         $fixed[] = "✓ special_request column already exists";
     }
+
+    // 2c. Ensure booking settings table exists
+    $stmt = $pdo->query("SHOW TABLES LIKE 'booking_settings'");
+    if ($stmt->rowCount() === 0) {
+        try {
+            $pdo->exec("CREATE TABLE booking_settings (
+                setting_key VARCHAR(100) NOT NULL PRIMARY KEY,
+                setting_value TEXT NULL DEFAULT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            $fixed[] = "✓ Created booking_settings table";
+        } catch (Exception $e) {
+            $errors[] = "✗ Failed to create booking_settings table: " . $e->getMessage();
+        }
+    } else {
+        $fixed[] = "✓ booking_settings table already exists";
+    }
     
     // 3. Populate NULL time values with sensible defaults (if any exist)
     $stmt = $pdo->query("SELECT COUNT(*) as null_count FROM bookings WHERE start_time IS NULL OR end_time IS NULL");
