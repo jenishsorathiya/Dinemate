@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Ensure API routes are handled by the API front controller first.
+RewriteRule ^api($|/.*) api/index.php [QSA,L]
+
+# Serve Vite build assets from frontend/dist
+RewriteRule ^assets/(.*)$ frontend/dist/assets/$1 [L]
+
+# Serve real files/folders directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Send everything else to the SPA entry point
+RewriteRule ^ index.php [QSA,L]
