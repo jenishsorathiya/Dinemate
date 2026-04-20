@@ -2003,15 +2003,42 @@ function buildMetrics(filteredBookings, previousBookings, allBookings, filteredT
 }
 
 function createOrUpdateChart(canvasId, config) {
+    const resolvedConfig = resolveChartConfig(config);
+
     if (charts[canvasId]) {
-        charts[canvasId].data = config.data;
-        charts[canvasId].options = config.options;
+        charts[canvasId].data = resolvedConfig.data;
+        charts[canvasId].options = resolvedConfig.options;
         charts[canvasId].update();
         return charts[canvasId];
     }
 
-    charts[canvasId] = new Chart(document.getElementById(canvasId), config);
+    charts[canvasId] = new Chart(document.getElementById(canvasId), resolvedConfig);
     return charts[canvasId];
+}
+
+function resolveChartColor(value) {
+    if (typeof value !== 'string' || value.indexOf('var(') === -1) {
+        return value;
+    }
+
+    return value.replace(/var\((--[^),\s]+)\)/g, (_, variableName) => {
+        const resolved = getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+        return resolved || `var(${variableName})`;
+    });
+}
+
+function resolveChartConfig(value) {
+    if (Array.isArray(value)) {
+        return value.map((item) => resolveChartConfig(item));
+    }
+
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(
+            Object.entries(value).map(([key, item]) => [key, resolveChartConfig(item)])
+        );
+    }
+
+    return resolveChartColor(value);
 }
 
 function lineChartConfig(labels, values) {

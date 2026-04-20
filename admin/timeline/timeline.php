@@ -1568,13 +1568,27 @@ $adminSidebarPathPrefix = '../';
 
         .current-time-line {
             position: absolute;
-            width: 2px;
+            width: 3px;
             background: var(--dm-danger-strong);
             top: 0;
             bottom: 0;
-            z-index: 19;
-            opacity: 0.7;
+            z-index: 24;
+            opacity: 0.9;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3), 0 0 14px rgba(198, 59, 59, 0.22);
             pointer-events: none;
+        }
+
+        .current-time-line::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            width: 11px;
+            height: 11px;
+            transform: translateX(-50%);
+            border-radius: 999px;
+            background: var(--dm-danger-strong);
+            box-shadow: 0 0 0 2px var(--dm-surface);
         }
 
         /* SCROLLBAR STYLING */
@@ -1916,6 +1930,7 @@ $adminSidebarPathPrefix = '../';
         bindAreaDetailsModal();
         renderTimeline();
         setCurrentTimeLine();
+        window.setInterval(setCurrentTimeLine, 60000);
 
     });
 
@@ -4481,33 +4496,27 @@ $adminSidebarPathPrefix = '../';
 
     // Set current time line indicator
     function setCurrentTimeLine() {
-        // Remove old line if exists
-        const oldLine = document.querySelector('.current-time-line');
-        if(oldLine) oldLine.remove();
+        document.querySelectorAll('.current-time-line').forEach(line => line.remove());
+
+        const timelineGrid = document.getElementById('timelineGrid');
+        if(!timelineGrid) {
+            return;
+        }
 
         const now = new Date();
-        const currentHour = now.getHours();
-        const currentMin = now.getMinutes();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const timelineStartMinutes = START_HOUR * 60;
+        const timelineEndMinutes = (END_HOUR + 1) * 60;
 
-        if (currentHour >= START_HOUR && currentHour <= END_HOUR) {
-            const timeSlots = getTimeSlots();
-            const cellWidth = 80;
-            let position = 0;
-
-            for (let i = 0; i < timeSlots.length; i++) {
-                const [h, m] = timeSlots[i].split(':').map(Number);
-                if (h === currentHour && m <= currentMin) {
-                    position = i * cellWidth + ((currentMin % INTERVAL_MINS) / INTERVAL_MINS) * cellWidth;
-                }
-            }
-
-            const line = document.createElement('div');
-            line.className = 'current-time-line';
-            line.style.left = `${80 + position}px`;
-            line.style.top = '0';
-            line.style.bottom = '0';
-            document.querySelector('.timeline-content').appendChild(line);
+        if (currentMinutes < timelineStartMinutes || currentMinutes > timelineEndMinutes) {
+            return;
         }
+
+        const position = ((currentMinutes - timelineStartMinutes) / INTERVAL_MINS) * CELL_WIDTH;
+        const line = document.createElement('div');
+        line.className = 'current-time-line';
+        line.style.left = `${Math.max(0, position)}px`;
+        timelineGrid.appendChild(line);
     }
 </script>
 
