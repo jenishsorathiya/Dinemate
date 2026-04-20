@@ -1023,6 +1023,64 @@ $adminSidebarPathPrefix = '../';
             }
         }
 
+        @media (max-width: 900px) {
+            .container-fluid {
+                height: auto;
+                min-height: 100%;
+            }
+
+            .main-content {
+                overflow: visible;
+            }
+
+            .content {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .left-panel,
+            .timeline-area {
+                width: 100%;
+            }
+
+            .timeline-area {
+                min-width: 0;
+                max-height: none;
+                min-height: auto;
+            }
+
+            .timeline-toolbar {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .timeline-scroll-wrapper {
+                min-height: 320px;
+                overflow-x: visible;
+                overflow-y: visible;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .timeline-scroll-wrapper::-webkit-scrollbar {
+                display: none;
+            }
+
+            .timeline-content,
+            .time-header {
+                min-width: 0;
+            }
+
+            .time-slots {
+                min-width: 0;
+            }
+
+            .table-labels {
+                position: relative;
+                left: auto;
+            }
+        }
+
         /* TABLES LIST */
         .tables-section h6 {
             font-weight: 600;
