@@ -49,6 +49,43 @@
     overflow: hidden;
     box-shadow: 0 4px 16px rgba(15,23,42,0.06);
 }
+
+@media (max-width: 767px) {
+    .contact-hero,
+    .about-hero,
+    .hero {
+        height: auto;
+        min-height: 60vh;
+        padding: 70px 18px;
+        margin-top: 80px;
+    }
+
+    .contact-hero h1,
+    .about-hero h1,
+    .hero h1 {
+        font-size: 32px;
+    }
+
+    .contact-hero p,
+    .about-hero p,
+    .hero p {
+        font-size: 16px;
+    }
+
+    .contact-card,
+    .menu-card,
+    .feature-card {
+        padding: 20px;
+    }
+
+    .section {
+        padding: 50px 0;
+    }
+
+    iframe {
+        height: 260px !important;
+    }
+}
 </style>
 
 <section class="contact-hero">

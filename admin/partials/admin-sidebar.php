@@ -110,9 +110,67 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
     }
 
     @media (max-width: 991px) {
+        .sidebar-shell {
+            display: none;
+        }
+
+        body.admin-sidebar-visible .sidebar-shell {
+            display: block;
+        }
+
         .sidebar-shell,
         .sidebar {
-            display: none;
+            width: 100%;
+            min-width: auto;
+            flex: 0 0 auto;
+            position: relative;
+            height: auto;
+            min-height: auto;
+            border-right: none;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            box-shadow: none;
+            padding: 14px 10px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .sidebar-shell {
+            background: var(--dm-accent-dark);
+        }
+
+        .sidebar:hover {
+            width: 100%;
+            box-shadow: none;
+        }
+
+        .sidebar h4 {
+            justify-content: flex-start;
+            margin-bottom: 14px;
+            width: 100%;
+        }
+
+        .sidebar a {
+            justify-content: center;
+            padding: 10px 12px;
+            flex: 1 1 120px;
+            min-width: 0;
+        }
+
+        .sidebar a i {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .brand-label,
+        .nav-label {
+            opacity: 1;
+            max-width: none;
+            margin-left: 8px;
         }
     }
 </style>

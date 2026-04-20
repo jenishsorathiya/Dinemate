@@ -108,6 +108,28 @@ $adminPendingFeedPath = $isTimelineContext
         white-space: nowrap;
     }
 
+    .topbar-menu-button {
+        display: none;
+        position: relative;
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--dm-border);
+        border-radius: var(--dm-radius-sm);
+        background: var(--dm-accent-dark);
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+        border-color: transparent;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .topbar-menu-button:hover {
+        background: var(--dm-accent-dark-hover);
+    }
+
     .topbar-icon-button {
         position: relative;
         width: 44px;
@@ -329,6 +351,15 @@ $adminPendingFeedPath = $isTimelineContext
             justify-content: space-between;
         }
 
+        .topbar-menu-button {
+            display: inline-flex;
+        }
+
+        .topbar-page {
+            flex: 1;
+            min-width: 0;
+        }
+
         .topbar-center {
             order: 3;
             justify-content: flex-start;
@@ -351,6 +382,9 @@ $adminPendingFeedPath = $isTimelineContext
 </style>
 <div class="topbar">
     <div class="topbar-left">
+        <button type="button" class="topbar-menu-button" id="adminSidebarToggle" aria-label="Toggle admin menu">
+            <i class="fa fa-bars"></i>
+        </button>
         <div class="topbar-page">
             <i class="fa <?php echo htmlspecialchars($adminPageIcon, ENT_QUOTES, 'UTF-8'); ?>"></i>
             <span class="topbar-page-title"><?php echo htmlspecialchars($adminPageTitle, ENT_QUOTES, 'UTF-8'); ?></span>
@@ -541,6 +575,31 @@ $adminPendingFeedPath = $isTimelineContext
 
         window.refreshAdminPendingBookings = refreshPendingBookings;
         window.setInterval(refreshPendingBookings, 15000);
+
+        const sidebarToggle = document.getElementById('adminSidebarToggle');
+        const body = document.body;
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function(event) {
+                event.stopPropagation();
+                body.classList.toggle('admin-sidebar-visible');
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!body.classList.contains('admin-sidebar-visible')) {
+                    return;
+                }
+
+                const sidebarShell = document.querySelector('.sidebar-shell');
+                if (!sidebarShell) {
+                    return;
+                }
+
+                if (!sidebarShell.contains(event.target) && event.target !== sidebarToggle) {
+                    body.classList.remove('admin-sidebar-visible');
+                }
+            });
+        }
     })();
 </script>
 

@@ -55,6 +55,39 @@
     box-shadow: 0 4px 16px rgba(15,23,42,0.06);
 }
 
+@media (max-width: 767px) {
+    .about-hero,
+    .contact-hero,
+    .hero {
+        height: auto;
+        min-height: 60vh;
+        padding: 70px 18px;
+        margin-top: 80px;
+    }
+
+    .about-hero h1,
+    .contact-hero h1,
+    .hero h1 {
+        font-size: 32px;
+    }
+
+    .about-hero p,
+    .contact-hero p,
+    .hero p {
+        font-size: 16px;
+    }
+
+    .section {
+        padding: 50px 0;
+    }
+
+    .feature-card,
+    .story-card,
+    .contact-card {
+        padding: 20px;
+    }
+}
+
 </style>
 
 <section class="about-hero">

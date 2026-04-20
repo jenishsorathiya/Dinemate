@@ -179,6 +179,42 @@ border-radius:50%;
 margin-bottom:15px;
 }
 
+@media (max-width: 767px) {
+    .hero {
+        height: auto;
+        min-height: 72vh;
+        padding: 80px 18px 60px;
+    }
+
+    .hero h1 {
+        font-size: 32px;
+        line-height: 1.1;
+    }
+
+    .hero p {
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+
+    .btn-book {
+        width: 100%;
+        max-width: 320px;
+        padding: 14px 20px;
+    }
+
+    .feature-card,
+    .menu-card,
+    .review-card,
+    .table-card,
+    .about-box {
+        padding: 18px;
+    }
+
+    .section {
+        padding: 50px 0;
+    }
+}
+
 </style>
 
 
