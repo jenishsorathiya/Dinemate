@@ -237,6 +237,9 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
     <div class="sidebar">
         <div class="sidebar-brand"><i class="fa fa-utensils"></i><span class="brand-label">DineMate</span></div>
         <nav class="sidebar-nav sidebar-nav-primary" aria-label="Admin navigation">
+            <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/home.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('home'), ENT_QUOTES, 'UTF-8'); ?>">
+                <i class="fa fa-house"></i><span class="nav-label">Home</span>
+            </a>
             <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/analytics.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('dashboard'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fa fa-chart-line"></i><span class="nav-label">Analytics</span>
             </a>

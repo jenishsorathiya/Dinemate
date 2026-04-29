@@ -41,7 +41,7 @@ try {
         return (string)$tableRow['table_number'];
     }, $assignedTables);
 
-    $hasAssignedTables = !empty($assignedTableIds);
+    $hasAssignedTables = !empty($assignedTableIds) || !empty($booking['table_id']);
     $nextPlacementStatus = $hasAssignedTables ? 'not_placed' : null;
 
     $updateStmt = $pdo->prepare("UPDATE bookings SET status = 'confirmed', reservation_card_status = ? WHERE booking_id = ?");

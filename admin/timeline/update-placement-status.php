@@ -23,7 +23,7 @@ if ($bookingId < 1 || !in_array($nextPlacementStatus, getBookingPlacementStatuse
 
 try {
     $bookingStmt = $pdo->prepare("
-        SELECT b.booking_id, b.status,
+        SELECT b.booking_id, b.status, b.table_id,
                GROUP_CONCAT(DISTINCT bta.table_id ORDER BY bta.table_id SEPARATOR ',') AS assigned_table_ids
         FROM bookings b
         LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
@@ -47,7 +47,7 @@ try {
         exit();
     }
 
-    $hasAssignedTables = trim((string) ($booking['assigned_table_ids'] ?? '')) !== '';
+    $hasAssignedTables = trim((string) ($booking['assigned_table_ids'] ?? '')) !== '' || !empty($booking['table_id']);
     if (!$hasAssignedTables) {
         http_response_code(409);
         echo json_encode(['success' => false, 'error' => 'Assign a table before updating placement']);

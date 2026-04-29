@@ -14,6 +14,9 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 $bookingId = (int)($data['booking_id'] ?? 0);
 $customerName = trim($data['customer_name'] ?? '');
+$customerEmail = trim((string) ($data['customer_email'] ?? ''));
+$bookingDate = trim((string) ($data['booking_date'] ?? ''));
+$requestedStatus = strtolower(trim((string) ($data['status'] ?? '')));
 $requestedStart = trim($data['requested_start_time'] ?? '');
 $requestedEnd = trim($data['requested_end_time'] ?? '');
 $assignedStart = trim($data['start_time'] ?? '');
@@ -26,6 +29,18 @@ $confirmBooking = !empty($data['confirm_booking']);
 if($bookingId < 1 || $customerName === '' || $requestedStart === '' || $requestedEnd === '' || $assignedStart === '' || $assignedEnd === '' || $guestCount < 1) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'All required fields must be provided']);
+    exit();
+}
+
+if ($customerEmail !== '' && !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Email must be valid']);
+    exit();
+}
+
+if ($bookingDate !== '' && (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $bookingDate) || strtotime($bookingDate) === false)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Booking date must be valid']);
     exit();
 }
 
@@ -93,6 +108,7 @@ try {
     }
 
     $nextAssignedTableIds = $selectedTableId !== null && $selectedTableId > 0 ? [$selectedTableId] : [];
+    $nextBookingDate = $bookingDate !== '' ? $bookingDate : (string) $booking['booking_date'];
     $assignedTables = [];
     $assignedTableNumbers = [];
 
@@ -143,7 +159,7 @@ try {
         foreach($assignedTableIds as $assignedTableId) {
             $conflictStmt->execute([
                 $assignedTableId,
-                $booking['booking_date'],
+                $nextBookingDate,
                 $bookingId,
                 $assignedEndTime,
                 $assignedStartTime,
@@ -162,8 +178,11 @@ try {
         }
     }
 
-    $nextStatus = $confirmBooking ? 'confirmed' : $booking['status'];
-    if (empty($nextAssignedTableIds)) {
+    $allowedStatuses = ['pending', 'confirmed', 'completed', 'no_show', 'cancelled'];
+    $nextStatus = $confirmBooking ? 'confirmed' : ($requestedStatus !== '' && in_array($requestedStatus, $allowedStatuses, true) ? $requestedStatus : $booking['status']);
+    if ($nextStatus === 'cancelled') {
+        $nextPlacementStatus = null;
+    } elseif (empty($nextAssignedTableIds)) {
         $nextPlacementStatus = null;
     } elseif (in_array($nextStatus, ['pending', 'confirmed'], true)) {
         $nextPlacementStatus = 'not_placed';
@@ -176,7 +195,7 @@ try {
     $nextCustomerProfileId = upsertCustomerProfile(
         $pdo,
         $customerName,
-        (string) ($booking['customer_email'] ?? ''),
+        $customerEmail !== '' ? $customerEmail : (string) ($booking['customer_email'] ?? ''),
         (string) ($booking['customer_phone'] ?? ''),
         $booking['user_id'] !== null ? (int) $booking['user_id'] : null
     );
@@ -186,6 +205,8 @@ try {
     $updateStmt = $pdo->prepare(" 
         UPDATE bookings
         SET customer_name_override = ?,
+            customer_email = ?,
+            booking_date = ?,
             requested_start_time = ?,
             requested_end_time = ?,
             start_time = ?,
@@ -199,6 +220,8 @@ try {
     ");
     $updateStmt->execute([
         $customerName,
+        $customerEmail !== '' ? $customerEmail : null,
+        $nextBookingDate,
         $requestedStartTime,
         $requestedEndTime,
         $assignedStartTime,
@@ -224,7 +247,7 @@ try {
             'table_number' => $assignedTableNumbers[0] ?? null,
             'assigned_table_ids' => $assignedTableIds,
             'assigned_table_numbers' => $assignedTableNumbers,
-            'booking_date' => $booking['booking_date'],
+            'booking_date' => $nextBookingDate,
             'start_time' => $assignedStartTime,
             'end_time' => $assignedEndTime,
             'requested_start_time' => $requestedStartTime,
@@ -235,6 +258,7 @@ try {
             'reservation_card_status' => $nextPlacementStatus,
             'customer_name' => $customerName,
             'customer_name_override' => $customerName,
+            'customer_email' => $customerEmail !== '' ? $customerEmail : null,
         ]
     ]);
 } catch(Throwable $e) {
