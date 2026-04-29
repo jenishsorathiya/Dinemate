@@ -688,8 +688,6 @@ $adminSidebarPathPrefix = '';
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <div class="main-content">
-        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
-
         <div class="admin-container">
             <div class="mn-shell">
 

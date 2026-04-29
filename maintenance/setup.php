@@ -12,10 +12,10 @@ require_once __DIR__ . "/../includes/functions.php";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DineMate - Quick Start Guide</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="<?php echo htmlspecialchars(appPath('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <style>
-        body { background: #f5f7fb; min-height: 100vh; padding: 40px 20px; font-family: 'Inter', sans-serif; }
+        body { background: #f5f7fb; min-height: 100vh; padding: 40px 20px; font-family: 'DM Sans', sans-serif; }
         .container { background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08); padding: 40px; max-width: 960px; }
         h1 { color: #162033; margin-bottom: 18px; }
         h3 { color: #162033; margin-top: 30px; margin-bottom: 18px; font-size: 20px; font-weight: 600; }

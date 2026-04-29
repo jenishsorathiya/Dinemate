@@ -134,10 +134,10 @@ try {
 <head>
     <title>DineMate Diagnostics</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="<?php echo htmlspecialchars(appPath('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; padding: 32px 20px; background: #f5f7fb; }
+        body { font-family: 'DM Sans', sans-serif; padding: 32px 20px; background: #f5f7fb; }
         .container { max-width: 980px; margin: 0 auto; background: var(--dm-surface); border: 1px solid #e7ecf3; border-radius: 20px; box-shadow: 0 18px 42px rgba(15,23,42,0.08); padding: 32px; }
         .diag-box { background: white; padding: 18px; margin: 12px 0; border-radius: 16px; border: 1px solid #e7ecf3; }
         .status-OK { border-color: #ccefdc; background: #e6f7ee; }

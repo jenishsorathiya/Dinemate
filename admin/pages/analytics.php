@@ -239,7 +239,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             min-height: 100vh;
             background: var(--analytics-bg);
             color: var(--analytics-text);
-            font-family: 'Inter', sans-serif;
+            font-family: 'DM Sans', sans-serif;
         }
 
         .admin-layout {
@@ -274,7 +274,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             gap: 8px;
             padding: 6px;
             border-radius: 8px;
-            background: rgba(248, 250, 252, 0.96);
+            background: rgba(244, 245, 240, 0.96);
             border: 1px solid var(--dm-border);
         }
 
@@ -294,7 +294,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .analytics-range-chip:hover,
         .analytics-range-chip:focus-visible {
-            background: rgba(29, 40, 64, 0.08);
+            background: rgba(119, 135, 91, 0.14);
             color: var(--dm-accent-dark);
             outline: none;
         }
@@ -373,8 +373,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             padding: 32px;
             border-radius: 12px;
             background: var(--dm-surface);
-            border: 1px solid rgba(231, 236, 243, 0.95);
-            box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+            border: 1px solid var(--dm-border);
+            box-shadow: var(--dm-shadow-sm);
             display: grid;
             grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
             gap: 22px;
@@ -414,7 +414,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             padding: 18px 20px;
             border-radius: 10px;
             background: var(--dm-surface-muted);
-            border: 1px solid rgba(232, 236, 243, 0.9);
+            border: 1px solid var(--dm-border);
         }
 
         .hero-mini-label {
@@ -499,7 +499,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .kpi-card:hover,
         .analytics-card:hover {
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            box-shadow: var(--dm-shadow-md);
             border-color: var(--dm-border-strong);
         }
 
@@ -625,7 +625,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .segment-button.is-active {
             background: var(--dm-surface);
             color: var(--dm-accent-dark);
-            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
+            box-shadow: var(--dm-shadow-sm);
         }
 
         .chart-shell {
@@ -725,12 +725,12 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
         .heatmap-cell {
             padding: 14px 12px;
             border-radius: 10px;
-            border: 1px solid rgba(226, 232, 240, 0.95);
+            border: 1px solid var(--dm-border);
             background: var(--dm-surface-muted);
         }
 
         .heatmap-cell:hover {
-            box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06);
+            box-shadow: var(--dm-shadow-sm);
         }
 
         .heatmap-cell-label {
@@ -749,7 +749,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             margin-top: 12px;
             height: 8px;
             border-radius: 4px;
-            background: rgba(90, 136, 200, 0.14);
+            background: var(--dm-accent-soft);
             overflow: hidden;
         }
 
@@ -863,7 +863,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             border-radius: 10px;
             background: var(--dm-accent-dark);
             color: var(--dm-surface);
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+            box-shadow: var(--dm-shadow-md);
         }
 
         .top-zone-label {
@@ -871,7 +871,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: rgba(255, 255, 255, 0.72);
+            color: rgba(244, 245, 240, 0.72);
         }
 
         .top-zone-name {
@@ -883,7 +883,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
         .top-zone-copy {
             margin-top: 10px;
-            color: rgba(255, 255, 255, 0.82);
+            color: rgba(244, 245, 240, 0.82);
             font-size: 14px;
             line-height: 1.7;
         }
@@ -1156,8 +1156,6 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <div class="main-content">
-        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
-
         <main class="analytics-main">
             <div class="analytics-shell">
                 <section class="analytics-hero">
@@ -1179,6 +1177,8 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                         </div>
                     </div>
                 </section>
+
+                <?php echo $adminTopbarCenterContent; ?>
 
                 <section class="empty-state-shell" id="globalEmptyState" hidden>
                     <div>
@@ -1295,9 +1295,9 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                                     <div class="insight-tags" id="utilisationInsightTags"></div>
                                 </div>
                                 <div>
-                                    <div class="card-header" style="margin-bottom: 12px;"><div><h3 class="card-title" style="font-size: 16px;">Utilisation heatmap</h3><p class="card-subtitle">Relative table usage.</p></div></div>
+                                    <div class="card-header dm-mb-12"><div><h3 class="card-title dm-text-lg">Utilisation heatmap</h3><p class="card-subtitle">Relative table usage.</p></div></div>
                                     <div class="heatmap-grid" id="tableHeatmap"></div>
-                                    <div class="card-header" style="margin: 18px 0 12px;"><div><h3 class="card-title" style="font-size: 16px;">Least used tables</h3></div></div>
+                                    <div class="card-header dm-mt-18 dm-mb-12"><div><h3 class="card-title dm-text-lg">Least used tables</h3></div></div>
                                     <div class="table-list" id="leastUsedTablesList"></div>
                                 </div>
                             </div>
@@ -1432,7 +1432,7 @@ const cardTextPlugin = {
         ctx.save();
         ctx.textAlign = 'center';
         ctx.fillStyle = 'var(--dm-text-soft)';
-        ctx.font = '600 13px Inter';
+        ctx.font = '600 13px DM Sans';
         ctx.fillText('No data for this selection', (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2);
         ctx.restore();
     }

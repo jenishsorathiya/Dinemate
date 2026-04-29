@@ -325,7 +325,7 @@ foreach ($bookings as $booking) {
                     </option>
                 <?php endforeach; ?>
             </select>
-            <button type="submit" class="btn-surface" style="justify-content:center;"><i class="fa fa-filter"></i> Apply Filters</button>
+            <button type="submit" class="btn-surface dm-justify-center"><i class="fa fa-filter"></i> Apply Filters</button>
         </form>
 
         <div class="hint-card">
@@ -389,7 +389,7 @@ foreach ($bookings as $booking) {
         <?php else: ?>
             <div class="empty-state">
                 <p>No reservations found.</p>
-                <a href="book-table.php" class="btn-primary-solid" style="margin-top:10px;"><i class="fa fa-calendar-plus"></i> Book Your Next Table</a>
+                <a href="book-table.php" class="btn-primary-solid dm-mt-10"><i class="fa fa-calendar-plus"></i> Book Your Next Table</a>
             </div>
         <?php endif; ?>
     </div>

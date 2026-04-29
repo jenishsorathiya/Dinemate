@@ -145,7 +145,7 @@
     <div class="container">
         <h3 class="text-center mb-5">Find Us Here</h3>
         <div class="map">
-            <iframe src="https://www.google.com/maps?q=Old%20Canberra%20Inn&output=embed" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            <iframe src="https://www.google.com/maps?q=Old%20Canberra%20Inn&output=embed" width="100%" height="400" class="dm-border-0" allowfullscreen="" loading="lazy"></iframe>
         </div>
     </div>
 </section>

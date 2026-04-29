@@ -182,8 +182,8 @@ $phoneCountryOptions = [
 
 .booking-step.is-active .booking-step-dot,
 .booking-step.is-complete .booking-step-dot {
-    background: #f4b400;
-    color: var(--dm-text);
+    background: var(--dm-accent-gold);
+    color: var(--dm-white);
 }
 
 .booking-layout {
@@ -296,7 +296,7 @@ $phoneCountryOptions = [
     border: none;
     border-radius: 8px;
     background: transparent;
-    color: #334155;
+    color: var(--dm-text);
     font-size: 16px;
     font-weight: 600;
     transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
@@ -310,16 +310,16 @@ $phoneCountryOptions = [
 .booking-day.is-selected {
     background: var(--dm-accent-dark);
     color: var(--dm-surface);
-    box-shadow: 0 12px 22px rgba(29, 40, 64, 0.22);
+    box-shadow: var(--dm-shadow-md);
 }
 
 .booking-day.is-today:not(.is-selected) {
-    box-shadow: inset 0 0 0 2px #d3dceb;
+    box-shadow: inset 0 0 0 2px var(--dm-accent-soft);
 }
 
 .booking-day.is-muted,
 .booking-day:disabled {
-    color: #cbd5e1;
+    color: var(--dm-text-soft);
     cursor: not-allowed;
 }
 
@@ -429,8 +429,8 @@ $phoneCountryOptions = [
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: #ffd60a;
-    color: #8a5a00;
+    background: var(--dm-accent-soft);
+    color: var(--dm-accent);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -467,7 +467,7 @@ $phoneCountryOptions = [
 }
 
 .booking-benefits-list i {
-    color: #d4a018;
+    color: var(--dm-accent-gold);
     margin-top: 3px;
     font-size: 8px;
 }
@@ -511,7 +511,7 @@ $phoneCountryOptions = [
     gap: 8px;
     padding: 7px 12px;
     border-radius: 6px;
-    background: #eef2f6;
+    background: var(--dm-surface-muted);
     color: var(--dm-text-muted);
     font-size: 12px;
     font-weight: 700;
@@ -560,7 +560,7 @@ $phoneCountryOptions = [
 .booking-textarea:focus {
     outline: none;
     border-color: var(--dm-border-strong);
-    box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
+    box-shadow: var(--dm-focus-ring);
 }
 
 .booking-textarea {
@@ -608,7 +608,7 @@ $phoneCountryOptions = [
 .booking-guest-btn.is-primary {
     background: var(--dm-accent-dark);
     color: var(--dm-surface);
-    box-shadow: 0 10px 24px rgba(29, 40, 64, 0.18);
+    box-shadow: var(--dm-shadow-md);
 }
 
 .booking-guests-display {
@@ -688,13 +688,13 @@ $phoneCountryOptions = [
     margin-left: auto;
     background: var(--dm-accent-dark);
     color: var(--dm-surface);
-    box-shadow: 0 16px 34px rgba(29, 40, 64, 0.18);
+    box-shadow: var(--dm-shadow-md);
 }
 
 .booking-alert {
     border-radius: 8px;
-    border: 1px solid #fecaca;
-    background: #fff1f2;
+    border: 1px solid var(--dm-danger-border);
+    background: var(--dm-danger-bg);
     color: var(--dm-danger-text);
     padding: 14px 16px;
     font-size: 14px;
@@ -813,7 +813,7 @@ $phoneCountryOptions = [
         <?php endif; ?>
 
         <?php if (isset($_GET['rebook'])): ?>
-            <div class="booking-alert" style="border-color:#c7d2fe;background:var(--dm-neutral-bg);color:#3730a3;">
+            <div class="booking-alert" style="border-color:var(--dm-neutral-border);background:var(--dm-neutral-bg);color:var(--dm-info-strong);">
                 <i class="fa fa-repeat"></i>
                 Previous booking details have been prefilled for review.
             </div>

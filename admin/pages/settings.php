@@ -143,7 +143,6 @@ $adminSidebarPathPrefix = '';
 <body>
     <div class="admin-layout">
         <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
-        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
 
         <main class="admin-main">
             <div class="settings-shell">

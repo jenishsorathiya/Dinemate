@@ -2,7 +2,7 @@
 
 <style>
 .about-hero {
-    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+    background: linear-gradient(var(--dm-overlay-scrim), var(--dm-overlay-scrim)), 
                 url("https://images.unsplash.com/photo-1559339352-11d035aa65de");
     background-size: cover;
     background-position: center;
@@ -11,7 +11,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    color: white;
+    color: var(--dm-white);
     margin-top: 90px;
 }
 .about-hero h1{
@@ -23,7 +23,7 @@
 }
 
 .feature-card{
-    background: white;
+    background: var(--dm-surface);
     border: 1px solid var(--dm-border);
     border-radius: 10px;
     padding: 30px;
@@ -37,12 +37,12 @@
 
 .feature-icon {
     font-size: 40px;
-    color: #f4b400;
+    color: var(--dm-accent-gold);
     margin-bottom: 15px;
 }
 
 .story-card {
-    background: white;
+    background: var(--dm-surface);
     border: 1px solid var(--dm-border);
     border-radius: 10px;
     padding: 40px;

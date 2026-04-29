@@ -116,7 +116,7 @@ $adminPendingFeedPath = $isTimelineContext
         border: 1px solid var(--dm-border);
         border-radius: var(--dm-radius-sm);
         background: var(--dm-accent-dark);
-        color: #ffffff;
+        color: var(--dm-white);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -153,7 +153,7 @@ $adminPendingFeedPath = $isTimelineContext
         padding: 0 6px;
         border-radius: 50%;
         background: var(--dm-danger-text);
-        color: #ffffff;
+        color: var(--dm-white);
         font-size: 11px;
         font-weight: 700;
         display: inline-flex;
@@ -176,7 +176,7 @@ $adminPendingFeedPath = $isTimelineContext
         height: 32px;
         border-radius: 50%;
         background: var(--dm-accent-dark);
-        color: #ffffff;
+        color: var(--dm-white);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -223,7 +223,7 @@ $adminPendingFeedPath = $isTimelineContext
     .topbar-action-button.has-pending {
         background: var(--dm-danger-bg);
         color: var(--dm-danger-text);
-        border-color: #ffd5db;
+        border-color: var(--dm-danger-border);
         box-shadow: none;
     }
 
@@ -236,7 +236,7 @@ $adminPendingFeedPath = $isTimelineContext
         padding: 0 6px;
         border-radius: 50%;
         background: var(--dm-accent-dark);
-        color: #ffffff;
+        color: var(--dm-white);
         font-size: 11px;
         font-weight: 700;
     }
@@ -250,7 +250,7 @@ $adminPendingFeedPath = $isTimelineContext
         top: calc(100% + 10px);
         right: 0;
         width: min(350px, 82vw);
-        background: #ffffff;
+        background: var(--dm-surface);
         border: 1px solid var(--dm-border);
         border-radius: var(--dm-radius-md);
         box-shadow: 0 24px 54px rgba(15, 23, 42, 0.12);
@@ -285,7 +285,7 @@ $adminPendingFeedPath = $isTimelineContext
     .topbar-pending-item {
         display: block;
         border: 1px solid var(--dm-border);
-        background: #fbfcfe;
+        background: var(--dm-surface-muted);
         border-radius: var(--dm-radius-sm);
         padding: 10px 12px;
         text-decoration: none;
@@ -293,13 +293,13 @@ $adminPendingFeedPath = $isTimelineContext
     }
 
     .topbar-pending-item:focus-visible {
-        outline: 2px solid rgba(37, 99, 235, 0.24);
+        outline: 2px solid rgba(119, 135, 91, 0.30);
         outline-offset: 2px;
     }
 
     .topbar-pending-item:hover {
         border-color: var(--dm-border-strong);
-        background: #ffffff;
+        background: var(--dm-surface);
     }
 
     .topbar-pending-item-top {

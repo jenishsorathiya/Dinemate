@@ -157,7 +157,7 @@ margin-bottom:80px;
 /* CARD */
 
 .modify-card{
-background:white;
+background:var(--dm-surface);
 border:1px solid var(--dm-border);
 border-radius:10px;
 padding:34px;
@@ -190,7 +190,7 @@ transition:0.2s;
 
 .modern-input:focus{
 border-color:var(--dm-border-strong);
-box-shadow:0 0 0 4px rgba(29,40,64,0.12);
+box-shadow:var(--dm-focus-ring);
 }
 
 /* BUTTON */

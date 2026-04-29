@@ -425,7 +425,7 @@ $adminSidebarPathPrefix = '';
             min-height: 100%;
             background: var(--bg);
             color: var(--text);
-            font-family: 'Inter', sans-serif;
+            font-family: 'DM Sans', sans-serif;
         }
 
         body {
@@ -1857,8 +1857,6 @@ $adminSidebarPathPrefix = '';
         <?php require __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
         <div class="main-content">
-            <?php require __DIR__ . '/../partials/admin-topbar.php'; ?>
-
             <main class="visual-main">
                 <div class="page-stack">
                 <header class="page-header">

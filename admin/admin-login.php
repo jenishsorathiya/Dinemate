@@ -11,6 +11,7 @@ if (isLoggedIn() && getCurrentUserRole() === 'admin') {
 
 $error = $_SESSION['admin_error'] ?? '';
 unset($_SESSION['admin_error']);
+$appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: time());
 ?>
 <!DOCTYPE html>
 <html>
@@ -18,13 +19,13 @@ unset($_SESSION['admin_error']);
 <title>DineMate Admin Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="../assets/css/app.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="../assets/css/app.css?v=<?= htmlspecialchars($appCssVersion, ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
 
 <style>
 body {
     margin: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     background: var(--dm-bg);
     min-height: 100vh;
     display: flex;
@@ -69,7 +70,7 @@ body {
 }
 
 .form-control:focus {
-    background: white;
+    background: var(--dm-surface);
     box-shadow: var(--dm-focus-ring);
     border-color: var(--dm-border-strong);
 }
@@ -116,7 +117,7 @@ body {
 .admin-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(22, 32, 51, 0.22), rgba(22, 32, 51, 0.68));
+    background: var(--dm-overlay-auth);
 }
 
 @media (max-width: 991px) {
@@ -136,7 +137,7 @@ body {
 
 .admin-text {
     position: relative;
-    color: white;
+    color: var(--dm-white);
     z-index: 2;
     padding: 40px;
     bottom: 0;

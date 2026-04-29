@@ -390,7 +390,7 @@ $customerProfile = $customerProfile ?: [];
 
                 <div class="profile-section">
                     <h3>Reminder Preferences</h3>
-                    <div class="toggle-row" style="margin-top:16px;">
+                    <div class="toggle-row dm-mt-16">
                         <label class="toggle-item">
                             <div class="toggle-copy">
                                 <strong>Email reminders</strong>
@@ -409,15 +409,15 @@ $customerProfile = $customerProfile ?: [];
                 </div>
 
                 <div class="profile-actions">
-                    <a class="profile-btn profile-btn-secondary" href="dashboard.php" style="text-decoration:none;">Back To Dashboard</a>
+                    <a class="profile-btn profile-btn-secondary dm-no-underline" href="dashboard.php">Back To Dashboard</a>
                     <button type="submit" class="profile-btn profile-btn-primary">Save Profile</button>
                 </div>
             </form>
 
             <div class="profile-section">
                 <h3>Account Security</h3>
-                <p style="margin-top:8px;color:var(--dm-text-muted);">Change your password without leaving the customer portal.</p>
-                <form method="POST" style="margin-top:18px;">
+                <p class="dm-mt-8 dm-muted">Change your password without leaving the customer portal.</p>
+                <form method="POST" class="dm-mt-18">
                     <input type="hidden" name="action" value="password">
                     <div class="profile-grid">
                         <div class="profile-field full-width">
@@ -444,7 +444,7 @@ $customerProfile = $customerProfile ?: [];
             <h3>Profile Snapshot</h3>
             <p>Profile and booking summary.</p>
 
-            <div class="stats-list" style="margin-top:18px;">
+            <div class="stats-list dm-mt-18">
                 <div class="stat-item">
                     <strong>Completed Visits</strong>
                     <span><?php echo number_format($completedCount); ?> completed bookings in your customer history.</span>
@@ -463,16 +463,16 @@ $customerProfile = $customerProfile ?: [];
                 </div>
             </div>
 
-            <div class="quick-links" style="margin-top:22px;">
+            <div class="quick-links dm-mt-22">
                 <div class="quick-link-card">
                     <strong>Booking History</strong>
                     <span>Review previous reservations and rebook from history.</span>
-                    <div style="margin-top:12px;"><a href="my-bookings.php?view=past">View history</a></div>
+                    <div class="dm-mt-12"><a href="my-bookings.php?view=past">View history</a></div>
                 </div>
                 <div class="quick-link-card">
                     <strong>Current Reservations</strong>
                     <span>View and manage your upcoming bookings.</span>
-                    <div style="margin-top:12px;"><a href="dashboard.php">View dashboard</a></div>
+                    <div class="dm-mt-12"><a href="dashboard.php">View dashboard</a></div>
                 </div>
             </div>
         </aside>

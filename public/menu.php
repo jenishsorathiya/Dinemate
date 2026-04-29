@@ -102,7 +102,7 @@ foreach ($categories as $category) {
 }
 
 .menu-card {
-    background: white;
+    background: var(--dm-surface);
     border: 1px solid var(--dm-border);
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(15,23,42,0.06);
@@ -179,7 +179,7 @@ foreach ($categories as $category) {
 }
 
 .side-item {
-    background: white;
+    background: var(--dm-surface);
     padding: 15px;
     border: 1px solid var(--dm-border);
     border-radius: 8px;

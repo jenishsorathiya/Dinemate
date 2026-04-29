@@ -1,5 +1,6 @@
 <?php 
 session_start(); 
+$appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: time());
 ?>
 
 <!DOCTYPE html>
@@ -8,14 +9,14 @@ session_start();
 <title>DineMate | Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="../assets/css/app.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="../assets/css/app.css?v=<?= htmlspecialchars($appCssVersion, ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <style>
 body {
     margin: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     background: var(--dm-bg);
 }
 
@@ -63,14 +64,14 @@ body {
 .auth-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(22, 32, 51, 0.22), rgba(22, 32, 51, 0.62));
+    background: var(--dm-overlay-auth);
 }
 
 .auth-right-content {
     position: absolute;
     bottom: 40px;
     left: 40px;
-    color: white;
+    color: var(--dm-white);
 }
 .form-control {
     border-radius: var(--dm-radius-sm);
@@ -137,7 +138,7 @@ body {
     border-radius: var(--dm-radius-sm);
     border: 1px solid var(--dm-border-strong);
     padding: 10px 12px;
-    background: white;
+    background: var(--dm-surface);
     transition: background 0.15s;
     font-weight: 500;
     font-size: 14px;

@@ -450,7 +450,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
     <style>
         :root { --users-bg: var(--dm-bg); --users-card: var(--dm-surface); --users-line: var(--dm-border); --users-text: var(--dm-text); --users-muted: var(--dm-text-muted); --users-shadow: var(--dm-shadow-md); --users-shadow-soft: var(--dm-shadow-sm); --users-primary: var(--dm-accent-dark); --users-accent: var(--dm-pending-text); --users-success: var(--dm-confirmed-text); --users-danger: var(--dm-danger-text); --users-warning: var(--dm-pending-text); }
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--users-bg); color: var(--users-text); }
+        body { margin: 0; font-family: 'DM Sans', sans-serif; background: var(--users-bg); color: var(--users-text); }
         .main { flex: 1; overflow-y: auto; padding: 28px; }
         .users-shell { max-width: 1400px; margin: 0 auto; display: grid; gap: 22px; }
         .hero-card, .panel-card, .stat-card { background: var(--users-card); border: 1px solid var(--users-line); border-radius: 12px; box-shadow: var(--users-shadow-soft); }
@@ -537,7 +537,6 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
 <div class="admin-layout">
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
     <div class="main-content">
-        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
         <div class="main">
             <div class="users-shell">
                 <section class="hero-card">

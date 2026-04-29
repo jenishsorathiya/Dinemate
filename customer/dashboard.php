@@ -463,7 +463,7 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                                     <span class="timeline-meta-chip"><i class="fa fa-location-dot"></i> <?php echo htmlspecialchars(getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed'), ENT_QUOTES, 'UTF-8'); ?></span>
                                     <span class="timeline-meta-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                 </div>
-                                <div class="hero-actions" style="margin-top:0;">
+                                <div class="hero-actions dm-mt-0">
                                     <?php if ($bookingSettings['allow_booking_modification']): ?>
                                         <a class="btn-portal-secondary" href="modify-booking.php?id=<?php echo (int) $booking['booking_id']; ?>"><i class="fa fa-pen"></i> Reschedule</a>
                                     <?php endif; ?>
@@ -503,14 +503,14 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                     </div>
                 </div>
 
-                <div class="profile-notes" style="margin-top:16px;">
+                <div class="profile-notes dm-mt-16">
                     <div class="notes-card">
                         <strong>Dietary Notes</strong>
-                        <div class="tiny-copy" style="margin-top:8px;"><?php echo htmlspecialchars($dietaryNotes !== '' ? $dietaryNotes : 'None', ENT_QUOTES, 'UTF-8'); ?></div>
+                        <div class="tiny-copy dm-mt-8"><?php echo htmlspecialchars($dietaryNotes !== '' ? $dietaryNotes : 'None', ENT_QUOTES, 'UTF-8'); ?></div>
                     </div>
                     <div class="notes-card">
                         <strong>Staff Notes</strong>
-                        <div class="tiny-copy" style="margin-top:8px;"><?php echo htmlspecialchars($notes !== '' ? $notes : 'None', ENT_QUOTES, 'UTF-8'); ?></div>
+                        <div class="tiny-copy dm-mt-8"><?php echo htmlspecialchars($notes !== '' ? $notes : 'None', ENT_QUOTES, 'UTF-8'); ?></div>
                     </div>
                 </div>
             </article>
@@ -541,14 +541,14 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                             <div class="history-item">
                                 <div class="history-row">
                                     <div>
-                                        <div class="timeline-card-title" style="font-size:17px;"><?php echo htmlspecialchars(date('D, j M Y', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="timeline-card-title dm-text-md"><?php echo htmlspecialchars(date('D, j M Y', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
                                         <div class="history-meta"><?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8'); ?>, <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</div>
                                     </div>
                                     <span class="status-tag <?php echo htmlspecialchars((string) ($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>">
                                         <?php echo htmlspecialchars(getBookingStatusLabel($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>
                                     </span>
                                 </div>
-                                <div class="hero-actions" style="margin-top:12px;">
+                                <div class="hero-actions dm-mt-12">
                                     <span class="history-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                     <span class="history-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Unassigned'; ?></span>
                                     <a class="btn-portal-secondary" href="<?php echo htmlspecialchars($rebookUrl, ENT_QUOTES, 'UTF-8'); ?>"><i class="fa fa-repeat"></i> Rebook</a>

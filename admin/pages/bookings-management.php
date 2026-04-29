@@ -386,7 +386,7 @@ $adminSidebarPathPrefix = '';
 
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'DM Sans', sans-serif;
             background: var(--page-bg);
             color: var(--text-main);
         }
@@ -1058,8 +1058,6 @@ $adminSidebarPathPrefix = '';
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <div class="main-content">
-        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
-
         <div class="page-shell">
             <?php if ($flash): ?>
                 <div class="alert alert-<?php echo htmlspecialchars($flash['type'] === 'error' ? 'danger' : $flash['type'], ENT_QUOTES, 'UTF-8'); ?>">
@@ -1251,7 +1249,7 @@ $adminSidebarPathPrefix = '';
                     <span class="queue-count"><?php echo count($bookingHistory); ?> results</span>
                 </div>
                 <div class="bm-history-filters">
-                    <form method="GET" style="display: contents;">
+                    <form method="GET" class="dm-display-contents">
                         <div class="bm-filter-group">
                             <label for="historyStatus">Status</label>
                             <select id="historyStatus" name="history_status">

@@ -6,7 +6,7 @@
 <style>
 
 body{
-font-family:'Inter',sans-serif;
+font-family:'DM Sans',sans-serif;
 background:var(--dm-bg);
 margin:0;
 }
@@ -22,7 +22,7 @@ display:flex;
 align-items:center;
 justify-content:center;
 text-align:center;
-color:white;
+color:var(--dm-white);
 overflow:hidden;
 }
 
@@ -32,7 +32,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:linear-gradient(120deg,rgba(18,32,51,0.76),rgba(18,32,51,0.42));
+background:var(--dm-overlay-hero);
 }
 
 .hero-content{
@@ -122,7 +122,7 @@ text-align:center;
 
 .feature-icon{
 font-size:40px;
-color:#f4b400;
+color:var(--dm-accent-gold);
 margin-bottom:15px;
 }
 

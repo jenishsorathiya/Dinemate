@@ -151,10 +151,10 @@ try {
 <head>
     <title>DineMate Auto-Fix</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="<?php echo htmlspecialchars(appPath('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; padding: 32px 20px; background: #f5f7fb; }
+        body { font-family: 'DM Sans', sans-serif; padding: 32px 20px; background: #f5f7fb; }
         .container { max-width: 860px; margin: 0 auto; background: white; padding: 32px; border-radius: 20px; border: 1px solid #e7ecf3; box-shadow: 0 18px 42px rgba(15,23,42,0.08); }
         h1 { color: #162033; margin-bottom: 24px; }
         .section { margin: 20px 0; }

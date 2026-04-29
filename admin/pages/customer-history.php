@@ -369,7 +369,7 @@ $flash = getFlashMessage();
     <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <style>
         :root { --page-bg: var(--dm-bg); --surface: var(--dm-surface); --line: var(--dm-border); --text-main: var(--dm-text); --text-muted: var(--dm-text-muted); --shadow-soft: var(--dm-shadow-sm); --shadow-card: var(--dm-shadow-md); --primary: var(--dm-accent-dark); --accent: var(--dm-pending-text); --success: var(--dm-confirmed-text); --danger: var(--dm-danger-text); --warning: var(--dm-pending-text); }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--dm-surface-muted); color: var(--text-main); }
+        body { margin: 0; font-family: 'DM Sans', sans-serif; background: var(--dm-surface-muted); color: var(--text-main); }
         .main { flex: 1; overflow-y: auto; padding: 28px; }
         .page-shell { max-width: 1440px; margin: 0 auto; display: grid; gap: 22px; }
         .hero-card, .panel-card, .stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-soft); }
@@ -423,7 +423,6 @@ $flash = getFlashMessage();
 <div class="admin-layout">
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
     <div class="main-content">
-        <?php include __DIR__ . '/../partials/admin-topbar.php'; ?>
         <div class="main">
             <div class="page-shell">
                 <?php if ($flash): ?>

@@ -74,7 +74,7 @@ margin-bottom:80px;
 }
 
 .confirm-card{
-background:white;
+background:var(--dm-surface);
 border:1px solid var(--dm-border);
 border-radius:10px;
 padding:36px;
@@ -116,7 +116,7 @@ font-size:15px;
 
 .qr-box{
 padding:10px;
-background:white;
+background:var(--dm-surface);
 border:1px solid var(--dm-border);
 border-radius:8px;
 box-shadow:0 4px 12px rgba(15,23,42,0.05);
