@@ -25,8 +25,10 @@ $bookingEditSubmitLabel = $bookingEditSubmitLabel ?? 'Save Changes';
 $bookingEditShowDelete = $bookingEditShowDelete ?? true;
 $bookingEditShowStatus = $bookingEditShowStatus ?? true;
 $bookingEditShowTable = $bookingEditShowTable ?? true;
+$bookingEditShowFloor = $bookingEditShowFloor ?? true;
 $bookingEditHiddenFields = $bookingEditHiddenFields ?? [];
 $bookingEditTables = $bookingEditTables ?? [];
+$bookingEditFloorLayoutHtml = $bookingEditFloorLayoutHtml ?? '';
 $bookingEditTypes = $bookingEditTypes ?? (function_exists('getBookingTypes') ? getBookingTypes() : ['normal', 'trivia', 'function']);
 $bookingEditStatuses = $bookingEditStatuses ?? [
     'pending' => 'Pending',
@@ -108,7 +110,7 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
 
     .booking-edit-tabs {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         padding: 0 22px;
         border-bottom: 1px solid var(--dm-border);
     }
@@ -160,8 +162,15 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
 
     .booking-edit-body {
         min-height: 300px;
+        overflow-x: auto;
         overflow-y: auto;
         padding: 22px;
+    }
+
+    .booking-edit-panel {
+        display: grid;
+        gap: 18px;
+        min-width: 0;
     }
 
     .booking-edit-error {
@@ -198,6 +207,36 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
     }
 
     .booking-edit-field.full { grid-column: 1 / -1; }
+
+    .booking-edit-floor-panel {
+        display: grid;
+        gap: 12px;
+        overflow: auto;
+    }
+
+    .booking-edit-floor-panel .home-floor-viewport {
+        max-width: 100%;
+        overflow: auto;
+    }
+
+    .booking-edit-floor-panel .home-floor-canvas {
+        width: 860px;
+        height: 600px;
+        max-width: none;
+        transform-origin: top left;
+        transition: transform 0.15s ease;
+    }
+
+    .booking-edit-floor-empty {
+        min-height: 220px;
+        padding: 18px;
+        border: 1px solid var(--dm-border);
+        border-radius: 8px;
+        background: var(--dm-surface);
+        color: var(--dm-text-muted);
+        font-size: 13px;
+        text-align: center;
+    }
 
     .booking-edit-field label {
         color: var(--dm-text-muted);
@@ -532,6 +571,10 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
                     <i class="fa-regular fa-calendar-check"></i>
                     <span>Booking Details</span>
                 </button>
+                <button type="button" class="booking-edit-tab" id="<?php echo $bookingEditPanelPrefixAttr; ?>TablesTab" role="tab" aria-selected="false" aria-controls="<?php echo $bookingEditPanelPrefixAttr; ?>Tables" data-booking-edit-tab="tables">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                    <span>Table Details</span>
+                </button>
                 <button type="button" class="booking-edit-tab" id="<?php echo $bookingEditPanelPrefixAttr; ?>NotesTab" role="tab" aria-selected="false" aria-controls="<?php echo $bookingEditPanelPrefixAttr; ?>Notes" data-booking-edit-tab="notes">
                     <i class="fa-regular fa-note-sticky"></i>
                     <span>Notes</span>
@@ -662,6 +705,17 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
                     </div>
                 </section>
 
+                <section class="booking-edit-panel" id="<?php echo $bookingEditPanelPrefixAttr; ?>Tables" role="tabpanel" aria-labelledby="<?php echo $bookingEditPanelPrefixAttr; ?>TablesTab" data-booking-edit-panel="tables" hidden>
+                    <div class="booking-edit-field full booking-edit-floor-panel">
+                        <label>Floor Layout</label>
+                        <?php if ($bookingEditFloorLayoutHtml !== ''): ?>
+                            <?php echo $bookingEditFloorLayoutHtml; ?>
+                        <?php else: ?>
+                            <div class="booking-edit-floor-empty">Floor layout is unavailable in this view.</div>
+                        <?php endif; ?>
+                    </div>
+                </section>
+
                 <section class="booking-edit-panel" id="<?php echo $bookingEditPanelPrefixAttr; ?>Notes" role="tabpanel" aria-labelledby="<?php echo $bookingEditPanelPrefixAttr; ?>NotesTab" data-booking-edit-panel="notes" hidden>
                     <div class="booking-edit-field full">
                         <label for="<?php echo $bookingEditModalIdAttr; ?>Notes">Notes</label>
@@ -697,6 +751,22 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
         const panels = Array.from(modal.querySelectorAll('[data-booking-edit-panel]'));
         const guestInput = modal.querySelector('[data-booking-edit-guests]');
 
+        const floorCanvas = modal.querySelector('.booking-edit-floor-panel .home-floor-canvas');
+        const floorViewport = modal.querySelector('.booking-edit-floor-panel .home-floor-viewport');
+
+        const updateFloorLayoutScale = () => {
+            if (!floorCanvas || !floorViewport) {
+                return;
+            }
+
+            const availableWidth = Math.max(0, floorViewport.clientWidth);
+            const layoutWidth = floorCanvas.scrollWidth || floorCanvas.clientWidth;
+            const scale = layoutWidth > 0 ? Math.min(1, availableWidth / layoutWidth) : 1;
+
+            floorCanvas.style.transform = scale < 1 ? `scale(${scale})` : '';
+            floorCanvas.style.width = '860px';
+        };
+
         const setActiveTab = (target) => {
             tabs.forEach((tab) => {
                 const isActive = tab.dataset.bookingEditTab === target;
@@ -708,11 +778,17 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
             panels.forEach((panel) => {
                 panel.hidden = panel.dataset.bookingEditPanel !== target;
             });
+
+            if (target === 'tables') {
+                updateFloorLayoutScale();
+            }
         };
 
         tabs.forEach((tab) => {
             tab.addEventListener('click', () => setActiveTab(tab.dataset.bookingEditTab));
         });
+
+        window.addEventListener('resize', updateFloorLayoutScale);
 
         modal.querySelectorAll('[data-booking-edit-guest-step]').forEach((button) => {
             button.addEventListener('click', () => {

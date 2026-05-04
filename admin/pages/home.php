@@ -808,30 +808,6 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
                 </div>
             </div>
 
-            <?php if (!empty($unassignedBookings)): ?>
-                <div class="home-floor-unassigned">
-                    <div class="home-floor-unassigned-title">Unassigned bookings</div>
-                    <div class="home-table-bookings">
-                        <?php foreach ($unassignedBookings as $tableBooking): ?>
-                            <?php
-                                $tableBookingName = (string) ($tableBooking['customer_name'] ?? 'Guest');
-                                $tableBookingTime = !empty($tableBooking['start_time']) ? date('g:i A', strtotime((string) $tableBooking['start_time'])) : 'Time TBC';
-                                $tableBookingDate = (string) ($tableBooking['booking_date'] ?? $selectedDate);
-                                $tableBookingSearch = strtolower(trim($tableBookingName . ' no table unassigned ' . $tableBookingTime));
-                            ?>
-                            <a
-                                class="home-table-booking"
-                                href="../timeline/timeline.php?date=<?php echo urlencode($tableBookingDate); ?>#bookingList"
-                                data-home-row
-                                data-search-text="<?php echo htmlspecialchars($tableBookingSearch, ENT_QUOTES, 'UTF-8'); ?>"
-                            >
-                                <strong><?php echo htmlspecialchars($tableBookingName, ENT_QUOTES, 'UTF-8'); ?></strong>
-                                <span><?php echo htmlspecialchars($tableBookingTime, ENT_QUOTES, 'UTF-8'); ?> &middot; <?php echo number_format((int) ($tableBooking['number_of_guests'] ?? 0)); ?> guests</span>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
         <?php endif; ?>
     </div>
     <?php
@@ -1988,21 +1964,6 @@ $adminSidebarPathPrefix = '';
             background: var(--dm-primary);
         }
 
-        .home-floor-unassigned {
-            display: grid;
-            gap: 8px;
-            padding: 12px;
-            border: 1px dashed var(--dm-border-strong);
-            border-radius: var(--dm-radius-sm);
-            background: var(--dm-surface);
-        }
-
-        .home-floor-unassigned-title {
-            color: var(--dm-text);
-            font-size: 13px;
-            font-weight: 900;
-        }
-
         .home-timeline-frame-wrap {
             background: var(--dm-bg);
         }
@@ -2674,24 +2635,6 @@ $adminSidebarPathPrefix = '';
                                             <?php endforeach; ?>
                                         </div>
                                     </div>
-
-                                    <?php if (!empty($unassignedBookings)): ?>
-                                        <div class="home-floor-unassigned">
-                                            <div class="home-floor-unassigned-title">Unassigned bookings</div>
-                                            <div class="home-table-bookings">
-                                                <?php foreach ($unassignedBookings as $tableBooking): ?>
-                                                    <?php
-                                                        $tableBookingName = (string) ($tableBooking['customer_name'] ?? 'Guest');
-                                                        $tableBookingTime = !empty($tableBooking['start_time']) ? date('g:i A', strtotime((string) $tableBooking['start_time'])) : 'Time TBC';
-                                                    ?>
-                                                    <a class="home-table-booking" href="../timeline/timeline.php?date=<?php echo urlencode((string) $tableBooking['booking_date']); ?>#bookingList">
-                                                        <strong><?php echo htmlspecialchars($tableBookingName, ENT_QUOTES, 'UTF-8'); ?></strong>
-                                                        <span><?php echo htmlspecialchars($tableBookingTime, ENT_QUOTES, 'UTF-8'); ?> · <?php echo number_format((int) ($tableBooking['number_of_guests'] ?? 0)); ?> guests</span>
-                                                    </a>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>
@@ -2863,6 +2806,8 @@ $adminSidebarPathPrefix = '';
     </div>
 
     <?php
+    $bookingEditFloorLayoutHtml = $renderHomeFloorLayout($floorTables, $floorZones, $unassignedBookings, $selectedDate, $formatDateLabel);
+
     $bookingEditModalId = 'homeBookingEditModal';
     $bookingEditFormId = 'homeBookingEditForm';
     $bookingEditTitle = 'Edit Booking';
@@ -2870,6 +2815,7 @@ $adminSidebarPathPrefix = '';
     $bookingEditShowDelete = true;
     $bookingEditShowStatus = true;
     $bookingEditShowTable = true;
+    $bookingEditShowFloor = true;
     $bookingEditHiddenFields = [];
     $bookingEditTables = $tableRows;
     include __DIR__ . '/../../includes/components/booking-editing-modal.php';
@@ -2881,6 +2827,7 @@ $adminSidebarPathPrefix = '';
     $bookingEditShowDelete = false;
     $bookingEditShowStatus = false;
     $bookingEditShowTable = true;
+    $bookingEditShowFloor = true;
     $bookingEditHiddenFields = [];
     $bookingEditTables = $tableRows;
     $bookingEditTypes = getBookingTypes();
