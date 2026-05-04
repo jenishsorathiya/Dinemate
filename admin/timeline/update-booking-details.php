@@ -26,7 +26,21 @@ $assignedEnd = trim($data['end_time'] ?? '');
 $guestCount = (int)($data['number_of_guests'] ?? 0);
 $bookingType = normalizeBookingType($data['booking_type'] ?? 'normal');
 $specialRequest = trim($data['special_request'] ?? '');
-$selectedTableId = isset($data['table_id']) && $data['table_id'] !== '' ? (int)$data['table_id'] : null;
+$selectedTableIds = [];
+if (isset($data['table_ids']) && is_array($data['table_ids'])) {
+    foreach ($data['table_ids'] as $tableId) {
+        $tableId = (int)$tableId;
+        if ($tableId > 0 && !in_array($tableId, $selectedTableIds, true)) {
+            $selectedTableIds[] = $tableId;
+        }
+    }
+}
+if (empty($selectedTableIds) && isset($data['table_id']) && $data['table_id'] !== '') {
+    $selectedTableId = (int)$data['table_id'];
+    if ($selectedTableId > 0) {
+        $selectedTableIds[] = $selectedTableId;
+    }
+}
 $confirmBooking = !empty($data['confirm_booking']);
 
 if($bookingId < 1 || $customerName === '' || $requestedStart === '' || $requestedEnd === '' || $assignedStart === '' || $assignedEnd === '' || $guestCount < 1) {
@@ -125,7 +139,7 @@ try {
         exit();
     }
 
-    $nextAssignedTableIds = $selectedTableId !== null && $selectedTableId > 0 ? [$selectedTableId] : [];
+    $nextAssignedTableIds = $selectedTableIds;
     $nextBookingDate = $bookingDate !== '' ? $bookingDate : (string) $booking['booking_date'];
     $assignedTables = [];
     $assignedTableNumbers = [];
@@ -266,7 +280,7 @@ try {
         'booking' => [
             'booking_id' => $bookingId,
             'user_id' => (int)$booking['user_id'],
-            'table_id' => $booking['table_id'] !== null ? (int)$booking['table_id'] : null,
+            'table_id' => $assignedTableIds[0] ?? null,
             'table_number' => $assignedTableNumbers[0] ?? null,
             'assigned_table_ids' => $assignedTableIds,
             'assigned_table_numbers' => $assignedTableNumbers,

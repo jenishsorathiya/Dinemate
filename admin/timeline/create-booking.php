@@ -6,6 +6,7 @@ require_once "../../includes/functions.php";
 header('Content-Type: application/json');
 
 ensureBookingRequestColumns($pdo);
+ensureBookingTableAssignmentsTable($pdo);
 
 requireAdmin(['json' => true]);
 
@@ -20,6 +21,21 @@ $startTimeInput = trim($data['start_time'] ?? '');
 $guestCount = (int)($data['number_of_guests'] ?? 0);
 $bookingType = normalizeBookingType($data['booking_type'] ?? 'normal');
 $specialRequest = trim($data['special_request'] ?? '');
+$selectedTableIds = [];
+if (isset($data['table_ids']) && is_array($data['table_ids'])) {
+    foreach ($data['table_ids'] as $tableId) {
+        $tableId = (int)$tableId;
+        if ($tableId > 0 && !in_array($tableId, $selectedTableIds, true)) {
+            $selectedTableIds[] = $tableId;
+        }
+    }
+}
+if (empty($selectedTableIds) && isset($data['table_id']) && $data['table_id'] !== '') {
+    $selectedTableId = (int)$data['table_id'];
+    if ($selectedTableId > 0) {
+        $selectedTableIds[] = $selectedTableId;
+    }
+}
 
 if($name === '' || $bookingDate === '' || $startTimeInput === '' || $guestCount < 1) {
     http_response_code(400);
@@ -55,12 +71,71 @@ if($startTime < '10:00:00' || $endTime > '22:00:00') {
     exit();
 }
 
-$capacityStmt = $pdo->prepare("SELECT COUNT(*) FROM restaurant_tables WHERE status = 'available' AND capacity >= ?");
-$capacityStmt->execute([$guestCount]);
-if((int)$capacityStmt->fetchColumn() === 0) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'No available table can accommodate that many guests']);
-    exit();
+$assignedTables = [];
+$assignedTableNumbers = [];
+if (!empty($selectedTableIds)) {
+    $tablePlaceholders = implode(',', array_fill(0, count($selectedTableIds), '?'));
+    $assignedTablesStmt = $pdo->prepare("SELECT table_id, table_number, capacity FROM restaurant_tables WHERE table_id IN ($tablePlaceholders)");
+    $assignedTablesStmt->execute($selectedTableIds);
+    $tableRows = $assignedTablesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (count($tableRows) !== count($selectedTableIds)) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Selected table not found']);
+        exit();
+    }
+
+    $tableMap = [];
+    foreach ($tableRows as $tableRow) {
+        $tableMap[(int)$tableRow['table_id']] = $tableRow;
+    }
+
+    foreach ($selectedTableIds as $tableId) {
+        $assignedTables[] = $tableMap[$tableId];
+        $assignedTableNumbers[] = (string)$tableMap[$tableId]['table_number'];
+    }
+
+    $conflictStmt = $pdo->prepare("
+        SELECT COUNT(*) as conflict_count
+        FROM booking_table_assignments bta
+        INNER JOIN bookings b ON b.booking_id = bta.booking_id
+        WHERE bta.table_id = ?
+        AND b.booking_date = ?
+        AND b.status IN ('pending', 'confirmed')
+        AND (
+            (b.start_time < ? AND b.end_time > ?)
+            OR (b.start_time >= ? AND b.start_time < ?)
+            OR (b.end_time > ? AND b.end_time <= ?)
+        )
+    ");
+
+    foreach ($selectedTableIds as $assignedTableId) {
+        $conflictStmt->execute([
+            $assignedTableId,
+            $bookingDate,
+            $endTime,
+            $startTime,
+            $startTime,
+            $endTime,
+            $startTime,
+            $endTime,
+        ]);
+
+        $conflict = $conflictStmt->fetch(PDO::FETCH_ASSOC);
+        if ((int)$conflict['conflict_count'] > 0) {
+            http_response_code(409);
+            echo json_encode(['success' => false, 'error' => 'Assigned time conflicts with another booking at one of the assigned tables']);
+            exit();
+        }
+    }
+} else {
+    $capacityStmt = $pdo->prepare("SELECT COUNT(*) FROM restaurant_tables WHERE status = 'available' AND capacity >= ?");
+    $capacityStmt->execute([$guestCount]);
+    if((int)$capacityStmt->fetchColumn() === 0) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'No available table can accommodate that many guests']);
+        exit();
+    }
 }
 
 try {
@@ -119,6 +194,7 @@ try {
     ]);
 
     $bookingId = $pdo->lastInsertId();
+    $assignedTableIds = syncBookingTableAssignments($pdo, $bookingId, $selectedTableIds);
     notifyBookingEvent($pdo, $bookingId, 'booking_request_received');
 
     echo json_encode([
@@ -126,8 +202,10 @@ try {
         'booking' => [
             'booking_id' => (int)$bookingId,
             'user_id' => null,
-            'table_id' => null,
-            'table_number' => null,
+            'table_id' => $assignedTableIds[0] ?? null,
+            'table_number' => $assignedTableNumbers[0] ?? null,
+            'assigned_table_ids' => $assignedTableIds,
+            'assigned_table_numbers' => $assignedTableNumbers,
             'booking_date' => $bookingDate,
             'start_time' => $startTime,
             'end_time' => $endTime,

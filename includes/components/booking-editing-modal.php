@@ -16,6 +16,7 @@
  *   $bookingEditTables = [
  *       ['table_id' => 1, 'table_number' => '1', 'area_name' => 'Main', 'capacity' => 4],
  *   ];
+ *   Table assignment renders as a multi-select checkbox picker and submits table_ids[].
  */
 $bookingEditModalId = $bookingEditModalId ?? 'bookingEditModal';
 $bookingEditFormId = $bookingEditFormId ?? 'bookingEditForm';
@@ -251,6 +252,90 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
         background-size: 5px 5px, 5px 5px;
         background-repeat: no-repeat;
         padding-right: 36px;
+    }
+
+    .booking-table-picker {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 8px;
+        max-height: 190px;
+        overflow: auto;
+        padding: 8px;
+        border: 1px solid var(--dm-border);
+        border-radius: 8px;
+        background: #fbfbfc;
+    }
+
+    .booking-table-clear,
+    .booking-table-option {
+        min-width: 0;
+        min-height: 42px;
+        border: 1px solid var(--dm-border);
+        border-radius: 8px;
+        background: var(--dm-surface);
+        color: var(--dm-text);
+    }
+
+    .booking-table-clear {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 8px 10px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 800;
+        text-align: left;
+    }
+
+    .booking-table-option {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 2px 8px;
+        align-items: center;
+        padding: 8px 10px;
+        cursor: pointer;
+    }
+
+    .booking-table-option input {
+        grid-row: span 2;
+        width: 16px;
+        height: 16px;
+        accent-color: var(--dm-primary);
+    }
+
+    .booking-table-option:has(input:checked) {
+        border-color: var(--dm-primary);
+        background: var(--dm-primary-soft);
+    }
+
+    .booking-table-option-main {
+        overflow: hidden;
+        color: var(--dm-text);
+        font-size: 12px;
+        font-weight: 900;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .booking-table-option-meta,
+    .booking-table-empty {
+        color: var(--dm-text-muted);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .booking-table-option-meta {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .booking-table-empty {
+        grid-column: 1 / -1;
+        padding: 10px;
+        text-align: center;
     }
 
     .booking-edit-textarea {
@@ -547,16 +632,31 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
 
                         <?php if ($bookingEditShowTable): ?>
                             <div class="booking-edit-field full">
-                                <label for="<?php echo $bookingEditModalIdAttr; ?>Table">Table</label>
-                                <select class="booking-edit-select" id="<?php echo $bookingEditModalIdAttr; ?>Table" name="table_id" data-booking-edit-table>
-                                    <option value="" data-label="No table">No table</option>
-                                    <?php foreach ($bookingEditTables as $table): ?>
-                                        <?php $tableLabel = 'Table ' . (string) ($table['table_number'] ?? ''); ?>
-                                        <option value="<?php echo (int) ($table['table_id'] ?? 0); ?>" data-label="<?php echo htmlspecialchars($tableLabel, ENT_QUOTES, 'UTF-8'); ?>">
-                                            <?php echo htmlspecialchars($tableLabel . ' · ' . (string) ($table['area_name'] ?? 'Dining room') . ' · ' . (int) ($table['capacity'] ?? 0) . ' seats', ENT_QUOTES, 'UTF-8'); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <label>Tables</label>
+                                <input type="hidden" id="<?php echo $bookingEditModalIdAttr; ?>Table" name="table_id" data-booking-edit-table>
+                                <div class="booking-table-picker" data-booking-edit-table-picker>
+                                    <button type="button" class="booking-table-clear" data-booking-edit-table-clear>
+                                        <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                        <span>No table</span>
+                                    </button>
+                                    <?php if (empty($bookingEditTables)): ?>
+                                        <div class="booking-table-empty">No tables available</div>
+                                    <?php else: ?>
+                                        <?php foreach ($bookingEditTables as $table): ?>
+                                            <?php
+                                                $tableId = (int) ($table['table_id'] ?? 0);
+                                                $tableLabel = 'Table ' . (string) ($table['table_number'] ?? '');
+                                                $tableArea = (string) ($table['area_name'] ?? 'Dining room');
+                                                $tableCapacity = (int) ($table['capacity'] ?? 0);
+                                            ?>
+                                            <label class="booking-table-option">
+                                                <input type="checkbox" name="table_ids[]" value="<?php echo $tableId; ?>" data-booking-edit-table-option>
+                                                <span class="booking-table-option-main"><?php echo htmlspecialchars($tableLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span class="booking-table-option-meta"><?php echo htmlspecialchars($tableArea, ENT_QUOTES, 'UTF-8'); ?> · <?php echo number_format($tableCapacity); ?> seats</span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         <?php endif; ?>
                     </div>
