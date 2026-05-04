@@ -20,6 +20,11 @@ $tables = $pdo->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 $selectedDate = $_GET['date'] ?? date('Y-m-d');
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selectedDate) || strtotime($selectedDate) === false) {
+    $selectedDate = date('Y-m-d');
+}
+
+$isEmbeddedTimeline = (string) ($_GET['embed'] ?? '') === '1';
 $selectedDayName = date('l', strtotime($selectedDate));
 $isCurrentDate = ($selectedDate === date('Y-m-d'));
 $selectedDayLabel = $isCurrentDate ? 'Today' : $selectedDayName;
@@ -32,6 +37,7 @@ $prefillAdminBooking = [
     'email' => trim((string) ($_GET['prefill_customer_email'] ?? '')),
     'phone' => trim((string) ($_GET['prefill_customer_phone'] ?? '')),
 ];
+$bookingTypeOptions = getBookingTypes();
 
 $stmt = $pdo->prepare("
     SELECT b.*, COALESCE(b.customer_name_override, b.customer_name, u.name) as customer_name,
@@ -131,6 +137,33 @@ $adminSidebarPathPrefix = '../';
             display: flex;
             flex-direction: column;
             overflow: hidden;
+        }
+
+        body.timeline-embedded {
+            min-height: 100vh;
+            background: var(--dm-bg);
+            overflow: hidden;
+        }
+
+        .timeline-embedded-container {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        body.timeline-embedded .content {
+            gap: 0;
+            padding: 0;
+        }
+
+        body.timeline-embedded .left-panel {
+            display: none;
+        }
+
+        body.timeline-embedded .timeline-area {
+            width: 100%;
+            border-radius: 0;
+            border: 0;
+            box-shadow: none;
         }
 
         .timeline-panel-tools {
@@ -1680,11 +1713,13 @@ $adminSidebarPathPrefix = '../';
         }
     </style>
 </head>
-<body>
+<body class="<?php echo $isEmbeddedTimeline ? 'timeline-embedded' : ''; ?>">
 
-<div class="container-fluid">
+<div class="container-fluid <?php echo $isEmbeddedTimeline ? 'timeline-embedded-container' : ''; ?>">
     <!-- SIDEBAR -->
-    <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
+    <?php if (!$isEmbeddedTimeline): ?>
+        <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
+    <?php endif; ?>
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
@@ -1765,65 +1800,24 @@ $adminSidebarPathPrefix = '../';
     </div>
 </div>
 
-<div class="modal-backdrop-custom" id="bookingModal">
-    <div class="booking-modal-card booking-details-card booking-create-card">
-        <div class="booking-modal-header">
-            <h5><i class="fa fa-calendar-plus"></i> Add a Booking</h5>
-            <button type="button" class="booking-modal-close" id="closeBookingModalBtn" aria-label="Close">&times;</button>
-        </div>
-        <div class="modal-error" id="bookingModalError"></div>
-        <form id="adminBookingForm">
-            <input type="hidden" id="adminBookingCustomerProfileId" value="">
-            <div class="booking-detail-grid">
-                <div class="modal-form-group">
-                    <label for="adminBookingName">Name</label>
-                    <input type="text" id="adminBookingName" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="adminBookingGuests">Number of People</label>
-                    <input type="number" id="adminBookingGuests" min="1" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="adminBookingDate">Date</label>
-                    <input type="date" id="adminBookingDate" value="<?php echo htmlspecialchars($selectedDate); ?>" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="adminBookingTime">Time</label>
-                    <input type="time" id="adminBookingTime" min="10:00" max="21:00" step="1800" value="12:00" required>
-                    <div class="modal-helper-text">Default duration: 60 minutes.</div>
-                </div>
-                <div class="modal-form-group full-width">
-                    <button type="button" class="booking-inline-trigger" id="toggleAdminBookingEmailBtn">
-                        <i class="fa fa-envelope"></i>
-                        <span id="toggleAdminBookingEmailLabel">Add Email</span>
-                    </button>
-                </div>
-                <div class="modal-form-group full-width is-hidden" id="adminBookingEmailGroup">
-                    <label for="adminBookingEmail">Email</label>
-                    <input type="email" id="adminBookingEmail" placeholder="Optional email address">
-                </div>
-                <div class="modal-form-group full-width">
-                    <button type="button" class="booking-inline-trigger" id="toggleAdminBookingPhoneBtn">
-                        <i class="fa fa-phone"></i>
-                        <span id="toggleAdminBookingPhoneLabel">Add Phone Number</span>
-                    </button>
-                </div>
-                <div class="modal-form-group full-width is-hidden" id="adminBookingPhoneGroup">
-                    <label for="adminBookingPhone">Phone</label>
-                    <input type="text" id="adminBookingPhone" placeholder="Optional phone number">
-                </div>
-                <div class="modal-form-group full-width">
-                    <label for="adminBookingNotes">Notes</label>
-                    <textarea id="adminBookingNotes" placeholder="Optional notes"></textarea>
-                </div>
-            </div>
-            <div class="booking-modal-actions">
-                <button type="button" class="booking-modal-cancel" id="cancelBookingModalBtn">Cancel</button>
-                <button type="submit" class="booking-modal-submit" id="submitAdminBookingBtn">Create Booking</button>
-            </div>
-        </form>
-    </div>
-</div>
+<?php
+$bookingEditModalId = 'bookingModal';
+$bookingEditFormId = 'adminBookingForm';
+$bookingEditTitle = 'Add a Booking';
+$bookingEditSubmitLabel = 'Create Booking';
+$bookingEditShowDelete = false;
+$bookingEditShowStatus = false;
+$bookingEditShowTable = false;
+$bookingEditTypes = $bookingTypeOptions;
+$bookingEditHiddenFields = [
+    [
+        'name' => 'customer_profile_id',
+        'value' => '',
+        'attributes' => 'data-booking-edit-customer-profile-id',
+    ],
+];
+include __DIR__ . '/../../includes/components/booking-editing-modal.php';
+?>
 
 <div class="modal-backdrop-custom" id="bookingDetailsModal">
     <div class="booking-modal-card booking-details-card">
@@ -1855,6 +1849,14 @@ $adminSidebarPathPrefix = '../';
                 <div class="modal-form-group">
                     <label for="bookingDetailsGuests">Party Size</label>
                     <input type="number" id="bookingDetailsGuests" min="1" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="bookingDetailsType">Booking Type</label>
+                    <select id="bookingDetailsType" required>
+                        <?php foreach ($bookingTypeOptions as $bookingType): ?>
+                            <option value="<?php echo htmlspecialchars($bookingType, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars(getBookingTypeLabel($bookingType), ENT_QUOTES, 'UTF-8'); ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="modal-form-group full-width">
                     <label>Requested Time</label>
@@ -1973,6 +1975,7 @@ $adminSidebarPathPrefix = '../';
     const TABLES = <?php echo json_encode($tables); ?>;
     const AREAS = <?php echo json_encode($areas); ?>;
     const SELECTED_DATE = '<?php echo $selectedDate; ?>';
+    const TIMELINE_EMBEDDED = <?php echo $isEmbeddedTimeline ? 'true' : 'false'; ?>;
     const START_HOUR = 10; // 10 AM
     const END_HOUR = 23;   // 11 PM
     const INTERVAL_MINS = 30;
@@ -2812,116 +2815,86 @@ $adminSidebarPathPrefix = '../';
     function bindBookingModal() {
         const modal = document.getElementById('bookingModal');
         const openBtn = document.getElementById('openBookingModalBtn');
-        const closeBtn = document.getElementById('closeBookingModalBtn');
-        const cancelBtn = document.getElementById('cancelBookingModalBtn');
-        const customerProfileIdInput = document.getElementById('adminBookingCustomerProfileId');
-        const toggleEmailBtn = document.getElementById('toggleAdminBookingEmailBtn');
-        const toggleEmailLabel = document.getElementById('toggleAdminBookingEmailLabel');
-        const emailGroup = document.getElementById('adminBookingEmailGroup');
-        const emailInput = document.getElementById('adminBookingEmail');
-        const togglePhoneBtn = document.getElementById('toggleAdminBookingPhoneBtn');
-        const togglePhoneLabel = document.getElementById('toggleAdminBookingPhoneLabel');
-        const phoneGroup = document.getElementById('adminBookingPhoneGroup');
-        const phoneInput = document.getElementById('adminBookingPhone');
         const form = document.getElementById('adminBookingForm');
-        const errorBox = document.getElementById('bookingModalError');
-        const submitBtn = document.getElementById('submitAdminBookingBtn');
+        const fields = modal ? {
+            customerProfileId: modal.querySelector('[data-booking-edit-customer-profile-id]'),
+            name: modal.querySelector('[data-booking-edit-name]'),
+            guests: modal.querySelector('[data-booking-edit-guests]'),
+            email: modal.querySelector('[data-booking-edit-email]'),
+            phone: modal.querySelector('[data-booking-edit-phone]'),
+            date: modal.querySelector('[data-booking-edit-date]'),
+            start: modal.querySelector('[data-booking-edit-start]'),
+            type: modal.querySelector('[data-booking-edit-type]'),
+            notes: modal.querySelector('[data-booking-edit-notes]'),
+            error: modal.querySelector('[data-booking-edit-error]'),
+            submit: modal.querySelector('[data-booking-edit-save]'),
+        } : null;
 
-        if(!modal || !openBtn || !form) return;
+        if(!modal || !openBtn || !form || !fields) return;
 
-        function setEmailVisibility(visible) {
-            if(!emailGroup || !toggleEmailBtn || !toggleEmailLabel || !emailInput) {
+        function setCreateBookingError(message = '') {
+            if(!fields.error) {
                 return;
             }
 
-            emailGroup.classList.toggle('is-hidden', !visible);
-            toggleEmailBtn.classList.toggle('is-active', visible);
-            toggleEmailLabel.textContent = visible ? 'Remove Email' : 'Add Email';
-
-            if(!visible) {
-                emailInput.value = '';
-            }
-        }
-
-        function setPhoneVisibility(visible) {
-            if(!phoneGroup || !togglePhoneBtn || !togglePhoneLabel || !phoneInput) {
-                return;
-            }
-
-            phoneGroup.classList.toggle('is-hidden', !visible);
-            togglePhoneBtn.classList.toggle('is-active', visible);
-            togglePhoneLabel.textContent = visible ? 'Remove Phone Number' : 'Add Phone Number';
-
-            if(!visible) {
-                phoneInput.value = '';
-            }
+            fields.error.textContent = message;
+            fields.error.classList.toggle('is-visible', Boolean(message));
         }
 
         function openModal(prefill = null) {
-            modal.classList.add('open');
+            modal.hidden = false;
             document.body.classList.add('modal-open');
-            errorBox.style.display = 'none';
+            setCreateBookingError('');
             form.reset();
-            if(customerProfileIdInput) {
-                customerProfileIdInput.value = '';
+            if(fields.customerProfileId) {
+                fields.customerProfileId.value = '';
             }
-            setEmailVisibility(false);
-            setPhoneVisibility(false);
-            document.getElementById('adminBookingDate').value = SELECTED_DATE;
-            document.getElementById('adminBookingTime').value = '12:00';
+            fields.date.value = SELECTED_DATE;
+            fields.start.value = '12:00';
+            fields.guests.value = '2';
+            fields.type.value = 'normal';
 
             if(prefill && typeof prefill === 'object') {
-                if(customerProfileIdInput && Number(prefill.customer_profile_id || 0) > 0) {
-                    customerProfileIdInput.value = String(prefill.customer_profile_id);
+                if(fields.customerProfileId && Number(prefill.customer_profile_id || 0) > 0) {
+                    fields.customerProfileId.value = String(prefill.customer_profile_id);
                 }
-                if(prefill.name) {
-                    document.getElementById('adminBookingName').value = String(prefill.name);
+                if(prefill.name && fields.name) {
+                    fields.name.value = String(prefill.name);
                 }
-                if(prefill.email && emailInput) {
-                    setEmailVisibility(true);
-                    emailInput.value = String(prefill.email);
+                if(prefill.email && fields.email) {
+                    fields.email.value = String(prefill.email);
                 }
-                if(prefill.phone && phoneInput) {
-                    setPhoneVisibility(true);
-                    phoneInput.value = String(prefill.phone);
+                if(prefill.phone && fields.phone) {
+                    fields.phone.value = String(prefill.phone);
                 }
             }
 
             requestAnimationFrame(() => {
-                document.getElementById('adminBookingName').focus();
+                fields.name.focus();
             });
         }
 
         function closeModal() {
-            modal.classList.remove('open');
+            modal.hidden = true;
             document.body.classList.remove('modal-open');
-            errorBox.style.display = 'none';
+            setCreateBookingError('');
         }
 
         openBtn.addEventListener('click', function() {
             openModal();
         });
-        closeBtn.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
+        modal.querySelectorAll('[data-booking-edit-close], [data-booking-edit-cancel]').forEach((button) => {
+            button.addEventListener('click', closeModal);
+        });
 
-        if(toggleEmailBtn) {
-            toggleEmailBtn.addEventListener('click', function() {
-                const shouldShow = emailGroup ? emailGroup.classList.contains('is-hidden') : false;
-                setEmailVisibility(shouldShow);
-                if(shouldShow && emailInput) {
-                    requestAnimationFrame(() => emailInput.focus());
-                }
-            });
-        }
+        document.addEventListener('keydown', function(e) {
+            if(e.key === 'Escape' && !modal.hidden) {
+                closeModal();
+            }
+        });
 
-        if(togglePhoneBtn) {
-            togglePhoneBtn.addEventListener('click', function() {
-                const shouldShow = phoneGroup ? phoneGroup.classList.contains('is-hidden') : false;
-                setPhoneVisibility(shouldShow);
-                if(shouldShow && phoneInput) {
-                    requestAnimationFrame(() => phoneInput.focus());
-                }
-            });
+        if(fields.start) {
+            fields.start.max = '21:00';
         }
 
         modal.addEventListener('click', function(e) {
@@ -2934,19 +2907,20 @@ $adminSidebarPathPrefix = '../';
             e.preventDefault();
 
             const payload = {
-                customer_profile_id: customerProfileIdInput ? customerProfileIdInput.value : '',
-                name: document.getElementById('adminBookingName').value.trim(),
-                customer_email: emailInput ? emailInput.value.trim() : '',
-                customer_phone: phoneInput ? phoneInput.value.trim() : '',
-                booking_date: document.getElementById('adminBookingDate').value,
-                start_time: document.getElementById('adminBookingTime').value,
-                number_of_guests: document.getElementById('adminBookingGuests').value,
-                special_request: document.getElementById('adminBookingNotes').value.trim(),
+                customer_profile_id: fields.customerProfileId ? fields.customerProfileId.value : '',
+                name: fields.name.value.trim(),
+                customer_email: fields.email ? fields.email.value.trim() : '',
+                customer_phone: fields.phone ? fields.phone.value.trim() : '',
+                booking_date: fields.date.value,
+                start_time: fields.start.value,
+                number_of_guests: fields.guests.value,
+                booking_type: fields.type.value,
+                special_request: fields.notes ? fields.notes.value.trim() : '',
             };
 
-            errorBox.style.display = 'none';
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating...';
+            setCreateBookingError('');
+            fields.submit.disabled = true;
+            fields.submit.textContent = 'Creating...';
 
             fetch('create-booking.php', {
                 method: 'POST',
@@ -2970,12 +2944,11 @@ $adminSidebarPathPrefix = '../';
                 closeModal();
             })
             .catch(error => {
-                errorBox.textContent = error.message;
-                errorBox.style.display = 'block';
+                setCreateBookingError(error.message);
             })
             .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Booking';
+                fields.submit.disabled = false;
+                fields.submit.textContent = 'Create Booking';
             });
         });
 
@@ -3301,6 +3274,7 @@ $adminSidebarPathPrefix = '../';
                 start_time: document.getElementById('bookingAssignedStart').value,
                 end_time: document.getElementById('bookingAssignedEnd').value,
                 number_of_guests: document.getElementById('bookingDetailsGuests').value,
+                booking_type: document.getElementById('bookingDetailsType').value,
                 special_request: document.getElementById('bookingDetailsNotes').value.trim(),
                 table_id: selectedTableId,
                 confirm_booking: action === 'confirm',
@@ -3546,6 +3520,14 @@ $adminSidebarPathPrefix = '../';
         const booking = BOOKING_DATA.find(item => item.booking_id == bookingId);
         if(!booking) return;
 
+        if(TIMELINE_EMBEDDED && window.parent && window.parent !== window) {
+            window.parent.postMessage({
+                type: 'dinemate:edit-booking',
+                booking,
+            }, window.location.origin);
+            return;
+        }
+
         const assignedTableNumbers = getAssignedTableNumbers(booking);
         const tableLabel = assignedTableNumbers.length
             ? `Tables ${assignedTableNumbers.join(', ')}`
@@ -3566,6 +3548,9 @@ $adminSidebarPathPrefix = '../';
         document.getElementById('bookingAssignedStart').value = booking.start_time.substring(0, 5);
         document.getElementById('bookingAssignedEnd').value = booking.end_time.substring(0, 5);
         document.getElementById('bookingDetailsGuests').value = booking.number_of_guests;
+        document.getElementById('bookingDetailsType').value = ['normal', 'trivia', 'function'].includes(String(booking.booking_type || '').toLowerCase())
+            ? String(booking.booking_type).toLowerCase()
+            : 'normal';
         refreshBookingTableOptions(
             booking.table_id,
             booking.booking_id,
@@ -4539,26 +4524,49 @@ $adminSidebarPathPrefix = '../';
         return false;
     }
 
+    function getTimelineDateUrl(dateValue) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('date', dateValue);
+
+        if (TIMELINE_EMBEDDED) {
+            url.searchParams.set('embed', '1');
+        }
+
+        return url.toString();
+    }
+
+    function navigateTimelineDate(dateValue) {
+        if (TIMELINE_EMBEDDED && window.parent && window.parent !== window) {
+            const parentUrl = new URL('../pages/home.php', window.location.href);
+            parentUrl.searchParams.set('date', dateValue);
+            parentUrl.searchParams.set('view', 'timeline');
+            window.parent.location.href = parentUrl.toString();
+            return;
+        }
+
+        window.location.href = getTimelineDateUrl(dateValue);
+    }
+
     function previousDay() {
         const date = parseLocalDate(SELECTED_DATE);
         date.setDate(date.getDate() - 1);
-        window.location.href = `?date=${formatLocalDate(date)}`;
+        navigateTimelineDate(formatLocalDate(date));
     }
 
     function nextDay() {
         const date = parseLocalDate(SELECTED_DATE);
         date.setDate(date.getDate() + 1);
-        window.location.href = `?date=${formatLocalDate(date)}`;
+        navigateTimelineDate(formatLocalDate(date));
     }
 
     function todayDate() {
         const today = formatLocalDate(new Date());
-        window.location.href = `?date=${today}`;
+        navigateTimelineDate(today);
     }
 
     function changeDate() {
         const date = document.getElementById('dateInput').value;
-        if(date) window.location.href = `?date=${date}`;
+        if(date) navigateTimelineDate(date);
     }
 
     // Set current time line indicator

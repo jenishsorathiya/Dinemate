@@ -18,6 +18,7 @@ $customerPhone = trim($data['customer_phone'] ?? '');
 $bookingDate = trim($data['booking_date'] ?? '');
 $startTimeInput = trim($data['start_time'] ?? '');
 $guestCount = (int)($data['number_of_guests'] ?? 0);
+$bookingType = normalizeBookingType($data['booking_type'] ?? 'normal');
 $specialRequest = trim($data['special_request'] ?? '');
 
 if($name === '' || $bookingDate === '' || $startTimeInput === '' || $guestCount < 1) {
@@ -99,7 +100,7 @@ try {
         );
     }
 
-    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status, booking_source, created_by_user_id) VALUES (NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 'pending', 'admin_manual', ?)");
+    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, booking_type, special_request, status, booking_source, created_by_user_id) VALUES (NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'admin_manual', ?)");
     $bookingStmt->execute([
         $customerProfileId,
         $name,
@@ -112,6 +113,7 @@ try {
         $startTime,
         $endTime,
         $guestCount,
+        $bookingType,
         $specialRequest !== '' ? $specialRequest : null,
         (int) (getCurrentUserId() ?? 0) ?: null,
     ]);
@@ -132,6 +134,8 @@ try {
             'requested_start_time' => $startTime,
             'requested_end_time' => $endTime,
             'number_of_guests' => $guestCount,
+            'booking_type' => $bookingType,
+            'booking_type_label' => getBookingTypeLabel($bookingType),
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
             'status' => 'pending',
             'booking_source' => 'admin_manual',

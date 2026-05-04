@@ -15,6 +15,8 @@ $data = json_decode(file_get_contents('php://input'), true);
 $bookingId = (int)($data['booking_id'] ?? 0);
 $customerName = trim($data['customer_name'] ?? '');
 $customerEmail = trim((string) ($data['customer_email'] ?? ''));
+$customerPhoneProvided = is_array($data) && array_key_exists('customer_phone', $data);
+$customerPhone = $customerPhoneProvided ? trim((string) ($data['customer_phone'] ?? '')) : '';
 $bookingDate = trim((string) ($data['booking_date'] ?? ''));
 $requestedStatus = strtolower(trim((string) ($data['status'] ?? '')));
 $requestedStart = trim($data['requested_start_time'] ?? '');
@@ -22,6 +24,7 @@ $requestedEnd = trim($data['requested_end_time'] ?? '');
 $assignedStart = trim($data['start_time'] ?? '');
 $assignedEnd = trim($data['end_time'] ?? '');
 $guestCount = (int)($data['number_of_guests'] ?? 0);
+$bookingType = normalizeBookingType($data['booking_type'] ?? 'normal');
 $specialRequest = trim($data['special_request'] ?? '');
 $selectedTableId = isset($data['table_id']) && $data['table_id'] !== '' ? (int)$data['table_id'] : null;
 $confirmBooking = !empty($data['confirm_booking']);
@@ -36,6 +39,21 @@ if ($customerEmail !== '' && !filter_var($customerEmail, FILTER_VALIDATE_EMAIL))
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Email must be valid']);
     exit();
+}
+
+if ($customerPhoneProvided && $customerPhone !== '') {
+    if (!preg_match("/^[0-9\s\-\(\)\+]+$/", $customerPhone)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Phone number must be valid']);
+        exit();
+    }
+
+    $phoneDigits = preg_replace('/\D+/', '', $customerPhone);
+    if (strlen((string) $phoneDigits) < 6 || strlen($customerPhone) > 30) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Phone number must be valid']);
+        exit();
+    }
 }
 
 if ($bookingDate !== '' && (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $bookingDate) || strtotime($bookingDate) === false)) {
@@ -139,6 +157,7 @@ try {
     $assignedCapacity = array_sum(array_map(static function ($tableRow) {
         return (int)$tableRow['capacity'];
     }, $assignedTables));
+    $nextCustomerPhone = $customerPhoneProvided ? $customerPhone : trim((string) ($booking['customer_phone'] ?? ''));
 
     if(!empty($assignedTableIds)) {
         $conflictStmt = $pdo->prepare("
@@ -196,7 +215,7 @@ try {
         $pdo,
         $customerName,
         $customerEmail !== '' ? $customerEmail : (string) ($booking['customer_email'] ?? ''),
-        (string) ($booking['customer_phone'] ?? ''),
+        $nextCustomerPhone,
         $booking['user_id'] !== null ? (int) $booking['user_id'] : null
     );
 
@@ -205,6 +224,7 @@ try {
     $updateStmt = $pdo->prepare(" 
         UPDATE bookings
         SET customer_name_override = ?,
+            customer_phone = ?,
             customer_email = ?,
             booking_date = ?,
             requested_start_time = ?,
@@ -212,6 +232,7 @@ try {
             start_time = ?,
             end_time = ?,
             number_of_guests = ?,
+            booking_type = ?,
             special_request = ?,
             status = ?,
             reservation_card_status = ?,
@@ -220,6 +241,7 @@ try {
     ");
     $updateStmt->execute([
         $customerName,
+        $nextCustomerPhone !== '' ? $nextCustomerPhone : null,
         $customerEmail !== '' ? $customerEmail : null,
         $nextBookingDate,
         $requestedStartTime,
@@ -227,6 +249,7 @@ try {
         $assignedStartTime,
         $assignedEndTime,
         $guestCount,
+        $bookingType,
         $specialRequest !== '' ? $specialRequest : null,
         $nextStatus,
         $nextPlacementStatus,
@@ -253,12 +276,15 @@ try {
             'requested_start_time' => $requestedStartTime,
             'requested_end_time' => $requestedEndTime,
             'number_of_guests' => $guestCount,
+            'booking_type' => $bookingType,
+            'booking_type_label' => getBookingTypeLabel($bookingType),
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
             'status' => $nextStatus,
             'reservation_card_status' => $nextPlacementStatus,
             'customer_name' => $customerName,
             'customer_name_override' => $customerName,
             'customer_email' => $customerEmail !== '' ? $customerEmail : null,
+            'customer_phone' => $nextCustomerPhone !== '' ? $nextCustomerPhone : null,
         ]
     ]);
 } catch(Throwable $e) {

@@ -179,6 +179,26 @@ function getBookingCompletedStatuses() {
     return ['completed', 'cancelled', 'no_show'];
 }
 
+function getBookingTypes() {
+    return ['normal', 'trivia', 'function'];
+}
+
+function normalizeBookingType($type) {
+    $normalizedType = strtolower(trim((string) $type));
+    return in_array($normalizedType, getBookingTypes(), true) ? $normalizedType : 'normal';
+}
+
+function getBookingTypeLabel($type) {
+    $normalizedType = normalizeBookingType($type);
+    $labels = [
+        'normal' => 'Normal booking',
+        'trivia' => 'Trivia booking',
+        'function' => 'Function booking',
+    ];
+
+    return $labels[$normalizedType];
+}
+
 function getBookingStatusLabel($status) {
     $normalizedStatus = strtolower(trim((string) $status));
     $labels = [
@@ -552,8 +572,14 @@ function ensureBookingRequestColumns($pdo) {
     $guestTokenStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'guest_access_token'");
     $guestTokenExists = $guestTokenStmt->rowCount() > 0;
 
+    $specialRequestStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'special_request'");
+    $specialRequestExists = $specialRequestStmt->rowCount() > 0;
+
     $placementStatusStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'reservation_card_status'");
     $placementStatusColumn = $placementStatusStmt->fetch(PDO::FETCH_ASSOC);
+
+    $bookingTypeStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'booking_type'");
+    $bookingTypeColumn = $bookingTypeStmt->fetch(PDO::FETCH_ASSOC);
 
     $bookingSourceStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'booking_source'");
     $bookingSourceColumn = $bookingSourceStmt->fetch(PDO::FETCH_ASSOC);
@@ -595,6 +621,22 @@ function ensureBookingRequestColumns($pdo) {
     if (!$guestTokenExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN guest_access_token VARCHAR(64) DEFAULT NULL AFTER customer_email");
         $pdo->exec("CREATE UNIQUE INDEX idx_bookings_guest_access_token ON bookings (guest_access_token)");
+    }
+
+    if (!$specialRequestExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN special_request TEXT DEFAULT NULL AFTER number_of_guests");
+    }
+
+    if (!$bookingTypeColumn) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN booking_type ENUM('normal', 'trivia', 'function') NOT NULL DEFAULT 'normal' AFTER special_request");
+    } else {
+        $pdo->exec("UPDATE bookings SET booking_type = 'normal' WHERE booking_type IS NULL OR booking_type NOT IN ('normal', 'trivia', 'function')");
+        $bookingType = strtolower((string) ($bookingTypeColumn['Type'] ?? ''));
+        $normalizedBookingType = str_replace(['`', '"', ' '], '', $bookingType);
+        $expectedBookingType = "enum('normal','trivia','function')";
+        if ($normalizedBookingType !== $expectedBookingType || strtoupper((string) ($bookingTypeColumn['Null'] ?? '')) !== 'NO' || (string) ($bookingTypeColumn['Default'] ?? '') !== 'normal') {
+            $pdo->exec("ALTER TABLE bookings MODIFY COLUMN booking_type ENUM('normal', 'trivia', 'function') NOT NULL DEFAULT 'normal'");
+        }
     }
 
     if (!$placementStatusColumn) {
@@ -646,6 +688,8 @@ function ensureBookingRequestColumns($pdo) {
     if ($endTimeExists) {
         $pdo->exec("UPDATE bookings SET requested_end_time = end_time WHERE requested_end_time IS NULL AND end_time IS NOT NULL");
     }
+
+    $pdo->exec("UPDATE bookings SET booking_type = 'normal' WHERE booking_type IS NULL OR booking_type NOT IN ('normal', 'trivia', 'function')");
 
     $pdo->exec("
         UPDATE bookings b
