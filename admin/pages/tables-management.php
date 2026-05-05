@@ -55,26 +55,6 @@ $resolveZoneKey = static function (string $name) use ($normalizeAreaName): strin
     return 'osf';
 };
 
-$normalizeTableShape = static function (string $value): string {
-    $shape = strtolower(trim($value));
-
-    $aliases = [
-        'auto' => 'auto',
-        'circle' => 'circle',
-        'square' => 'square',
-        'rect' => 'rect-horizontal',
-        'rectangle' => 'rect-horizontal',
-        'rect-h' => 'rect-horizontal',
-        'horizontal' => 'rect-horizontal',
-        'rect-horizontal' => 'rect-horizontal',
-        'rect-v' => 'rect-vertical',
-        'vertical' => 'rect-vertical',
-        'rect-vertical' => 'rect-vertical',
-    ];
-
-    return $aliases[$shape] ?? 'auto';
-};
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_layout')) {
     header('Content-Type: application/json');
 
@@ -102,7 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
         $reservable = !empty($tableRow['reservable']) ? 1 : 0;
         $layoutX = isset($tableRow['layout_x']) && $tableRow['layout_x'] !== '' ? (int) $tableRow['layout_x'] : null;
         $layoutY = isset($tableRow['layout_y']) && $tableRow['layout_y'] !== '' ? (int) $tableRow['layout_y'] : null;
-        $tableShape = $normalizeTableShape((string) ($tableRow['table_shape'] ?? 'auto'));
 
         if ($tableId < 1 || $tableNumber === '' || $capacity < 1 || $areaId < 1 || $sortOrder < 1) {
             http_response_code(400);
@@ -128,7 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
             'reservable' => $reservable,
             'layout_x' => $layoutX,
             'layout_y' => $layoutY,
-            'table_shape' => $tableShape,
         ];
     }
 
@@ -203,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
 
         $updateStmt = $pdo->prepare(
             "UPDATE restaurant_tables
-             SET table_number = ?, capacity = ?, area_id = ?, sort_order = ?, reservable = ?, layout_x = ?, layout_y = ?, table_shape = ?
+             SET table_number = ?, capacity = ?, area_id = ?, sort_order = ?, reservable = ?, layout_x = ?, layout_y = ?
              WHERE table_id = ?"
         );
 
@@ -229,7 +207,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
                 $tableRow['reservable'],
                 $tableRow['layout_x'],
                 $tableRow['layout_y'],
-                $tableRow['table_shape'],
                 $tableRow['table_id'],
             ]);
         }
@@ -274,7 +251,6 @@ $tablesStmt = $pdo->query(
             COALESCE(rt.reservable, 1) AS reservable,
             rt.layout_x,
             rt.layout_y,
-            COALESCE(rt.table_shape, 'auto') AS table_shape,
             COALESCE(ta.name, 'Unassigned') AS area_name,
             COALESCE(ta.display_order, 9999) AS area_display_order,
             ta.table_number_start,
@@ -351,7 +327,7 @@ foreach ($areas as $area) {
     ];
 }
 
-$tablesPayload = array_map(static function (array $row) use ($normalizeTableShape): array {
+$tablesPayload = array_map(static function (array $row): array {
     return [
         'table_id' => (int) $row['table_id'],
         'table_number' => (string) $row['table_number'],
@@ -361,7 +337,6 @@ $tablesPayload = array_map(static function (array $row) use ($normalizeTableShap
         'reservable' => (int) $row['reservable'],
         'layout_x' => $row['layout_x'] !== null ? (int) $row['layout_x'] : null,
         'layout_y' => $row['layout_y'] !== null ? (int) $row['layout_y'] : null,
-        'table_shape' => $normalizeTableShape((string) ($row['table_shape'] ?: 'auto')),
         'area_name' => (string) $row['area_name'],
         'area_display_order' => (int) $row['area_display_order'],
     ];
@@ -1194,92 +1169,6 @@ $adminSidebarPathPrefix = '';
             filter: drop-shadow(0 18px 30px rgba(22, 37, 68, 0.24));
         }
 
-        .table-circle {
-            width: 56px;
-            height: 56px;
-        }
-
-        .table-circle .table-top {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-        }
-
-        .table-square {
-            width: 60px;
-            height: 60px;
-        }
-
-        .table-square .table-top {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-        }
-
-        .table-rect-horizontal {
-            width: 78px;
-            height: 52px;
-        }
-
-        .table-rect-horizontal .table-top {
-            width: 52px;
-            height: 34px;
-            border-radius: 12px;
-        }
-
-        .table-rect-vertical {
-            width: 52px;
-            height: 78px;
-        }
-
-        .table-rect-vertical .table-top {
-            width: 34px;
-            height: 52px;
-            border-radius: 12px;
-        }
-
-        .table-circle .table-chair,
-        .table-square .table-chair {
-            width: 10px;
-            height: 8px;
-            border-radius: 999px;
-        }
-
-        .table-rect-horizontal .table-chair,
-        .table-rect-vertical .table-chair {
-            width: 9px;
-            height: 14px;
-            border-radius: 8px;
-        }
-
-        .table-chair-top { top: 5px; left: 50%; transform: translateX(-50%); }
-        .table-chair-bottom { bottom: 5px; left: 50%; transform: translateX(-50%); }
-        .table-chair-left { left: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); }
-        .table-chair-right { right: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); }
-        .table-chair-top-left { top: 8px; left: 8px; transform: rotate(-28deg); }
-        .table-chair-top-right { top: 8px; right: 8px; transform: rotate(28deg); }
-        .table-chair-bottom-left { bottom: 8px; left: 8px; transform: rotate(28deg); }
-        .table-chair-bottom-right { bottom: 8px; right: 8px; transform: rotate(-28deg); }
-
-        .table-circle .table-chair-top-left,
-        .table-circle .table-chair-top-right,
-        .table-circle .table-chair-bottom-left,
-        .table-circle .table-chair-bottom-right,
-        .table-square .table-chair-top,
-        .table-square .table-chair-bottom,
-        .table-square .table-chair-left,
-        .table-square .table-chair-right,
-        .table-rect-horizontal .table-chair-top-left,
-        .table-rect-horizontal .table-chair-top-right,
-        .table-rect-horizontal .table-chair-bottom-left,
-        .table-rect-horizontal .table-chair-bottom-right,
-        .table-rect-vertical .table-chair-top-left,
-        .table-rect-vertical .table-chair-top-right,
-        .table-rect-vertical .table-chair-bottom-left,
-        .table-rect-vertical .table-chair-bottom-right {
-            display: none;
-        }
-
         .table-tone-lavender { color: rgba(139, 115, 238, 0.42); }
         .table-tone-lavender .table-top { background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-neutral-bg)); }
         .table-tone-green { color: rgba(126, 207, 145, 0.52); }
@@ -1292,6 +1181,240 @@ $adminSidebarPathPrefix = '';
         .table-tone-pink .table-top { background: linear-gradient(180deg, var(--dm-danger-bg), var(--dm-danger-bg)); }
         .table-tone-mocha {  color: rgba(160, 120, 90, 0.5); }
         .table-tone-mocha .table-top {  background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-pending-bg)); }
+
+        .canvas-frame {
+            border: 1px solid rgba(222, 226, 232, 0.82);
+            border-radius: 16px;
+            background:
+                linear-gradient(90deg, rgba(64, 75, 92, 0.045) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(64, 75, 92, 0.045) 1px, transparent 1px),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 251, 253, 0.98));
+            background-size: 20px 20px, 20px 20px, 100% 100%;
+        }
+
+        .canvas-frame::after {
+            background: none;
+        }
+
+        .zone,
+        .zone-label,
+        .table-item {
+            --floor-text: #3f7fb8;
+            --floor-border: rgba(95, 169, 243, 0.26);
+            --floor-border-strong: rgba(95, 169, 243, 0.58);
+            --floor-bg: rgba(95, 169, 243, 0.055);
+            --floor-bg-strong: rgba(95, 169, 243, 0.13);
+        }
+
+        .zone.zone-lavender,
+        .zone-label.tone-lavender,
+        .table-tone-lavender {
+            --floor-text: #655aa8;
+            --floor-border: rgba(139, 115, 238, 0.25);
+            --floor-border-strong: rgba(139, 115, 238, 0.58);
+            --floor-bg: rgba(139, 115, 238, 0.06);
+            --floor-bg-strong: rgba(139, 115, 238, 0.13);
+        }
+
+        .zone.zone-green,
+        .zone-label.tone-green,
+        .table-tone-green {
+            --floor-text: #2d7d54;
+            --floor-border: rgba(77, 178, 116, 0.26);
+            --floor-border-strong: rgba(44, 176, 100, 0.58);
+            --floor-bg: rgba(77, 178, 116, 0.07);
+            --floor-bg-strong: rgba(77, 178, 116, 0.14);
+        }
+
+        .zone.zone-blue,
+        .zone-label.tone-blue,
+        .table-tone-blue {
+            --floor-text: #3e7fb6;
+            --floor-border: rgba(95, 169, 243, 0.28);
+            --floor-border-strong: rgba(67, 145, 222, 0.64);
+            --floor-bg: rgba(95, 169, 243, 0.065);
+            --floor-bg-strong: rgba(95, 169, 243, 0.15);
+        }
+
+        .zone.zone-amber,
+        .zone-label.tone-amber,
+        .table-tone-amber {
+            --floor-text: #986d32;
+            --floor-border: rgba(211, 156, 76, 0.3);
+            --floor-border-strong: rgba(191, 132, 50, 0.58);
+            --floor-bg: rgba(211, 156, 76, 0.07);
+            --floor-bg-strong: rgba(211, 156, 76, 0.15);
+        }
+
+        .zone.zone-pink,
+        .zone-label.tone-pink,
+        .table-tone-pink {
+            --floor-text: #9d5575;
+            --floor-border: rgba(231, 128, 171, 0.29);
+            --floor-border-strong: rgba(218, 101, 152, 0.62);
+            --floor-bg: rgba(231, 128, 171, 0.065);
+            --floor-bg-strong: rgba(231, 128, 171, 0.15);
+        }
+
+        .zone.zone-mocha,
+        .zone-label.tone-mocha,
+        .table-tone-mocha {
+            --floor-text: #7a6b59;
+            --floor-border: rgba(160, 140, 118, 0.26);
+            --floor-border-strong: rgba(137, 112, 88, 0.56);
+            --floor-bg: rgba(160, 140, 118, 0.055);
+            --floor-bg-strong: rgba(160, 140, 118, 0.13);
+        }
+
+        .zone,
+        .zone.zone-lavender,
+        .zone.zone-green,
+        .zone.zone-blue,
+        .zone.zone-amber,
+        .zone.zone-pink,
+        .zone.zone-mocha {
+            border: 1px solid var(--floor-border);
+            border-radius: 16px;
+            background: linear-gradient(180deg, var(--floor-bg), rgba(255, 255, 255, 0.36));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+        }
+
+        .zone:hover {
+            transform: translateY(-1px);
+            border-color: var(--floor-border-strong);
+            box-shadow: 0 10px 18px rgba(17, 24, 39, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+        }
+
+        .zone.active {
+            border-color: var(--floor-border-strong);
+            box-shadow: 0 0 0 4px var(--floor-bg-strong), 0 14px 24px rgba(17, 24, 39, 0.1);
+        }
+
+        .zone-label,
+        .zone-label.tone-lavender,
+        .zone-label.tone-green,
+        .zone-label.tone-blue,
+        .zone-label.tone-amber,
+        .zone-label.tone-pink,
+        .zone-label.tone-mocha {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 170px;
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            color: var(--floor-text);
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0;
+            line-height: 1.1;
+            text-transform: uppercase;
+            white-space: nowrap;
+            backdrop-filter: none;
+        }
+
+        .zone-label i {
+            width: 16px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .table-item,
+        .table-tone-lavender,
+        .table-tone-green,
+        .table-tone-blue,
+        .table-tone-amber,
+        .table-tone-pink,
+        .table-tone-mocha {
+            color: var(--floor-text);
+        }
+
+        .table-card {
+            width: 56px;
+            height: 46px;
+        }
+
+        .table-top,
+        .table-card .table-top,
+        .table-tone-lavender .table-top,
+        .table-tone-green .table-top,
+        .table-tone-blue .table-top,
+        .table-tone-amber .table-top,
+        .table-tone-pink .table-top,
+        .table-tone-mocha .table-top {
+            position: relative;
+            display: block;
+            width: 100%;
+            height: 100%;
+            padding: 6px 7px;
+            overflow: hidden;
+            border: 1px solid rgba(215, 221, 230, 0.96);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 10px rgba(34, 45, 65, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+            color: var(--dm-text);
+        }
+
+        .table-top::before,
+        .table-top::after {
+            content: none;
+        }
+
+        .table-label,
+        .table-capacity {
+            position: absolute;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .table-label {
+            inset: 5px 7px 12px;
+            display: grid;
+            place-items: center;
+            color: var(--dm-text);
+            font-size: 15px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .table-capacity {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
+            right: 5px;
+            bottom: 4px;
+            max-width: calc(100% - 10px);
+            color: var(--dm-text-muted);
+            font-size: 9px;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        .table-capacity i {
+            font-size: 8px;
+        }
+
+        .table-chair {
+            display: none;
+        }
+
+        .table-item:hover {
+            filter: drop-shadow(0 10px 18px rgba(17, 24, 39, 0.15));
+            transform: translate(-50%, -50%) scale(1.03);
+        }
+
+        .table-item.selected .table-top {
+            border-color: var(--floor-border-strong);
+            background: linear-gradient(180deg, var(--floor-bg-strong), rgba(255, 255, 255, 0.97));
+            box-shadow: 0 7px 14px rgba(34, 45, 65, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+        }
+
         .decor {
             position: absolute;
             pointer-events: none;
@@ -2001,16 +2124,6 @@ $adminSidebarPathPrefix = '';
                         <label for="modalTableArea">Area</label>
                         <select id="modalTableArea" name="area_id"></select>
                     </div>
-                    <div class="field">
-                        <label for="modalTableShape">Shape</label>
-                        <select id="modalTableShape" name="table_shape">
-                            <option value="auto">Automatic</option>
-                            <option value="circle">Circle</option>
-                            <option value="square">Square</option>
-                            <option value="rect-horizontal">Rectangle Horizontal</option>
-                            <option value="rect-vertical">Rectangle Vertical</option>
-                        </select>
-                    </div>
                     <div class="toggle-row">
                         <div>
                             <div style="font-weight: 800;">Reservable</div>
@@ -2093,12 +2206,12 @@ $adminSidebarPathPrefix = '';
         const AREA_CANVAS_PADDING = 16;
 
         const zoneBlueprints = [
-            { key: 'stables', label: 'Stables', tone: 'amber', x: 42, y: 16, width: 166, height: 92 },
-            { key: 'kookaburra', label: 'Kookaburra', tone: 'green', x: 42, y: 126, width: 112, height: 138 },
-            { key: 'wisteria', label: 'Wisteria', tone: 'pink', x: 478, y: 14, width: 176, height: 156 },
-            { key: 'schumack', label: 'Schumack', tone: 'blue', x: 478, y: 194, width: 188, height: 118 },
-            { key: 'main-bar', label: 'Main Bar', tone: 'lavender', x: 176, y: 190, width: 316, height: 184 },
-            { key: 'osf', label: 'OSF', tone: 'mocha', x: 42, y: 392, width: 644, height: 192 }
+            { key: 'stables', label: 'Stables', tone: 'amber', icon: 'fa-horse', x: 148, y: 12, width: 274, height: 150 },
+            { key: 'kookaburra', label: 'Kookaburra', tone: 'green', icon: 'fa-leaf', x: 24, y: 52, width: 104, height: 350 },
+            { key: 'wisteria', label: 'Wisteria', tone: 'pink', icon: 'fa-seedling', x: 532, y: 12, width: 292, height: 242 },
+            { key: 'schumack', label: 'Schumack', tone: 'blue', icon: 'fa-anchor', x: 532, y: 272, width: 294, height: 128 },
+            { key: 'main-bar', label: 'Main Bar', tone: 'lavender', icon: 'fa-martini-glass-citrus', x: 142, y: 186, width: 372, height: 216 },
+            { key: 'osf', label: 'OSF', tone: 'mocha', icon: 'fa-tree', x: 20, y: 416, width: 820, height: 160 }
         ];
 
         const state = {
@@ -2165,7 +2278,7 @@ $adminSidebarPathPrefix = '';
         function resolveAreaLabelLayout(area, zone) {
             const labelX = area && area.label_layout_x !== null
                 ? Number(area.label_layout_x)
-                : Math.round(zone.x + (zone.width / 2));
+                : Math.min(zone.x + zone.width - 28, zone.x + (zone.key === 'osf' ? 190 : 52));
             const labelY = area && area.label_layout_y !== null
                 ? Number(area.label_layout_y)
                 : zone.y + 14;
@@ -2203,19 +2316,24 @@ $adminSidebarPathPrefix = '';
         }
 
         function getTableLayoutConfig(zone) {
-            if (zone && zone.key === 'osf') {
-                return {
-                    columns: TABLE_OSF_COLUMNS,
-                    gutterX: TABLE_OSF_GUTTER_X,
-                    gutterY: TABLE_OSF_GUTTER_Y,
-                };
+            switch (zone?.key) {
+                case 'kookaburra':
+                    return { columns: 1, gutterX: 0, gutterY: 88 };
+                case 'stables':
+                    return { columns: 3, gutterX: 70, gutterY: 64 };
+                case 'wisteria':
+                case 'schumack':
+                case 'main-bar':
+                    return { columns: 4, gutterX: 68, gutterY: 62 };
+                case 'osf':
+                    return { columns: 9, gutterX: 88, gutterY: 72 };
+                default:
+                    return {
+                        columns: TABLE_DEFAULT_COLUMNS,
+                        gutterX: TABLE_DEFAULT_GUTTER_X,
+                        gutterY: TABLE_DEFAULT_GUTTER_Y,
+                    };
             }
-
-            return {
-                columns: TABLE_DEFAULT_COLUMNS,
-                gutterX: TABLE_DEFAULT_GUTTER_X,
-                gutterY: TABLE_DEFAULT_GUTTER_Y,
-            };
         }
 
         function clampTableWithinZone(table, zone) {
@@ -2315,56 +2433,6 @@ $adminSidebarPathPrefix = '';
         function getToneForArea(area) {
             const zone = getZoneBlueprint(area?.zone_key || '');
             return zone ? zone.tone : 'blue';
-        }
-
-        function normalizeTableShape(value) {
-            const shape = String(value || 'auto').trim().toLowerCase();
-
-            if (shape === 'circle' || shape === 'square' || shape === 'rect-horizontal' || shape === 'rect-vertical') {
-                return shape;
-            }
-
-            if (shape === 'rect' || shape === 'rectangle' || shape === 'rect-h' || shape === 'horizontal') {
-                return 'rect-horizontal';
-            }
-
-            if (shape === 'rect-v' || shape === 'vertical') {
-                return 'rect-vertical';
-            }
-
-            return 'auto';
-        }
-
-        function resolveShape(table) {
-            const explicitShape = normalizeTableShape(table.table_shape);
-
-            if (explicitShape !== 'auto') {
-                return explicitShape;
-            }
-
-            const capacity = Number(table.capacity || 0);
-
-            if (capacity <= 2) {
-                return 'circle';
-            }
-
-            if (capacity <= 4) {
-                return 'square';
-            }
-
-            return capacity >= 8 ? 'rect-horizontal' : 'rect-vertical';
-        }
-
-        function getShapeOptions(selectedShape) {
-            const currentShape = normalizeTableShape(selectedShape);
-
-            return `
-                <option value="auto" ${currentShape === 'auto' ? 'selected' : ''}>Automatic</option>
-                <option value="circle" ${currentShape === 'circle' ? 'selected' : ''}>Circle</option>
-                <option value="square" ${currentShape === 'square' ? 'selected' : ''}>Square</option>
-                <option value="rect-horizontal" ${currentShape === 'rect-horizontal' ? 'selected' : ''}>Rectangle Horizontal</option>
-                <option value="rect-vertical" ${currentShape === 'rect-vertical' ? 'selected' : ''}>Rectangle Vertical</option>
-            `;
         }
 
         function getSortedAreas() {
@@ -2581,41 +2649,33 @@ $adminSidebarPathPrefix = '';
 
                 return `
                     <div
-                        class="zone-label"
+                        class="zone-label tone-${zone.tone}"
                         data-zone-key="${zone.key}"
                         ${areaAttrs}
                         style="left:${labelPosition.x}px; top:${labelPosition.y}px; transform:translate(-50%, 0);"
-                    >${zone.label}</div>
+                    ><i class="fa-solid ${zone.icon || 'fa-location-dot'}" aria-hidden="true"></i><span>${zone.label}</span></div>
                 `;
             }).join('');
 
             const tableHtml = state.tables.map((table) => {
                 const area = getAreaById(table.area_id);
                 const tone = getToneForArea(area);
-                const shape = resolveShape(table);
                 const isSelected = Number(state.selectedTableId) === Number(table.table_id);
                 const x = Number(table.layout_x || 0);
                 const y = Number(table.layout_y || 0);
+                const displayNumber = String(table.table_number || '').replace(/^T/i, '');
 
                 return `
                     <button
-                        class="table-item table-${shape} table-tone-${tone}${isSelected ? ' selected' : ''}"
+                        class="table-item table-card table-tone-${tone}${isSelected ? ' selected' : ''}"
                         type="button"
                         data-table-id="${Number(table.table_id)}"
                         style="left:${x}px; top:${y}px; transform: translate(-50%, -50%);"
                     >
                         <span class="table-shell">
-                            <span class="table-chair table-chair-top"></span>
-                            <span class="table-chair table-chair-bottom"></span>
-                            <span class="table-chair table-chair-left"></span>
-                            <span class="table-chair table-chair-right"></span>
-                            <span class="table-chair table-chair-top-left"></span>
-                            <span class="table-chair table-chair-top-right"></span>
-                            <span class="table-chair table-chair-bottom-left"></span>
-                            <span class="table-chair table-chair-bottom-right"></span>
                             <span class="table-top">
-                                <span class="table-label">T${escapeHtml(table.table_number)}</span>
-                                <span class="table-capacity">${Number(table.capacity)}p</span>
+                                <span class="table-label">${escapeHtml(displayNumber)}</span>
+                                <span class="table-capacity"><i class="fa-solid fa-user-group" aria-hidden="true"></i>${Number(table.capacity)}</span>
                             </span>
                         </span>
                     </button>
@@ -2721,12 +2781,6 @@ $adminSidebarPathPrefix = '';
                         <div class="field">
                             <label for="detailArea">Area</label>
                             <select id="detailArea">${areaOptions}</select>
-                        </div>
-                        <div class="field">
-                            <label for="detailShape">Shape</label>
-                            <select id="detailShape">
-                                ${getShapeOptions(table.table_shape)}
-                            </select>
                         </div>
                     </div>
                     <div class="toggle-row">
@@ -2879,8 +2933,9 @@ $adminSidebarPathPrefix = '';
                 lavender: 'var(--dm-lavender)',
                 green: 'var(--dm-confirmed-text)',
                 blue: 'var(--dm-info-strong)',
-                amber: 'var(--dm-standby-bg)',
+                amber: '#986d32',
                 pink: 'var(--dm-danger-text)',
+                mocha: '#7a6b59',
             };
             return colors[tone] || 'var(--dm-info-strong)';
         }
@@ -3198,7 +3253,6 @@ $adminSidebarPathPrefix = '';
                             reservable: Number(table.reservable) ? 1 : 0,
                             layout_x: table.layout_x,
                             layout_y: table.layout_y,
-                            table_shape: table.table_shape || 'auto',
                         })),
                     }),
                 });
@@ -3238,7 +3292,6 @@ $adminSidebarPathPrefix = '';
                 reservable: document.getElementById('detailReservable').checked ? 1 : 0,
                 layout_x: table.layout_x,
                 layout_y: table.layout_y,
-                table_shape: document.getElementById('detailShape').value,
             };
 
             try {
@@ -3337,7 +3390,6 @@ $adminSidebarPathPrefix = '';
                 sort_order: (sameAreaTables + 1) * 10,
                 layout_x: layoutX,
                 layout_y: layoutY,
-                table_shape: document.getElementById('modalTableShape').value,
             };
 
             try {
@@ -3361,7 +3413,6 @@ $adminSidebarPathPrefix = '';
                     reservable: Number(result.reservable),
                     layout_x: result.layout_x === null ? layoutX : Number(result.layout_x),
                     layout_y: result.layout_y === null ? layoutY : Number(result.layout_y),
-                    table_shape: result.table_shape || payload.table_shape,
                     area_name: result.area_name || area.name,
                     area_display_order: Number(result.area_display_order || area.display_order || 0),
                 });

@@ -39,29 +39,39 @@ if (!in_array($selectedRequestPanelView, $allowedRequestPanelViews, true)) {
     $selectedRequestPanelView = 'requests';
 }
 
+$allowedFloorServices = ['all', 'lunch', 'dinner'];
+$selectedFloorService = strtolower(trim((string) ($_GET['floor_service'] ?? 'all')));
+if (!in_array($selectedFloorService, $allowedFloorServices, true)) {
+    $selectedFloorService = 'all';
+}
+
 $selectedTimestamp = strtotime($selectedDate) ?: time();
 $previousDate = date('Y-m-d', strtotime('-1 day', $selectedTimestamp));
 $nextDate = date('Y-m-d', strtotime('+1 day', $selectedTimestamp));
 $adminName = $_SESSION['name'] ?? 'Admin';
 
-$homeDateUrl = static function (string $dateValue) use ($selectedView, $selectedBookingMode, $selectedBookingPanelView, $selectedRequestPanelView): string {
-    return 'home.php?date=' . urlencode($dateValue) . '&view=' . urlencode($selectedView) . '&mode=' . urlencode($selectedBookingMode) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($selectedRequestPanelView);
+$homeDateUrl = static function (string $dateValue) use ($selectedView, $selectedBookingMode, $selectedBookingPanelView, $selectedRequestPanelView, $selectedFloorService): string {
+    return 'home.php?date=' . urlencode($dateValue) . '&view=' . urlencode($selectedView) . '&mode=' . urlencode($selectedBookingMode) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($selectedRequestPanelView) . '&floor_service=' . urlencode($selectedFloorService);
 };
 
-$homeViewUrl = static function (string $viewName) use ($selectedDate, $selectedBookingMode, $selectedBookingPanelView, $selectedRequestPanelView): string {
-    return 'home.php?date=' . urlencode($selectedDate) . '&view=' . urlencode($viewName) . '&mode=' . urlencode($selectedBookingMode) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($selectedRequestPanelView);
+$homeViewUrl = static function (string $viewName) use ($selectedDate, $selectedBookingMode, $selectedBookingPanelView, $selectedRequestPanelView, $selectedFloorService): string {
+    return 'home.php?date=' . urlencode($selectedDate) . '&view=' . urlencode($viewName) . '&mode=' . urlencode($selectedBookingMode) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($selectedRequestPanelView) . '&floor_service=' . urlencode($selectedFloorService);
 };
 
-$homeModeUrl = static function (string $modeName) use ($selectedDate, $selectedView, $selectedBookingPanelView, $selectedRequestPanelView): string {
-    return 'home.php?date=' . urlencode($selectedDate) . '&view=' . urlencode($selectedView) . '&mode=' . urlencode($modeName) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($selectedRequestPanelView);
+$homeModeUrl = static function (string $modeName) use ($selectedDate, $selectedView, $selectedBookingPanelView, $selectedRequestPanelView, $selectedFloorService): string {
+    return 'home.php?date=' . urlencode($selectedDate) . '&view=' . urlencode($selectedView) . '&mode=' . urlencode($modeName) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($selectedRequestPanelView) . '&floor_service=' . urlencode($selectedFloorService);
 };
 
-$homeBookingPanelViewUrl = static function (string $panelView) use ($selectedDate, $selectedRequestPanelView): string {
-    return 'home.php?date=' . urlencode($selectedDate) . '&view=list&mode=requests&booking_view=' . urlencode($panelView) . '&request_view=' . urlencode($selectedRequestPanelView);
+$homeBookingPanelViewUrl = static function (string $panelView) use ($selectedDate, $selectedRequestPanelView, $selectedFloorService): string {
+    return 'home.php?date=' . urlencode($selectedDate) . '&view=list&mode=requests&booking_view=' . urlencode($panelView) . '&request_view=' . urlencode($selectedRequestPanelView) . '&floor_service=' . urlencode($selectedFloorService);
 };
 
-$homeRequestPanelViewUrl = static function (string $panelView) use ($selectedDate, $selectedView, $selectedBookingMode, $selectedBookingPanelView): string {
-    return 'home.php?date=' . urlencode($selectedDate) . '&view=' . urlencode($selectedView) . '&mode=' . urlencode($selectedBookingMode) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($panelView);
+$homeRequestPanelViewUrl = static function (string $panelView) use ($selectedDate, $selectedView, $selectedBookingMode, $selectedBookingPanelView, $selectedFloorService): string {
+    return 'home.php?date=' . urlencode($selectedDate) . '&view=' . urlencode($selectedView) . '&mode=' . urlencode($selectedBookingMode) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($panelView) . '&floor_service=' . urlencode($selectedFloorService);
+};
+
+$homeFloorServiceUrl = static function (string $serviceName) use ($selectedDate, $selectedView, $selectedBookingMode, $selectedBookingPanelView, $selectedRequestPanelView): string {
+    return 'home.php?date=' . urlencode($selectedDate) . '&view=' . urlencode($selectedView) . '&mode=' . urlencode($selectedBookingMode) . '&booking_view=' . urlencode($selectedBookingPanelView) . '&request_view=' . urlencode($selectedRequestPanelView) . '&floor_service=' . urlencode($serviceName);
 };
 
 $timelineEmbedUrl = '../timeline/timeline.php?date=' . urlencode($selectedDate) . '&embed=1';
@@ -82,6 +92,34 @@ $formatQueueTime = static function (?string $dateValue, ?string $timeValue) use 
     }
 
     return $formatDateLabel($dateValue) . ', ' . $timeLabel;
+};
+
+$resolveBookingService = static function (array $booking): string {
+    $startTime = (string) ($booking['start_time'] ?? '');
+
+    if ($startTime >= '12:00:00' && $startTime < '17:00:00') {
+        return 'lunch';
+    }
+
+    if ($startTime >= '17:00:00') {
+        return 'dinner';
+    }
+
+    return 'other';
+};
+
+$filterBookingsByFloorService = static function (array $bookings, string $serviceName) use ($resolveBookingService): array {
+    if ($serviceName === 'all') {
+        return $bookings;
+    }
+
+    return array_values(array_filter($bookings, static function (array $booking) use ($serviceName, $resolveBookingService): bool {
+        return $resolveBookingService($booking) === $serviceName;
+    }));
+};
+
+$countBookingsByFloorService = static function (array $bookings, string $serviceName) use ($filterBookingsByFloorService): int {
+    return count($filterBookingsByFloorService($bookings, $serviceName));
 };
 
 $getInitials = static function (string $name): string {
@@ -133,37 +171,6 @@ $resolveZoneKey = static function (string $name) use ($normalizeAreaName): strin
     }
 
     return 'osf';
-};
-
-$resolveTableShape = static function (array $table): string {
-    $shape = strtolower(trim((string) ($table['table_shape'] ?? 'auto')));
-    $aliases = [
-        'circle' => 'circle',
-        'square' => 'square',
-        'rect' => 'rect-horizontal',
-        'rectangle' => 'rect-horizontal',
-        'rect-h' => 'rect-horizontal',
-        'horizontal' => 'rect-horizontal',
-        'rect-horizontal' => 'rect-horizontal',
-        'rect-v' => 'rect-vertical',
-        'vertical' => 'rect-vertical',
-        'rect-vertical' => 'rect-vertical',
-    ];
-
-    if (isset($aliases[$shape])) {
-        return $aliases[$shape];
-    }
-
-    $capacity = (int) ($table['capacity'] ?? 0);
-    if ($capacity <= 2) {
-        return 'circle';
-    }
-
-    if ($capacity <= 4) {
-        return 'square';
-    }
-
-    return $capacity >= 8 ? 'rect-horizontal' : 'rect-vertical';
 };
 
 $dashboardStatsStmt = $pdo->prepare("
@@ -257,6 +264,38 @@ $functionBookings = array_values(array_filter($queueBookings, static function (a
     return normalizeBookingType($booking['booking_type'] ?? 'normal') === 'function';
 }));
 
+$floorQueueBookings = $filterBookingsByFloorService($queueBookings, $selectedFloorService);
+$floorConfirmedBookings = $filterBookingsByFloorService($confirmedBookings, $selectedFloorService);
+$floorServiceOptions = [
+    'all' => [
+        'label' => 'All',
+        'icon' => 'fa-table-cells-large',
+    ],
+    'lunch' => [
+        'label' => 'Lunch',
+        'icon' => 'fa-sun',
+    ],
+    'dinner' => [
+        'label' => 'Dinner',
+        'icon' => 'fa-moon',
+    ],
+];
+
+$buildFloorServiceOptions = static function (array $sourceBookings) use ($floorServiceOptions, $countBookingsByFloorService): array {
+    $options = [];
+
+    foreach ($floorServiceOptions as $serviceName => $serviceMeta) {
+        $options[$serviceName] = array_merge($serviceMeta, [
+            'count' => $countBookingsByFloorService($sourceBookings, (string) $serviceName),
+        ]);
+    }
+
+    return $options;
+};
+
+$queueFloorServiceOptions = $buildFloorServiceOptions($queueBookings);
+$confirmedFloorServiceOptions = $buildFloorServiceOptions($confirmedBookings);
+
 $bookingEditPayload = static function (array $booking): string {
     $assignedTableIds = array_values(array_filter(array_map('intval', explode(',', (string) ($booking['assigned_table_ids'] ?? '')))));
     $payload = [
@@ -292,7 +331,6 @@ $tableRows = $pdo->query("
         COALESCE(rt.reservable, 1) AS reservable,
         rt.layout_x,
         rt.layout_y,
-        COALESCE(rt.table_shape, 'auto') AS table_shape,
         COALESCE(ta.name, 'Dining room') AS area_name
     FROM restaurant_tables rt
     LEFT JOIN table_areas ta ON rt.area_id = ta.area_id
@@ -308,7 +346,7 @@ $areaRows = $pdo->query("
 
 $bookingsByTableId = [];
 $unassignedBookings = [];
-foreach ($queueBookings as $booking) {
+foreach ($floorQueueBookings as $booking) {
     $assignedTableIds = array_values(array_filter(array_map('intval', explode(',', (string) ($booking['assigned_table_ids'] ?? '')))));
 
     if (empty($assignedTableIds)) {
@@ -324,7 +362,7 @@ foreach ($queueBookings as $booking) {
 
 $confirmedBookingsByTableId = [];
 $confirmedUnassignedBookings = [];
-foreach ($confirmedBookings as $booking) {
+foreach ($floorConfirmedBookings as $booking) {
     $assignedTableIds = array_values(array_filter(array_map('intval', explode(',', (string) ($booking['assigned_table_ids'] ?? '')))));
 
     if (empty($assignedTableIds)) {
@@ -339,12 +377,12 @@ foreach ($confirmedBookings as $booking) {
 }
 
 $floorBlueprints = [
-    'stables' => ['label' => 'Stables', 'tone' => 'amber', 'x' => 42, 'y' => 16, 'width' => 166, 'height' => 92],
-    'kookaburra' => ['label' => 'Kookaburra', 'tone' => 'green', 'x' => 42, 'y' => 126, 'width' => 112, 'height' => 138],
-    'wisteria' => ['label' => 'Wisteria', 'tone' => 'pink', 'x' => 478, 'y' => 14, 'width' => 176, 'height' => 156],
-    'schumack' => ['label' => 'Schumack', 'tone' => 'blue', 'x' => 478, 'y' => 194, 'width' => 188, 'height' => 118],
-    'main-bar' => ['label' => 'Main Bar', 'tone' => 'lavender', 'x' => 176, 'y' => 190, 'width' => 316, 'height' => 184],
-    'osf' => ['label' => 'OSF', 'tone' => 'mocha', 'x' => 42, 'y' => 392, 'width' => 644, 'height' => 192],
+    'stables' => ['label' => 'Stables', 'tone' => 'amber', 'icon' => 'fa-horse', 'x' => 148, 'y' => 12, 'width' => 274, 'height' => 150],
+    'kookaburra' => ['label' => 'Kookaburra', 'tone' => 'green', 'icon' => 'fa-leaf', 'x' => 24, 'y' => 52, 'width' => 104, 'height' => 350],
+    'wisteria' => ['label' => 'Wisteria', 'tone' => 'pink', 'icon' => 'fa-seedling', 'x' => 532, 'y' => 12, 'width' => 292, 'height' => 242],
+    'schumack' => ['label' => 'Schumack', 'tone' => 'blue', 'icon' => 'fa-anchor', 'x' => 532, 'y' => 272, 'width' => 294, 'height' => 128],
+    'main-bar' => ['label' => 'Main Bar', 'tone' => 'lavender', 'icon' => 'fa-martini-glass-citrus', 'x' => 142, 'y' => 186, 'width' => 372, 'height' => 216],
+    'osf' => ['label' => 'OSF', 'tone' => 'mocha', 'icon' => 'fa-tree', 'x' => 20, 'y' => 416, 'width' => 820, 'height' => 160],
 ];
 
 $areasById = [];
@@ -358,13 +396,15 @@ foreach ($areaRows as $area) {
         'name' => (string) ($area['name'] ?? $blueprint['label']),
         'label' => (string) ($area['name'] ?? $blueprint['label']),
         'tone' => $blueprint['tone'],
+        'icon' => $blueprint['icon'],
         'zone_key' => $zoneKey,
         'x' => $area['layout_x'] !== null ? (int) $area['layout_x'] : (int) $blueprint['x'],
         'y' => $area['layout_y'] !== null ? (int) $area['layout_y'] : (int) $blueprint['y'],
         'width' => $area['layout_width'] !== null ? (int) $area['layout_width'] : (int) $blueprint['width'],
         'height' => $area['layout_height'] !== null ? (int) $area['layout_height'] : (int) $blueprint['height'],
     ];
-    $zone['label_x'] = $area['label_layout_x'] !== null ? (int) $area['label_layout_x'] : (int) round($zone['x'] + ($zone['width'] / 2));
+    $defaultLabelOffset = $zoneKey === 'osf' ? 190 : 52;
+    $zone['label_x'] = $area['label_layout_x'] !== null ? (int) $area['label_layout_x'] : (int) min($zone['x'] + $zone['width'] - 28, $zone['x'] + $defaultLabelOffset);
     $zone['label_y'] = $area['label_layout_y'] !== null ? (int) $area['label_layout_y'] : (int) ($zone['y'] + 14);
 
     $areasById[$areaId] = $zone;
@@ -378,7 +418,7 @@ foreach ($tableRows as $table) {
     $tablesByAreaForLayout[$areaId][] = $table;
 }
 
-$buildFloorTables = static function (array $tables, array $sourceBookingsByTableId) use ($areasById, $tablesByAreaForLayout, $resolveTableShape): array {
+$buildFloorTables = static function (array $tables, array $sourceBookingsByTableId) use ($areasById, $tablesByAreaForLayout): array {
     $builtFloorTables = [];
 
     foreach ($tables as $table) {
@@ -393,10 +433,29 @@ $buildFloorTables = static function (array $tables, array $sourceBookingsByTable
             }
         }
 
-        $isOsf = $zone && ($zone['zone_key'] ?? '') === 'osf';
-        $columns = $isOsf ? 4 : 2;
-        $gutterX = $isOsf ? 76 : 70;
-        $gutterY = $isOsf ? 60 : 68;
+        $zoneKey = $zone['zone_key'] ?? '';
+        switch ($zoneKey) {
+            case 'kookaburra':
+                $layoutGrid = ['columns' => 1, 'gutter_x' => 0, 'gutter_y' => 88];
+                break;
+            case 'stables':
+                $layoutGrid = ['columns' => 3, 'gutter_x' => 70, 'gutter_y' => 64];
+                break;
+            case 'wisteria':
+            case 'schumack':
+            case 'main-bar':
+                $layoutGrid = ['columns' => 4, 'gutter_x' => 68, 'gutter_y' => 62];
+                break;
+            case 'osf':
+                $layoutGrid = ['columns' => 9, 'gutter_x' => 88, 'gutter_y' => 72];
+                break;
+            default:
+                $layoutGrid = ['columns' => 3, 'gutter_x' => 70, 'gutter_y' => 66];
+                break;
+        }
+        $columns = $layoutGrid['columns'];
+        $gutterX = $layoutGrid['gutter_x'];
+        $gutterY = $layoutGrid['gutter_y'];
         $layoutX = $table['layout_x'] !== null ? (int) $table['layout_x'] : null;
         $layoutY = $table['layout_y'] !== null ? (int) $table['layout_y'] : null;
 
@@ -410,7 +469,6 @@ $buildFloorTables = static function (array $tables, array $sourceBookingsByTable
         $builtFloorTables[] = array_merge($table, [
             'layout_x' => $layoutX,
             'layout_y' => $layoutY,
-            'shape' => $resolveTableShape($table),
             'tone' => $zone['tone'] ?? 'blue',
             'bookings' => $tableBookings,
             'is_occupied' => !empty($tableBookings),
@@ -727,16 +785,31 @@ $renderHomeTimelineEmbed = static function (string $timelineEmbedUrl, string $se
     return (string) ob_get_clean();
 };
 
-$renderHomeFloorLayout = static function (array $floorTables, array $floorZones, array $unassignedBookings, string $selectedDate, callable $formatDateLabel): string {
+$renderHomeFloorLayout = static function (array $floorTables, array $floorZones, array $unassignedBookings, string $selectedDate, callable $formatDateLabel, array $floorServiceOptions, string $selectedFloorService, callable $homeFloorServiceUrl): string {
     ob_start();
     ?>
     <div class="home-floor-wrap">
         <?php if (empty($floorTables)): ?>
             <div class="home-empty">No tables have been created yet.</div>
         <?php else: ?>
-            <div class="home-floor-legend" aria-label="Floor plan legend">
-                <span class="home-floor-key occupied">Booked on selected date</span>
-                <span class="home-floor-key">Available</span>
+            <div class="home-floor-service-filter" aria-label="Table booking service">
+                <?php foreach ($floorServiceOptions as $serviceName => $serviceMeta): ?>
+                    <?php
+                        $serviceName = (string) $serviceName;
+                        $serviceLabel = (string) ($serviceMeta['label'] ?? ucfirst($serviceName));
+                        $serviceIcon = (string) ($serviceMeta['icon'] ?? 'fa-table-cells-large');
+                        $serviceCount = (int) ($serviceMeta['count'] ?? 0);
+                    ?>
+                    <a
+                        class="home-floor-service-chip <?php echo $selectedFloorService === $serviceName ? 'is-active' : ''; ?>"
+                        href="<?php echo htmlspecialchars($homeFloorServiceUrl($serviceName), ENT_QUOTES, 'UTF-8'); ?>"
+                        aria-current="<?php echo $selectedFloorService === $serviceName ? 'true' : 'false'; ?>"
+                    >
+                        <i class="fa-solid <?php echo htmlspecialchars($serviceIcon, ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                        <span><?php echo htmlspecialchars($serviceLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <strong><?php echo number_format($serviceCount); ?></strong>
+                    </a>
+                <?php endforeach; ?>
             </div>
             <div class="home-floor-viewport">
                 <div class="home-floor-canvas" role="img" aria-label="Restaurant floor plan for <?php echo htmlspecialchars($formatDateLabel($selectedDate), ENT_QUOTES, 'UTF-8'); ?>">
@@ -747,10 +820,11 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
                             aria-hidden="true"
                         ></div>
                         <div
-                            class="home-floor-label"
+                            class="home-floor-label tone-<?php echo htmlspecialchars((string) $zone['tone'], ENT_QUOTES, 'UTF-8'); ?>"
                             style="left: <?php echo (int) $zone['label_x']; ?>px; top: <?php echo (int) $zone['label_y']; ?>px;"
                         >
-                            <?php echo htmlspecialchars((string) $zone['label'], ENT_QUOTES, 'UTF-8'); ?>
+                            <i class="fa-solid <?php echo htmlspecialchars((string) ($zone['icon'] ?? 'fa-location-dot'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                            <span><?php echo htmlspecialchars((string) $zone['label'], ENT_QUOTES, 'UTF-8'); ?></span>
                         </div>
                     <?php endforeach; ?>
 
@@ -771,11 +845,20 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
                                 $tableSearchParts[] = (string) ($tableBooking['assigned_area_names'] ?? '');
                             }
                             $tableSearchText = strtolower(trim(implode(' ', $tableSearchParts)));
+                            $tableDisplayNumber = preg_replace('/^T/i', '', (string) ($table['table_number'] ?? ''));
                             $firstBooking = $tableBookings[0] ?? null;
                             $bookingTooltip = '';
+                            $bookingName = '-';
+                            $bookingTime = '-';
+                            $bookingNote = '';
+                            $bookingGuests = 0;
                             if ($firstBooking) {
-                                $bookingTooltip = (string) ($firstBooking['customer_name'] ?? 'Guest');
+                                $bookingName = (string) ($firstBooking['customer_name'] ?? 'Guest');
+                                $bookingNote = trim((string) ($firstBooking['special_request'] ?? ''));
+                                $bookingGuests = (int) ($firstBooking['number_of_guests'] ?? 0);
+                                $bookingTooltip = $bookingName;
                                 if (!empty($firstBooking['start_time'])) {
+                                    $bookingTime = date('g:i a', strtotime((string) $firstBooking['start_time']));
                                     $bookingTooltip .= ' at ' . date('g:i A', strtotime((string) $firstBooking['start_time']));
                                 }
                             } else {
@@ -783,7 +866,7 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
                             }
                         ?>
                         <a
-                            class="home-floor-table shape-<?php echo htmlspecialchars((string) $table['shape'], ENT_QUOTES, 'UTF-8'); ?> tone-<?php echo htmlspecialchars((string) $table['tone'], ENT_QUOTES, 'UTF-8'); ?> <?php echo !empty($table['is_occupied']) ? 'is-occupied' : ''; ?> <?php echo empty($table['reservable']) ? 'is-unreservable' : ''; ?>"
+                            class="home-floor-table tone-<?php echo htmlspecialchars((string) $table['tone'], ENT_QUOTES, 'UTF-8'); ?> <?php echo !empty($table['is_occupied']) ? 'is-occupied' : ''; ?> <?php echo empty($table['reservable']) ? 'is-unreservable' : ''; ?>"
                             href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList"
                             title="Table <?php echo htmlspecialchars((string) ($table['table_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>: <?php echo htmlspecialchars($bookingTooltip, ENT_QUOTES, 'UTF-8'); ?>"
                             style="left: <?php echo (int) $table['layout_x']; ?>px; top: <?php echo (int) $table['layout_y']; ?>px;"
@@ -791,16 +874,21 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
                             data-search-text="<?php echo htmlspecialchars($tableSearchText, ENT_QUOTES, 'UTF-8'); ?>"
                         >
                             <span class="home-floor-table-shell">
-                                <span class="home-floor-chair top"></span>
-                                <span class="home-floor-chair bottom"></span>
-                                <span class="home-floor-chair left"></span>
-                                <span class="home-floor-chair right"></span>
-                                <span class="home-floor-table-top">
-                                    <span class="home-floor-table-number">T<?php echo htmlspecialchars((string) ($table['table_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <span class="home-floor-table-meta"><?php echo number_format((int) ($table['capacity'] ?? 0)); ?>p</span>
+                                <span class="home-floor-table-card">
+                                    <?php if ($firstBooking): ?>
+                                        <span class="home-floor-card-time"><?php echo htmlspecialchars($bookingTime, ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <span class="home-floor-card-main"><?php echo htmlspecialchars($bookingName, ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <?php if ($bookingNote !== ''): ?>
+                                            <span class="home-floor-card-note"><?php echo htmlspecialchars($bookingNote, ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <?php endif; ?>
+                                        <span class="home-floor-card-corner"><i class="fa-solid fa-user-group" aria-hidden="true"></i><?php echo number_format($bookingGuests); ?></span>
+                                    <?php else: ?>
+                                        <span class="home-floor-card-number"><?php echo htmlspecialchars($tableDisplayNumber, ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <span class="home-floor-card-corner"><i class="fa-solid fa-user-group" aria-hidden="true"></i><?php echo number_format((int) ($table['capacity'] ?? 0)); ?></span>
+                                    <?php endif; ?>
                                 </span>
                                 <?php if (!empty($tableBookings)): ?>
-                                    <span class="home-floor-booking-dot"><?php echo number_format(count($tableBookings)); ?></span>
+                                    <span class="home-floor-booking-dot"><?php echo count($tableBookings) > 1 ? number_format(count($tableBookings)) : ''; ?></span>
                                 <?php endif; ?>
                             </span>
                         </a>
@@ -1718,20 +1806,21 @@ $adminSidebarPathPrefix = '';
 
         .home-floor-wrap {
             display: grid;
-            gap: 12px;
-            padding: 16px;
-            background: #fbfcfd;
+            gap: 10px;
+            padding: 12px;
+            background: #ffffff;
         }
 
         .home-floor-viewport {
             overflow: auto;
-            border: 1px solid var(--dm-border);
+            border: 1px solid rgba(222, 226, 232, 0.82);
             border-radius: var(--dm-radius-sm);
             background:
-                linear-gradient(90deg, rgba(80, 92, 118, 0.045) 1px, transparent 1px),
-                linear-gradient(0deg, rgba(80, 92, 118, 0.045) 1px, transparent 1px),
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.98), rgba(244, 246, 250, 0.98));
-            background-size: 24px 24px, 24px 24px, 100% 100%;
+                linear-gradient(90deg, rgba(64, 75, 92, 0.045) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(64, 75, 92, 0.045) 1px, transparent 1px),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 251, 253, 0.98));
+            background-size: 20px 20px, 20px 20px, 100% 100%;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
         }
 
         .home-floor-canvas {
@@ -1739,40 +1828,109 @@ $adminSidebarPathPrefix = '';
             width: 860px;
             height: 600px;
             margin: 0 auto;
+            min-width: 860px;
+        }
+
+        .home-floor-zone,
+        .home-floor-label,
+        .home-floor-table {
+            --floor-text: #3f7fb8;
+            --floor-border: rgba(95, 169, 243, 0.26);
+            --floor-border-strong: rgba(95, 169, 243, 0.58);
+            --floor-bg: rgba(95, 169, 243, 0.055);
+            --floor-bg-strong: rgba(95, 169, 243, 0.13);
+        }
+
+        .home-floor-zone.tone-lavender,
+        .home-floor-label.tone-lavender,
+        .home-floor-table.tone-lavender {
+            --floor-text: #655aa8;
+            --floor-border: rgba(139, 115, 238, 0.25);
+            --floor-border-strong: rgba(139, 115, 238, 0.58);
+            --floor-bg: rgba(139, 115, 238, 0.06);
+            --floor-bg-strong: rgba(139, 115, 238, 0.13);
+        }
+
+        .home-floor-zone.tone-green,
+        .home-floor-label.tone-green,
+        .home-floor-table.tone-green {
+            --floor-text: #2d7d54;
+            --floor-border: rgba(77, 178, 116, 0.26);
+            --floor-border-strong: rgba(44, 176, 100, 0.58);
+            --floor-bg: rgba(77, 178, 116, 0.07);
+            --floor-bg-strong: rgba(77, 178, 116, 0.14);
+        }
+
+        .home-floor-zone.tone-blue,
+        .home-floor-label.tone-blue,
+        .home-floor-table.tone-blue {
+            --floor-text: #3e7fb6;
+            --floor-border: rgba(95, 169, 243, 0.28);
+            --floor-border-strong: rgba(67, 145, 222, 0.64);
+            --floor-bg: rgba(95, 169, 243, 0.065);
+            --floor-bg-strong: rgba(95, 169, 243, 0.15);
+        }
+
+        .home-floor-zone.tone-amber,
+        .home-floor-label.tone-amber,
+        .home-floor-table.tone-amber {
+            --floor-text: #986d32;
+            --floor-border: rgba(211, 156, 76, 0.3);
+            --floor-border-strong: rgba(191, 132, 50, 0.58);
+            --floor-bg: rgba(211, 156, 76, 0.07);
+            --floor-bg-strong: rgba(211, 156, 76, 0.15);
+        }
+
+        .home-floor-zone.tone-pink,
+        .home-floor-label.tone-pink,
+        .home-floor-table.tone-pink {
+            --floor-text: #9d5575;
+            --floor-border: rgba(231, 128, 171, 0.29);
+            --floor-border-strong: rgba(218, 101, 152, 0.62);
+            --floor-bg: rgba(231, 128, 171, 0.065);
+            --floor-bg-strong: rgba(231, 128, 171, 0.15);
+        }
+
+        .home-floor-zone.tone-mocha,
+        .home-floor-label.tone-mocha,
+        .home-floor-table.tone-mocha {
+            --floor-text: #7a6b59;
+            --floor-border: rgba(160, 140, 118, 0.26);
+            --floor-border-strong: rgba(137, 112, 88, 0.56);
+            --floor-bg: rgba(160, 140, 118, 0.055);
+            --floor-bg-strong: rgba(160, 140, 118, 0.13);
         }
 
         .home-floor-zone {
             position: absolute;
-            border: 2px dashed rgba(163, 176, 196, 0.58);
-            border-radius: 22px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(247, 250, 255, 0.72));
+            border: 1px solid var(--floor-border);
+            border-radius: 16px;
+            background: linear-gradient(180deg, var(--floor-bg), rgba(255, 255, 255, 0.36));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
         }
-
-        .home-floor-zone.tone-lavender { background: linear-gradient(180deg, rgba(139, 115, 238, 0.08), rgba(139, 115, 238, 0.03)); }
-        .home-floor-zone.tone-green { background: linear-gradient(180deg, rgba(126, 207, 145, 0.1), rgba(126, 207, 145, 0.04)); }
-        .home-floor-zone.tone-blue { background: linear-gradient(180deg, rgba(95, 169, 243, 0.09), rgba(95, 169, 243, 0.04)); }
-        .home-floor-zone.tone-amber { background: linear-gradient(180deg, rgba(255, 191, 69, 0.1), rgba(255, 191, 69, 0.04)); }
-        .home-floor-zone.tone-pink { background: linear-gradient(180deg, rgba(255, 119, 183, 0.09), rgba(255, 119, 183, 0.04)); }
-        .home-floor-zone.tone-mocha { background: linear-gradient(180deg, rgba(160, 120, 90, 0.1), rgba(160, 120, 90, 0.04)); }
 
         .home-floor-label {
             position: absolute;
             z-index: 3;
             display: inline-flex;
             align-items: center;
-            max-width: 150px;
-            padding: 7px 13px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.88);
-            color: var(--dm-text);
-            box-shadow: 0 8px 20px rgba(55, 72, 105, 0.1);
-            font-size: 10px;
+            gap: 6px;
+            max-width: 170px;
+            padding: 0;
+            color: var(--floor-text);
+            font-size: 11px;
             font-weight: 900;
-            letter-spacing: 0.03em;
+            letter-spacing: 0;
             line-height: 1.1;
             text-transform: uppercase;
             white-space: nowrap;
             transform: translate(-50%, 0);
+        }
+
+        .home-floor-label i {
+            width: 16px;
+            text-align: center;
+            font-size: 15px;
         }
 
         .home-floor-table {
@@ -1782,7 +1940,7 @@ $adminSidebarPathPrefix = '';
             place-items: center;
             border: 0;
             background: transparent;
-            color: rgba(95, 169, 243, 0.52);
+            color: var(--floor-text);
             padding: 0;
             text-decoration: none;
             transform: translate(-50%, -50%);
@@ -1790,49 +1948,18 @@ $adminSidebarPathPrefix = '';
         }
 
         .home-floor-table:hover {
-            color: rgba(95, 169, 243, 0.62);
-            filter: drop-shadow(0 14px 24px rgba(17, 24, 39, 0.16));
+            color: var(--floor-text);
+            filter: drop-shadow(0 10px 18px rgba(17, 24, 39, 0.15));
             transform: translate(-50%, -50%) scale(1.03);
-        }
-
-        .home-floor-table.tone-lavender { color: rgba(139, 115, 238, 0.52); }
-        .home-floor-table.tone-green { color: rgba(126, 207, 145, 0.62); }
-        .home-floor-table.tone-blue { color: rgba(95, 169, 243, 0.58); }
-        .home-floor-table.tone-amber { color: rgba(255, 191, 69, 0.66); }
-        .home-floor-table.tone-pink { color: rgba(255, 119, 183, 0.56); }
-        .home-floor-table.tone-mocha { color: rgba(160, 120, 90, 0.62); }
-
-        .home-floor-table.is-occupied {
-            color: rgba(19, 231, 150, 0.86);
-        }
-
-        .home-floor-table.is-occupied .home-floor-table-top {
-            background: linear-gradient(180deg, var(--dm-primary-soft), #ffffff);
-            box-shadow: 0 12px 22px rgba(19, 231, 150, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.95);
         }
 
         .home-floor-table.is-unreservable {
             opacity: 0.55;
         }
 
-        .home-floor-table.shape-circle {
+        .home-floor-table {
             width: 56px;
-            height: 56px;
-        }
-
-        .home-floor-table.shape-square {
-            width: 60px;
-            height: 60px;
-        }
-
-        .home-floor-table.shape-rect-horizontal {
-            width: 78px;
-            height: 52px;
-        }
-
-        .home-floor-table.shape-rect-vertical {
-            width: 52px;
-            height: 78px;
+            height: 46px;
         }
 
         .home-floor-table-shell {
@@ -1843,125 +1970,168 @@ $adminSidebarPathPrefix = '';
             height: 100%;
         }
 
-        .home-floor-table-top {
+        .home-floor-table-card {
             position: relative;
             z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 2px;
-            border: 2px solid currentColor;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 255, 0.92));
-            box-shadow: 0 8px 18px rgba(59, 72, 98, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-        }
-
-        .shape-circle .home-floor-table-top {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-        }
-
-        .shape-square .home-floor-table-top {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-        }
-
-        .shape-rect-horizontal .home-floor-table-top {
-            width: 52px;
-            height: 34px;
-            border-radius: 12px;
-        }
-
-        .shape-rect-vertical .home-floor-table-top {
-            width: 34px;
-            height: 52px;
-            border-radius: 12px;
-        }
-
-        .home-floor-table-number {
+            display: block;
+            width: 100%;
+            height: 100%;
+            padding: 6px 7px;
+            overflow: hidden;
+            border: 1px solid rgba(215, 221, 230, 0.96);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 10px rgba(34, 45, 65, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.98);
             color: var(--dm-text);
-            font-size: 11px;
-            font-weight: 900;
+        }
+
+        .home-floor-table.is-occupied .home-floor-table-card {
+            border-color: var(--floor-border-strong);
+            background: linear-gradient(180deg, var(--floor-bg-strong), rgba(255, 255, 255, 0.97));
+            box-shadow: 0 7px 14px rgba(34, 45, 65, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+        }
+
+        .home-floor-card-number,
+        .home-floor-card-main,
+        .home-floor-card-note,
+        .home-floor-card-time,
+        .home-floor-card-corner {
+            position: absolute;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             line-height: 1;
         }
 
-        .home-floor-table-meta {
+        .home-floor-card-number {
+            inset: 5px 7px 12px;
+            display: grid;
+            place-items: center;
+            color: var(--dm-text);
+            font-size: 15px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .home-floor-card-corner {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
+            right: 5px;
+            bottom: 4px;
             color: var(--dm-text-muted);
             font-size: 9px;
             font-weight: 800;
-            line-height: 1;
+            max-width: calc(100% - 10px);
+            text-align: right;
+        }
+
+        .home-floor-card-corner i {
+            font-size: 8px;
+        }
+
+        .home-floor-card-time {
+            top: 5px;
+            left: 6px;
+            right: 18px;
+            color: var(--dm-text-muted);
+            font-size: 7px;
+            font-weight: 800;
+        }
+
+        .home-floor-card-main {
+            top: 16px;
+            left: 6px;
+            right: 6px;
+            color: var(--dm-text);
+            font-size: 8px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .home-floor-card-note {
+            top: 27px;
+            left: 6px;
+            right: 14px;
+            color: var(--dm-text-muted);
+            font-size: 7px;
+            font-weight: 800;
+            text-align: center;
         }
 
         .home-floor-booking-dot {
             position: absolute;
-            top: -2px;
-            right: -2px;
+            top: -4px;
+            right: -4px;
             z-index: 5;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 12px;
+            height: 12px;
+            padding: 0 4px;
+            border: 2px solid var(--dm-surface);
+            border-radius: 999px;
+            background: var(--floor-text);
+            color: #ffffff;
+            font-size: 8px;
+            font-weight: 900;
+        }
+
+        .home-floor-service-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .home-floor-service-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 30px;
+            padding: 0 10px;
+            border: 1px solid rgba(215, 221, 230, 0.8);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--dm-text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .home-floor-service-chip:hover {
+            border-color: rgba(156, 166, 184, 0.9);
+            color: var(--dm-text);
+        }
+
+        .home-floor-service-chip.is-active {
+            border-color: var(--dm-primary);
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary-text);
+        }
+
+        .home-floor-service-chip i {
+            width: 13px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .home-floor-service-chip strong {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             min-width: 18px;
             height: 18px;
             padding: 0 5px;
-            border: 2px solid var(--dm-surface);
             border-radius: 999px;
-            background: var(--dm-primary);
-            color: var(--dm-primary-text);
+            background: rgba(17, 24, 39, 0.06);
+            color: inherit;
             font-size: 10px;
             font-weight: 900;
-        }
-
-        .home-floor-chair {
-            position: absolute;
-            z-index: 1;
-            width: 10px;
-            height: 8px;
-            border: 2px solid rgba(121, 136, 164, 0.45);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.98);
-            box-shadow: 0 4px 10px rgba(59, 72, 98, 0.12);
-        }
-
-        .home-floor-chair.top { top: 5px; left: 50%; transform: translateX(-50%); }
-        .home-floor-chair.bottom { bottom: 5px; left: 50%; transform: translateX(-50%); }
-        .home-floor-chair.left { left: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); }
-        .home-floor-chair.right { right: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); }
-
-        .shape-square .home-floor-chair.top,
-        .shape-square .home-floor-chair.bottom,
-        .shape-square .home-floor-chair.left,
-        .shape-square .home-floor-chair.right {
-            display: none;
-        }
-
-        .home-floor-legend {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            color: var(--dm-text-muted);
-            font-size: 12px;
-            font-weight: 800;
-        }
-
-        .home-floor-key {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .home-floor-key::before {
-            content: '';
-            width: 10px;
-            height: 10px;
-            border-radius: 999px;
-            background: #9ca3af;
-        }
-
-        .home-floor-key.occupied::before {
-            background: var(--dm-primary);
         }
 
         .home-timeline-frame-wrap {
@@ -2319,6 +2489,7 @@ $adminSidebarPathPrefix = '';
                                 <input type="hidden" name="mode" value="<?php echo htmlspecialchars($selectedBookingMode, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="booking_view" value="<?php echo htmlspecialchars($selectedBookingPanelView, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="request_view" value="<?php echo htmlspecialchars($selectedRequestPanelView, ENT_QUOTES, 'UTF-8'); ?>">
+                                <input type="hidden" name="floor_service" value="<?php echo htmlspecialchars($selectedFloorService, ENT_QUOTES, 'UTF-8'); ?>">
                                 <a class="home-button home-date-nav" href="<?php echo htmlspecialchars($homeDateUrl($previousDate), ENT_QUOTES, 'UTF-8'); ?>" aria-label="Previous day">
                                     <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
                                 </a>
@@ -2448,11 +2619,11 @@ $adminSidebarPathPrefix = '';
                                 <?php if ($selectedBookingMode === 'requests' && $selectedBookingPanelView === 'timeline'): ?>
                                     <?php echo $renderHomeTimelineEmbed($timelineEmbedUrl, $selectedDate, $formatDateLabel); ?>
                                 <?php elseif ($selectedBookingMode === 'requests' && $selectedBookingPanelView === 'tables'): ?>
-                                    <?php echo $renderHomeFloorLayout($confirmedFloorTables, $floorZones, $confirmedUnassignedBookings, $selectedDate, $formatDateLabel); ?>
+                                    <?php echo $renderHomeFloorLayout($confirmedFloorTables, $floorZones, $confirmedUnassignedBookings, $selectedDate, $formatDateLabel, $confirmedFloorServiceOptions, $selectedFloorService, $homeFloorServiceUrl); ?>
                                 <?php elseif ($selectedBookingMode === 'bookings' && $selectedView === 'timeline'): ?>
                                     <?php echo $renderHomeTimelineEmbed($timelineEmbedUrl, $selectedDate, $formatDateLabel); ?>
                                 <?php elseif ($selectedBookingMode === 'bookings' && $selectedView === 'tables'): ?>
-                                    <?php echo $renderHomeFloorLayout($confirmedFloorTables, $floorZones, $confirmedUnassignedBookings, $selectedDate, $formatDateLabel); ?>
+                                    <?php echo $renderHomeFloorLayout($confirmedFloorTables, $floorZones, $confirmedUnassignedBookings, $selectedDate, $formatDateLabel, $confirmedFloorServiceOptions, $selectedFloorService, $homeFloorServiceUrl); ?>
                                 <?php else: ?>
                                     <?php echo $renderHomeQueue($confirmedBookings, 'No bookings for this date.', false, 2); ?>
                                 <?php endif; ?>
@@ -2558,85 +2729,7 @@ $adminSidebarPathPrefix = '';
                                 ></iframe>
                             </div>
                         <?php else: ?>
-                            <div class="home-floor-wrap">
-                                <?php if (empty($floorTables)): ?>
-                                    <div class="home-empty">No tables have been created yet.</div>
-                                <?php else: ?>
-                                    <div class="home-floor-legend" aria-label="Floor plan legend">
-                                        <span class="home-floor-key occupied">Booked on selected date</span>
-                                        <span class="home-floor-key">Available</span>
-                                    </div>
-                                    <div class="home-floor-viewport">
-                                        <div class="home-floor-canvas" role="img" aria-label="Restaurant floor plan for <?php echo htmlspecialchars($formatDateLabel($selectedDate), ENT_QUOTES, 'UTF-8'); ?>">
-                                            <?php foreach ($floorZones as $zone): ?>
-                                                <div
-                                                    class="home-floor-zone tone-<?php echo htmlspecialchars((string) $zone['tone'], ENT_QUOTES, 'UTF-8'); ?>"
-                                                    style="left: <?php echo (int) $zone['x']; ?>px; top: <?php echo (int) $zone['y']; ?>px; width: <?php echo (int) $zone['width']; ?>px; height: <?php echo (int) $zone['height']; ?>px;"
-                                                    aria-hidden="true"
-                                                ></div>
-                                                <div
-                                                    class="home-floor-label"
-                                                    style="left: <?php echo (int) $zone['label_x']; ?>px; top: <?php echo (int) $zone['label_y']; ?>px;"
-                                                >
-                                                    <?php echo htmlspecialchars((string) $zone['label'], ENT_QUOTES, 'UTF-8'); ?>
-                                                </div>
-                                            <?php endforeach; ?>
-
-                                            <?php foreach ($floorTables as $table): ?>
-                                                <?php
-                                                    if ($table['layout_x'] === null || $table['layout_y'] === null) {
-                                                        continue;
-                                                    }
-
-                                                    $tableBookings = $table['bookings'] ?? [];
-                                                    $tableSearchParts = [
-                                                        'table ' . (string) ($table['table_number'] ?? ''),
-                                                        (string) ($table['area_name'] ?? ''),
-                                                        (string) ($table['status'] ?? ''),
-                                                    ];
-                                                    foreach ($tableBookings as $tableBooking) {
-                                                        $tableSearchParts[] = (string) ($tableBooking['customer_name'] ?? 'Guest');
-                                                        $tableSearchParts[] = (string) ($tableBooking['assigned_area_names'] ?? '');
-                                                    }
-                                                    $tableSearchText = strtolower(trim(implode(' ', $tableSearchParts)));
-                                                    $firstBooking = $tableBookings[0] ?? null;
-                                                    $bookingTooltip = '';
-                                                    if ($firstBooking) {
-                                                        $bookingTooltip = (string) ($firstBooking['customer_name'] ?? 'Guest');
-                                                        if (!empty($firstBooking['start_time'])) {
-                                                            $bookingTooltip .= ' at ' . date('g:i A', strtotime((string) $firstBooking['start_time']));
-                                                        }
-                                                    } else {
-                                                        $bookingTooltip = 'Available';
-                                                    }
-                                                ?>
-                                                <a
-                                                    class="home-floor-table shape-<?php echo htmlspecialchars((string) $table['shape'], ENT_QUOTES, 'UTF-8'); ?> tone-<?php echo htmlspecialchars((string) $table['tone'], ENT_QUOTES, 'UTF-8'); ?> <?php echo !empty($table['is_occupied']) ? 'is-occupied' : ''; ?> <?php echo empty($table['reservable']) ? 'is-unreservable' : ''; ?>"
-                                                    href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList"
-                                                    title="Table <?php echo htmlspecialchars((string) ($table['table_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>: <?php echo htmlspecialchars($bookingTooltip, ENT_QUOTES, 'UTF-8'); ?>"
-                                                    style="left: <?php echo (int) $table['layout_x']; ?>px; top: <?php echo (int) $table['layout_y']; ?>px;"
-                                                    data-home-row
-                                                    data-search-text="<?php echo htmlspecialchars($tableSearchText, ENT_QUOTES, 'UTF-8'); ?>"
-                                                >
-                                                    <span class="home-floor-table-shell">
-                                                        <span class="home-floor-chair top"></span>
-                                                        <span class="home-floor-chair bottom"></span>
-                                                        <span class="home-floor-chair left"></span>
-                                                        <span class="home-floor-chair right"></span>
-                                                        <span class="home-floor-table-top">
-                                                            <span class="home-floor-table-number">T<?php echo htmlspecialchars((string) ($table['table_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                            <span class="home-floor-table-meta"><?php echo number_format((int) ($table['capacity'] ?? 0)); ?>p</span>
-                                                        </span>
-                                                        <?php if (!empty($tableBookings)): ?>
-                                                            <span class="home-floor-booking-dot"><?php echo number_format(count($tableBookings)); ?></span>
-                                                        <?php endif; ?>
-                                                    </span>
-                                                </a>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
+                            <?php echo $renderHomeFloorLayout($floorTables, $floorZones, $unassignedBookings, $selectedDate, $formatDateLabel, $queueFloorServiceOptions, $selectedFloorService, $homeFloorServiceUrl); ?>
                         <?php endif; ?>
                     </section>
                     <?php endif; ?>
@@ -2806,7 +2899,7 @@ $adminSidebarPathPrefix = '';
     </div>
 
     <?php
-    $bookingEditFloorLayoutHtml = $renderHomeFloorLayout($floorTables, $floorZones, $unassignedBookings, $selectedDate, $formatDateLabel);
+    $bookingEditFloorLayoutHtml = $renderHomeFloorLayout($floorTables, $floorZones, $unassignedBookings, $selectedDate, $formatDateLabel, $queueFloorServiceOptions, $selectedFloorService, $homeFloorServiceUrl);
 
     $bookingEditModalId = 'homeBookingEditModal';
     $bookingEditFormId = 'homeBookingEditForm';
