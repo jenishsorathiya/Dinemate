@@ -785,7 +785,7 @@ $renderHomeTimelineEmbed = static function (string $timelineEmbedUrl, string $se
     return (string) ob_get_clean();
 };
 
-$renderHomeFloorLayout = static function (array $floorTables, array $floorZones, array $unassignedBookings, string $selectedDate, callable $formatDateLabel, array $floorServiceOptions, string $selectedFloorService, callable $homeFloorServiceUrl): string {
+$renderHomeFloorLayout = static function (array $floorTables, array $floorZones, array $unassignedBookings, string $selectedDate, callable $formatDateLabel, array $floorServiceOptions, string $selectedFloorService, callable $homeFloorServiceUrl, bool $selectableTables = false): string {
     ob_start();
     ?>
     <div class="home-floor-wrap">
@@ -865,14 +865,25 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
                                 $bookingTooltip = 'Available';
                             }
                         ?>
-                        <a
-                            class="home-floor-table tone-<?php echo htmlspecialchars((string) $table['tone'], ENT_QUOTES, 'UTF-8'); ?> <?php echo !empty($table['is_occupied']) ? 'is-occupied' : ''; ?> <?php echo empty($table['reservable']) ? 'is-unreservable' : ''; ?>"
-                            href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList"
-                            title="Table <?php echo htmlspecialchars((string) ($table['table_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>: <?php echo htmlspecialchars($bookingTooltip, ENT_QUOTES, 'UTF-8'); ?>"
-                            style="left: <?php echo (int) $table['layout_x']; ?>px; top: <?php echo (int) $table['layout_y']; ?>px;"
-                            data-home-row
-                            data-search-text="<?php echo htmlspecialchars($tableSearchText, ENT_QUOTES, 'UTF-8'); ?>"
-                        >
+                        <?php if ($selectableTables): ?>
+                            <button
+                                type="button"
+                                class="home-floor-table tone-<?php echo htmlspecialchars((string) $table['tone'], ENT_QUOTES, 'UTF-8'); ?> <?php echo !empty($table['is_occupied']) ? 'is-occupied' : ''; ?> <?php echo empty($table['reservable']) ? 'is-unreservable' : ''; ?>"
+                                title="Table <?php echo htmlspecialchars((string) ($table['table_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>: <?php echo htmlspecialchars($bookingTooltip, ENT_QUOTES, 'UTF-8'); ?>"
+                                style="left: <?php echo (int) $table['layout_x']; ?>px; top: <?php echo (int) $table['layout_y']; ?>px;"
+                                data-booking-edit-floor-table="<?php echo (int) $tableId; ?>"
+                                aria-pressed="false"
+                            >
+                        <?php else: ?>
+                            <a
+                                class="home-floor-table tone-<?php echo htmlspecialchars((string) $table['tone'], ENT_QUOTES, 'UTF-8'); ?> <?php echo !empty($table['is_occupied']) ? 'is-occupied' : ''; ?> <?php echo empty($table['reservable']) ? 'is-unreservable' : ''; ?>"
+                                href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList"
+                                title="Table <?php echo htmlspecialchars((string) ($table['table_number'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>: <?php echo htmlspecialchars($bookingTooltip, ENT_QUOTES, 'UTF-8'); ?>"
+                                style="left: <?php echo (int) $table['layout_x']; ?>px; top: <?php echo (int) $table['layout_y']; ?>px;"
+                                data-home-row
+                                data-search-text="<?php echo htmlspecialchars($tableSearchText, ENT_QUOTES, 'UTF-8'); ?>"
+                            >
+                        <?php endif; ?>
                             <span class="home-floor-table-shell">
                                 <span class="home-floor-table-card">
                                     <?php if ($firstBooking): ?>
@@ -887,11 +898,15 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
                                         <span class="home-floor-card-corner"><i class="fa-solid fa-user-group" aria-hidden="true"></i><?php echo number_format((int) ($table['capacity'] ?? 0)); ?></span>
                                     <?php endif; ?>
                                 </span>
-                                <?php if (!empty($tableBookings)): ?>
-                                    <span class="home-floor-booking-dot"><?php echo count($tableBookings) > 1 ? number_format(count($tableBookings)) : ''; ?></span>
+                                <?php if (count($tableBookings) > 1): ?>
+                                    <span class="home-floor-booking-dot"><?php echo number_format(count($tableBookings)); ?></span>
                                 <?php endif; ?>
                             </span>
-                        </a>
+                        <?php if ($selectableTables): ?>
+                            </button>
+                        <?php else: ?>
+                            </a>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -1813,14 +1828,14 @@ $adminSidebarPathPrefix = '';
 
         .home-floor-viewport {
             overflow: auto;
-            border: 1px solid rgba(222, 226, 232, 0.82);
+            border: 1px solid rgba(148, 163, 184, 0.92);
             border-radius: var(--dm-radius-sm);
             background:
-                linear-gradient(90deg, rgba(64, 75, 92, 0.045) 1px, transparent 1px),
-                linear-gradient(0deg, rgba(64, 75, 92, 0.045) 1px, transparent 1px),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 251, 253, 0.98));
-            background-size: 20px 20px, 20px 20px, 100% 100%;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
+                linear-gradient(90deg, rgba(71, 85, 105, 0.085) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(71, 85, 105, 0.085) 1px, transparent 1px),
+                #f1f5f9;
+            background-size: 20px 20px, 20px 20px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
         }
 
         .home-floor-canvas {
@@ -1834,79 +1849,79 @@ $adminSidebarPathPrefix = '';
         .home-floor-zone,
         .home-floor-label,
         .home-floor-table {
-            --floor-text: #3f7fb8;
-            --floor-border: rgba(95, 169, 243, 0.26);
-            --floor-border-strong: rgba(95, 169, 243, 0.58);
-            --floor-bg: rgba(95, 169, 243, 0.055);
-            --floor-bg-strong: rgba(95, 169, 243, 0.13);
+            --floor-text: #1f5f9e;
+            --floor-border: rgba(37, 99, 160, 0.46);
+            --floor-border-strong: #2563a0;
+            --floor-bg: rgba(59, 130, 246, 0.12);
+            --floor-bg-strong: #dbeafe;
         }
 
         .home-floor-zone.tone-lavender,
         .home-floor-label.tone-lavender,
         .home-floor-table.tone-lavender {
-            --floor-text: #655aa8;
-            --floor-border: rgba(139, 115, 238, 0.25);
-            --floor-border-strong: rgba(139, 115, 238, 0.58);
-            --floor-bg: rgba(139, 115, 238, 0.06);
-            --floor-bg-strong: rgba(139, 115, 238, 0.13);
+            --floor-text: #5747a5;
+            --floor-border: rgba(109, 85, 210, 0.46);
+            --floor-border-strong: #6d55d2;
+            --floor-bg: rgba(139, 115, 238, 0.13);
+            --floor-bg-strong: #e7e2ff;
         }
 
         .home-floor-zone.tone-green,
         .home-floor-label.tone-green,
         .home-floor-table.tone-green {
-            --floor-text: #2d7d54;
-            --floor-border: rgba(77, 178, 116, 0.26);
-            --floor-border-strong: rgba(44, 176, 100, 0.58);
-            --floor-bg: rgba(77, 178, 116, 0.07);
-            --floor-bg-strong: rgba(77, 178, 116, 0.14);
+            --floor-text: #1f7046;
+            --floor-border: rgba(34, 139, 77, 0.46);
+            --floor-border-strong: #23834d;
+            --floor-bg: rgba(34, 197, 94, 0.12);
+            --floor-bg-strong: #ddf7e6;
         }
 
         .home-floor-zone.tone-blue,
         .home-floor-label.tone-blue,
         .home-floor-table.tone-blue {
-            --floor-text: #3e7fb6;
-            --floor-border: rgba(95, 169, 243, 0.28);
-            --floor-border-strong: rgba(67, 145, 222, 0.64);
-            --floor-bg: rgba(95, 169, 243, 0.065);
-            --floor-bg-strong: rgba(95, 169, 243, 0.15);
+            --floor-text: #1f5f9e;
+            --floor-border: rgba(37, 99, 160, 0.48);
+            --floor-border-strong: #2563a0;
+            --floor-bg: rgba(59, 130, 246, 0.13);
+            --floor-bg-strong: #dbeafe;
         }
 
         .home-floor-zone.tone-amber,
         .home-floor-label.tone-amber,
         .home-floor-table.tone-amber {
-            --floor-text: #986d32;
-            --floor-border: rgba(211, 156, 76, 0.3);
-            --floor-border-strong: rgba(191, 132, 50, 0.58);
-            --floor-bg: rgba(211, 156, 76, 0.07);
-            --floor-bg-strong: rgba(211, 156, 76, 0.15);
+            --floor-text: #8a5b16;
+            --floor-border: rgba(180, 108, 25, 0.48);
+            --floor-border-strong: #b45309;
+            --floor-bg: rgba(245, 158, 11, 0.13);
+            --floor-bg-strong: #fff0cc;
         }
 
         .home-floor-zone.tone-pink,
         .home-floor-label.tone-pink,
         .home-floor-table.tone-pink {
-            --floor-text: #9d5575;
-            --floor-border: rgba(231, 128, 171, 0.29);
-            --floor-border-strong: rgba(218, 101, 152, 0.62);
-            --floor-bg: rgba(231, 128, 171, 0.065);
-            --floor-bg-strong: rgba(231, 128, 171, 0.15);
+            --floor-text: #99445f;
+            --floor-border: rgba(195, 66, 115, 0.46);
+            --floor-border-strong: #c34273;
+            --floor-bg: rgba(236, 72, 153, 0.12);
+            --floor-bg-strong: #fde1eb;
         }
 
         .home-floor-zone.tone-mocha,
         .home-floor-label.tone-mocha,
         .home-floor-table.tone-mocha {
-            --floor-text: #7a6b59;
-            --floor-border: rgba(160, 140, 118, 0.26);
-            --floor-border-strong: rgba(137, 112, 88, 0.56);
-            --floor-bg: rgba(160, 140, 118, 0.055);
-            --floor-bg-strong: rgba(160, 140, 118, 0.13);
+            --floor-text: #70533a;
+            --floor-border: rgba(139, 103, 72, 0.46);
+            --floor-border-strong: #8b6748;
+            --floor-bg: rgba(160, 140, 118, 0.13);
+            --floor-bg-strong: #eadfd4;
         }
 
         .home-floor-zone {
             position: absolute;
             border: 1px solid var(--floor-border);
             border-radius: 16px;
-            background: linear-gradient(180deg, var(--floor-bg), rgba(255, 255, 255, 0.36));
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+            background: var(--floor-bg);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.48);
         }
 
         .home-floor-label {
@@ -1916,7 +1931,10 @@ $adminSidebarPathPrefix = '';
             align-items: center;
             gap: 6px;
             max-width: 170px;
-            padding: 0;
+            padding: 3px 6px;
+            border: 1px solid var(--floor-border);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.9);
             color: var(--floor-text);
             font-size: 11px;
             font-weight: 900;
@@ -1924,6 +1942,7 @@ $adminSidebarPathPrefix = '';
             line-height: 1.1;
             text-transform: uppercase;
             white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.1);
             transform: translate(-50%, 0);
         }
 
@@ -1958,8 +1977,8 @@ $adminSidebarPathPrefix = '';
         }
 
         .home-floor-table {
-            width: 56px;
-            height: 46px;
+            width: 48px;
+            height: 38px;
         }
 
         .home-floor-table-shell {
@@ -1976,19 +1995,19 @@ $adminSidebarPathPrefix = '';
             display: block;
             width: 100%;
             height: 100%;
-            padding: 6px 7px;
+            padding: 5px 6px;
             overflow: hidden;
-            border: 1px solid rgba(215, 221, 230, 0.96);
+            border: 2px solid #94a3b8;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 10px rgba(34, 45, 65, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+            background: #ffffff;
+            box-shadow: 0 6px 12px rgba(15, 23, 42, 0.16);
             color: var(--dm-text);
         }
 
         .home-floor-table.is-occupied .home-floor-table-card {
             border-color: var(--floor-border-strong);
-            background: linear-gradient(180deg, var(--floor-bg-strong), rgba(255, 255, 255, 0.97));
-            box-shadow: 0 7px 14px rgba(34, 45, 65, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+            background: var(--floor-bg-strong);
+            box-shadow: 0 9px 16px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.9);
         }
 
         .home-floor-card-number,
@@ -2005,11 +2024,11 @@ $adminSidebarPathPrefix = '';
         }
 
         .home-floor-card-number {
-            inset: 5px 7px 12px;
+            inset: 4px 6px 10px;
             display: grid;
             place-items: center;
             color: var(--dm-text);
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 900;
             text-align: center;
         }
@@ -2019,44 +2038,57 @@ $adminSidebarPathPrefix = '';
             align-items: center;
             justify-content: flex-end;
             gap: 2px;
-            right: 5px;
-            bottom: 4px;
+            right: 4px;
+            bottom: 3px;
             color: var(--dm-text-muted);
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 800;
             max-width: calc(100% - 10px);
             text-align: right;
         }
 
+        .home-floor-table.is-occupied .home-floor-card-time,
+        .home-floor-table.is-occupied .home-floor-card-corner {
+            color: var(--floor-text);
+        }
+
+        .home-floor-table.is-occupied .home-floor-card-main {
+            color: #0f172a;
+        }
+
+        .home-floor-table.is-occupied .home-floor-card-note {
+            color: #475569;
+        }
+
         .home-floor-card-corner i {
-            font-size: 8px;
+            font-size: 7px;
         }
 
         .home-floor-card-time {
-            top: 5px;
-            left: 6px;
-            right: 18px;
+            top: 4px;
+            left: 5px;
+            right: 16px;
             color: var(--dm-text-muted);
-            font-size: 7px;
+            font-size: 6px;
             font-weight: 800;
         }
 
         .home-floor-card-main {
-            top: 16px;
-            left: 6px;
-            right: 6px;
+            top: 13px;
+            left: 5px;
+            right: 5px;
             color: var(--dm-text);
-            font-size: 8px;
+            font-size: 7px;
             font-weight: 900;
             text-align: center;
         }
 
         .home-floor-card-note {
-            top: 27px;
-            left: 6px;
-            right: 14px;
+            top: 23px;
+            left: 5px;
+            right: 12px;
             color: var(--dm-text-muted);
-            font-size: 7px;
+            font-size: 6px;
             font-weight: 800;
             text-align: center;
         }
@@ -2069,14 +2101,14 @@ $adminSidebarPathPrefix = '';
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 12px;
-            height: 12px;
-            padding: 0 4px;
+            min-width: 11px;
+            height: 11px;
+            padding: 0 3px;
             border: 2px solid var(--dm-surface);
             border-radius: 999px;
             background: var(--floor-text);
             color: #ffffff;
-            font-size: 8px;
+            font-size: 7px;
             font-weight: 900;
         }
 
@@ -2899,7 +2931,7 @@ $adminSidebarPathPrefix = '';
     </div>
 
     <?php
-    $bookingEditFloorLayoutHtml = $renderHomeFloorLayout($floorTables, $floorZones, $unassignedBookings, $selectedDate, $formatDateLabel, $queueFloorServiceOptions, $selectedFloorService, $homeFloorServiceUrl);
+    $bookingEditFloorLayoutHtml = $renderHomeFloorLayout($floorTables, $floorZones, $unassignedBookings, $selectedDate, $formatDateLabel, $queueFloorServiceOptions, $selectedFloorService, $homeFloorServiceUrl, true);
 
     $bookingEditModalId = 'homeBookingEditModal';
     $bookingEditFormId = 'homeBookingEditForm';
@@ -2930,10 +2962,11 @@ $adminSidebarPathPrefix = '';
     <script>
         const HOME_SELECTED_DATE = <?php echo json_encode($selectedDate); ?>;
         const homeSearchInput = document.querySelector('[data-home-search]');
-        const homeRows = Array.from(document.querySelectorAll('[data-home-row]'));
+        const homeRows = Array.from(document.querySelectorAll('[data-home-row]')).filter((row) => !row.closest('.booking-edit-modal'));
         const bookingEditModal = document.getElementById('homeBookingEditModal');
         const bookingEditForm = document.getElementById('homeBookingEditForm');
         const bookingEditFields = bookingEditModal ? {
+            modal: bookingEditModal,
             id: bookingEditModal.querySelector('[data-booking-edit-id]'),
             date: bookingEditModal.querySelector('[data-booking-edit-date]'),
             name: bookingEditModal.querySelector('[data-booking-edit-name]'),
@@ -2944,6 +2977,8 @@ $adminSidebarPathPrefix = '';
             table: bookingEditModal.querySelector('[data-booking-edit-table]'),
             tableOptions: Array.from(bookingEditModal.querySelectorAll('[data-booking-edit-table-option]')),
             tableClear: bookingEditModal.querySelector('[data-booking-edit-table-clear]'),
+            floorTables: Array.from(bookingEditModal.querySelectorAll('[data-booking-edit-floor-table]')),
+            tableSummaryText: bookingEditModal.querySelector('[data-booking-edit-table-summary-text]'),
             notes: bookingEditModal.querySelector('[data-booking-edit-notes]'),
             status: bookingEditModal.querySelector('[data-booking-edit-status]'),
             email: bookingEditModal.querySelector('[data-booking-edit-email]'),
@@ -2955,6 +2990,7 @@ $adminSidebarPathPrefix = '';
         const bookingAddModal = document.getElementById('homeBookingAddModal');
         const bookingAddForm = document.getElementById('homeBookingAddForm');
         const bookingAddFields = bookingAddModal ? {
+            modal: bookingAddModal,
             date: bookingAddModal.querySelector('[data-booking-edit-date]'),
             name: bookingAddModal.querySelector('[data-booking-edit-name]'),
             start: bookingAddModal.querySelector('[data-booking-edit-start]'),
@@ -2963,6 +2999,8 @@ $adminSidebarPathPrefix = '';
             table: bookingAddModal.querySelector('[data-booking-edit-table]'),
             tableOptions: Array.from(bookingAddModal.querySelectorAll('[data-booking-edit-table-option]')),
             tableClear: bookingAddModal.querySelector('[data-booking-edit-table-clear]'),
+            floorTables: Array.from(bookingAddModal.querySelectorAll('[data-booking-edit-floor-table]')),
+            tableSummaryText: bookingAddModal.querySelector('[data-booking-edit-table-summary-text]'),
             notes: bookingAddModal.querySelector('[data-booking-edit-notes]'),
             email: bookingAddModal.querySelector('[data-booking-edit-email]'),
             phone: bookingAddModal.querySelector('[data-booking-edit-phone]'),
@@ -3042,6 +3080,34 @@ $adminSidebarPathPrefix = '';
                 .filter((tableId, index, allIds) => tableId > 0 && allIds.indexOf(tableId) === index);
         }
 
+        function updateBookingTableSelectionState(fields) {
+            if (!fields) {
+                return;
+            }
+
+            const selectedIds = getSelectedBookingTableIds(fields);
+            const selectedIdSet = new Set(selectedIds.map((tableId) => String(tableId)));
+            if (fields.table) {
+                fields.table.value = selectedIds[0] || '';
+            }
+
+            (fields.floorTables || []).forEach((floorTable) => {
+                const tableId = String(Number(floorTable.dataset.bookingEditFloorTable || 0));
+                const isSelected = selectedIdSet.has(tableId);
+                floorTable.classList.toggle('is-selected', isSelected);
+                floorTable.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+            });
+
+            if (fields.tableSummaryText) {
+                const selectedSummaries = (fields.tableOptions || [])
+                    .filter((option) => option.checked)
+                    .map((option) => option.dataset.bookingEditTableSummary || option.dataset.bookingEditTableLabel || `Table ${option.value}`);
+                fields.tableSummaryText.textContent = selectedSummaries.length
+                    ? selectedSummaries.join(', ')
+                    : 'No tables selected';
+            }
+        }
+
         function setSelectedBookingTableIds(fields, tableIds = []) {
             if (!fields) {
                 return;
@@ -3055,6 +3121,8 @@ $adminSidebarPathPrefix = '';
             if (fields.table) {
                 fields.table.value = Array.from(selectedIds)[0] || '';
             }
+
+            updateBookingTableSelectionState(fields);
         }
 
         function bindBookingTablePicker(fields) {
@@ -3064,17 +3132,16 @@ $adminSidebarPathPrefix = '';
 
             (fields.tableOptions || []).forEach((option) => {
                 option.addEventListener('change', () => {
-                    const selectedIds = getSelectedBookingTableIds(fields);
-                    if (fields.table) {
-                        fields.table.value = selectedIds[0] || '';
-                    }
+                    updateBookingTableSelectionState(fields);
                 });
             });
 
             fields.tableClear?.addEventListener('click', () => {
                 setSelectedBookingTableIds(fields, []);
-                (fields.tableOptions || [])[0]?.focus();
+                (fields.floorTables || [])[0]?.focus();
             });
+
+            updateBookingTableSelectionState(fields);
         }
 
         bindBookingTablePicker(bookingEditFields);
@@ -3121,8 +3188,8 @@ $adminSidebarPathPrefix = '';
             bookingEditModal.hidden = false;
             requestAnimationFrame(() => {
                 setBookingEditPanel(initialPanel);
-                const focusTarget = initialPanel === 'booking'
-                    ? (bookingEditFields.tableOptions.find((option) => option.checked) || bookingEditFields.tableOptions[0] || bookingEditFields.name)
+                const focusTarget = initialPanel === 'tables'
+                    ? (bookingEditFields.floorTables.find((table) => table.classList.contains('is-selected')) || bookingEditFields.floorTables[0] || bookingEditFields.name)
                     : bookingEditFields.name;
                 focusTarget?.focus();
             });
@@ -3174,7 +3241,7 @@ $adminSidebarPathPrefix = '';
 
                 const bookingRow = assignButton.closest('[data-booking-edit-payload]');
                 try {
-                    openBookingEditModal(JSON.parse(bookingRow?.dataset.bookingEditPayload || '{}'), 'booking');
+                    openBookingEditModal(JSON.parse(bookingRow?.dataset.bookingEditPayload || '{}'), 'tables');
                 } catch (error) {
                     if (bookingRow?.href) {
                         window.location.href = bookingRow.href;

@@ -838,20 +838,20 @@ $adminSidebarPathPrefix = '';
             height: 100%;
             min-height: 470px;
             border-radius: 18px;
-            border: 1px solid var(--dm-border);
+            border: 1px solid rgba(148, 163, 184, 0.92);
             overflow: hidden;
             background:
-                linear-gradient(90deg, rgba(80, 92, 118, 0.04) 1px, transparent 1px),
-                linear-gradient(0deg, rgba(80, 92, 118, 0.04) 1px, transparent 1px),
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), rgba(244, 246, 250, 0.96));
-            background-size: 24px 24px, 24px 24px, 100% 100%;
+                linear-gradient(90deg, rgba(71, 85, 105, 0.085) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(71, 85, 105, 0.085) 1px, transparent 1px),
+                #f1f5f9;
+            background-size: 20px 20px, 20px 20px;
         }
 
         .canvas-frame::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(24, 35, 57, 0.02));
+            background: none;
             pointer-events: none;
         }
 
@@ -912,9 +912,9 @@ $adminSidebarPathPrefix = '';
 
         .zone {
             position: absolute;
-            border-radius: 22px;
-            border: 2px dashed rgba(163, 176, 196, 0.58);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 250, 255, 0.74));
+            border-radius: 16px;
+            border: 1px solid var(--floor-border, rgba(148, 163, 184, 0.92));
+            background: var(--floor-bg, rgba(59, 130, 246, 0.12));
             padding: 18px 16px 14px;
             cursor: grab;
             touch-action: none;
@@ -1051,17 +1051,17 @@ $adminSidebarPathPrefix = '';
             display: none;
         }
 
-        .zone.zone-lavender { background: linear-gradient(180deg, rgba(139, 115, 238, 0.08), rgba(139, 115, 238, 0.03)); }
+        .zone.zone-lavender { background: var(--floor-bg, rgba(139, 115, 238, 0.13)); }
         .zone.zone-lavender .zone-label { color: var(--lavender); }
-        .zone.zone-green { background: linear-gradient(180deg, rgba(126, 207, 145, 0.1), rgba(126, 207, 145, 0.04)); }
+        .zone.zone-green { background: var(--floor-bg, rgba(34, 197, 94, 0.12)); }
         .zone.zone-green .zone-label { color: var(--dm-confirmed-text); }
-        .zone.zone-blue { background: linear-gradient(180deg, rgba(95, 169, 243, 0.09), rgba(95, 169, 243, 0.04)); }
+        .zone.zone-blue { background: var(--floor-bg, rgba(59, 130, 246, 0.13)); }
         .zone.zone-blue .zone-label { color: var(--dm-info-text); }
-        .zone.zone-amber { background: linear-gradient(180deg, rgba(255, 191, 69, 0.1), rgba(255, 191, 69, 0.04)); }
+        .zone.zone-amber { background: var(--floor-bg, rgba(245, 158, 11, 0.13)); }
         .zone.zone-amber .zone-label { color: var(--dm-pending-text); }
-        .zone.zone-pink { background: linear-gradient(180deg, rgba(255, 119, 183, 0.09), rgba(255, 119, 183, 0.04)); }
+        .zone.zone-pink { background: var(--floor-bg, rgba(236, 72, 153, 0.12)); }
         .zone.zone-pink .zone-label { color: var(--dm-danger-text); }
-        .zone.zone-mocha { background: linear-gradient(180deg, rgba(160, 120, 90, 0.1), rgba(160, 120, 90, 0.04)); }
+        .zone.zone-mocha { background: var(--floor-bg, rgba(160, 140, 118, 0.13)); }
         .zone.zone-mocha .zone-label { color: var(--dm-pending-text); }
 
         .table-item {
@@ -1104,8 +1104,8 @@ $adminSidebarPathPrefix = '';
             height: 100%;
             border-radius: inherit;
             border: 2px solid currentColor;
-            box-shadow: 0 8px 18px rgba(59, 72, 98, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 255, 0.92));
+            box-shadow: 0 8px 18px rgba(59, 72, 98, 0.16);
+            background: #ffffff;
         }
 
         .table-top::before,
@@ -1169,27 +1169,28 @@ $adminSidebarPathPrefix = '';
             filter: drop-shadow(0 18px 30px rgba(22, 37, 68, 0.24));
         }
 
-        .table-tone-lavender { color: rgba(139, 115, 238, 0.42); }
-        .table-tone-lavender .table-top { background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-neutral-bg)); }
-        .table-tone-green { color: rgba(126, 207, 145, 0.52); }
-        .table-tone-green .table-top { background: linear-gradient(180deg, var(--dm-confirmed-bg), var(--dm-confirmed-bg)); }
-        .table-tone-blue { color: rgba(95, 169, 243, 0.5); }
-        .table-tone-blue .table-top { background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-border)); }
-        .table-tone-amber { color: rgba(255, 191, 69, 0.6); }
-        .table-tone-amber .table-top { background: linear-gradient(180deg, var(--dm-standby-bg), var(--dm-pending-bg)); }
-        .table-tone-pink { color: rgba(255, 119, 183, 0.46); }
-        .table-tone-pink .table-top { background: linear-gradient(180deg, var(--dm-danger-bg), var(--dm-danger-bg)); }
-        .table-tone-mocha {  color: rgba(160, 120, 90, 0.5); }
-        .table-tone-mocha .table-top {  background: linear-gradient(180deg, var(--dm-surface-muted), var(--dm-pending-bg)); }
+        .table-tone-lavender { color: #5747a5; }
+        .table-tone-lavender .table-top { background: #ffffff; }
+        .table-tone-green { color: #1f7046; }
+        .table-tone-green .table-top { background: #ffffff; }
+        .table-tone-blue { color: #1f5f9e; }
+        .table-tone-blue .table-top { background: #ffffff; }
+        .table-tone-amber { color: #8a5b16; }
+        .table-tone-amber .table-top { background: #ffffff; }
+        .table-tone-pink { color: #99445f; }
+        .table-tone-pink .table-top { background: #ffffff; }
+        .table-tone-mocha {  color: #70533a; }
+        .table-tone-mocha .table-top {  background: #ffffff; }
 
         .canvas-frame {
-            border: 1px solid rgba(222, 226, 232, 0.82);
+            border: 1px solid rgba(148, 163, 184, 0.92);
             border-radius: 16px;
             background:
-                linear-gradient(90deg, rgba(64, 75, 92, 0.045) 1px, transparent 1px),
-                linear-gradient(0deg, rgba(64, 75, 92, 0.045) 1px, transparent 1px),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 251, 253, 0.98));
-            background-size: 20px 20px, 20px 20px, 100% 100%;
+                linear-gradient(90deg, rgba(71, 85, 105, 0.085) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(71, 85, 105, 0.085) 1px, transparent 1px),
+                #f1f5f9;
+            background-size: 20px 20px, 20px 20px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
         }
 
         .canvas-frame::after {
@@ -1199,71 +1200,71 @@ $adminSidebarPathPrefix = '';
         .zone,
         .zone-label,
         .table-item {
-            --floor-text: #3f7fb8;
-            --floor-border: rgba(95, 169, 243, 0.26);
-            --floor-border-strong: rgba(95, 169, 243, 0.58);
-            --floor-bg: rgba(95, 169, 243, 0.055);
-            --floor-bg-strong: rgba(95, 169, 243, 0.13);
+            --floor-text: #1f5f9e;
+            --floor-border: rgba(37, 99, 160, 0.46);
+            --floor-border-strong: #2563a0;
+            --floor-bg: rgba(59, 130, 246, 0.12);
+            --floor-bg-strong: #dbeafe;
         }
 
         .zone.zone-lavender,
         .zone-label.tone-lavender,
         .table-tone-lavender {
-            --floor-text: #655aa8;
-            --floor-border: rgba(139, 115, 238, 0.25);
-            --floor-border-strong: rgba(139, 115, 238, 0.58);
-            --floor-bg: rgba(139, 115, 238, 0.06);
-            --floor-bg-strong: rgba(139, 115, 238, 0.13);
+            --floor-text: #5747a5;
+            --floor-border: rgba(109, 85, 210, 0.46);
+            --floor-border-strong: #6d55d2;
+            --floor-bg: rgba(139, 115, 238, 0.13);
+            --floor-bg-strong: #e7e2ff;
         }
 
         .zone.zone-green,
         .zone-label.tone-green,
         .table-tone-green {
-            --floor-text: #2d7d54;
-            --floor-border: rgba(77, 178, 116, 0.26);
-            --floor-border-strong: rgba(44, 176, 100, 0.58);
-            --floor-bg: rgba(77, 178, 116, 0.07);
-            --floor-bg-strong: rgba(77, 178, 116, 0.14);
+            --floor-text: #1f7046;
+            --floor-border: rgba(34, 139, 77, 0.46);
+            --floor-border-strong: #23834d;
+            --floor-bg: rgba(34, 197, 94, 0.12);
+            --floor-bg-strong: #ddf7e6;
         }
 
         .zone.zone-blue,
         .zone-label.tone-blue,
         .table-tone-blue {
-            --floor-text: #3e7fb6;
-            --floor-border: rgba(95, 169, 243, 0.28);
-            --floor-border-strong: rgba(67, 145, 222, 0.64);
-            --floor-bg: rgba(95, 169, 243, 0.065);
-            --floor-bg-strong: rgba(95, 169, 243, 0.15);
+            --floor-text: #1f5f9e;
+            --floor-border: rgba(37, 99, 160, 0.48);
+            --floor-border-strong: #2563a0;
+            --floor-bg: rgba(59, 130, 246, 0.13);
+            --floor-bg-strong: #dbeafe;
         }
 
         .zone.zone-amber,
         .zone-label.tone-amber,
         .table-tone-amber {
-            --floor-text: #986d32;
-            --floor-border: rgba(211, 156, 76, 0.3);
-            --floor-border-strong: rgba(191, 132, 50, 0.58);
-            --floor-bg: rgba(211, 156, 76, 0.07);
-            --floor-bg-strong: rgba(211, 156, 76, 0.15);
+            --floor-text: #8a5b16;
+            --floor-border: rgba(180, 108, 25, 0.48);
+            --floor-border-strong: #b45309;
+            --floor-bg: rgba(245, 158, 11, 0.13);
+            --floor-bg-strong: #fff0cc;
         }
 
         .zone.zone-pink,
         .zone-label.tone-pink,
         .table-tone-pink {
-            --floor-text: #9d5575;
-            --floor-border: rgba(231, 128, 171, 0.29);
-            --floor-border-strong: rgba(218, 101, 152, 0.62);
-            --floor-bg: rgba(231, 128, 171, 0.065);
-            --floor-bg-strong: rgba(231, 128, 171, 0.15);
+            --floor-text: #99445f;
+            --floor-border: rgba(195, 66, 115, 0.46);
+            --floor-border-strong: #c34273;
+            --floor-bg: rgba(236, 72, 153, 0.12);
+            --floor-bg-strong: #fde1eb;
         }
 
         .zone.zone-mocha,
         .zone-label.tone-mocha,
         .table-tone-mocha {
-            --floor-text: #7a6b59;
-            --floor-border: rgba(160, 140, 118, 0.26);
-            --floor-border-strong: rgba(137, 112, 88, 0.56);
-            --floor-bg: rgba(160, 140, 118, 0.055);
-            --floor-bg-strong: rgba(160, 140, 118, 0.13);
+            --floor-text: #70533a;
+            --floor-border: rgba(139, 103, 72, 0.46);
+            --floor-border-strong: #8b6748;
+            --floor-bg: rgba(160, 140, 118, 0.13);
+            --floor-bg-strong: #eadfd4;
         }
 
         .zone,
@@ -1275,14 +1276,14 @@ $adminSidebarPathPrefix = '';
         .zone.zone-mocha {
             border: 1px solid var(--floor-border);
             border-radius: 16px;
-            background: linear-gradient(180deg, var(--floor-bg), rgba(255, 255, 255, 0.36));
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+            background: var(--floor-bg);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.48);
         }
 
         .zone:hover {
             transform: translateY(-1px);
             border-color: var(--floor-border-strong);
-            box-shadow: 0 10px 18px rgba(17, 24, 39, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+            box-shadow: 0 10px 18px rgba(17, 24, 39, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.48);
         }
 
         .zone.active {
@@ -1301,10 +1302,11 @@ $adminSidebarPathPrefix = '';
             align-items: center;
             gap: 6px;
             max-width: 170px;
-            padding: 0;
-            border-radius: 0;
-            background: transparent;
-            box-shadow: none;
+            padding: 3px 6px;
+            border: 1px solid var(--floor-border);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.1);
             color: var(--floor-text);
             font-size: 11px;
             font-weight: 900;
@@ -1332,8 +1334,8 @@ $adminSidebarPathPrefix = '';
         }
 
         .table-card {
-            width: 56px;
-            height: 46px;
+            width: 48px;
+            height: 38px;
         }
 
         .table-top,
@@ -1348,12 +1350,12 @@ $adminSidebarPathPrefix = '';
             display: block;
             width: 100%;
             height: 100%;
-            padding: 6px 7px;
+            padding: 5px 6px;
             overflow: hidden;
-            border: 1px solid rgba(215, 221, 230, 0.96);
+            border: 2px solid #94a3b8;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 10px rgba(34, 45, 65, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+            background: #ffffff;
+            box-shadow: 0 6px 12px rgba(15, 23, 42, 0.16);
             color: var(--dm-text);
         }
 
@@ -1373,11 +1375,11 @@ $adminSidebarPathPrefix = '';
         }
 
         .table-label {
-            inset: 5px 7px 12px;
+            inset: 4px 6px 10px;
             display: grid;
             place-items: center;
             color: var(--dm-text);
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 900;
             text-align: center;
         }
@@ -1387,17 +1389,17 @@ $adminSidebarPathPrefix = '';
             align-items: center;
             justify-content: flex-end;
             gap: 2px;
-            right: 5px;
-            bottom: 4px;
+            right: 4px;
+            bottom: 3px;
             max-width: calc(100% - 10px);
             color: var(--dm-text-muted);
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 800;
             text-align: right;
         }
 
         .table-capacity i {
-            font-size: 8px;
+            font-size: 7px;
         }
 
         .table-chair {
@@ -1411,8 +1413,8 @@ $adminSidebarPathPrefix = '';
 
         .table-item.selected .table-top {
             border-color: var(--floor-border-strong);
-            background: linear-gradient(180deg, var(--floor-bg-strong), rgba(255, 255, 255, 0.97));
-            box-shadow: 0 7px 14px rgba(34, 45, 65, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+            background: var(--floor-bg-strong);
+            box-shadow: 0 9px 16px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.9);
         }
 
         .decor {

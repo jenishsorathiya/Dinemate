@@ -16,7 +16,7 @@
  *   $bookingEditTables = [
  *       ['table_id' => 1, 'table_number' => '1', 'area_name' => 'Main', 'capacity' => 4],
  *   ];
- *   Table assignment renders as a multi-select checkbox picker and submits table_ids[].
+ *   Table assignment is driven from the Table Details floor layout and submits table_ids[].
  */
 $bookingEditModalId = $bookingEditModalId ?? 'bookingEditModal';
 $bookingEditFormId = $bookingEditFormId ?? 'bookingEditForm';
@@ -293,29 +293,13 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
         padding-right: 36px;
     }
 
-    .booking-table-picker {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-        gap: 8px;
-        max-height: 190px;
-        overflow: auto;
-        padding: 8px;
-        border: 1px solid var(--dm-border);
-        border-radius: 8px;
-        background: #fbfbfc;
-    }
-
-    .booking-table-clear,
-    .booking-table-option {
+    .booking-table-clear {
         min-width: 0;
         min-height: 42px;
         border: 1px solid var(--dm-border);
         border-radius: 8px;
         background: var(--dm-surface);
         color: var(--dm-text);
-    }
-
-    .booking-table-clear {
         display: inline-flex;
         align-items: center;
         justify-content: flex-start;
@@ -328,53 +312,85 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
         text-align: left;
     }
 
-    .booking-table-option {
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr);
-        gap: 2px 8px;
-        align-items: center;
-        padding: 8px 10px;
-        cursor: pointer;
-    }
-
-    .booking-table-option input {
-        grid-row: span 2;
-        width: 16px;
-        height: 16px;
-        accent-color: var(--dm-primary);
-    }
-
-    .booking-table-option:has(input:checked) {
-        border-color: var(--dm-primary);
-        background: var(--dm-primary-soft);
-    }
-
-    .booking-table-option-main {
-        overflow: hidden;
-        color: var(--dm-text);
-        font-size: 12px;
-        font-weight: 900;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .booking-table-option-meta,
     .booking-table-empty {
         color: var(--dm-text-muted);
         font-size: 11px;
         font-weight: 700;
     }
 
-    .booking-table-option-meta {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
     .booking-table-empty {
         grid-column: 1 / -1;
         padding: 10px;
         text-align: center;
+    }
+
+    .booking-table-selection {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--dm-border);
+        border-radius: 8px;
+        background: #fbfbfc;
+    }
+
+    .booking-table-selection-main {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+    }
+
+    .booking-table-selection-label {
+        color: var(--dm-text-muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .booking-table-selection-text {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--dm-text);
+        font-size: 13px;
+        font-weight: 900;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .booking-table-sync {
+        display: none;
+    }
+
+    .booking-edit-floor-panel .home-floor-table {
+        cursor: pointer;
+    }
+
+    .booking-edit-floor-panel .home-floor-table.is-selected .home-floor-table-card {
+        border-color: var(--dm-primary);
+        background: var(--dm-primary-soft);
+        box-shadow: 0 10px 18px rgba(15, 23, 42, 0.22), 0 0 0 2px rgba(34, 78, 51, 0.18);
+    }
+
+    .booking-edit-floor-panel .home-floor-table.is-selected .home-floor-table-shell::after {
+        content: "\f00c";
+        position: absolute;
+        top: -6px;
+        left: -6px;
+        z-index: 6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--dm-surface);
+        border-radius: 999px;
+        background: var(--dm-primary);
+        color: #ffffff;
+        font-family: "Font Awesome 6 Free";
+        font-size: 8px;
+        font-weight: 900;
+        line-height: 1;
     }
 
     .booking-edit-textarea {
@@ -672,36 +688,6 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
                                 </select>
                             </div>
                         <?php endif; ?>
-
-                        <?php if ($bookingEditShowTable): ?>
-                            <div class="booking-edit-field full">
-                                <label>Tables</label>
-                                <input type="hidden" id="<?php echo $bookingEditModalIdAttr; ?>Table" name="table_id" data-booking-edit-table>
-                                <div class="booking-table-picker" data-booking-edit-table-picker>
-                                    <button type="button" class="booking-table-clear" data-booking-edit-table-clear>
-                                        <i class="fa-solid fa-ban" aria-hidden="true"></i>
-                                        <span>No table</span>
-                                    </button>
-                                    <?php if (empty($bookingEditTables)): ?>
-                                        <div class="booking-table-empty">No tables available</div>
-                                    <?php else: ?>
-                                        <?php foreach ($bookingEditTables as $table): ?>
-                                            <?php
-                                                $tableId = (int) ($table['table_id'] ?? 0);
-                                                $tableLabel = 'Table ' . (string) ($table['table_number'] ?? '');
-                                                $tableArea = (string) ($table['area_name'] ?? 'Dining room');
-                                                $tableCapacity = (int) ($table['capacity'] ?? 0);
-                                            ?>
-                                            <label class="booking-table-option">
-                                                <input type="checkbox" name="table_ids[]" value="<?php echo $tableId; ?>" data-booking-edit-table-option>
-                                                <span class="booking-table-option-main"><?php echo htmlspecialchars($tableLabel, ENT_QUOTES, 'UTF-8'); ?></span>
-                                                <span class="booking-table-option-meta"><?php echo htmlspecialchars($tableArea, ENT_QUOTES, 'UTF-8'); ?> · <?php echo number_format($tableCapacity); ?> seats</span>
-                                            </label>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </section>
 
@@ -712,6 +698,42 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
                             <?php echo $bookingEditFloorLayoutHtml; ?>
                         <?php else: ?>
                             <div class="booking-edit-floor-empty">Floor layout is unavailable in this view.</div>
+                        <?php endif; ?>
+                        <?php if ($bookingEditShowTable): ?>
+                            <input type="hidden" id="<?php echo $bookingEditModalIdAttr; ?>Table" name="table_id" data-booking-edit-table>
+                            <div class="booking-table-selection" data-booking-edit-table-summary>
+                                <span class="booking-table-selection-main">
+                                    <span class="booking-table-selection-label">Selected Tables</span>
+                                    <span class="booking-table-selection-text" data-booking-edit-table-summary-text>No tables selected</span>
+                                </span>
+                                <button type="button" class="booking-table-clear" data-booking-edit-table-clear>
+                                    <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                    <span>Clear</span>
+                                </button>
+                            </div>
+                            <div class="booking-table-sync" data-booking-edit-table-picker aria-hidden="true">
+                                <?php if (empty($bookingEditTables)): ?>
+                                    <div class="booking-table-empty">No tables available</div>
+                                <?php else: ?>
+                                    <?php foreach ($bookingEditTables as $table): ?>
+                                        <?php
+                                            $tableId = (int) ($table['table_id'] ?? 0);
+                                            $tableLabel = 'Table ' . (string) ($table['table_number'] ?? '');
+                                            $tableArea = (string) ($table['area_name'] ?? 'Dining room');
+                                            $tableCapacity = (int) ($table['capacity'] ?? 0);
+                                            $tableSummary = $tableLabel . ' · ' . $tableArea . ' · ' . number_format($tableCapacity) . ' seats';
+                                        ?>
+                                        <input
+                                            type="checkbox"
+                                            name="table_ids[]"
+                                            value="<?php echo $tableId; ?>"
+                                            data-booking-edit-table-option
+                                            data-booking-edit-table-label="<?php echo htmlspecialchars($tableLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                            data-booking-edit-table-summary="<?php echo htmlspecialchars($tableSummary, ENT_QUOTES, 'UTF-8'); ?>"
+                                        >
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </section>
@@ -753,6 +775,11 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
 
         const floorCanvas = modal.querySelector('.booking-edit-floor-panel .home-floor-canvas');
         const floorViewport = modal.querySelector('.booking-edit-floor-panel .home-floor-viewport');
+        const tableInput = modal.querySelector('[data-booking-edit-table]');
+        const tableOptions = Array.from(modal.querySelectorAll('[data-booking-edit-table-option]'));
+        const floorTables = Array.from(modal.querySelectorAll('[data-booking-edit-floor-table]'));
+        const tableSummaryText = modal.querySelector('[data-booking-edit-table-summary-text]');
+        const tableClear = modal.querySelector('[data-booking-edit-table-clear]');
 
         const updateFloorLayoutScale = () => {
             if (!floorCanvas || !floorViewport) {
@@ -790,6 +817,142 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
 
         window.addEventListener('resize', updateFloorLayoutScale);
 
+        const getSelectedTableIds = () => tableOptions
+            .filter((option) => option.checked)
+            .map((option) => Number(option.value))
+            .filter((tableId, index, allIds) => tableId > 0 && allIds.indexOf(tableId) === index);
+
+        const updateTableSelectionState = () => {
+            const selectedIds = getSelectedTableIds();
+            const selectedIdSet = new Set(selectedIds.map((tableId) => String(tableId)));
+
+            if (tableInput) {
+                tableInput.value = selectedIds[0] || '';
+            }
+
+            floorTables.forEach((floorTable) => {
+                const tableId = String(Number(floorTable.dataset.bookingEditFloorTable || 0));
+                const isSelected = selectedIdSet.has(tableId);
+                floorTable.classList.toggle('is-selected', isSelected);
+                floorTable.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+            });
+
+            if (tableSummaryText) {
+                const summaries = tableOptions
+                    .filter((option) => option.checked)
+                    .map((option) => option.dataset.bookingEditTableSummary || option.dataset.bookingEditTableLabel || `Table ${option.value}`);
+                tableSummaryText.textContent = summaries.length ? summaries.join(', ') : 'No tables selected';
+            }
+        };
+
+        const setSelectedTableIds = (tableIds = []) => {
+            const selectedIds = new Set((tableIds || []).map((tableId) => String(Number(tableId))).filter((tableId) => tableId !== '0'));
+            tableOptions.forEach((option) => {
+                option.checked = selectedIds.has(String(Number(option.value)));
+            });
+            updateTableSelectionState();
+        };
+
+        const toggleFloorTable = (floorTable) => {
+            const tableId = Number((floorTable && floorTable.dataset ? floorTable.dataset.bookingEditFloorTable : 0) || 0);
+            const option = tableOptions.find((tableOption) => Number(tableOption.value) === tableId);
+
+            if (!option) {
+                return;
+            }
+
+            option.checked = !option.checked;
+            updateTableSelectionState();
+            floorTable.focus();
+        };
+
+        const getEventFloorTable = (event) => {
+            if (!event.target || typeof event.target.closest !== 'function') {
+                return null;
+            }
+
+            const floorTable = event.target.closest('[data-booking-edit-floor-table]');
+            return floorTable && modal.contains(floorTable) ? floorTable : null;
+        };
+
+        floorTables.forEach((floorTable) => {
+            if (floorTable.hasAttribute('href')) {
+                floorTable.dataset.bookingEditOriginalHref = floorTable.getAttribute('href') || '';
+                floorTable.removeAttribute('href');
+            }
+
+            floorTable.setAttribute('role', 'button');
+            floorTable.tabIndex = 0;
+            floorTable.setAttribute('aria-pressed', 'false');
+        });
+
+        tableOptions.forEach((option) => {
+            option.addEventListener('change', updateTableSelectionState);
+        });
+
+        if (tableClear) {
+            tableClear.addEventListener('click', () => {
+                setSelectedTableIds([]);
+                if (floorTables[0]) {
+                    floorTables[0].focus();
+                }
+            });
+        }
+
+        let pointerHandledFloorTable = null;
+
+        modal.addEventListener('pointerdown', (event) => {
+            const floorTable = getEventFloorTable(event);
+
+            if (!floorTable) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+            pointerHandledFloorTable = floorTable;
+            toggleFloorTable(floorTable);
+        }, true);
+
+        modal.addEventListener('click', (event) => {
+            const floorTable = getEventFloorTable(event);
+
+            if (!floorTable) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+            if (pointerHandledFloorTable === floorTable) {
+                pointerHandledFloorTable = null;
+                return;
+            }
+
+            toggleFloorTable(floorTable);
+        }, true);
+
+        modal.addEventListener('keydown', (event) => {
+            if (event.key !== ' ' && event.key !== 'Enter') {
+                return;
+            }
+
+            const floorTable = getEventFloorTable(event);
+
+            if (!floorTable) {
+                return;
+            }
+
+            event.preventDefault();
+            toggleFloorTable(floorTable);
+        }, true);
+
+        window.DineMateBookingEditModals = window.DineMateBookingEditModals || {};
+        window.DineMateBookingEditModals[<?php echo json_encode($bookingEditModalId); ?>] = {
+            getSelectedTableIds,
+            setSelectedTableIds,
+            updateTableSelectionState,
+        };
+
         modal.querySelectorAll('[data-booking-edit-guest-step]').forEach((button) => {
             button.addEventListener('click', () => {
                 if (!guestInput) {
@@ -813,6 +976,7 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
         });
 
         observer.observe(modal, { attributes: true, attributeFilter: ['hidden'] });
+        updateTableSelectionState();
         setActiveTab('personal');
     })();
 </script>
