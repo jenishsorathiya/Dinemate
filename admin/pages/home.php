@@ -1100,7 +1100,7 @@ $adminSidebarPathPrefix = '';
             border-color: var(--dm-primary);
             background: var(--dm-primary);
             color: var(--dm-primary-text);
-            box-shadow: 0 8px 18px rgba(19, 231, 150, 0.18);
+            box-shadow: 0 8px 18px rgba(107, 190, 141, 0.18);
         }
 
         .home-button-primary:hover {
@@ -2673,20 +2673,9 @@ $adminSidebarPathPrefix = '';
                 <div class="home-shell">
                     <header class="home-header">
                         <div class="home-title-wrap">
-                            <details class="home-mode-menu">
-                                <summary class="home-title-row" aria-label="Choose booking section">
-                                    <h1><?php echo htmlspecialchars($bookingModeMeta[$selectedBookingMode]['label'], ENT_QUOTES, 'UTF-8'); ?></h1>
-                                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-                                </summary>
-                                <div class="home-mode-menu-panel">
-                                    <?php foreach ($bookingModeMeta as $modeName => $meta): ?>
-                                        <a class="home-mode-option <?php echo $modeName === $selectedBookingMode ? 'is-active' : ''; ?>" href="<?php echo htmlspecialchars($homeModeUrl((string) $modeName), ENT_QUOTES, 'UTF-8'); ?>">
-                                            <i class="fa-solid <?php echo htmlspecialchars((string) ($meta['icon'] ?? 'fa-calendar-check'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
-                                            <span><?php echo htmlspecialchars((string) ($meta['label'] ?? ucfirst((string) $modeName)), ENT_QUOTES, 'UTF-8'); ?></span>
-                                        </a>
-                                    <?php endforeach; ?>
-                                </div>
-                            </details>
+                            <div class="home-title-row">
+                                <h1>Old Canberra Inn</h1>
+                            </div>
                             <p class="home-subtitle">
                                 <?php echo htmlspecialchars(date('l, j M Y', $selectedTimestamp), ENT_QUOTES, 'UTF-8'); ?>
                                 <?php if (!empty($adminName)): ?>
@@ -3679,3 +3668,6 @@ $adminSidebarPathPrefix = '';
     </script>
 </body>
 </html>
+
+
+

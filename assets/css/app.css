@@ -14,15 +14,15 @@
     --dm-black: #111827;
 
     /* Text */
-    --dm-text: #111827;
-    --dm-text-muted: #6b7280;
+    --dm-text: #2C3E50;
+    --dm-text-muted: #64748b;
     --dm-text-soft: #9ca3af;
 
     /* Brand */
-    --dm-primary: #13e796;
-    --dm-primary-hover: #08b171;
-    --dm-primary-soft: #d9fff0;
-    --dm-primary-text: #013222;
+    --dm-primary: #4A7C59;
+    --dm-primary-hover: #6BBE8D;
+    --dm-primary-soft: #EBF8E1;
+    --dm-primary-text: #ffffff;
 
     /* Compatibility aliases for older templates */
     --dm-accent: var(--dm-primary);
@@ -30,7 +30,7 @@
     --dm-accent-dark: #111827;
     --dm-accent-dark-hover: #030712;
     --dm-accent-gold: var(--dm-primary);
-    --dm-link: #0a8b5a;
+    --dm-link: #4A7C59;
     --dm-nav-bg: #f8fafc;
     --dm-nav-text: #6b7280;
     --dm-nav-text-strong: #111827;
@@ -42,8 +42,9 @@
     /* Status */
     --dm-pending-bg: #fff4e8;
     --dm-pending-text: #a64b1f;
-    --dm-confirmed-bg: #d9fff0;
-    --dm-confirmed-text: #013222;
+    --dm-confirmed-bg: #EBF8E1;
+    --dm-confirmed-text: #4A7C59;
+    --dm-confirmed-border: rgba(107, 190, 141, 0.5);
     --dm-standby-bg: #fff8dc;
     --dm-standby-text: #8a6416;
     --dm-danger-bg: #fde8e2;
@@ -51,28 +52,28 @@
     --dm-neutral-bg: #f3f4f6;
     --dm-neutral-text: #6b7280;
     --dm-info-text: #6b7280;
-    --dm-info-strong: #111827;
+    --dm-info-strong: #2C3E50;
     --dm-lavender: #7d69b6;
-    --dm-success-strong: #08b171;
+    --dm-success-strong: #4A7C59;
     --dm-danger-strong: #c64935;
     --dm-warning-strong: #a64b1f;
     --dm-danger-border: #efb9ad;
     --dm-warning-border: #e7c98b;
-    --dm-success-border: #b5fde0;
+    --dm-success-border: var(--dm-confirmed-border);
     --dm-neutral-border: #d1d5db;
 
-    /* Spring Green Scale */
-    --dm-spring-green-50: #effef7;
-    --dm-spring-green-100: #d9fff0;
-    --dm-spring-green-200: #b5fde0;
-    --dm-spring-green-300: #7bfac9;
-    --dm-spring-green-400: #3beda8;
-    --dm-spring-green-500: #13e796;
-    --dm-spring-green-600: #08b171;
-    --dm-spring-green-700: #0a8b5a;
-    --dm-spring-green-800: #0e6d4a;
-    --dm-spring-green-900: #0e593e;
-    --dm-spring-green-950: #013222;
+    /* Teal Scale */
+    --dm-spring-green-50: #f6fbf1;
+    --dm-spring-green-100: #EBF8E1;
+    --dm-spring-green-200: #d7efcb;
+    --dm-spring-green-300: #b7dfb1;
+    --dm-spring-green-400: #6BBE8D;
+    --dm-spring-green-500: #4A7C59;
+    --dm-spring-green-600: #3f6c4c;
+    --dm-spring-green-700: #355b40;
+    --dm-spring-green-800: #2C3E50;
+    --dm-spring-green-900: #243343;
+    --dm-spring-green-950: #172534;
 
     /* Primary Palette aliases */
     --dm-primary-50: var(--dm-spring-green-50);
@@ -90,7 +91,7 @@
     /* Effects */
     --dm-shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.04);
     --dm-shadow-md: 0 8px 24px rgba(17, 24, 39, 0.06);
-    --dm-focus-ring: 0 0 0 4px rgba(19, 231, 150, 0.22);
+    --dm-focus-ring: 0 0 0 4px rgba(107, 190, 141, 0.28);
 
     /* Radius */
     --dm-radius-xs: 6px;
@@ -300,7 +301,7 @@ a {
     background: var(--dm-primary);
     border-color: var(--dm-primary);
     color: var(--dm-primary-text);
-    box-shadow: 0 8px 18px rgba(19, 231, 150, 0.18);
+    box-shadow: 0 8px 18px rgba(74, 124, 89, 0.24);
 }
 
 .btn-primary:hover,
@@ -557,9 +558,9 @@ label,
 .status-tag.completed,
 .status-tag.available,
 .dm-status-badge.confirmed {
-    background: var(--dm-primary-soft);
-    border-color: var(--dm-success-border);
-    color: var(--dm-primary-text);
+    background: var(--dm-confirmed-bg);
+    border-color: var(--dm-confirmed-border);
+    color: var(--dm-confirmed-text);
 }
 
 .badge-warning,

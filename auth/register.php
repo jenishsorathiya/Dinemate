@@ -101,8 +101,8 @@ body {
 
 .form-control:focus {
     outline: none;
-    border-color: #13e796;
-    box-shadow: 0 0 0 3px rgba(19, 231, 150, 0.1);
+    border-color: #4A7C59;
+    box-shadow: 0 0 0 3px rgba(107, 190, 141, 0.1);
 }
 
 .password-group {
@@ -153,7 +153,7 @@ body {
 
 .strength-bar.strong {
     width: 100%;
-    background: #13e796;
+    background: #4A7C59;
 }
 
 .form-hint {
@@ -168,14 +168,14 @@ body {
 }
 
 .form-hint.success {
-    color: #13e796;
+    color: #4A7C59;
 }
 
 .btn-register {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #13e796, #08b171);
-    color: #013222;
+    background: linear-gradient(135deg, #4A7C59, #6BBE8D);
+    color: white;
     border: none;
     border-radius: 8px;
     font-weight: 600;
@@ -187,7 +187,7 @@ body {
 
 .btn-register:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(19, 231, 150, 0.3);
+    box-shadow: 0 12px 32px rgba(107, 190, 141, 0.3);
 }
 
 .auth-signin {
@@ -198,7 +198,7 @@ body {
 }
 
 .auth-signin a {
-    color: #13e796;
+    color: #4A7C59;
     text-decoration: none;
     font-weight: 600;
 }
@@ -209,7 +209,7 @@ body {
 
 /* Right Side - Image & Content */
 .auth-image-section {
-    background: linear-gradient(135deg, #0a8b5a 0%, #013222 100%);
+    background: linear-gradient(135deg, #4A7C59 0%, #2C3E50 100%);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -225,7 +225,7 @@ body {
     right: -20%;
     width: 60%;
     height: 150%;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(19,231,150,0.1)"/><circle cx="70" cy="30" r="25" fill="rgba(19,231,150,0.08)"/></svg>');
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(107,190,141,0.1)"/><circle cx="70" cy="30" r="25" fill="rgba(107,190,141,0.08)"/></svg>');
     opacity: 0.5;
 }
 
@@ -541,4 +541,9 @@ function validateForm() {
 
 </body>
 </html>
+
+
+
+
+
 

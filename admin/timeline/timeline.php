@@ -1676,7 +1676,7 @@ $adminSidebarPathPrefix = '../';
             bottom: 0;
             z-index: 24;
             opacity: 0.9;
-            box-shadow: 0 0 0 1px var(--dm-surface), 0 0 14px rgba(19, 231, 150, 0.24);
+            box-shadow: 0 0 0 1px var(--dm-surface), 0 0 14px rgba(107, 190, 141, 0.24);
             pointer-events: none;
         }
 
@@ -4597,4 +4597,7 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
 
 </body>
 </html>
+
+
+
 
