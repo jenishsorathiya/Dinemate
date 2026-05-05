@@ -550,6 +550,31 @@ $requestPanelShowsActions = $selectedRequestPanelView === 'requests';
 $requestPanelMiddleColumn = 'notes';
 $requestPanelShowsAssignAction = $selectedRequestPanelView === 'unassigned';
 
+$renderHomeMetricChips = static function () use ($selectedBookingsCount, $selectedGuestsCount, $selectedLunchCount, $selectedLunchGuestsCount, $selectedDinnerCount, $selectedDinnerGuestsCount): string {
+    ob_start();
+    ?>
+    <div class="home-chip-group">
+        <span class="home-metric-chip">
+            <span class="home-metric-dot"></span>
+            <span class="home-metric-main"><strong><?php echo number_format($selectedBookingsCount); ?></strong><span>Bookings</span></span>
+            <span class="home-metric-guests"><i class="fa-solid fa-user-group" aria-hidden="true"></i><strong><?php echo number_format($selectedGuestsCount); ?></strong></span>
+        </span>
+        <span class="home-metric-chip">
+            <span class="home-metric-dot info"></span>
+            <span class="home-metric-main"><strong><?php echo number_format($selectedLunchCount); ?></strong><span>Lunch</span></span>
+            <span class="home-metric-guests"><i class="fa-solid fa-user-group" aria-hidden="true"></i><strong><?php echo number_format($selectedLunchGuestsCount); ?></strong></span>
+        </span>
+        <span class="home-metric-chip">
+            <span class="home-metric-dot warning"></span>
+            <span class="home-metric-main"><strong><?php echo number_format($selectedDinnerCount); ?></strong><span>Dinner</span></span>
+            <span class="home-metric-guests"><i class="fa-solid fa-user-group" aria-hidden="true"></i><strong><?php echo number_format($selectedDinnerGuestsCount); ?></strong></span>
+        </span>
+    </div>
+    <?php
+
+    return (string) ob_get_clean();
+};
+
 $renderHomeQueue = static function (array $bookings, string $emptyMessage, bool $showRequestActions = false, int $toneOffset = 0, string $middleColumn = 'table', bool $showAssignTableAction = false) use ($formatQueueTime, $getInitials, $bookingEditPayload): string {
     ob_start();
     ?>
@@ -830,7 +855,11 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
 
                     <?php foreach ($floorTables as $table): ?>
                         <?php
+                            $tableId = (int) ($table['table_id'] ?? 0);
                             if ($table['layout_x'] === null || $table['layout_y'] === null) {
+                                continue;
+                            }
+                            if ($tableId < 1) {
                                 continue;
                             }
 
@@ -1185,10 +1214,10 @@ $adminSidebarPathPrefix = '';
             align-items: center;
             gap: 6px;
             min-height: 24px;
-            padding: 4px 8px;
-            border: 1px solid var(--dm-border);
-            border-radius: var(--dm-radius-xs);
-            background: #fbfbfc;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
             color: var(--dm-text);
             font-weight: 900;
         }
@@ -1341,12 +1370,31 @@ $adminSidebarPathPrefix = '';
         }
 
         .home-card-header {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 14px;
             padding: 16px 18px;
             border-bottom: 1px solid var(--dm-border);
+        }
+
+        .home-card-header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1 1 auto;
+            flex-wrap: wrap;
+            padding-right: 48px;
+        }
+
+        .home-card-header-actions .home-date-nav {
+            position: absolute;
+            top: 50%;
+            right: 18px;
+            transform: translateY(-50%);
         }
 
         .home-card-heading {
@@ -2372,6 +2420,16 @@ $adminSidebarPathPrefix = '';
                 flex-direction: column;
             }
 
+            .home-card-header-actions {
+                justify-content: flex-start;
+                padding-right: 0;
+            }
+
+            .home-card-header-actions .home-date-nav {
+                position: static;
+                transform: none;
+            }
+
             .home-header-actions,
             .home-toolbar-actions,
             .home-date-form,
@@ -2540,39 +2598,6 @@ $adminSidebarPathPrefix = '';
                         </div>
                     </header>
 
-                    <section class="home-toolbar" aria-label="Home dashboard controls">
-                        <div class="home-chip-group">
-                            <span class="home-metric-chip">
-                                <span class="home-metric-dot"></span>
-                                <span class="home-metric-main"><strong><?php echo number_format($selectedBookingsCount); ?></strong><span>Bookings</span></span>
-                                <span class="home-metric-guests"><i class="fa-solid fa-user-group" aria-hidden="true"></i><strong><?php echo number_format($selectedGuestsCount); ?></strong></span>
-                            </span>
-                            <span class="home-metric-chip">
-                                <span class="home-metric-dot info"></span>
-                                <span class="home-metric-main"><strong><?php echo number_format($selectedLunchCount); ?></strong><span>Lunch</span></span>
-                                <span class="home-metric-guests"><i class="fa-solid fa-user-group" aria-hidden="true"></i><strong><?php echo number_format($selectedLunchGuestsCount); ?></strong></span>
-                            </span>
-                            <span class="home-metric-chip">
-                                <span class="home-metric-dot warning"></span>
-                                <span class="home-metric-main"><strong><?php echo number_format($selectedDinnerCount); ?></strong><span>Dinner</span></span>
-                                <span class="home-metric-guests"><i class="fa-solid fa-user-group" aria-hidden="true"></i><strong><?php echo number_format($selectedDinnerGuestsCount); ?></strong></span>
-                            </span>
-                        </div>
-
-                        <div class="home-toolbar-actions">
-                            <a class="home-button" href="settings.php">
-                                <i class="fa-solid fa-gear" aria-hidden="true"></i>
-                                <span>Settings</span>
-                            </a>
-                            <?php if ($selectedView !== 'timeline'): ?>
-                                <label class="home-search">
-                                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                                    <input type="search" placeholder="Search reservations" data-home-search aria-label="Search reservations">
-                                </label>
-                            <?php endif; ?>
-                        </div>
-                    </section>
-
                     <?php if (($selectedBookingMode === 'requests' && $selectedView === 'list') || $selectedBookingMode === 'bookings'): ?>
                         <div class="home-requests-split">
                             <section class="home-card home-requests-list-card">
@@ -2643,9 +2668,12 @@ $adminSidebarPathPrefix = '';
                                         <?php endif; ?>
                                         <p class="home-card-note"><?php echo number_format(count($confirmedBookings)); ?> bookings on <?php echo htmlspecialchars($formatDateLabel($selectedDate), ENT_QUOTES, 'UTF-8'); ?></p>
                                     </div>
-                                    <a class="home-button home-button-primary home-date-nav" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList" aria-label="Add booking" title="Add booking" data-booking-add-trigger data-booking-add-type="normal">
-                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                                    </a>
+                                    <div class="home-card-header-actions">
+                                        <?php echo $renderHomeMetricChips(); ?>
+                                        <a class="home-button home-button-primary home-date-nav" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList" aria-label="Add booking" title="Add booking" data-booking-add-trigger data-booking-add-type="normal">
+                                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                        </a>
+                                    </div>
                                 </div>
 
                                 <?php if ($selectedBookingMode === 'requests' && $selectedBookingPanelView === 'timeline'): ?>
@@ -2683,9 +2711,12 @@ $adminSidebarPathPrefix = '';
                                 </details>
                                 <p class="home-card-note"><?php echo htmlspecialchars($viewMeta[$selectedView]['note'], ENT_QUOTES, 'UTF-8'); ?></p>
                             </div>
-                            <a class="home-button home-button-primary home-date-nav" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList" aria-label="Add booking" title="Add booking" data-booking-add-trigger data-booking-add-type="normal">
-                                <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                            </a>
+                            <div class="home-card-header-actions">
+                                <?php echo $renderHomeMetricChips(); ?>
+                                <a class="home-button home-button-primary home-date-nav" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList" aria-label="Add booking" title="Add booking" data-booking-add-trigger data-booking-add-type="normal">
+                                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                </a>
+                            </div>
                         </div>
 
                         <?php if ($selectedView === 'list'): ?>

@@ -295,7 +295,7 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
 
     .booking-table-clear {
         min-width: 0;
-        min-height: 42px;
+        min-height: 30px;
         border: 1px solid var(--dm-border);
         border-radius: 8px;
         background: var(--dm-surface);
@@ -303,11 +303,11 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
         display: inline-flex;
         align-items: center;
         justify-content: flex-start;
-        gap: 8px;
-        padding: 8px 10px;
+        gap: 6px;
+        padding: 5px 8px;
         cursor: pointer;
         font: inherit;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 800;
         text-align: left;
     }
@@ -328,8 +328,8 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        padding: 10px 12px;
+        gap: 8px;
+        padding: 6px 8px;
         border: 1px solid var(--dm-border);
         border-radius: 8px;
         background: #fbfbfc;
@@ -338,21 +338,13 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
     .booking-table-selection-main {
         min-width: 0;
         display: grid;
-        gap: 3px;
-    }
-
-    .booking-table-selection-label {
-        color: var(--dm-text-muted);
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
     }
 
     .booking-table-selection-text {
         min-width: 0;
         overflow: hidden;
         color: var(--dm-text);
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 900;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -693,17 +685,10 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
 
                 <section class="booking-edit-panel" id="<?php echo $bookingEditPanelPrefixAttr; ?>Tables" role="tabpanel" aria-labelledby="<?php echo $bookingEditPanelPrefixAttr; ?>TablesTab" data-booking-edit-panel="tables" hidden>
                     <div class="booking-edit-field full booking-edit-floor-panel">
-                        <label>Floor Layout</label>
-                        <?php if ($bookingEditFloorLayoutHtml !== ''): ?>
-                            <?php echo $bookingEditFloorLayoutHtml; ?>
-                        <?php else: ?>
-                            <div class="booking-edit-floor-empty">Floor layout is unavailable in this view.</div>
-                        <?php endif; ?>
                         <?php if ($bookingEditShowTable): ?>
                             <input type="hidden" id="<?php echo $bookingEditModalIdAttr; ?>Table" name="table_id" data-booking-edit-table>
                             <div class="booking-table-selection" data-booking-edit-table-summary>
                                 <span class="booking-table-selection-main">
-                                    <span class="booking-table-selection-label">Selected Tables</span>
                                     <span class="booking-table-selection-text" data-booking-edit-table-summary-text>No tables selected</span>
                                 </span>
                                 <button type="button" class="booking-table-clear" data-booking-edit-table-clear>
@@ -719,9 +704,6 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
                                         <?php
                                             $tableId = (int) ($table['table_id'] ?? 0);
                                             $tableLabel = 'Table ' . (string) ($table['table_number'] ?? '');
-                                            $tableArea = (string) ($table['area_name'] ?? 'Dining room');
-                                            $tableCapacity = (int) ($table['capacity'] ?? 0);
-                                            $tableSummary = $tableLabel . ' · ' . $tableArea . ' · ' . number_format($tableCapacity) . ' seats';
                                         ?>
                                         <input
                                             type="checkbox"
@@ -729,11 +711,16 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
                                             value="<?php echo $tableId; ?>"
                                             data-booking-edit-table-option
                                             data-booking-edit-table-label="<?php echo htmlspecialchars($tableLabel, ENT_QUOTES, 'UTF-8'); ?>"
-                                            data-booking-edit-table-summary="<?php echo htmlspecialchars($tableSummary, ENT_QUOTES, 'UTF-8'); ?>"
+                                            data-booking-edit-table-summary="<?php echo htmlspecialchars($tableLabel, ENT_QUOTES, 'UTF-8'); ?>"
                                         >
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
+                        <?php endif; ?>
+                        <?php if ($bookingEditFloorLayoutHtml !== ''): ?>
+                            <?php echo $bookingEditFloorLayoutHtml; ?>
+                        <?php else: ?>
+                            <div class="booking-edit-floor-empty">Floor layout is unavailable in this view.</div>
                         <?php endif; ?>
                     </div>
                 </section>
