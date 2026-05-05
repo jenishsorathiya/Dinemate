@@ -889,7 +889,7 @@
         </div>
 
         <div class="showcase-image">
-            <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&h=600&fit=crop" alt="Fine Dining Experience">
+            <img src="<?= htmlspecialchars(appPath('assets/images/showcase/canberra-interior-1.webp'), ENT_QUOTES, 'UTF-8') ?>" alt="Canberra Inn Fine Dining Experience">
             <div class="showcase-badge">⭐ Top Rated</div>
         </div>
     </div>

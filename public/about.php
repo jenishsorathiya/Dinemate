@@ -211,7 +211,7 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0" class="img-fluid-custom">
+                <img src="<?= htmlspecialchars(appPath('assets/images/showcase/canberra-interior-2.webp'), ENT_QUOTES, 'UTF-8') ?>" class="img-fluid-custom">
             </div>
         </div>
     </div>
