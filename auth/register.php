@@ -174,7 +174,7 @@ body {
 .btn-register {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #4A7C59, #6BBE8D);
+    background: linear-gradient(135deg, #2C3E50, #1f2d3a);
     color: white;
     border: none;
     border-radius: 8px;
@@ -187,7 +187,7 @@ body {
 
 .btn-register:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(107, 190, 141, 0.3);
+    box-shadow: 0 12px 32px rgba(44, 62, 80, 0.24);
 }
 
 .auth-signin {
@@ -209,7 +209,7 @@ body {
 
 /* Right Side - Image & Content */
 .auth-image-section {
-    background: linear-gradient(135deg, #4A7C59 0%, #2C3E50 100%);
+    background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -541,6 +541,9 @@ function validateForm() {
 
 </body>
 </html>
+
+
+
 
 
 

@@ -3,7 +3,7 @@
 <style>
 /* Page Header Hero */
 .page-hero {
-    background: linear-gradient(135deg, #4A7C59 0%, #2C3E50 100%);
+    background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%);
     color: white;
     padding: 120px 20px 80px;
     text-align: center;
@@ -135,7 +135,7 @@
 }
 
 .btn-submit {
-    background: #4A7C59;
+    background: #2C3E50;
     color: white;
     border: none;
     padding: 14px 40px;
@@ -149,9 +149,9 @@
 }
 
 .btn-submit:hover {
-    background: #6BBE8D;
+    background: #1f2d3a;
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(107, 190, 141, 0.28);
+    box-shadow: 0 12px 32px rgba(44, 62, 80, 0.24);
 }
 
 /* Map Section */
@@ -354,11 +354,11 @@
 </section>
 
 <!-- CTA SECTION -->
-<section style="background: linear-gradient(135deg, #4A7C59 0%, #2C3E50 100%); color: white; text-align: center; padding: 80px 20px; border-radius: 16px; margin: 80px 0;">
+<section style="background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%); color: white; text-align: center; padding: 80px 20px; border-radius: 16px; margin: 80px 0;">
     <div class="container">
         <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 20px; color: white;">Ready to Dine With Us?</h2>
         <p style="font-size: 18px; margin-bottom: 40px; color: rgba(255, 255, 255, 0.9);">Book your table now and reserve your perfect dining experience</p>
-        <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" style="background: #4A7C59; color: white; border: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block;">
+        <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" style="background: #2C3E50; color: white; border: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block;">
             <i class="fa fa-calendar-check"></i> Reserve Your Table
         </a>
     </div>
@@ -368,6 +368,10 @@
 
 </body>
 </html>
+
+
+
+
 
 
 

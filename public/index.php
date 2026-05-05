@@ -26,7 +26,7 @@
     right: -20%;
     width: 60%;
     height: 150%;
-    background: radial-gradient(circle, rgba(107, 190, 141, 0.1) 0%, rgba(107, 190, 141, 0.02) 70%);
+    background: radial-gradient(circle, rgba(44, 62, 80, 0.1) 0%, rgba(44, 62, 80, 0.02) 70%);
     border-radius: 50%;
 }
 
@@ -37,7 +37,7 @@
     left: -10%;
     width: 50%;
     height: 120%;
-    background: radial-gradient(circle, rgba(107, 190, 141, 0.08) 0%, rgba(107, 190, 141, 0.01) 70%);
+    background: radial-gradient(circle, rgba(44, 62, 80, 0.08) 0%, rgba(44, 62, 80, 0.01) 70%);
     border-radius: 50%;
 }
 
@@ -63,14 +63,14 @@
 
 .hero-tag {
     display: inline-block;
-    background: rgba(107, 190, 141, 0.15);
+    background: rgba(44, 62, 80, 0.15);
     color: #4A7C59;
     padding: 8px 20px;
     border-radius: 20px;
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 20px;
-    border: 1px solid rgba(107, 190, 141, 0.4);
+    border: 1px solid rgba(44, 62, 80, 0.4);
 }
 
 .hero h1 {
@@ -104,7 +104,7 @@
 }
 
 .btn-primary-hero {
-    background: linear-gradient(135deg, #4A7C59, #6BBE8D);
+    background: linear-gradient(135deg, #2C3E50, #1f2d3a);
     color: white;
     border: none;
     padding: 18px 48px;
@@ -117,18 +117,18 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 12px 40px rgba(107, 190, 141, 0.3);
+    box-shadow: 0 12px 40px rgba(44, 62, 80, 0.3);
 }
 
 .btn-primary-hero:hover {
     transform: translateY(-4px);
-    box-shadow: 0 18px 50px rgba(107, 190, 141, 0.4);
+    box-shadow: 0 18px 50px rgba(44, 62, 80, 0.4);
 }
 
 .btn-secondary-hero {
     background: transparent;
-    color: #4A7C59;
-    border: 2px solid #4A7C59;
+    color: #2C3E50;
+    border: 2px solid #2C3E50;
     padding: 16px 46px;
     border-radius: 12px;
     font-weight: 700;
@@ -142,7 +142,7 @@
 }
 
 .btn-secondary-hero:hover {
-    background: rgba(107, 190, 141, 0.1);
+    background: rgba(44, 62, 80, 0.1);
     transform: translateY(-4px);
 }
 
@@ -176,8 +176,8 @@
 .vibe-section {
     padding: 80px 20px;
     background: linear-gradient(135deg, #1F2937 0%, #0F172A 100%);
-    border-top: 1px solid rgba(107, 190, 141, 0.2);
-    border-bottom: 1px solid rgba(107, 190, 141, 0.2);
+    border-top: 1px solid rgba(44, 62, 80, 0.2);
+    border-bottom: 1px solid rgba(44, 62, 80, 0.2);
 }
 
 .vibe-container {
@@ -188,14 +188,14 @@
 
 .vibe-badge {
     display: inline-block;
-    background: rgba(107, 190, 141, 0.15);
+    background: rgba(44, 62, 80, 0.15);
     color: #4A7C59;
     padding: 8px 20px;
     border-radius: 20px;
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 20px;
-    border: 1px solid rgba(107, 190, 141, 0.4);
+    border: 1px solid rgba(44, 62, 80, 0.4);
 }
 
 .vibe-container h2 {
@@ -224,14 +224,14 @@
     text-align: center;
     padding: 30px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(107, 190, 141, 0.15);
+    border: 1px solid rgba(44, 62, 80, 0.15);
     border-radius: 12px;
     transition: all 0.3s ease;
 }
 
 .vibe-item:hover {
-    background: rgba(107, 190, 141, 0.08);
-    border-color: #4A7C59;
+    background: rgba(44, 62, 80, 0.08);
+    border-color: #2C3E50;
     transform: translateY(-5px);
 }
 
@@ -260,7 +260,7 @@
 .trust-section {
     background: linear-gradient(135deg, #0F172A 0%, #1F2937 100%);
     padding: 50px 20px;
-    border-bottom: 1px solid rgba(107, 190, 141, 0.2);
+    border-bottom: 1px solid rgba(44, 62, 80, 0.2);
 }
 
 .trust-content {
@@ -336,7 +336,7 @@
 
 .feature-card {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(107, 190, 141, 0.2);
+    border: 1px solid rgba(44, 62, 80, 0.2);
     border-radius: 16px;
     padding: 40px 30px;
     text-align: center;
@@ -359,8 +359,8 @@
 }
 
 .feature-card:hover {
-    border-color: #4A7C59;
-    box-shadow: 0 16px 40px rgba(107, 190, 141, 0.15);
+    border-color: #2C3E50;
+    box-shadow: 0 16px 40px rgba(44, 62, 80, 0.15);
     transform: translateY(-8px);
 }
 
@@ -457,8 +457,8 @@
     position: absolute;
     top: 20px;
     right: 20px;
-    background: rgba(107, 190, 141, 0.95);
-    color: #2C3E50;
+    background: rgba(44, 62, 80, 0.95);
+    color: #ffffff;
     padding: 12px 20px;
     border-radius: 8px;
     font-weight: 700;
@@ -483,7 +483,7 @@
     right: -20%;
     width: 50%;
     height: 150%;
-    background: radial-gradient(circle, rgba(107,190,141,0.08) 0%, rgba(107,190,141,0.01) 70%);
+    background: radial-gradient(circle, rgba(44,62,80,0.08) 0%, rgba(44,62,80,0.01) 70%);
     border-radius: 50%;
 }
 
@@ -517,7 +517,7 @@
 }
 
 .btn-cta-primary {
-    background: linear-gradient(135deg, #4A7C59, #6BBE8D);
+    background: linear-gradient(135deg, #2C3E50, #1f2d3a);
     color: white;
     border: none;
     padding: 16px 40px;
@@ -533,9 +533,9 @@
 }
 
 .btn-cta-primary:hover {
-    background: linear-gradient(135deg, #6BBE8D, #EBF8E1);
+    background: linear-gradient(135deg, #1f2d3a, #2C3E50);
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(107, 190, 141, 0.3);
+    box-shadow: 0 12px 32px rgba(44, 62, 80, 0.3);
 }
 
 /* ============ TESTIMONIALS ============ */
@@ -554,7 +554,7 @@
 
 .testimonial-card {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(107, 190, 141, 0.2);
+    border: 1px solid rgba(44, 62, 80, 0.2);
     border-radius: 16px;
     padding: 40px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -562,8 +562,8 @@
 }
 
 .testimonial-card:hover {
-    box-shadow: 0 12px 32px rgba(107, 190, 141, 0.2);
-    border-color: #4A7C59;
+    box-shadow: 0 12px 32px rgba(44, 62, 80, 0.2);
+    border-color: #2C3E50;
 }
 
 .testimonial-header {
@@ -577,7 +577,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4A7C59, #6BBE8D);
+    background: linear-gradient(135deg, #2C3E50, #1f2d3a);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -627,7 +627,7 @@
 }
 
 .pricing-card {
-    border: 2px solid rgba(107, 190, 141, 0.2);
+    border: 2px solid rgba(44, 62, 80, 0.2);
     border-radius: 16px;
     padding: 40px 30px;
     text-align: center;
@@ -637,8 +637,8 @@
 }
 
 .pricing-card.featured {
-    border-color: #4A7C59;
-    background: linear-gradient(180deg, rgba(107, 190, 141, 0.1), transparent);
+    border-color: #2C3E50;
+    background: linear-gradient(180deg, rgba(44, 62, 80, 0.1), transparent);
     transform: scale(1.05);
 }
 
@@ -647,7 +647,7 @@
     top: -15px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #4A7C59, #6BBE8D);
+    background: linear-gradient(135deg, #2C3E50, #1f2d3a);
     color: white;
     padding: 6px 16px;
     border-radius: 20px;
@@ -684,7 +684,7 @@
 
 .pricing-features li {
     padding: 10px 0;
-    border-bottom: 1px solid rgba(107, 190, 141, 0.1);
+    border-bottom: 1px solid rgba(44, 62, 80, 0.1);
     color: #9CA3AF;
     font-size: 14px;
     display: flex;
@@ -702,28 +702,28 @@
 .pricing-btn {
     width: 100%;
     padding: 12px 20px;
-    border: 2px solid rgba(107, 190, 141, 0.2);
+    border: 2px solid rgba(44, 62, 80, 0.2);
     background: transparent;
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: #4A7C59;
+    color: #2C3E50;
 }
 
 .pricing-card.featured .pricing-btn {
-    background: linear-gradient(135deg, #4A7C59, #6BBE8D);
+    background: linear-gradient(135deg, #2C3E50, #1f2d3a);
     color: white;
-    border-color: #4A7C59;
+    border-color: #2C3E50;
 }
 
 .pricing-btn:hover {
-    border-color: #4A7C59;
-    color: #4A7C59;
+    border-color: #2C3E50;
+    color: #2C3E50;
 }
 
 .pricing-card.featured .pricing-btn:hover {
-    background: linear-gradient(135deg, #6BBE8D, #EBF8E1);
+    background: linear-gradient(135deg, #1f2d3a, #2C3E50);
 }
 
 /* ============ FOOTER CTA ============ */
@@ -770,25 +770,25 @@
 }
 
 .btn-footer-primary {
-    background: linear-gradient(135deg, #4A7C59, #6BBE8D);
+    background: linear-gradient(135deg, #2C3E50, #1f2d3a);
     color: white;
     border: none;
 }
 
 .btn-footer-primary:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(107, 190, 141, 0.3);
+    box-shadow: 0 12px 32px rgba(44, 62, 80, 0.3);
 }
 
 .btn-footer-secondary {
     background: transparent;
     color: #FFFFFF;
-    border: 2px solid rgba(107, 190, 141, 0.4);
+    border: 2px solid rgba(44, 62, 80, 0.4);
 }
 
 .btn-footer-secondary:hover {
-    border-color: #4A7C59;
-    color: #4A7C59;
+    border-color: #2C3E50;
+    color: #ffffff;
 }
 
 /* ============ RESPONSIVE ============ */
@@ -1122,7 +1122,7 @@
             <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn-cta-primary">
                 <i class="fa fa-calendar-check"></i> Make Your Reservation
             </a>
-            <a href="<?= htmlspecialchars(appPath('public/about.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn-cta-primary" style="background: transparent; border: 2px solid #4A7C59; color: #4A7C59;">
+            <a href="<?= htmlspecialchars(appPath('public/about.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn-cta-primary" style="background: transparent; border: 2px solid #2C3E50; color: #2C3E50;">
                 <i class="fa fa-info-circle"></i> Learn More
             </a>
         </div>
@@ -1148,6 +1148,9 @@
 
 </body>
 </html>
+
+
+
 
 
 

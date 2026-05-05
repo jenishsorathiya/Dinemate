@@ -3,7 +3,7 @@
 <style>
 /* Page Header Hero */
 .page-hero {
-    background: linear-gradient(135deg, #4A7C59 0%, #2C3E50 100%);
+    background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%);
     color: white;
     padding: 120px 20px 80px;
     text-align: center;
@@ -294,11 +294,11 @@
 </section>
 
 <!-- CTA SECTION -->
-<section style="background: linear-gradient(135deg, #4A7C59 0%, #2C3E50 100%); color: white; text-align: center; padding: 80px 20px; border-radius: 16px; margin: 80px 0;">
+<section style="background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%); color: white; text-align: center; padding: 80px 20px; border-radius: 16px; margin: 80px 0;">
     <div class="container">
         <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 20px; color: white;">Ready to Join Us?</h2>
         <p style="font-size: 18px; margin-bottom: 40px; color: rgba(255, 255, 255, 0.9);">Reserve your table now and experience the Old Canberra Inn difference</p>
-        <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" style="background: #4A7C59; color: white; border: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block;">
+        <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" style="background: #2C3E50; color: white; border: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block;">
             <i class="fa fa-calendar-check"></i> Reserve Your Table
         </a>
     </div>
@@ -308,6 +308,7 @@
 
 </body>
 </html>
+
 
 
 

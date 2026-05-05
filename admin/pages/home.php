@@ -538,6 +538,10 @@ $requestPanelViewMeta = [
         'icon' => 'fa-chair',
     ],
 ];
+$requestPanelViewCounts = [
+    'requests' => count($requestBookings),
+    'unassigned' => count($confirmedUnassignedBookings),
+];
 
 $requestPanelBookings = $selectedRequestPanelView === 'unassigned'
     ? $confirmedUnassignedBookings
@@ -550,6 +554,11 @@ $requestPanelShowsActions = $selectedRequestPanelView === 'requests';
 $requestPanelMiddleColumn = 'notes';
 $requestPanelShowsAssignAction = $selectedRequestPanelView === 'unassigned';
 $requestPanelNotificationCount = count($requestBookings) + count($confirmedUnassignedBookings);
+$requestPanelHiddenNotificationCount = array_sum(array_filter(
+    $requestPanelViewCounts,
+    static fn(int $count, string $viewName): bool => $viewName !== $selectedRequestPanelView && $count > 0,
+    ARRAY_FILTER_USE_BOTH
+));
 
 $renderHomeMetricChips = static function () use ($selectedBookingsCount, $selectedGuestsCount, $selectedLunchCount, $selectedLunchGuestsCount, $selectedDinnerCount, $selectedDinnerGuestsCount): string {
     ob_start();
@@ -1100,7 +1109,7 @@ $adminSidebarPathPrefix = '';
             border-color: var(--dm-primary);
             background: var(--dm-primary);
             color: var(--dm-primary-text);
-            box-shadow: 0 8px 18px rgba(107, 190, 141, 0.18);
+            box-shadow: 0 8px 18px rgba(44, 62, 80, 0.18);
         }
 
         .home-button-primary:hover {
@@ -1331,6 +1340,17 @@ $adminSidebarPathPrefix = '';
             text-align: center;
         }
 
+        .home-view-notification-dot {
+            width: 8px;
+            height: 8px;
+            flex: 0 0 8px;
+            margin-left: auto;
+            border: 2px solid var(--dm-surface);
+            border-radius: 999px;
+            background: #ef4444;
+            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.16);
+        }
+
         .home-view-title-menu {
             width: fit-content;
             max-width: 100%;
@@ -1360,6 +1380,10 @@ $adminSidebarPathPrefix = '';
             flex: 0 0 auto;
             color: var(--dm-text-muted);
             font-size: 12px;
+        }
+
+        .home-view-title-trigger .home-view-notification-dot {
+            margin-left: 0;
         }
 
         .home-card {
@@ -1631,7 +1655,7 @@ $adminSidebarPathPrefix = '';
             border: 1px solid var(--dm-border);
             border-radius: 50%;
             background: var(--dm-primary-soft);
-            color: var(--dm-primary-text);
+            color: var(--dm-primary-soft-text, var(--dm-primary));
             font-size: 12px;
             font-weight: 900;
         }
@@ -1731,12 +1755,20 @@ $adminSidebarPathPrefix = '';
             width: 32px;
             height: 32px;
             flex: 0 0 32px;
-            border: 1px solid var(--dm-confirmed-border, #86efac);
+            border: 1px solid var(--dm-border);
             border-radius: var(--dm-radius-sm);
-            background: var(--dm-confirmed-bg, #dcfce7);
-            color: var(--dm-confirmed-text, #166534);
+            background: var(--dm-surface);
+            color: var(--dm-text);
             cursor: pointer;
             font-size: 13px;
+        }
+
+        .home-confirm-request {
+            border-color: transparent;
+            background: var(--dm-primary);
+            color: var(--dm-primary-text);
+            box-shadow: 0 8px 16px rgba(44, 62, 80, 0.16);
+            transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
         }
 
         .home-assign-table {
@@ -1752,9 +1784,19 @@ $adminSidebarPathPrefix = '';
             white-space: nowrap;
         }
 
-        .home-confirm-request:hover,
+        .home-confirm-request:hover {
+            background: var(--dm-primary-hover);
+            box-shadow: 0 10px 20px rgba(44, 62, 80, 0.2);
+            transform: translateY(-1px);
+        }
+
         .home-assign-table:hover {
             filter: brightness(0.98);
+        }
+
+        .home-confirm-request:focus-visible {
+            outline: none;
+            box-shadow: var(--dm-focus-ring), 0 8px 16px rgba(44, 62, 80, 0.16);
         }
 
         .home-confirm-request.is-saving {
@@ -1945,12 +1987,12 @@ $adminSidebarPathPrefix = '';
             border: 1px solid var(--dm-border);
             border-radius: var(--dm-radius-xs);
             background: var(--dm-primary-soft);
-            color: var(--dm-primary-text);
+            color: var(--dm-text);
             text-decoration: none;
         }
 
         .home-table-booking:hover {
-            color: var(--dm-primary-text);
+            color: var(--dm-text);
             filter: brightness(0.98);
         }
 
@@ -2301,7 +2343,7 @@ $adminSidebarPathPrefix = '';
         .home-floor-service-chip.is-active {
             border-color: var(--dm-primary);
             background: var(--dm-primary-soft);
-            color: var(--dm-primary-text);
+            color: var(--dm-primary-soft-text, var(--dm-primary));
         }
 
         .home-floor-service-chip i {
@@ -2733,13 +2775,23 @@ $adminSidebarPathPrefix = '';
                                                 <summary class="home-view-title-trigger" aria-label="Change requests panel">
                                                     <i class="fa-solid <?php echo htmlspecialchars((string) ($requestPanelViewMeta[$selectedRequestPanelView]['icon'] ?? 'fa-list'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
                                                     <span><?php echo htmlspecialchars((string) ($requestPanelViewMeta[$selectedRequestPanelView]['label'] ?? 'Requests'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <?php if ($requestPanelHiddenNotificationCount > 0): ?>
+                                                        <span class="home-view-notification-dot" aria-label="<?php echo number_format($requestPanelHiddenNotificationCount); ?> hidden requests or unassigned bookings"></span>
+                                                    <?php endif; ?>
                                                     <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
                                                 </summary>
                                                 <div class="home-view-menu-panel">
                                                     <?php foreach ($requestPanelViewMeta as $requestViewName => $requestViewMeta): ?>
+                                                        <?php
+                                                        $requestViewNotificationCount = (int) ($requestPanelViewCounts[(string) $requestViewName] ?? 0);
+                                                        $showRequestViewNotification = $requestViewName !== $selectedRequestPanelView && $requestViewNotificationCount > 0;
+                                                        ?>
                                                         <a class="home-view-option <?php echo $requestViewName === $selectedRequestPanelView ? 'is-active' : ''; ?>" href="<?php echo htmlspecialchars($homeRequestPanelViewUrl((string) $requestViewName), ENT_QUOTES, 'UTF-8'); ?>">
                                                             <i class="fa-solid <?php echo htmlspecialchars((string) ($requestViewMeta['icon'] ?? 'fa-list'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
                                                             <span><?php echo htmlspecialchars((string) ($requestViewMeta['label'] ?? ucfirst((string) $requestViewName)), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                            <?php if ($showRequestViewNotification): ?>
+                                                                <span class="home-view-notification-dot" aria-label="<?php echo number_format($requestViewNotificationCount); ?> <?php echo htmlspecialchars((string) ($requestViewMeta['label'] ?? ucfirst((string) $requestViewName)), ENT_QUOTES, 'UTF-8'); ?>"></span>
+                                                            <?php endif; ?>
                                                         </a>
                                                     <?php endforeach; ?>
                                                 </div>
