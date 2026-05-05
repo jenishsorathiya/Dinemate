@@ -549,6 +549,7 @@ $requestPanelEmptyMessage = $selectedRequestPanelView === 'unassigned'
 $requestPanelShowsActions = $selectedRequestPanelView === 'requests';
 $requestPanelMiddleColumn = 'notes';
 $requestPanelShowsAssignAction = $selectedRequestPanelView === 'unassigned';
+$requestPanelNotificationCount = count($requestBookings) + count($confirmedUnassignedBookings);
 
 $renderHomeMetricChips = static function () use ($selectedBookingsCount, $selectedGuestsCount, $selectedLunchCount, $selectedLunchGuestsCount, $selectedDinnerCount, $selectedDinnerGuestsCount): string {
     ob_start();
@@ -1447,6 +1448,77 @@ $adminSidebarPathPrefix = '';
             grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
             gap: 18px;
             align-items: stretch;
+            transition: grid-template-columns 0.28s ease, gap 0.28s ease;
+        }
+
+        .home-requests-split.is-requests-collapsed {
+            grid-template-columns: 54px minmax(0, 1fr);
+            gap: 12px;
+        }
+
+        .home-requests-list-content {
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr);
+            min-height: 100%;
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 0.2s ease, transform 0.24s ease, visibility 0.2s ease;
+        }
+
+        .home-requests-collapsed-tab {
+            display: none;
+            position: relative;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            flex: 0 0 36px;
+            border: 0;
+            border-radius: var(--dm-radius-sm);
+            background: transparent;
+            color: var(--dm-text);
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.18s ease, color 0.18s ease, transform 0.22s ease;
+        }
+
+        .home-requests-collapsed-tab:hover {
+            background: var(--dm-surface-muted);
+            transform: translateY(-1px);
+        }
+
+        .home-requests-collapsed-tab:focus {
+            outline: none;
+        }
+
+        .home-requests-collapsed-tab:focus-visible {
+            background: var(--dm-surface-muted);
+        }
+
+        .home-requests-tab-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 10px;
+            height: 10px;
+            border: 2px solid var(--dm-surface);
+            border-radius: 999px;
+            background: #ef4444;
+        }
+
+        .home-request-card-actions {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .home-request-minimize {
+            flex: 0 0 38px;
+            width: 38px;
+            min-height: 38px;
+            padding: 0;
         }
 
         .home-requests-split .home-card {
@@ -1458,6 +1530,44 @@ $adminSidebarPathPrefix = '';
             display: grid;
             grid-template-rows: auto minmax(0, 1fr);
             min-height: 520px;
+        }
+
+        .home-requests-list-card {
+            position: relative;
+            transition: padding 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+        }
+
+        .home-requests-split.is-requests-collapsed .home-requests-list-card {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 18px 8px;
+        }
+
+        .home-requests-split.is-requests-collapsed .home-requests-list-content {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: translateX(-10px);
+            visibility: hidden;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .home-requests-split.is-requests-collapsed .home-requests-collapsed-tab {
+            display: inline-flex;
+            animation: homeRequestsTabIn 0.24s ease both;
+        }
+
+        @keyframes homeRequestsTabIn {
+            from {
+                opacity: 0;
+                transform: scale(0.88);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .home-requests-list-card .home-queue,
@@ -2389,6 +2499,18 @@ $adminSidebarPathPrefix = '';
                 grid-template-columns: 1fr;
             }
 
+            .home-requests-split.is-requests-collapsed {
+                grid-template-columns: 48px minmax(0, 1fr);
+            }
+
+            .home-requests-split.is-requests-collapsed .home-day-bookings-card {
+                grid-column: 2;
+            }
+
+            .home-requests-split.is-requests-collapsed .home-requests-list-card {
+                padding: 12px 6px;
+            }
+
             .home-requests-list-card,
             .home-day-bookings-card {
                 min-height: 420px;
@@ -2599,33 +2721,54 @@ $adminSidebarPathPrefix = '';
                     </header>
 
                     <?php if (($selectedBookingMode === 'requests' && $selectedView === 'list') || $selectedBookingMode === 'bookings'): ?>
-                        <div class="home-requests-split">
-                            <section class="home-card home-requests-list-card">
-                                <div class="home-card-header">
-                                    <div class="home-card-heading">
-                                        <details class="home-view-menu home-view-title-menu">
-                                            <summary class="home-view-title-trigger" aria-label="Change requests panel">
-                                                <i class="fa-solid <?php echo htmlspecialchars((string) ($requestPanelViewMeta[$selectedRequestPanelView]['icon'] ?? 'fa-list'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
-                                                <span><?php echo htmlspecialchars((string) ($requestPanelViewMeta[$selectedRequestPanelView]['label'] ?? 'Requests'), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-                                            </summary>
-                                            <div class="home-view-menu-panel">
-                                                <?php foreach ($requestPanelViewMeta as $requestViewName => $requestViewMeta): ?>
-                                                    <a class="home-view-option <?php echo $requestViewName === $selectedRequestPanelView ? 'is-active' : ''; ?>" href="<?php echo htmlspecialchars($homeRequestPanelViewUrl((string) $requestViewName), ENT_QUOTES, 'UTF-8'); ?>">
-                                                        <i class="fa-solid <?php echo htmlspecialchars((string) ($requestViewMeta['icon'] ?? 'fa-list'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
-                                                        <span><?php echo htmlspecialchars((string) ($requestViewMeta['label'] ?? ucfirst((string) $requestViewName)), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    </a>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        </details>
-                                        <p class="home-card-note"><?php echo number_format(count($requestPanelBookings)); ?> <?php echo htmlspecialchars($requestPanelCountLabel, ENT_QUOTES, 'UTF-8'); ?> on <?php echo htmlspecialchars($formatDateLabel($selectedDate), ENT_QUOTES, 'UTF-8'); ?></p>
-                                    </div>
-                                    <a class="home-button home-button-primary home-date-nav" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList" aria-label="Add booking" title="Add booking" data-booking-add-trigger data-booking-add-type="normal">
-                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                                    </a>
-                                </div>
+                        <div class="home-requests-split" data-requests-panel-shell>
+                            <section class="home-card home-requests-list-card" id="homeRequestsPanel">
+                                <button
+                                    type="button"
+                                    class="home-requests-collapsed-tab"
+                                    data-requests-panel-expand
+                                    aria-expanded="true"
+                                    aria-controls="homeRequestsPanelContent"
+                                    title="Show requests and unassigned bookings"
+                                >
+                                    <i class="fa-solid fa-inbox" aria-hidden="true"></i>
+                                    <?php if ($requestPanelNotificationCount > 0): ?>
+                                        <span class="home-requests-tab-badge" aria-label="<?php echo number_format($requestPanelNotificationCount); ?> requests or unassigned bookings"></span>
+                                    <?php endif; ?>
+                                </button>
 
-                                <?php echo $renderHomeQueue($requestPanelBookings, $requestPanelEmptyMessage, $requestPanelShowsActions, 0, $requestPanelMiddleColumn, $requestPanelShowsAssignAction); ?>
+                                <div class="home-requests-list-content" id="homeRequestsPanelContent">
+                                    <div class="home-card-header">
+                                        <div class="home-card-heading">
+                                            <details class="home-view-menu home-view-title-menu">
+                                                <summary class="home-view-title-trigger" aria-label="Change requests panel">
+                                                    <i class="fa-solid <?php echo htmlspecialchars((string) ($requestPanelViewMeta[$selectedRequestPanelView]['icon'] ?? 'fa-list'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                                                    <span><?php echo htmlspecialchars((string) ($requestPanelViewMeta[$selectedRequestPanelView]['label'] ?? 'Requests'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                                </summary>
+                                                <div class="home-view-menu-panel">
+                                                    <?php foreach ($requestPanelViewMeta as $requestViewName => $requestViewMeta): ?>
+                                                        <a class="home-view-option <?php echo $requestViewName === $selectedRequestPanelView ? 'is-active' : ''; ?>" href="<?php echo htmlspecialchars($homeRequestPanelViewUrl((string) $requestViewName), ENT_QUOTES, 'UTF-8'); ?>">
+                                                            <i class="fa-solid <?php echo htmlspecialchars((string) ($requestViewMeta['icon'] ?? 'fa-list'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                                                            <span><?php echo htmlspecialchars((string) ($requestViewMeta['label'] ?? ucfirst((string) $requestViewName)), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                        </a>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </details>
+                                            <p class="home-card-note"><?php echo number_format(count($requestPanelBookings)); ?> <?php echo htmlspecialchars($requestPanelCountLabel, ENT_QUOTES, 'UTF-8'); ?> on <?php echo htmlspecialchars($formatDateLabel($selectedDate), ENT_QUOTES, 'UTF-8'); ?></p>
+                                        </div>
+                                        <div class="home-request-card-actions">
+                                            <button type="button" class="home-button home-request-minimize" data-requests-panel-minimize aria-label="Minimize requests panel" title="Minimize requests panel">
+                                                <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
+                                            </button>
+                                            <a class="home-button home-button-primary home-date-nav" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList" aria-label="Add booking" title="Add booking" data-booking-add-trigger data-booking-add-type="normal">
+                                                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <?php echo $renderHomeQueue($requestPanelBookings, $requestPanelEmptyMessage, $requestPanelShowsActions, 0, $requestPanelMiddleColumn, $requestPanelShowsAssignAction); ?>
+                                </div>
                             </section>
 
                             <aside class="home-card home-day-bookings-card" aria-label="Bookings for selected date">
@@ -3047,6 +3190,49 @@ $adminSidebarPathPrefix = '';
                 homeRows.forEach((row) => {
                     row.hidden = query !== '' && !(row.dataset.searchText || '').includes(query);
                 });
+            });
+        }
+
+        const requestsPanelShell = document.querySelector('[data-requests-panel-shell]');
+        if (requestsPanelShell) {
+            const requestsPanelExpand = requestsPanelShell.querySelector('[data-requests-panel-expand]');
+            const requestsPanelMinimize = requestsPanelShell.querySelector('[data-requests-panel-minimize]');
+            const requestsPanelStorageKey = 'dinemate.home.requestsPanelCollapsed';
+
+            const readRequestsPanelPreference = () => {
+                try {
+                    return window.localStorage.getItem(requestsPanelStorageKey);
+                } catch (error) {
+                    return null;
+                }
+            };
+
+            const writeRequestsPanelPreference = (isCollapsed) => {
+                try {
+                    window.localStorage.setItem(requestsPanelStorageKey, isCollapsed ? 'true' : 'false');
+                } catch (error) {
+                    // Ignore storage errors; the toggle still works for this page view.
+                }
+            };
+
+            const setRequestsPanelCollapsed = (isCollapsed, shouldPersist = true) => {
+                requestsPanelShell.classList.toggle('is-requests-collapsed', isCollapsed);
+                requestsPanelExpand?.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+                if (shouldPersist) {
+                    writeRequestsPanelPreference(isCollapsed);
+                }
+            };
+
+            const savedRequestPanelState = readRequestsPanelPreference();
+            setRequestsPanelCollapsed(savedRequestPanelState === null ? true : savedRequestPanelState === 'true', false);
+
+            requestsPanelExpand?.addEventListener('click', () => {
+                setRequestsPanelCollapsed(false);
+            });
+
+            requestsPanelMinimize?.addEventListener('click', () => {
+                setRequestsPanelCollapsed(true);
+                requestsPanelExpand?.focus();
             });
         }
 
