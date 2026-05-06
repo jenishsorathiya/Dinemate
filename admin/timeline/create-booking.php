@@ -175,7 +175,9 @@ try {
         );
     }
 
-    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, booking_type, special_request, status, booking_source, created_by_user_id) VALUES (NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'admin_manual', ?)");
+    $nextPlacementStatus = !empty($selectedTableIds) ? 'not_placed' : null;
+
+    $bookingStmt = $pdo->prepare("INSERT INTO bookings (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, booking_type, special_request, status, reservation_card_status, booking_source, created_by_user_id) VALUES (NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, 'admin_manual', ?)");
     $bookingStmt->execute([
         $customerProfileId,
         $name,
@@ -190,12 +192,13 @@ try {
         $guestCount,
         $bookingType,
         $specialRequest !== '' ? $specialRequest : null,
+        $nextPlacementStatus,
         (int) (getCurrentUserId() ?? 0) ?: null,
     ]);
 
     $bookingId = $pdo->lastInsertId();
     $assignedTableIds = syncBookingTableAssignments($pdo, $bookingId, $selectedTableIds);
-    notifyBookingEvent($pdo, $bookingId, 'booking_request_received');
+    notifyBookingEvent($pdo, $bookingId, 'booking_confirmed');
 
     echo json_encode([
         'success' => true,
@@ -215,7 +218,9 @@ try {
             'booking_type' => $bookingType,
             'booking_type_label' => getBookingTypeLabel($bookingType),
             'special_request' => $specialRequest !== '' ? $specialRequest : null,
-            'status' => 'pending',
+            'status' => 'confirmed',
+            'reservation_card_status' => $nextPlacementStatus,
+            'reservation_card_status_label' => $nextPlacementStatus !== null ? getBookingPlacementLabel($nextPlacementStatus) : null,
             'booking_source' => 'admin_manual',
             'booking_source_label' => getBookingSourceLabel('admin_manual'),
             'customer_name' => $name,

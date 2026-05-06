@@ -535,7 +535,7 @@ $requestPanelViewMeta = [
     ],
     'unassigned' => [
         'label' => 'Unassigned',
-        'icon' => 'fa-chair',
+        'icon' => 'fa-table-cells-large',
     ],
 ];
 $requestPanelViewCounts = [
@@ -551,7 +551,7 @@ $requestPanelEmptyMessage = $selectedRequestPanelView === 'unassigned'
     ? 'No unassigned bookings for this date.'
     : 'No requests for this date.';
 $requestPanelShowsActions = $selectedRequestPanelView === 'requests';
-$requestPanelMiddleColumn = 'notes';
+$requestPanelMiddleColumn = $selectedRequestPanelView === 'unassigned' ? 'table' : 'notes';
 $requestPanelShowsAssignAction = $selectedRequestPanelView === 'unassigned';
 $requestPanelNotificationCount = count($requestBookings) + count($confirmedUnassignedBookings);
 $requestPanelHiddenNotificationCount = array_sum(array_filter(
@@ -585,7 +585,24 @@ $renderHomeMetricChips = static function () use ($selectedBookingsCount, $select
     return (string) ob_get_clean();
 };
 
-$renderHomeQueue = static function (array $bookings, string $emptyMessage, bool $showRequestActions = false, int $toneOffset = 0, string $middleColumn = 'table', bool $showAssignTableAction = false) use ($formatQueueTime, $getInitials, $bookingEditPayload): string {
+$renderHomeTableButton = static function (string $extraClass = '', string $label = 'Edit table assignment'): string {
+    $className = trim('home-table-icon-button ' . $extraClass);
+    $safeLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+
+    return '<button type="button" class="' . htmlspecialchars($className, ENT_QUOTES, 'UTF-8') . '" data-booking-assign-table-trigger aria-label="' . $safeLabel . '" title="' . $safeLabel . '"><span class="home-table-line-icon" aria-hidden="true"></span></button>';
+};
+
+$renderHomeTableAssignment = static function (string $primary, string $secondary, bool $isMissing = false) use ($renderHomeTableButton): string {
+    $stateClass = $isMissing ? ' is-missing' : '';
+    $button = $renderHomeTableButton($isMissing ? 'is-missing' : '', $isMissing ? 'Assign table' : 'Edit table assignment');
+    $secondaryHtml = $secondary !== ''
+        ? '<small>' . htmlspecialchars($secondary, ENT_QUOTES, 'UTF-8') . '</small>'
+        : '';
+
+    return '<div class="home-table-assignment' . $stateClass . '">' . $button . '<span class="home-table-assignment-copy"><strong>' . htmlspecialchars($primary, ENT_QUOTES, 'UTF-8') . '</strong>' . $secondaryHtml . '</span></div>';
+};
+
+$renderHomeQueue = static function (array $bookings, string $emptyMessage, bool $showRequestActions = false, int $toneOffset = 0, string $middleColumn = 'table', bool $showAssignTableAction = false) use ($formatQueueTime, $getInitials, $bookingEditPayload, $renderHomeTableButton, $renderHomeTableAssignment): string {
     ob_start();
     ?>
     <div class="home-queue">
@@ -595,7 +612,8 @@ $renderHomeQueue = static function (array $bookings, string $emptyMessage, bool 
             <?php foreach ($bookings as $index => $booking): ?>
                 <?php
                     $bookingName = (string) ($booking['customer_name'] ?? 'Guest');
-                    $tableText = !empty($booking['assigned_table_numbers'])
+                    $hasAssignedTable = !empty($booking['assigned_table_numbers']);
+                    $tableText = $hasAssignedTable
                         ? 'Table ' . (string) $booking['assigned_table_numbers']
                         : 'No table';
                     $areaText = (string) ($booking['assigned_area_names'] ?? 'Dining room');
@@ -609,11 +627,20 @@ $renderHomeQueue = static function (array $bookings, string $emptyMessage, bool 
                         ? $noteText
                         : $tableText;
                     $contextSecondary = $showNotesColumn ? '' : $areaText;
+                    $needsTableAssignment = !$hasAssignedTable && $status === 'confirmed';
+                    $showTableAssignmentButton = !$showNotesColumn && $needsTableAssignment;
+                    $tableAssignmentHtml = $renderHomeTableAssignment(
+                        $needsTableAssignment ? 'No table assigned' : $tableText,
+                        $needsTableAssignment ? '' : $areaText,
+                        $needsTableAssignment
+                    );
+                    $bookingEditInitialPanel = $showAssignTableAction && $needsTableAssignment ? 'tables' : 'personal';
                 ?>
                 <a
-                    class="home-queue-row"
+                    class="home-queue-row<?php echo $needsTableAssignment ? ' is-table-unassigned' : ''; ?>"
                     href="../timeline/timeline.php?date=<?php echo urlencode((string) ($booking['booking_date'] ?? '')); ?>#bookingList"
                     data-booking-edit-payload="<?php echo $bookingEditPayload($booking); ?>"
+                    data-booking-edit-initial-panel="<?php echo htmlspecialchars($bookingEditInitialPanel, ENT_QUOTES, 'UTF-8'); ?>"
                     data-home-row
                     data-search-text="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>"
                 >
@@ -632,9 +659,9 @@ $renderHomeQueue = static function (array $bookings, string $emptyMessage, bool 
                     <div class="home-reservation-context">
                         <?php if ($showNotesColumn): ?>
                             <span><?php echo htmlspecialchars($contextPrimary, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <?php elseif ($showAssignTableAction && $needsTableAssignment): ?>
                         <?php else: ?>
-                            <strong><?php echo htmlspecialchars($contextPrimary, ENT_QUOTES, 'UTF-8'); ?></strong>
-                            <span><?php echo htmlspecialchars($contextSecondary, ENT_QUOTES, 'UTF-8'); ?></span>
+                            <?php echo $tableAssignmentHtml; ?>
                         <?php endif; ?>
                     </div>
 
@@ -646,12 +673,9 @@ $renderHomeQueue = static function (array $bookings, string $emptyMessage, bool 
                             <button type="button" class="home-confirm-request" data-confirm-request-id="<?php echo (int) ($booking['booking_id'] ?? 0); ?>" aria-label="Confirm booking request" title="Confirm booking request">
                                 <i class="fa-solid fa-check" aria-hidden="true"></i>
                             </button>
-                        <?php elseif ($showAssignTableAction && $status === 'confirmed'): ?>
-                            <button type="button" class="home-assign-table" data-booking-assign-table-trigger aria-label="Assign table" title="Assign table">
-                                <i class="fa-solid fa-chair" aria-hidden="true"></i>
-                                <span>Assign table</span>
-                            </button>
-                        <?php else: ?>
+                        <?php elseif ($showAssignTableAction && $status === 'confirmed' && !$showTableAssignmentButton): ?>
+                            <?php echo $renderHomeTableButton('is-missing', 'Assign table'); ?>
+                        <?php elseif ($status !== 'confirmed'): ?>
                             <span class="status-tag <?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>">
                                 <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>
                             </span>
@@ -670,7 +694,7 @@ $renderHomeQueue = static function (array $bookings, string $emptyMessage, bool 
     return (string) ob_get_clean();
 };
 
-$renderHomeTimeline = static function (array $bookings, string $emptyMessage) use ($formatQueueTime, $bookingEditPayload): string {
+$renderHomeTimeline = static function (array $bookings, string $emptyMessage) use ($formatQueueTime, $bookingEditPayload, $renderHomeTableAssignment): string {
     ob_start();
     ?>
     <div class="home-timeline-view">
@@ -681,7 +705,8 @@ $renderHomeTimeline = static function (array $bookings, string $emptyMessage) us
                 <?php
                     $bookingName = (string) ($booking['customer_name'] ?? 'Guest');
                     $timeLabel = $formatQueueTime((string) ($booking['booking_date'] ?? ''), (string) ($booking['start_time'] ?? ''));
-                    $tableText = !empty($booking['assigned_table_numbers'])
+                    $hasAssignedTable = !empty($booking['assigned_table_numbers']);
+                    $tableText = $hasAssignedTable
                         ? 'Table ' . (string) $booking['assigned_table_numbers']
                         : 'No table';
                     $areaText = (string) ($booking['assigned_area_names'] ?? 'Dining room');
@@ -689,9 +714,15 @@ $renderHomeTimeline = static function (array $bookings, string $emptyMessage) us
                     $statusLabel = getBookingStatusLabel($status);
                     $noteText = trim((string) ($booking['special_request'] ?? ''));
                     $searchText = strtolower(trim($bookingName . ' ' . $timeLabel . ' ' . $tableText . ' ' . $areaText . ' ' . $statusLabel . ' ' . $noteText));
+                    $needsTableAssignment = !$hasAssignedTable && $status === 'confirmed';
+                    $tableAssignmentHtml = $renderHomeTableAssignment(
+                        $needsTableAssignment ? 'No table assigned' : $tableText,
+                        $needsTableAssignment ? '' : $areaText,
+                        $needsTableAssignment
+                    );
                 ?>
                 <a
-                    class="home-timeline-row"
+                    class="home-timeline-row<?php echo $needsTableAssignment ? ' is-table-unassigned' : ''; ?>"
                     href="../timeline/timeline.php?date=<?php echo urlencode((string) ($booking['booking_date'] ?? '')); ?>#bookingList"
                     data-booking-edit-payload="<?php echo $bookingEditPayload($booking); ?>"
                     data-home-row
@@ -705,11 +736,12 @@ $renderHomeTimeline = static function (array $bookings, string $emptyMessage) us
                     <div class="home-timeline-card">
                         <div class="home-timeline-card-top">
                             <span class="home-timeline-card-title"><?php echo htmlspecialchars($bookingName, ENT_QUOTES, 'UTF-8'); ?></span>
-                            <span class="status-tag <?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                            <?php if ($status !== 'confirmed'): ?>
+                                <span class="status-tag <?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                            <?php endif; ?>
                         </div>
                         <div class="home-timeline-card-meta">
-                            <span><?php echo htmlspecialchars($tableText, ENT_QUOTES, 'UTF-8'); ?></span>
-                            <span><?php echo htmlspecialchars($areaText, ENT_QUOTES, 'UTF-8'); ?></span>
+                            <?php echo $tableAssignmentHtml; ?>
                             <?php if ($noteText !== ''): ?>
                                 <span><?php echo htmlspecialchars($noteText, ENT_QUOTES, 'UTF-8'); ?></span>
                             <?php endif; ?>
@@ -1619,6 +1651,14 @@ $adminSidebarPathPrefix = '';
             padding: 13px 16px;
         }
 
+        .home-requests-list-card .home-queue-row:last-child {
+            border-bottom: 1px solid var(--dm-border);
+        }
+
+        .home-day-bookings-card .home-queue-row:last-child {
+            border-bottom: 1px solid var(--dm-border);
+        }
+
         .home-requests-list-card .home-reservation-context,
         .home-requests-list-card .home-reservation-status {
             padding-left: 0;
@@ -1704,7 +1744,10 @@ $adminSidebarPathPrefix = '';
         }
 
         .home-reservation-note {
+            flex: 1 1 auto;
             overflow: hidden;
+            min-width: 0;
+            text-align: center;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
@@ -1724,12 +1767,44 @@ $adminSidebarPathPrefix = '';
             white-space: nowrap;
         }
 
+        .home-table-assignment {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .home-table-assignment-copy {
+            display: grid;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .home-table-assignment-copy strong {
+            overflow: hidden;
+            color: var(--dm-text);
+            font-size: 13px;
+            font-weight: 900;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .home-table-assignment-copy small {
+            overflow: hidden;
+            color: var(--dm-text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .home-reservation-status {
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: 10px;
             min-width: 0;
+            width: 100%;
         }
 
         .home-guest-pill {
@@ -1747,7 +1822,7 @@ $adminSidebarPathPrefix = '';
         }
 
         .home-confirm-request,
-        .home-assign-table {
+        .home-table-icon-button {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -1771,17 +1846,57 @@ $adminSidebarPathPrefix = '';
             transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
         }
 
-        .home-assign-table {
-            width: auto;
-            min-width: 0;
-            padding: 0 10px;
-            flex-basis: auto;
+        .home-table-icon-button {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            padding: 0;
             background: var(--dm-surface);
             color: var(--dm-text);
             border-color: var(--dm-border);
-            font-size: 12px;
+            font-size: 17px;
             font-weight: 800;
-            white-space: nowrap;
+            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+        }
+
+        .home-table-icon-button.is-missing {
+            border-style: dashed;
+            border-color: rgba(217, 119, 6, 0.62);
+            background: rgba(255, 251, 235, 0.92);
+            color: #d97706;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.08);
+        }
+
+        .home-table-line-icon {
+            position: relative;
+            display: inline-block;
+            width: 20px;
+            height: 18px;
+            color: currentColor;
+        }
+
+        .home-table-line-icon::before {
+            content: '';
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            top: 4px;
+            height: 2px;
+            border-radius: 999px;
+            background: currentColor;
+        }
+
+        .home-table-line-icon::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 8px;
+            width: 10px;
+            height: 8px;
+            border-left: 2px solid currentColor;
+            border-right: 2px solid currentColor;
+            border-top: 2px solid currentColor;
+            border-radius: 2px 2px 0 0;
         }
 
         .home-confirm-request:hover {
@@ -1790,8 +1905,15 @@ $adminSidebarPathPrefix = '';
             transform: translateY(-1px);
         }
 
-        .home-assign-table:hover {
-            filter: brightness(0.98);
+        .home-table-icon-button:hover {
+            background: var(--dm-surface-muted);
+            transform: translateY(-1px);
+        }
+
+        .home-table-icon-button.is-missing:hover {
+            background: rgba(255, 247, 237, 0.95);
+            border-color: #d97706;
+            color: #b45309;
         }
 
         .home-confirm-request:focus-visible {
@@ -2700,6 +2822,12 @@ $adminSidebarPathPrefix = '';
                 flex-wrap: wrap;
             }
 
+            .home-table-assignment {
+                align-items: flex-start;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+
             .home-insight-grid {
                 gap: 16px;
             }
@@ -2911,7 +3039,8 @@ $adminSidebarPathPrefix = '';
                                     <?php foreach ($queueBookings as $index => $booking): ?>
                                         <?php
                                             $bookingName = (string) ($booking['customer_name'] ?? 'Guest');
-                                            $tableText = !empty($booking['assigned_table_numbers'])
+                                            $hasAssignedTable = !empty($booking['assigned_table_numbers']);
+                                            $tableText = $hasAssignedTable
                                                 ? 'Table ' . (string) $booking['assigned_table_numbers']
                                                 : 'No table';
                                             $areaText = (string) ($booking['assigned_area_names'] ?? 'Dining room');
@@ -2920,9 +3049,15 @@ $adminSidebarPathPrefix = '';
                                             $statusLabel = getBookingStatusLabel($status);
                                             $bookingTypeLabel = getBookingTypeLabel($booking['booking_type'] ?? 'normal');
                                             $searchText = strtolower(trim($bookingName . ' ' . $tableText . ' ' . $areaText . ' ' . $statusLabel . ' ' . $bookingTypeLabel . ' ' . $noteText));
+                                            $needsTableAssignment = !$hasAssignedTable && $status === 'confirmed';
+                                            $tableAssignmentHtml = $renderHomeTableAssignment(
+                                                $needsTableAssignment ? 'No table assigned' : $tableText,
+                                                $needsTableAssignment ? '' : $areaText,
+                                                $needsTableAssignment
+                                            );
                                         ?>
                                         <a
-                                            class="home-queue-row"
+                                            class="home-queue-row<?php echo $needsTableAssignment ? ' is-table-unassigned' : ''; ?>"
                                             href="../timeline/timeline.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList"
                                             data-booking-edit-payload="<?php echo $bookingEditPayload($booking); ?>"
                                             data-home-row
@@ -2941,8 +3076,7 @@ $adminSidebarPathPrefix = '';
                                             </div>
 
                                             <div class="home-reservation-context">
-                                                <strong><?php echo htmlspecialchars($tableText, ENT_QUOTES, 'UTF-8'); ?></strong>
-                                                <span><?php echo htmlspecialchars($areaText, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <?php echo $tableAssignmentHtml; ?>
                                             </div>
 
                                             <div class="home-reservation-status">
@@ -2953,7 +3087,7 @@ $adminSidebarPathPrefix = '';
                                                     <button type="button" class="home-confirm-request" data-confirm-request-id="<?php echo (int) ($booking['booking_id'] ?? 0); ?>" aria-label="Confirm booking request" title="Confirm booking request">
                                                         <i class="fa-solid fa-check" aria-hidden="true"></i>
                                                     </button>
-                                                <?php else: ?>
+                                                <?php elseif ($status !== 'confirmed'): ?>
                                                     <span class="status-tag <?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>">
                                                         <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>
                                                     </span>
@@ -3005,16 +3139,23 @@ $adminSidebarPathPrefix = '';
                                     <?php foreach ($triviaBookings as $index => $booking): ?>
                                         <?php
                                             $specialBookingName = (string) ($booking['customer_name'] ?? 'Guest');
-                                            $specialBookingTable = !empty($booking['assigned_table_numbers']) ? 'Table ' . (string) $booking['assigned_table_numbers'] : 'No table';
+                                            $specialBookingHasAssignedTable = !empty($booking['assigned_table_numbers']);
+                                            $specialBookingTable = $specialBookingHasAssignedTable ? 'Table ' . (string) $booking['assigned_table_numbers'] : 'No table';
                                             $specialBookingArea = (string) ($booking['assigned_area_names'] ?? 'Dining room');
                                             $specialBookingNote = trim((string) ($booking['special_request'] ?? ''));
                                             $specialBookingStatus = strtolower((string) ($booking['status'] ?? 'pending'));
                                             $specialBookingStatusLabel = getBookingStatusLabel($specialBookingStatus);
                                             $specialBookingTypeLabel = getBookingTypeLabel($booking['booking_type'] ?? 'trivia');
                                             $specialBookingSearch = strtolower(trim($specialBookingName . ' ' . $specialBookingTable . ' ' . $specialBookingArea . ' ' . $specialBookingStatusLabel . ' ' . $specialBookingTypeLabel . ' ' . $specialBookingNote));
+                                            $specialBookingNeedsTableAssignment = !$specialBookingHasAssignedTable && $specialBookingStatus === 'confirmed';
+                                            $specialBookingTableAssignmentHtml = $renderHomeTableAssignment(
+                                                $specialBookingNeedsTableAssignment ? 'No table assigned' : $specialBookingTable,
+                                                $specialBookingNeedsTableAssignment ? '' : $specialBookingArea,
+                                                $specialBookingNeedsTableAssignment
+                                            );
                                         ?>
                                         <a
-                                            class="home-queue-row"
+                                            class="home-queue-row<?php echo $specialBookingNeedsTableAssignment ? ' is-table-unassigned' : ''; ?>"
                                             href="../timeline/timeline.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList"
                                             data-booking-edit-payload="<?php echo $bookingEditPayload($booking); ?>"
                                             data-home-row
@@ -3033,8 +3174,7 @@ $adminSidebarPathPrefix = '';
                                             </div>
 
                                             <div class="home-reservation-context">
-                                                <strong><?php echo htmlspecialchars($specialBookingTable, ENT_QUOTES, 'UTF-8'); ?></strong>
-                                                <span><?php echo htmlspecialchars($specialBookingArea, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <?php echo $specialBookingTableAssignmentHtml; ?>
                                             </div>
 
                                             <div class="home-reservation-status">
@@ -3045,7 +3185,7 @@ $adminSidebarPathPrefix = '';
                                                     <button type="button" class="home-confirm-request" data-confirm-request-id="<?php echo (int) ($booking['booking_id'] ?? 0); ?>" aria-label="Confirm booking request" title="Confirm booking request">
                                                         <i class="fa-solid fa-check" aria-hidden="true"></i>
                                                     </button>
-                                                <?php else: ?>
+                                                <?php elseif ($specialBookingStatus !== 'confirmed'): ?>
                                                     <span class="status-tag <?php echo htmlspecialchars($specialBookingStatus, ENT_QUOTES, 'UTF-8'); ?>">
                                                         <?php echo htmlspecialchars($specialBookingStatusLabel, ENT_QUOTES, 'UTF-8'); ?>
                                                     </span>
@@ -3084,16 +3224,23 @@ $adminSidebarPathPrefix = '';
                                     <?php foreach ($functionBookings as $index => $booking): ?>
                                         <?php
                                             $specialBookingName = (string) ($booking['customer_name'] ?? 'Guest');
-                                            $specialBookingTable = !empty($booking['assigned_table_numbers']) ? 'Table ' . (string) $booking['assigned_table_numbers'] : 'No table';
+                                            $specialBookingHasAssignedTable = !empty($booking['assigned_table_numbers']);
+                                            $specialBookingTable = $specialBookingHasAssignedTable ? 'Table ' . (string) $booking['assigned_table_numbers'] : 'No table';
                                             $specialBookingArea = (string) ($booking['assigned_area_names'] ?? 'Dining room');
                                             $specialBookingNote = trim((string) ($booking['special_request'] ?? ''));
                                             $specialBookingStatus = strtolower((string) ($booking['status'] ?? 'pending'));
                                             $specialBookingStatusLabel = getBookingStatusLabel($specialBookingStatus);
                                             $specialBookingTypeLabel = getBookingTypeLabel($booking['booking_type'] ?? 'function');
                                             $specialBookingSearch = strtolower(trim($specialBookingName . ' ' . $specialBookingTable . ' ' . $specialBookingArea . ' ' . $specialBookingStatusLabel . ' ' . $specialBookingTypeLabel . ' ' . $specialBookingNote));
+                                            $specialBookingNeedsTableAssignment = !$specialBookingHasAssignedTable && $specialBookingStatus === 'confirmed';
+                                            $specialBookingTableAssignmentHtml = $renderHomeTableAssignment(
+                                                $specialBookingNeedsTableAssignment ? 'No table assigned' : $specialBookingTable,
+                                                $specialBookingNeedsTableAssignment ? '' : $specialBookingArea,
+                                                $specialBookingNeedsTableAssignment
+                                            );
                                         ?>
                                         <a
-                                            class="home-queue-row"
+                                            class="home-queue-row<?php echo $specialBookingNeedsTableAssignment ? ' is-table-unassigned' : ''; ?>"
                                             href="../timeline/timeline.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#bookingList"
                                             data-booking-edit-payload="<?php echo $bookingEditPayload($booking); ?>"
                                             data-home-row
@@ -3112,8 +3259,7 @@ $adminSidebarPathPrefix = '';
                                             </div>
 
                                             <div class="home-reservation-context">
-                                                <strong><?php echo htmlspecialchars($specialBookingTable, ENT_QUOTES, 'UTF-8'); ?></strong>
-                                                <span><?php echo htmlspecialchars($specialBookingArea, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <?php echo $specialBookingTableAssignmentHtml; ?>
                                             </div>
 
                                             <div class="home-reservation-status">
@@ -3124,7 +3270,7 @@ $adminSidebarPathPrefix = '';
                                                     <button type="button" class="home-confirm-request" data-confirm-request-id="<?php echo (int) ($booking['booking_id'] ?? 0); ?>" aria-label="Confirm booking request" title="Confirm booking request">
                                                         <i class="fa-solid fa-check" aria-hidden="true"></i>
                                                     </button>
-                                                <?php else: ?>
+                                                <?php elseif ($specialBookingStatus !== 'confirmed'): ?>
                                                     <span class="status-tag <?php echo htmlspecialchars($specialBookingStatus, ENT_QUOTES, 'UTF-8'); ?>">
                                                         <?php echo htmlspecialchars($specialBookingStatusLabel, ENT_QUOTES, 'UTF-8'); ?>
                                                     </span>
@@ -3485,7 +3631,10 @@ $adminSidebarPathPrefix = '';
                 event.preventDefault();
 
                 try {
-                    openBookingEditModal(JSON.parse(bookingLink.dataset.bookingEditPayload || '{}'));
+                    openBookingEditModal(
+                        JSON.parse(bookingLink.dataset.bookingEditPayload || '{}'),
+                        bookingLink.dataset.bookingEditInitialPanel || 'personal'
+                    );
                 } catch (error) {
                     window.location.href = bookingLink.href;
                 }

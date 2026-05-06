@@ -363,6 +363,11 @@ $adminSidebarPathPrefix = '../';
             justify-content: center;
         }
 
+        .booking-item.is-table-unassigned {
+            border-color: rgba(217, 119, 6, 0.38);
+            background: linear-gradient(90deg, rgba(255, 251, 235, 0.98), rgba(255, 247, 237, 0.78));
+        }
+
         .booking-item-top {
             display: flex;
             align-items: center;
@@ -466,6 +471,18 @@ $adminSidebarPathPrefix = '../';
         .booking-item-action-btn:hover {
             background: var(--dm-neutral-bg);
             border-color: var(--dm-neutral-bg);
+        }
+
+        .booking-item-action-btn.is-table-action {
+            border-color: rgba(217, 119, 6, 0.42);
+            background: #d97706;
+            color: #fff;
+            box-shadow: 0 6px 12px rgba(217, 119, 6, 0.18);
+        }
+
+        .booking-item-action-btn.is-table-action:hover {
+            background: #b45309;
+            border-color: #b45309;
         }
 
         .booking-item-action-btn:disabled {
@@ -3701,12 +3718,16 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
                 : '';
             const bookingStatus = String(booking.status || '').toLowerCase();
             const isLiveBooking = ['pending', 'confirmed'].includes(bookingStatus);
+            const needsTableAssignment = isStandbyTab && bookingStatus === 'confirmed' && !getAssignedTableIds(booking).length;
+            const tableActionButton = needsTableAssignment
+                ? `<button type="button" class="booking-item-action-btn is-table-action" onclick="event.stopPropagation(); handleBookingClick(event, ${booking.booking_id})">Table</button>`
+                : '';
             const placementStatus = getBookingPlacementStatus(booking);
             const placementDot = placementStatus
                 ? `<span class="booking-placement-dot ${placementStatus === 'placed' ? 'placed' : 'not-placed'}" title="${getBookingPlacementLabel(placementStatus)}" aria-label="${getBookingPlacementLabel(placementStatus)}"></span>`
                 : '';
             const rightSideText = isPendingTab || isStandbyTab
-                ? `${pendingActionButton}<span class="booking-item-meta">P${booking.number_of_guests}</span>`
+                ? `${pendingActionButton}${tableActionButton}<span class="booking-item-meta">P${booking.number_of_guests}</span>`
                 : `<span class="booking-item-table">${assignmentSummary}</span>`;
             const bottomRowRight = isPendingTab || isStandbyTab
                 ? ''
@@ -3715,7 +3736,7 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
             const draggableAttributes = canDragFromList ? 'draggable="true"' : 'draggable="false"';
             const draggableClass = canDragFromList ? ' draggable-booking' : '';
             return `
-                <div class="booking-item${draggableClass}" ${draggableAttributes} data-booking-id="${booking.booking_id}" onclick="handleBookingClick(event, ${booking.booking_id})">
+                <div class="booking-item${draggableClass}${needsTableAssignment ? ' is-table-unassigned' : ''}" ${draggableAttributes} data-booking-id="${booking.booking_id}" onclick="handleBookingClick(event, ${booking.booking_id})">
                     <div class="booking-item-top">
                         <span class="booking-item-top-left">
                             <span class="booking-item-time">${startTime}</span>
