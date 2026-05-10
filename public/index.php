@@ -313,14 +313,14 @@
 .section-title {
     font-size: clamp(28px, 6vw, 48px);
     font-weight: 800;
-    color: #F5F5F7;
+    color: #111827;
     margin-bottom: 15px;
     line-height: 1.2;
 }
 
 .section-description {
     font-size: 18px;
-    color: #D8D8DC;
+    color: #475569;
     max-width: 600px;
     margin: 0 auto;
     line-height: 1.6;
@@ -335,13 +335,13 @@
 }
 
 .feature-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(44, 62, 80, 0.2);
+    background: #ffffff;
+    border: 1px solid rgba(148, 163, 184, 0.24);
     border-radius: 16px;
     padding: 40px 30px;
     text-align: center;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
     position: relative;
     overflow: hidden;
 }
@@ -359,8 +359,8 @@
 }
 
 .feature-card:hover {
-    border-color: #2C3E50;
-    box-shadow: 0 16px 40px rgba(44, 62, 80, 0.15);
+    border-color: rgba(44, 62, 80, 0.2);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
     transform: translateY(-8px);
 }
 
@@ -378,12 +378,12 @@
 .feature-card h3 {
     font-size: 20px;
     font-weight: 700;
-    color: #F5F5F7;
+    color: #111827;
     margin-bottom: 12px;
 }
 
 .feature-card p {
-    color: #D8D8DC;
+    color: #475569;
     font-size: 15px;
     line-height: 1.6;
     margin: 0;
