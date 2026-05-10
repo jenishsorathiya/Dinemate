@@ -606,7 +606,7 @@
 }
 
 .testimonial-text {
-    color: #9CA3AF;
+    color: #D8D8DC;
     line-height: 1.6;
     font-style: italic;
     margin: 0;
@@ -671,7 +671,7 @@
 }
 
 .pricing-period {
-    color: #9CA3AF;
+    color: #D8D8DC;
     font-size: 14px;
     margin-bottom: 25px;
 }
@@ -685,7 +685,7 @@
 .pricing-features li {
     padding: 10px 0;
     border-bottom: 1px solid rgba(44, 62, 80, 0.1);
-    color: #9CA3AF;
+    color: #D8D8DC;
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -742,7 +742,7 @@
 
 .footer-cta p {
     font-size: 18px;
-    color: #9CA3AF;
+    color: #D8D8DC;
     margin-bottom: 40px;
     max-width: 600px;
     margin-left: auto;
