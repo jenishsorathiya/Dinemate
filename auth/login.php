@@ -1,5 +1,6 @@
 <?php 
-session_start(); 
+session_start();
+require_once "../includes/functions.php";
 $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: time());
 ?>
 
