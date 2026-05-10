@@ -45,7 +45,7 @@
     position: relative;
     z-index: 2;
     text-align: center;
-    color: white;
+    color: #F5F5F7;
     max-width: 900px;
     animation: fadeInUp 1s ease-out;
 }
@@ -91,7 +91,7 @@
 .hero p {
     font-size: clamp(16px, 3vw, 20px);
     margin-bottom: 40px;
-    color: rgba(255, 255, 255, 0.85);
+    color: #D8D8DC;
     line-height: 1.7;
 }
 
@@ -167,7 +167,7 @@
 
 .stat-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
+    color: #B8B8C0;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -201,14 +201,14 @@
 .vibe-container h2 {
     font-size: clamp(28px, 6vw, 48px);
     font-weight: 800;
-    color: #FFFFFF;
+    color: #F5F5F7;
     margin-bottom: 15px;
     line-height: 1.2;
 }
 
 .vibe-container > p {
     font-size: 18px;
-    color: #9CA3AF;
+    color: #D8D8DC;
     max-width: 600px;
     margin: 0 auto 50px;
     line-height: 1.6;
@@ -245,13 +245,13 @@
 .vibe-item h3 {
     font-size: 20px;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #F5F5F7;
     margin-bottom: 12px;
 }
 
 .vibe-item p {
     font-size: 15px;
-    color: #9CA3AF;
+    color: #D8D8DC;
     line-height: 1.6;
     margin: 0;
 }
@@ -286,7 +286,7 @@
 
 .trust-label {
     font-size: 14px;
-    color: var(--dm-text-muted);
+    color: #D8D8DC;
     font-weight: 500;
 }
 
@@ -313,14 +313,14 @@
 .section-title {
     font-size: clamp(28px, 6vw, 48px);
     font-weight: 800;
-    color: #FFFFFF;
+    color: #F5F5F7;
     margin-bottom: 15px;
     line-height: 1.2;
 }
 
 .section-description {
     font-size: 18px;
-    color: #9CA3AF;
+    color: #D8D8DC;
     max-width: 600px;
     margin: 0 auto;
     line-height: 1.6;
@@ -378,12 +378,12 @@
 .feature-card h3 {
     font-size: 20px;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #F5F5F7;
     margin-bottom: 12px;
 }
 
 .feature-card p {
-    color: #9CA3AF;
+    color: #D8D8DC;
     font-size: 15px;
     line-height: 1.6;
     margin: 0;
@@ -407,14 +407,14 @@
 .showcase-content h2 {
     font-size: clamp(28px, 5vw, 44px);
     font-weight: 800;
-    color: #FFFFFF;
+    color: #F5F5F7;
     margin-bottom: 20px;
     line-height: 1.2;
 }
 
 .showcase-content p {
     font-size: 16px;
-    color: #9CA3AF;
+    color: #D8D8DC;
     line-height: 1.7;
     margin-bottom: 20px;
 }
@@ -429,7 +429,7 @@
     gap: 15px;
     margin-bottom: 15px;
     font-size: 15px;
-    color: #9CA3AF;
+    color: #D8D8DC;
 }
 
 .showcase-list li::before {
@@ -470,7 +470,7 @@
 .cta-section {
     padding: 80px 20px;
     background: linear-gradient(135deg, #0F172A 0%, #1F2937 100%);
-    color: white;
+    color: #F5F5F7;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -499,12 +499,12 @@
     font-weight: 800;
     margin-bottom: 20px;
     line-height: 1.2;
-    color: #FFFFFF;
+    color: #F5F5F7;
 }
 
 .cta-section p {
     font-size: 18px;
-    color: #9CA3AF;
+    color: #D8D8DC;
     margin-bottom: 40px;
     line-height: 1.6;
 }
@@ -590,13 +590,13 @@
 .testimonial-info h4 {
     font-size: 15px;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #F5F5F7;
     margin-bottom: 4px;
 }
 
 .testimonial-role {
     font-size: 12px;
-    color: #9CA3AF;
+    color: #D8D8DC;
 }
 
 .testimonial-stars {
@@ -606,7 +606,7 @@
 }
 
 .testimonial-text {
-    color: #9CA3AF;
+    color: #D8D8DC;
     line-height: 1.6;
     font-style: italic;
     margin: 0;
@@ -659,7 +659,7 @@
 .pricing-card h3 {
     font-size: 20px;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #F5F5F7;
     margin-bottom: 15px;
 }
 
@@ -671,7 +671,7 @@
 }
 
 .pricing-period {
-    color: #9CA3AF;
+    color: #D8D8DC;
     font-size: 14px;
     margin-bottom: 25px;
 }
@@ -685,7 +685,7 @@
 .pricing-features li {
     padding: 10px 0;
     border-bottom: 1px solid rgba(44, 62, 80, 0.1);
-    color: #9CA3AF;
+    color: #D8D8DC;
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -736,13 +736,13 @@
 .footer-cta h2 {
     font-size: clamp(28px, 6vw, 44px);
     font-weight: 800;
-    color: #FFFFFF;
+    color: #F5F5F7;
     margin-bottom: 15px;
 }
 
 .footer-cta p {
     font-size: 18px;
-    color: #9CA3AF;
+    color: #D8D8DC;
     margin-bottom: 40px;
     max-width: 600px;
     margin-left: auto;

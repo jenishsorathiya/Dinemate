@@ -417,6 +417,14 @@ $phoneCountryOptions = [
 .booking-mini-btn.is-primary {
     background: var(--dm-accent-dark);
     color: var(--dm-surface);
+    font-weight: 700;
+    border: 2px solid var(--dm-accent-dark);
+    cursor: pointer;
+}
+
+.booking-mini-btn.is-primary:hover {
+    background: transparent;
+    color: var(--dm-accent-dark);
 }
 
 .booking-benefits-top {
@@ -798,7 +806,7 @@ $phoneCountryOptions = [
                 <?php if ($showAccountPrompt): ?>
                     <div class="booking-account-card">
                         <div class="booking-account-row is-inline">
-                            <p class="booking-account-title is-inline">Have an account? <a class="booking-mini-link" href="../auth/login.php">Log in</a> to continue.</p>
+                            <p class="booking-account-title is-inline">Have an account? <a class="booking-mini-link" href="../auth/login.php">Log in</a> or <a class="booking-mini-link" href="../auth/register.php" style="font-weight: 800; color: var(--dm-info-strong);">Create Account</a> to continue.</p>
                         </div>
                     </div>
                 <?php endif; ?>
