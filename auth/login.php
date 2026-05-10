@@ -213,16 +213,28 @@ body {
     text-align: center;
     color: var(--dm-text-muted);
     font-size: 14px;
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid var(--dm-border);
 }
 
 .auth-signup a {
-    color: #4A7C59;
+    display: inline-block;
+    color: #FFFFFF;
+    background: #0a8b5a;
+    padding: 12px 24px;
+    border-radius: 8px;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
+    margin-left: 8px;
+    transition: all 0.3s ease;
 }
 
 .auth-signup a:hover {
-    text-decoration: underline;
+    background: #087a4d;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(10, 139, 90, 0.3);
+    text-decoration: none;
 }
 
 /* Right Side - Image & Content */
