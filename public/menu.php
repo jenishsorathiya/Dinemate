@@ -171,27 +171,6 @@ foreach ($categories as $category) {
     margin-top: 8px;
 }
 
-.sides-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.side-item {
-    background: var(--dm-surface);
-    padding: 15px;
-    border: 1px solid var(--dm-border);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(15,23,42,0.05);
-}
-
-.side-item h4 {
-    margin: 0;
-    color: var(--dm-text);
-    font-size: 1.1em;
-}
-
 .sauces-note {
     text-align: center;
     color: var(--dm-text-muted);
@@ -225,10 +204,6 @@ foreach ($categories as $category) {
     .menu-cards {
         grid-template-columns: 1fr;
     }
-
-    .sides-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 </style>
 
@@ -251,10 +226,26 @@ foreach ($categories as $category) {
                 <?php endif; ?>
 
                 <?php if ($category === 'Sides'): ?>
-                    <div class="sides-grid">
+                    <div class="menu-cards">
                         <?php foreach ($items as $item): ?>
-                            <div class="side-item">
-                                <h4><?php echo htmlspecialchars($item['name']); ?></h4>
+                            <div class="menu-card">
+                                <?php if (!empty($item['image'])): ?>
+                                    <div class="card-image">
+                                        <img src="<?php echo htmlspecialchars($resolveMenuImageUrl($item['image']), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>">
+                                    </div>
+                                <?php endif; ?>
+                                <div class="card-content">
+                                    <div class="card-header">
+                                        <h3><?php echo htmlspecialchars($item['name']); ?></h3>
+                                        <span class="price">$<?php echo number_format($item['price'] ?: 11, 2); ?></span>
+                                    </div>
+                                    <?php if (!empty($item['description'])): ?>
+                                        <p class="description"><?php echo htmlspecialchars($item['description']); ?></p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($item['dietary_info'])): ?>
+                                        <span class="badge"><?php echo htmlspecialchars($item['dietary_info']); ?></span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     </div>

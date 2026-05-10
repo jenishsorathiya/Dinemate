@@ -272,6 +272,9 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
             <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/manage-users.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('account'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fa fa-user-circle"></i><span class="nav-label">Account</span>
             </a>
+            <a href="<?php echo htmlspecialchars(appPath('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>">
+                <i class="fa fa-right-from-bracket"></i><span class="nav-label">Logout</span>
+            </a>
         </nav>
     </div>
 </div>

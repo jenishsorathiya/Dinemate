@@ -48,6 +48,7 @@ $adminTimelineBasePath = $isTimelineContext
 $adminPendingFeedPath = $isTimelineContext
     ? '../pending-bookings-feed.php'
     : ($isPagesContext ? '../pending-bookings-feed.php' : 'pending-bookings-feed.php');
+$adminLogoutPath = $isTimelineContext || $isPagesContext ? '../auth/logout.php' : 'auth/logout.php';
 ?>
 <style>
     .topbar {
@@ -444,6 +445,9 @@ $adminPendingFeedPath = $isTimelineContext
             <span class="topbar-profile-icon"><i class="fa fa-user-circle"></i></span>
             <span class="topbar-profile-name"><?php echo htmlspecialchars($adminProfileName, ENT_QUOTES, 'UTF-8'); ?></span>
         </div>
+        <a href="<?php echo htmlspecialchars($adminLogoutPath, ENT_QUOTES, 'UTF-8'); ?>" class="topbar-action-button" style="text-decoration:none;">
+            <i class="fa fa-right-from-bracket"></i><span>Logout</span>
+        </a>
     </div>
 </div>
 <script>

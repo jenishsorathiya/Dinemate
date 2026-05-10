@@ -701,6 +701,13 @@ $adminSidebarPathPrefix = '';
             border-color: var(--dm-accent-dark);
         }
 
+        .btn-workflow.is-table-action {
+            background: #d97706;
+            color: var(--dm-surface);
+            border-color: rgba(217, 119, 6, 0.42);
+            box-shadow: 0 9px 18px rgba(217, 119, 6, 0.18);
+        }
+
         .btn-workflow.is-reject {
             background: var(--dm-surface);
             border-color: var(--dm-danger-bg);
@@ -994,11 +1001,15 @@ $adminSidebarPathPrefix = '';
             padding: 13px 18px;
             border-bottom: 1px solid var(--border-soft);
         }
+        .bk-row.is-table-unassigned {
+            background: linear-gradient(90deg, rgba(255, 251, 235, 0.96), rgba(255, 247, 237, 0.72));
+        }
         .bk-row:last-child { border-bottom: none; }
         .bk-info { flex: 1; min-width: 0; }
         .bk-name-line { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
         .bk-name { font-size: 14px; font-weight: 600; color: var(--text-main); }
         .bk-meta { font-size: 12px; color: var(--text-muted); }
+        .bk-table-needed { margin-top: 4px; font-size: 12px; font-weight: 700; color: #b45309; }
         .bk-request { font-size: 12px; color: var(--dm-text-muted); margin-top: 2px; font-style: italic; }
         .bk-actions { display: flex; align-items: center; gap: 5px; flex-shrink: 0; flex-wrap: wrap; }
         .bk-empty { padding: 18px; font-size: 13px; color: var(--text-muted); }
@@ -1151,11 +1162,10 @@ $adminSidebarPathPrefix = '';
                     </div>
                     <?php if (!empty($standbyQueue)): ?>
                         <?php foreach ($standbyQueue as $booking): ?>
-                        <div class="bk-row">
+                        <div class="bk-row is-table-unassigned">
                             <div class="bk-info">
                                 <div class="bk-name-line">
                                     <span class="bk-name"><?php echo htmlspecialchars($booking['customer_name'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <span class="status-tag confirmed">Confirmed</span>
                                 </div>
                                 <div class="bk-meta">
                                     <?php echo htmlspecialchars(date('D j M', strtotime($booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?>
@@ -1164,12 +1174,13 @@ $adminSidebarPathPrefix = '';
                                     &middot;
                                     <?php echo (int) $booking['number_of_guests']; ?> guests
                                 </div>
+                                <div class="bk-table-needed">No table assigned</div>
                                 <?php if (trim((string) ($booking['special_request'] ?? '')) !== ''): ?>
                                     <div class="bk-request">"<?php echo htmlspecialchars($booking['special_request'], ENT_QUOTES, 'UTF-8'); ?>"</div>
                                 <?php endif; ?>
                             </div>
                             <div class="bk-actions">
-                                <a class="btn-workflow is-confirm" href="../timeline/timeline.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#timelineGrid">Assign Table</a>
+                                <a class="btn-workflow is-table-action" href="../timeline/timeline.php?date=<?php echo urlencode((string) $booking['booking_date']); ?>#timelineGrid">Table</a>
                                 <form method="POST" class="inline-form" onsubmit="return confirm('Mark this booking as completed?');">
                                     <input type="hidden" name="action" value="mark_completed">
                                     <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
