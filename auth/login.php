@@ -240,7 +240,8 @@ body {
 
 /* Right Side - Image & Content */
 .auth-image-section {
-    background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%);
+    background: linear-gradient(135deg, rgba(44, 62, 80, 0.85) 0%, rgba(31, 45, 58, 0.85) 100%), url('../assets/images/auth/bar-interior.jpg') center/cover;
+    background-attachment: fixed;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -252,12 +253,12 @@ body {
 .auth-image-section::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 150%;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(107,190,141,0.1)"/><circle cx="70" cy="30" r="25" fill="rgba(107,190,141,0.08)"/></svg>');
-    opacity: 0.5;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(31, 45, 58, 0.7) 100%);
+    opacity: 0.4;
 }
 
 .auth-content {
