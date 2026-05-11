@@ -99,11 +99,11 @@ unset($booking);
 $bookingsJson = json_encode($bookings);
 $prefillAdminBookingJson = json_encode($prefillAdminBooking, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 
-$adminPageTitle = 'Timeline';
+$adminPageTitle = 'Events';
 $adminPageIcon = 'fa-calendar-days';
 $adminNotificationCount = (int) $bookingStats['total_bookings'];
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
-$adminSidebarActive = 'timeline';
+$adminSidebarActive = 'events';
 $adminSidebarPathPrefix = '../';
 ?>
 

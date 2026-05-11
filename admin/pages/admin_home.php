@@ -18,12 +18,14 @@ $previousDate = date('Y-m-d', strtotime('-1 day', $selectedTimestamp));
 $nextDate = date('Y-m-d', strtotime('+1 day', $selectedTimestamp));
 $dashboardDateLabel = date('l, j F Y', $selectedTimestamp);
 $dashboardDateValue = date('d/m/Y', $selectedTimestamp);
+$dashboardWeekStart = date('Y-m-d', strtotime('-' . ((int) date('N', $selectedTimestamp) - 1) . ' days', $selectedTimestamp));
+$dashboardWeekEnd = date('Y-m-d', strtotime('+6 days', strtotime($dashboardWeekStart)));
 $selectedCapacityService = strtolower(trim((string) ($_GET['capacity_service'] ?? 'lunch')));
-if (!in_array($selectedCapacityService, ['lunch', 'dinner'], true)) {
+if (!in_array($selectedCapacityService, ['all', 'lunch', 'dinner'], true)) {
     $selectedCapacityService = 'lunch';
 }
 $nextCapacityService = $selectedCapacityService === 'lunch' ? 'dinner' : 'lunch';
-$selectedCapacityLabel = ucfirst($selectedCapacityService);
+$selectedCapacityLabel = $selectedCapacityService === 'all' ? 'All' : ucfirst($selectedCapacityService);
 $allowedDashboardTabs = ['bookings', 'trivia', 'functions', 'timeline', 'floor'];
 $selectedDashboardTab = strtolower(trim((string) ($_GET['dashboard_tab'] ?? 'bookings')));
 if (!in_array($selectedDashboardTab, $allowedDashboardTabs, true)) {
@@ -123,10 +125,14 @@ try {
     $pendingBookingsCount = 0;
 }
 
+$selectedCapacityGuestsCount = match ($selectedCapacityService) {
+    'all' => $selectedGuestsCount,
+    'dinner' => $selectedDinnerGuestsCount,
+    default => $selectedLunchGuestsCount,
+};
 $dashboardLunchCapacityPercent = $dashboardLunchCapacity > 0
-    ? (int) round((($selectedCapacityService === 'lunch' ? $selectedLunchGuestsCount : $selectedDinnerGuestsCount) / $dashboardLunchCapacity) * 100)
+    ? (int) round(($selectedCapacityGuestsCount / $dashboardLunchCapacity) * 100)
     : 0;
-$selectedCapacityGuestsCount = $selectedCapacityService === 'lunch' ? $selectedLunchGuestsCount : $selectedDinnerGuestsCount;
 $pendingActionsCount = $selectedPendingRequestCount + $selectedUnassignedActionCount;
 
 $formatActionLabel = static function (int $count, string $singular, ?string $plural = null): string {
@@ -352,11 +358,18 @@ $bookingTableVisibleRows = array_values(array_filter($bookingTableRows, static f
 }));
 
 $bookingTableTitle = $dashboardDateLabel;
-$bookingTableEmptyMessage = 'No normal bookings for this date.';
+$bookingTableEmptyDateLabel = $selectedDate === $todayDate ? 'today' : 'for this date';
+$bookingTableEmptyIcon = 'bi-calendar-x';
+$bookingTableEmptyTitle = 'No bookings ' . $bookingTableEmptyDateLabel;
+$bookingTableEmptyMessage = 'Bookings will appear here.';
 if ($selectedDashboardTab === 'trivia') {
-    $bookingTableEmptyMessage = 'No trivia bookings for this date.';
+    $bookingTableEmptyIcon = 'bi-question-circle';
+    $bookingTableEmptyTitle = 'No trivia bookings ' . $bookingTableEmptyDateLabel;
+    $bookingTableEmptyMessage = 'Trivia bookings will appear here.';
 } elseif ($selectedDashboardTab === 'functions') {
-    $bookingTableEmptyMessage = 'No function bookings for this date.';
+    $bookingTableEmptyIcon = 'bi-calendar-event';
+    $bookingTableEmptyTitle = 'No functions ' . $bookingTableEmptyDateLabel;
+    $bookingTableEmptyMessage = 'Function bookings will appear here.';
 }
 
 $bookingTableTotals = [
@@ -367,6 +380,97 @@ $bookingTableTotals = [
 $bookingTableTotals['average_spend'] = $bookingTableTotals['covers'] > 0
     ? $bookingTableTotals['spend'] / $bookingTableTotals['covers']
     : 0;
+
+$bookingHeadsUpItems = [];
+$formatHeadsUpTime = static function (?string $timeValue): string {
+    $timestamp = strtotime((string) $timeValue);
+    return $timestamp ? date('g:i A', $timestamp) : 'Time TBC';
+};
+
+try {
+    $headsUpStartDate = date('Y-m-d', strtotime('+1 day', $selectedTimestamp));
+    if ($headsUpStartDate < $todayDate && $todayDate <= $dashboardWeekEnd) {
+        $headsUpStartDate = $todayDate;
+    }
+
+    if ($headsUpStartDate <= $dashboardWeekEnd) {
+        $headsUpDailyCoversStmt = $pdo->prepare("
+            SELECT
+                booking_date,
+                COUNT(*) AS day_bookings,
+                COALESCE(SUM(number_of_guests), 0) AS day_covers
+            FROM bookings
+            WHERE booking_date BETWEEN ? AND ?
+              AND status <> 'pending'
+              AND status <> 'cancelled'
+            GROUP BY booking_date
+            HAVING day_covers > 100
+            ORDER BY booking_date ASC
+        ");
+        $headsUpDailyCoversStmt->execute([$headsUpStartDate, $dashboardWeekEnd]);
+        $headsUpBusyDays = $headsUpDailyCoversStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        foreach ($headsUpBusyDays as $busyDay) {
+            $busyDate = (string) ($busyDay['booking_date'] ?? $selectedDate);
+            $busyTimestamp = strtotime($busyDate) ?: $selectedTimestamp;
+            $bookingHeadsUpItems[] = [
+                'tone' => 'large',
+                'icon' => 'bi-people-fill',
+                'title' => 'Big Crowd on ' . date('l', $busyTimestamp),
+                'meta' => number_format((int) ($busyDay['day_covers'] ?? 0)) . ' guests across ' . number_format((int) ($busyDay['day_bookings'] ?? 0)) . ' bookings',
+                'date' => $busyDate,
+                'sort_time' => '00:00:00',
+                'action' => 'Open day',
+            ];
+        }
+
+        $headsUpFunctionStmt = $pdo->prepare("
+            SELECT
+                b.booking_id,
+                b.booking_date,
+                b.start_time,
+                b.number_of_guests,
+                COALESCE(NULLIF(b.customer_name_override, ''), NULLIF(b.customer_name, ''), u.name, 'Guest') AS customer_name
+            FROM bookings b
+            LEFT JOIN users u ON b.user_id = u.user_id
+            WHERE b.booking_date BETWEEN ? AND ?
+              AND b.status <> 'pending'
+              AND b.status <> 'cancelled'
+              AND COALESCE(b.booking_type, 'normal') = 'function'
+            ORDER BY b.booking_date ASC, b.start_time ASC, b.booking_id ASC
+            LIMIT 4
+        ");
+        $headsUpFunctionStmt->execute([$headsUpStartDate, $dashboardWeekEnd]);
+        $headsUpFunctions = $headsUpFunctionStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        foreach ($headsUpFunctions as $functionBooking) {
+            $functionDate = (string) ($functionBooking['booking_date'] ?? $selectedDate);
+            $functionTimestamp = strtotime($functionDate) ?: $selectedTimestamp;
+            $functionName = trim((string) ($functionBooking['customer_name'] ?? 'Guest'));
+            $functionCovers = number_format((int) ($functionBooking['number_of_guests'] ?? 0)) . ' guests';
+            $bookingHeadsUpItems[] = [
+                'tone' => 'function',
+                'icon' => 'bi-calendar-event',
+                'title' => 'Function this ' . date('l', $functionTimestamp),
+                'meta' => $functionName . ' - ' . $functionCovers . ' at ' . $formatHeadsUpTime($functionBooking['start_time'] ?? null),
+                'date' => $functionDate,
+                'sort_time' => (string) ($functionBooking['start_time'] ?? '00:00:00'),
+                'action' => 'View booking',
+            ];
+        }
+
+        usort($bookingHeadsUpItems, static function (array $left, array $right): int {
+            $leftSort = (string) ($left['date'] ?? '') . ' ' . (string) ($left['sort_time'] ?? '');
+            $rightSort = (string) ($right['date'] ?? '') . ' ' . (string) ($right['sort_time'] ?? '');
+
+            return strcmp($leftSort, $rightSort);
+        });
+
+        $bookingHeadsUpItems = array_slice($bookingHeadsUpItems, 0, 4);
+    }
+} catch (Throwable $headsUpError) {
+    $bookingHeadsUpItems = [];
+}
 
 $normalizeDashboardAreaName = static function (string $value): string {
     return preg_replace('/[^a-z0-9]+/', '', strtolower(trim($value))) ?? '';
@@ -445,6 +549,17 @@ try {
 $dashboardFloorBookingsByTableId = [];
 $dashboardFloorUnassignedBookings = [];
 foreach ($bookingTableRows as $bookingTableRow) {
+    $bookingStartTime = (string) ($bookingTableRow['start_time'] ?? '');
+    $isLunchBooking = $bookingStartTime >= '12:00:00' && $bookingStartTime < '17:00:00';
+    $isDinnerBooking = $bookingStartTime >= '17:00:00';
+
+    if (
+        ($selectedCapacityService === 'lunch' && !$isLunchBooking)
+        || ($selectedCapacityService === 'dinner' && !$isDinnerBooking)
+    ) {
+        continue;
+    }
+
     $assignedTableIds = array_values(array_filter(array_map('intval', explode(',', (string) ($bookingTableRow['assigned_table_ids'] ?? '')))));
 
     if (empty($assignedTableIds)) {
@@ -618,23 +733,33 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
 
                 <nav class="sidebar-nav" aria-label="Primary navigation">
                     <a class="sidebar-link active" href="admin_home.php" aria-current="page">
-                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
-                        <span>Dashboard</span>
+                        <i class="bi bi-house" aria-hidden="true"></i>
+                        <span>Home</span>
                     </a>
 
                     <a class="sidebar-link" href="bookings-management.php">
-                        <i class="bi bi-calendar" aria-hidden="true"></i>
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
                         <span>Bookings</span>
                     </a>
 
                     <a class="sidebar-link" href="home.php?mode=requests">
-                        <i class="bi bi-list-ul" aria-hidden="true"></i>
+                        <i class="bi bi-inbox" aria-hidden="true"></i>
                         <span>Requests</span>
+                    </a>
+
+                    <a class="sidebar-link" href="bookings-management.php?type=function">
+                        <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                        <span>Functions</span>
                     </a>
 
                     <a class="sidebar-link" href="../timeline/timeline.php">
                         <i class="bi bi-calendar3" aria-hidden="true"></i>
-                        <span>Calendar</span>
+                        <span>Events</span>
+                    </a>
+
+                    <a class="sidebar-link" href="menu-management.php">
+                        <i class="bi bi-menu-button-wide" aria-hidden="true"></i>
+                        <span>Menu</span>
                     </a>
 
                     <a class="sidebar-link" href="customer-history.php">
@@ -642,19 +767,9 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                         <span>Guests</span>
                     </a>
 
-                    <a class="sidebar-link" href="tables-management.php">
-                        <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
-                        <span>Tables</span>
-                    </a>
-
-                    <a class="sidebar-link" href="bookings-management.php?type=function">
-                        <i class="bi bi-arrow-up-right-square" aria-hidden="true"></i>
-                        <span>Functions</span>
-                    </a>
-
                     <a class="sidebar-link" href="analytics.php">
                         <i class="bi bi-bar-chart" aria-hidden="true"></i>
-                        <span>Reports</span>
+                        <span>Report</span>
                     </a>
 
                     <a class="sidebar-link" href="settings.php">
@@ -701,8 +816,13 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
 
                     <a class="secondary-btn" href="<?php echo htmlspecialchars($dashboardUrl(['date' => $todayDate]), ENT_QUOTES, 'UTF-8'); ?>">Today</a>
 
+                    <a class="primary-btn header-add-booking-btn" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList">
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        <span>Add Booking</span>
+                    </a>
+
                     <a class="icon-btn notification-btn" href="home.php?mode=requests" aria-label="Notifications">
-                        <i class="bi bi-bell" aria-hidden="true"></i>
+                        <i class="bi bi-bell-fill" aria-hidden="true"></i>
                         <?php if ($pendingBookingsCount > 0): ?>
                             <span class="notification-badge"><?php echo htmlspecialchars((string) min($pendingBookingsCount, 99), ENT_QUOTES, 'UTF-8'); ?></span>
                         <?php endif; ?>
@@ -721,7 +841,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                             <div class="kpi-value"><?php echo number_format($selectedBookingsCount); ?></div>
                             <div class="kpi-label">Total Bookings</div>
                         </div>
-                        <div class="kpi-subtext"><?php echo number_format($selectedGuestsCount); ?> Covers</div>
+                        <div class="kpi-subtext"><?php echo number_format($selectedGuestsCount); ?> Guests</div>
                     </div>
                 </article>
 
@@ -734,7 +854,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                             <div class="kpi-value"><?php echo number_format($selectedLunchCount); ?></div>
                             <div class="kpi-label">Lunch Bookings</div>
                         </div>
-                        <div class="kpi-subtext"><?php echo number_format($selectedLunchGuestsCount); ?> Covers</div>
+                        <div class="kpi-subtext"><?php echo number_format($selectedLunchGuestsCount); ?> Guests</div>
                     </div>
                 </article>
 
@@ -747,7 +867,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                             <div class="kpi-value"><?php echo number_format($selectedDinnerCount); ?></div>
                             <div class="kpi-label">Dinner Bookings</div>
                         </div>
-                        <div class="kpi-subtext"><?php echo number_format($selectedDinnerGuestsCount); ?> Covers</div>
+                        <div class="kpi-subtext"><?php echo number_format($selectedDinnerGuestsCount); ?> Guests</div>
                     </div>
                 </article>
 
@@ -763,7 +883,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                 (<a class="kpi-toggle-link" href="<?php echo htmlspecialchars($dashboardUrl(['capacity_service' => $nextCapacityService]), ENT_QUOTES, 'UTF-8'); ?>" aria-label="Switch capacity card to <?php echo htmlspecialchars($nextCapacityService, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($selectedCapacityLabel, ENT_QUOTES, 'UTF-8'); ?></a>)
                             </div>
                         </div>
-                        <div class="kpi-subtext"><?php echo number_format($selectedCapacityGuestsCount); ?> of <?php echo number_format($dashboardLunchCapacity); ?> Covers</div>
+                        <div class="kpi-subtext"><?php echo number_format($selectedCapacityGuestsCount); ?> of <?php echo number_format($dashboardLunchCapacity); ?> Guests</div>
                     </div>
                 </article>
 
@@ -899,10 +1019,6 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                 <div>
                                     <h2><?php echo htmlspecialchars($bookingTableTitle, ENT_QUOTES, 'UTF-8'); ?></h2>
                                 </div>
-                                <a class="primary-btn booking-table-add-btn" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList">
-                                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                                    <span>Add Booking</span>
-                                </a>
                             </div>
 
                             <div class="booking-table-wrap">
@@ -910,19 +1026,25 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                     <thead>
                                         <tr>
                                             <th>Time</th>
-                                            <th>Guest</th>
+                                            <th>Name</th>
                                             <th>Table</th>
                                             <th>Notes</th>
-                                            <th>Covers</th>
+                                            <th>Guests</th>
                                             <th>Status</th>
                                             <th aria-label="Actions"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php if (empty($bookingTableVisibleRows)): ?>
-                                            <tr>
+                                            <tr class="booking-table-empty-row">
                                                 <td colspan="7">
-                                                    <div class="booking-table-empty"><?php echo htmlspecialchars($bookingTableEmptyMessage, ENT_QUOTES, 'UTF-8'); ?></div>
+                                                    <div class="booking-table-empty">
+                                                        <span class="booking-table-empty-icon">
+                                                            <i class="bi <?php echo htmlspecialchars($bookingTableEmptyIcon, ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                                                        </span>
+                                                        <strong><?php echo htmlspecialchars($bookingTableEmptyTitle, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                                        <span><?php echo htmlspecialchars($bookingTableEmptyMessage, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php else: ?>
@@ -981,13 +1103,30 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                 </table>
                             </div>
 
-                            <div class="booking-table-totals" aria-label="Summary">
-                                <strong>Summary</strong>
-                                <span><i class="bi bi-calendar3" aria-hidden="true"></i><b><?php echo number_format($bookingTableTotals['bookings']); ?></b> Bookings</span>
-                                <span><i class="bi bi-people" aria-hidden="true"></i><b><?php echo number_format($bookingTableTotals['covers']); ?></b> Covers</span>
-                                <span><i class="bi bi-cash-coin" aria-hidden="true"></i><b><?php echo htmlspecialchars($formatMoney($bookingTableTotals['spend']), ENT_QUOTES, 'UTF-8'); ?></b> Est. Spend</span>
-                                <span><i class="bi bi-person" aria-hidden="true"></i><b><?php echo htmlspecialchars($formatMoney($bookingTableTotals['average_spend']), ENT_QUOTES, 'UTF-8'); ?></b> Avg. Spend / Head</span>
-                            </div>
+                            <?php if ($selectedDashboardTab === 'bookings' && !empty($bookingHeadsUpItems)): ?>
+                                <section class="booking-heads-up" aria-label="Booking alerts">
+                                    <?php foreach ($bookingHeadsUpItems as $headsUpItem): ?>
+                                        <?php
+                                        $headsUpBookingDate = (string) ($headsUpItem['date'] ?? $selectedDate);
+                                        $headsUpTitle = (string) ($headsUpItem['title'] ?? 'Heads Up');
+                                        $headsUpMeta = (string) ($headsUpItem['meta'] ?? '');
+                                        $headsUpTone = (string) ($headsUpItem['tone'] ?? 'large');
+                                        $headsUpIcon = (string) ($headsUpItem['icon'] ?? 'bi-info-circle');
+                                        $headsUpAction = (string) ($headsUpItem['action'] ?? 'Open day');
+                                        ?>
+                                        <a class="booking-heads-up-item <?php echo htmlspecialchars($headsUpTone, ENT_QUOTES, 'UTF-8'); ?>" href="../timeline/timeline.php?date=<?php echo urlencode($headsUpBookingDate); ?>#bookingList">
+                                            <span class="booking-heads-up-item-icon"><i class="bi <?php echo htmlspecialchars($headsUpIcon, ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i></span>
+                                            <span class="booking-heads-up-copy">
+                                                <strong><?php echo htmlspecialchars($headsUpTitle, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                                <small><?php echo htmlspecialchars($headsUpMeta, ENT_QUOTES, 'UTF-8'); ?></small>
+                                            </span>
+                                            <span class="booking-heads-up-action">
+                                                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                            </span>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </section>
+                            <?php endif; ?>
                         </section>
                     <?php elseif ($selectedDashboardTab === 'timeline'): ?>
                         <section class="booking-timeline-panel card" aria-label="Timeline view">
@@ -996,7 +1135,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                     <h2><?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?></h2>
                                 </div>
                                 <a class="icon-btn booking-table-expand-btn" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>" aria-label="Open full timeline" title="Open full timeline">
-                                    <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+                                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
                                 </a>
                             </div>
                             <iframe
@@ -1011,8 +1150,25 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                 <div>
                                     <h2><?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?></h2>
                                 </div>
+                                <nav class="dashboard-service-toggle dashboard-floor-service-toggle" aria-label="Floor service">
+                                    <a
+                                        class="<?php echo $selectedCapacityService === 'all' ? 'is-active' : ''; ?>"
+                                        href="<?php echo htmlspecialchars($dashboardUrl(['dashboard_tab' => 'floor', 'capacity_service' => 'all']), ENT_QUOTES, 'UTF-8'); ?>"
+                                        <?php echo $selectedCapacityService === 'all' ? 'aria-current="true"' : ''; ?>
+                                    ><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i><span>All</span></a>
+                                    <a
+                                        class="<?php echo $selectedCapacityService === 'lunch' ? 'is-active' : ''; ?>"
+                                        href="<?php echo htmlspecialchars($dashboardUrl(['dashboard_tab' => 'floor', 'capacity_service' => 'lunch']), ENT_QUOTES, 'UTF-8'); ?>"
+                                        <?php echo $selectedCapacityService === 'lunch' ? 'aria-current="true"' : ''; ?>
+                                    ><i class="bi bi-sun" aria-hidden="true"></i><span>Lunch</span></a>
+                                    <a
+                                        class="<?php echo $selectedCapacityService === 'dinner' ? 'is-active' : ''; ?>"
+                                        href="<?php echo htmlspecialchars($dashboardUrl(['dashboard_tab' => 'floor', 'capacity_service' => 'dinner']), ENT_QUOTES, 'UTF-8'); ?>"
+                                        <?php echo $selectedCapacityService === 'dinner' ? 'aria-current="true"' : ''; ?>
+                                    ><i class="bi bi-moon-stars" aria-hidden="true"></i><span>Dinner</span></a>
+                                </nav>
                                 <a class="icon-btn booking-table-expand-btn" href="tables-management.php" aria-label="Open full floor view" title="Open full floor view">
-                                    <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+                                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
                                 </a>
                             </div>
 
@@ -1163,7 +1319,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                     <div class="dashboard-floor-detail-contact-list" data-dashboard-detail-contacts></div>
                                                 </div>
 
-                                                <div class="dashboard-floor-detail-notes">
+                                                <div class="dashboard-floor-detail-notes" data-dashboard-detail-notes-wrap>
                                                     <span>Notes</span>
                                                     <p data-dashboard-detail-notes></p>
                                                 </div>
@@ -1229,6 +1385,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             guests: document.querySelector('[data-dashboard-detail-guests]'),
             name: document.querySelector('[data-dashboard-detail-name]'),
             contacts: document.querySelector('[data-dashboard-detail-contacts]'),
+            notesWrap: document.querySelector('[data-dashboard-detail-notes-wrap]'),
             notes: document.querySelector('[data-dashboard-detail-notes]'),
             view: document.querySelector('[data-dashboard-detail-view]'),
             edit: document.querySelector('[data-dashboard-detail-edit]'),
@@ -1339,12 +1496,18 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 setDetailText(dashboardFloorDetail.guests, `${Number(payload.capacity || 0)} seats`);
                 setDetailText(dashboardFloorDetail.name, `Table ${payload.number || ''}`.trim());
                 renderDashboardFloorContacts('', '', payload.area || 'Dining room');
-                setDetailText(dashboardFloorDetail.notes, '-');
-                setDetailLink(dashboardFloorDetail.view, timelineUrl, 'Open Timeline');
-                setDetailLink(dashboardFloorDetail.edit, 'tables-management.php', 'Manage Table');
+                if (dashboardFloorDetail.notesWrap) {
+                    dashboardFloorDetail.notesWrap.hidden = true;
+                }
+                setDetailText(dashboardFloorDetail.notes, '');
+                setDetailLink(dashboardFloorDetail.view, 'tables-management.php', 'Manage Table');
+                setDetailLink(dashboardFloorDetail.edit, timelineUrl, 'Add Booking');
                 return;
             }
 
+            if (dashboardFloorDetail.notesWrap) {
+                dashboardFloorDetail.notesWrap.hidden = false;
+            }
             setDetailText(dashboardFloorDetail.time, booking.time || 'Time TBC');
             setDetailText(dashboardFloorDetail.date, booking.date || '<?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?>');
             setDetailText(dashboardFloorDetail.guests, `${Number(booking.guests || 0)} Guests`);

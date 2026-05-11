@@ -990,7 +990,7 @@ $renderHomeFloorLayout = static function (array $floorTables, array $floorZones,
 };
 
 $adminPageTitle = $bookingModeMeta[$selectedBookingMode]['label'];
-$adminSidebarActive = 'home';
+$adminSidebarActive = $selectedBookingMode === 'requests' ? 'requests' : 'home';
 $adminSidebarPathPrefix = '';
 ?>
 <!DOCTYPE html>

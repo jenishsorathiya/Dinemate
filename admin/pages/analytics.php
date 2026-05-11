@@ -197,11 +197,11 @@ foreach ($bookingRows as $booking) {
     }
 }
 
-$adminPageTitle = 'Analytics';
+$adminPageTitle = 'Report';
 $adminPageIcon = 'fa-chart-line';
 $adminNotificationCount = $todayBookingCount;
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
-$adminSidebarActive = 'dashboard';
+$adminSidebarActive = 'report';
 $adminSidebarPathPrefix = '';
 $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $formatTopbarControls($areaOptionsHtml));
 ?>

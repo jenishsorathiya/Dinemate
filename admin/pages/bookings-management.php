@@ -352,11 +352,11 @@ if ($todayCapacity > 0) {
 
 $flash = getFlashMessage();
 
-$adminPageTitle = 'Bookings Management';
+$adminPageTitle = (string) ($_GET['type'] ?? '') === 'function' ? 'Functions' : 'Bookings Management';
 $adminPageIcon = 'fa-clipboard-list';
 $adminNotificationCount = $pendingRequestsCount;
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
-$adminSidebarActive = 'bookings';
+$adminSidebarActive = (string) ($_GET['type'] ?? '') === 'function' ? 'functions' : 'bookings';
 $adminSidebarPathPrefix = '';
 ?>
 <!DOCTYPE html>

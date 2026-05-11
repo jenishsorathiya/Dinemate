@@ -355,11 +355,11 @@ if (!empty($selectedProfileBookings)) {
     }
 }
 
-$adminPageTitle = 'Customer History';
+$adminPageTitle = 'Guests';
 $adminPageIcon = 'fa-address-book';
 $adminNotificationCount = $totalProfiles;
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
-$adminSidebarActive = 'customers';
+$adminSidebarActive = 'guests';
 $adminSidebarPathPrefix = '';
 $flash = getFlashMessage();
 ?>
