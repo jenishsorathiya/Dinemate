@@ -148,6 +148,8 @@ $adminSidebarPathPrefix = '../';
         .timeline-embedded-container {
             width: 100%;
             min-height: 100vh;
+            padding-left: 0;
+            padding-right: 0;
         }
 
         body.timeline-embedded .content {
@@ -1247,19 +1249,6 @@ $adminSidebarPathPrefix = '../';
             border-color: var(--dm-border);
         }
 
-        .area-filter-add-btn {
-            width: 38px;
-            height: 38px;
-            padding: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            font-weight: 600;
-            line-height: 1;
-            flex-shrink: 0;
-        }
-
         .area-filter-chip-count {
             color: inherit;
             opacity: 0.75;
@@ -1728,6 +1717,697 @@ $adminSidebarPathPrefix = '../';
         ::-webkit-scrollbar-thumb:hover {
             background: var(--dm-text-soft);
         }
+
+        /* Admin home visual system */
+        :root {
+            --dm-bg: #f6f8fb;
+            --dm-surface: #ffffff;
+            --dm-surface-soft: #fbfcfe;
+            --dm-surface-muted: #fbfcfe;
+            --dm-text: #0f172a;
+            --dm-text-secondary: #334155;
+            --dm-text-muted: #64748b;
+            --dm-text-soft: #94a3b8;
+            --dm-border: #e3e8f0;
+            --dm-border-soft: #eef2f7;
+            --dm-border-strong: #cbd5e1;
+            --dm-primary: #0b5ed7;
+            --dm-primary-hover: #084fc0;
+            --dm-primary-text: #ffffff;
+            --dm-primary-soft: #eef4ff;
+            --dm-danger-bg: #fee2e2;
+            --dm-danger-text: #b91c1c;
+            --dm-confirmed-bg: #dcfce7;
+            --dm-confirmed-text: #15803d;
+            --dm-neutral-bg: #eef2f7;
+            --dm-neutral-text: #64748b;
+            --dm-font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --dm-shadow-sm: 0 4.8px 14.4px rgba(15, 23, 42, 0.03);
+            --dm-shadow-md: 0 14px 32px rgba(15, 23, 42, 0.12);
+            --timeline-row-height: 40px;
+            --timeline-label-column-width: 92px;
+        }
+
+        body {
+            background: var(--dm-bg);
+            color: var(--dm-text);
+            font-family: var(--dm-font-sans);
+            font-size: 11.2px;
+            line-height: 1.4;
+        }
+
+        .container-fluid,
+        .content {
+            background: var(--dm-bg);
+        }
+
+        .content {
+            gap: 14.4px;
+            padding: 14.4px;
+        }
+
+        body.timeline-embedded,
+        body.timeline-embedded .container-fluid,
+        body.timeline-embedded .content {
+            background: var(--dm-surface);
+        }
+
+        body.timeline-embedded .timeline-embedded-container {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        body.timeline-embedded .content {
+            gap: 0;
+            padding: 0;
+        }
+
+        .left-panel,
+        .timeline-area,
+        .timeline-panel-tools,
+        .stats-card,
+        .booking-modal-card {
+            border: 1px solid var(--dm-border);
+            border-radius: 11.2px;
+            background: var(--dm-surface);
+            box-shadow: var(--dm-shadow-sm);
+        }
+
+        .left-panel {
+            width: 256px;
+        }
+
+        .tables-section,
+        .booking-list {
+            padding: 14.4px;
+        }
+
+        .timeline-panel-tools {
+            margin-bottom: 12px;
+            padding: 12px;
+        }
+
+        .timeline-date-year,
+        .stats-item-label {
+            color: var(--dm-text-muted);
+            font-size: 8.8px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+
+        .timeline-date-primary {
+            color: var(--dm-text);
+            font-size: 13.6px;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .today-button,
+        .timeline-date-nav,
+        .timeline-date-picker-trigger {
+            border: 1px solid var(--dm-border);
+            border-radius: 6.4px;
+            background: var(--dm-surface);
+            color: var(--dm-text);
+            font-size: 10.4px;
+            font-weight: 700;
+            box-shadow: none;
+        }
+
+        .today-button {
+            min-height: 28px;
+            padding: 0 9px;
+        }
+
+        .timeline-date-nav,
+        .timeline-date-picker-trigger {
+            width: 28px;
+            min-width: 28px;
+            height: 28px;
+        }
+
+        .today-button:hover,
+        .timeline-date-nav:hover,
+        .timeline-date-picker-trigger:hover {
+            border-color: var(--dm-primary);
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+        }
+
+        .booking-list-tabs {
+            gap: 8px;
+            margin-bottom: 10px;
+            padding: 4px;
+            border: 1px solid var(--dm-border);
+            border-radius: 9.6px;
+            background: var(--dm-surface);
+        }
+
+        .booking-list-tab {
+            min-height: 30.4px;
+            padding: 0 10px;
+            border: 0;
+            border-radius: 6.4px;
+            background: transparent;
+            color: var(--dm-text-muted);
+            font-size: 10.4px;
+            font-weight: 700;
+            box-shadow: none;
+        }
+
+        .booking-list-tab:hover {
+            background: var(--dm-surface-muted);
+            color: var(--dm-text);
+        }
+
+        .booking-list-tab.active,
+        .booking-list-tab.pending-span.has-pending.active {
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+            border-color: transparent;
+            box-shadow: none;
+        }
+
+        .booking-list-tab.pending-span.has-pending {
+            background: var(--dm-danger-bg);
+            color: var(--dm-danger-text);
+            border-color: transparent;
+            box-shadow: none;
+            animation: none;
+        }
+
+        .booking-item {
+            margin-bottom: 8px;
+            min-height: 54px;
+            padding: 8px 10px;
+            border: 1px solid var(--dm-border);
+            border-radius: 8px;
+            background: var(--dm-surface);
+            box-shadow: none;
+        }
+
+        .booking-item:hover {
+            background: #f8fbff;
+            border-color: var(--dm-primary);
+        }
+
+        .booking-item.is-table-unassigned {
+            border-color: #fde68a;
+            background: #fffbeb;
+        }
+
+        .booking-item-time,
+        .booking-item-table,
+        .booking-item-bottom-right {
+            color: var(--dm-text);
+            font-weight: 700;
+        }
+
+        .booking-item-name,
+        .booking-item-meta {
+            color: var(--dm-text-muted);
+            font-weight: 500;
+        }
+
+        .booking-item-note-icon {
+            width: 16px;
+            height: 16px;
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+            font-size: 8px;
+        }
+
+        .booking-item-action-btn,
+        .booking-item-action-btn.is-table-action,
+        .add-booking-button,
+        .booking-modal-submit,
+        .booking-modal-success-small {
+            min-height: 30.4px;
+            border: 0;
+            border-radius: 6.4px;
+            background: var(--dm-primary);
+            color: var(--dm-primary-text);
+            box-shadow: none;
+            font-size: 10.4px;
+            font-weight: 700;
+        }
+
+        .booking-item-action-btn:hover,
+        .booking-item-action-btn.is-table-action:hover,
+        .add-booking-button:hover,
+        .booking-modal-submit:hover,
+        .booking-modal-success-small:hover {
+            background: var(--dm-primary-hover);
+            color: var(--dm-primary-text);
+            box-shadow: none;
+        }
+
+        .booking-modal-cancel,
+        .booking-modal-secondary-small,
+        .booking-modal-danger-small,
+        .booking-modal-danger {
+            min-height: 30.4px;
+            border-radius: 6.4px;
+            box-shadow: none;
+            font-size: 10.4px;
+            font-weight: 700;
+        }
+
+        .booking-modal-cancel,
+        .booking-modal-secondary-small {
+            border: 1px solid var(--dm-border);
+            background: var(--dm-surface);
+            color: var(--dm-text);
+        }
+
+        .booking-modal-cancel:hover,
+        .booking-modal-secondary-small:hover {
+            border-color: var(--dm-border-strong);
+            background: var(--dm-surface-muted);
+            color: var(--dm-text);
+        }
+
+        .booking-modal-danger,
+        .booking-modal-danger-small {
+            border: 1px solid var(--dm-danger-bg);
+            background: var(--dm-danger-bg);
+            color: var(--dm-danger-text);
+        }
+
+        .stats-card {
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .stats-item {
+            padding: 9px 10px;
+            border-color: var(--dm-border);
+            background: var(--dm-surface);
+        }
+
+        .stats-item-value {
+            color: var(--dm-text);
+            font-size: 10.4px;
+            font-weight: 700;
+        }
+
+        .left-panel-footer {
+            border-color: var(--dm-border);
+            background: var(--dm-surface);
+        }
+
+        body.timeline-embedded .timeline-area {
+            width: 100%;
+            border-radius: 0;
+            border: 0;
+            box-shadow: none;
+        }
+
+        .timeline-area {
+            border-radius: 11.2px;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .timeline-scroll-wrapper {
+            min-width: 0;
+        }
+
+        .time-header {
+            border-bottom: 1px solid var(--dm-border);
+            background: var(--dm-surface-soft);
+            overflow: visible;
+        }
+
+        .time-header-spacer,
+        .time-slot,
+        .table-labels {
+            background: var(--dm-surface-soft);
+        }
+
+        .time-header-spacer,
+        .table-labels {
+            width: var(--timeline-label-column-width);
+            min-width: var(--timeline-label-column-width);
+        }
+
+        .time-header-spacer,
+        .time-slot {
+            color: var(--dm-text-muted);
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+
+        .area-header-selector {
+            position: sticky;
+            left: 0;
+            z-index: 30;
+            overflow: visible;
+            padding: 0;
+            background: var(--dm-primary-soft);
+            align-items: stretch;
+            justify-content: stretch;
+        }
+
+        .area-header-button {
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            min-height: 40px;
+            padding: 0 10px;
+            border: 0;
+            border-radius: 0 !important;
+            margin: 0;
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font: inherit;
+            font-size: 11.2px;
+            font-weight: 600;
+            letter-spacing: 0;
+            line-height: 1;
+            text-transform: none;
+            cursor: pointer;
+            transition: background 160ms ease, color 160ms ease;
+        }
+
+        .area-header-button span {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .area-header-button i {
+            flex: 0 0 auto;
+            font-size: 8px;
+        }
+
+        .area-header-selector:hover .area-header-button,
+        .area-header-selector.is-open .area-header-button,
+        .area-header-selector:focus-within .area-header-button {
+            background: var(--dm-primary);
+            color: var(--dm-primary-text);
+        }
+
+        .area-header-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            width: max(156px, var(--timeline-label-column-width));
+            max-height: 240px;
+            padding: 6px;
+            border: 1px solid var(--dm-border);
+            border-radius: 9.6px;
+            background: var(--dm-surface);
+            box-shadow: var(--dm-shadow-md);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-4px);
+            visibility: hidden;
+            overflow-y: auto;
+            text-transform: none;
+            transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+        }
+
+        .area-header-selector:hover .area-header-menu,
+        .area-header-selector.is-open .area-header-menu,
+        .area-header-selector:focus-within .area-header-menu {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .area-header-option {
+            width: 100%;
+            min-height: 34px;
+            padding: 0 9px;
+            border: 0;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--dm-text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 11.2px;
+            font-weight: 600;
+            letter-spacing: 0;
+            line-height: 1;
+            text-align: left;
+            text-transform: none;
+            cursor: pointer;
+        }
+
+        .area-header-option:hover {
+            background: #f8fafc;
+            color: var(--dm-text);
+        }
+
+        .area-header-option.active {
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+        }
+
+        .area-header-option-count {
+            flex: 0 0 auto;
+            color: inherit;
+            opacity: 0.72;
+            font-size: 10.4px;
+            font-weight: 600;
+        }
+
+        .time-header-spacer,
+        .time-slot,
+        .table-labels {
+            background: var(--dm-surface-soft);
+        }
+
+        .table-label {
+            background: var(--dm-surface);
+            color: var(--dm-text);
+            font-size: 10.4px;
+            font-weight: 700;
+        }
+
+        .table-label.clickable:hover {
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+        }
+
+        .table-label-area-pill {
+            border-radius: 6.4px;
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+            font-size: 8.8px;
+            font-weight: 800;
+        }
+
+        .area-label-row,
+        .area-divider-row {
+            background: var(--dm-surface-soft);
+            color: var(--dm-text-muted);
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+
+        .area-label-row.area-label-link {
+            cursor: pointer;
+            justify-content: center;
+            text-align: center;
+            transition: background 160ms ease, color 160ms ease;
+        }
+
+        .area-label-row.area-label-link:hover {
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+        }
+
+        .area-divider-row::after {
+            content: none;
+        }
+
+        .time-cell {
+            border-right-color: var(--dm-border-soft);
+            background: var(--dm-surface);
+        }
+
+        .time-cell:hover {
+            background: #f8fbff;
+        }
+
+        .booking-block {
+            top: 4px;
+            min-height: 32px;
+            padding: 5px 7px;
+            border: 1px solid var(--dm-primary);
+            border-radius: 6.4px;
+            background: var(--dm-primary-soft);
+            color: var(--dm-text);
+            box-shadow: none;
+            font-size: 10.4px;
+            font-weight: 600;
+        }
+
+        .booking-block:hover {
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+        }
+
+        .booking-block.success {
+            border-color: #cfe0ff;
+            background: #eef4ff;
+            color: #0f172a;
+        }
+
+        .booking-block.pending {
+            border-color: #fde68a;
+            background: #fef3c7;
+            color: #92400e;
+            box-shadow: none;
+        }
+
+        .booking-block.info {
+            border-color: #fed7aa;
+            background: #fff3e1;
+            color: #9a3412;
+            box-shadow: none;
+        }
+
+        .booking-block.completed {
+            border-color: #bbf7d0;
+            background: #dcfce7;
+            color: #166534;
+            box-shadow: none;
+        }
+
+        .booking-block.no-show,
+        .booking-block.over-capacity {
+            border-color: #fecaca;
+            background: #fee2e2;
+            color: #991b1b;
+            box-shadow: none;
+        }
+
+        .booking-block.rescheduled {
+            outline: 1px dashed var(--dm-text-soft);
+            outline-offset: -3px;
+        }
+
+        .booking-time-text,
+        .booking-meta-inline,
+        .booking-name-text {
+            font-weight: 700;
+        }
+
+        .booking-note-btn {
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.75);
+            color: inherit;
+        }
+
+        .booking-placement-dot {
+            width: 8px;
+            height: 8px;
+            box-shadow: 0 0 0 2px var(--dm-surface);
+        }
+
+        .current-time-line,
+        .current-time-line::before {
+            background: var(--dm-primary);
+        }
+
+        .current-time-line {
+            width: 2px;
+            box-shadow: none;
+        }
+
+        .modal-backdrop-custom {
+            background: rgba(15, 23, 42, 0.48);
+            backdrop-filter: blur(4px);
+        }
+
+        .booking-modal-card {
+            border-radius: 11.2px;
+            padding: 20px;
+        }
+
+        .booking-modal-header {
+            border-color: var(--dm-border);
+        }
+
+        .booking-modal-header h5 {
+            color: var(--dm-text);
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .booking-modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 6.4px;
+            background: var(--dm-surface-muted);
+            color: var(--dm-text-muted);
+            font-size: 18px;
+        }
+
+        .booking-modal-close:hover {
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+        }
+
+        .modal-form-group label {
+            color: var(--dm-text-secondary);
+            font-size: 10.4px;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+
+        .modal-form-group input,
+        .modal-form-group select,
+        .modal-form-group textarea,
+        .calendar input {
+            border: 1px solid var(--dm-border);
+            border-radius: 8px;
+            background: var(--dm-surface);
+            color: var(--dm-text);
+            font-size: 11.2px;
+            font-weight: 500;
+        }
+
+        .modal-form-group input:focus,
+        .modal-form-group select:focus,
+        .modal-form-group textarea:focus,
+        .calendar input:focus {
+            border-color: var(--dm-primary);
+            box-shadow: 0 0 0 3px rgba(11, 94, 215, 0.12);
+            outline: none;
+        }
+
+        .booking-meta-chip {
+            border-radius: 8px;
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+            font-size: 10.4px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 900px) {
+            .timeline-area,
+            body.timeline-embedded .timeline-area {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body class="<?php echo $isEmbeddedTimeline ? 'timeline-embedded' : ''; ?>">
@@ -1796,13 +2476,16 @@ $adminSidebarPathPrefix = '../';
 
             <!-- TIMELINE -->
             <div class="timeline-area">
-                <div class="timeline-toolbar">
-                    <div class="area-filter-bar" id="areaFilterBar"></div>
-                </div>
                 <div class="timeline-scroll-wrapper" id="timelineScrollWrapper">
                     <!-- TIME HEADER -->
                     <div class="time-header">
-                        <div class="time-header-spacer">Tables</div>
+                        <div class="time-header-spacer area-header-selector" id="timelineAreaSelector">
+                            <button type="button" class="area-header-button" id="timelineAreaSelectorButton" aria-haspopup="listbox" aria-expanded="false">
+                                <span id="timelineAreaSelectorLabel">Full View</span>
+                                <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                            </button>
+                            <div class="area-header-menu" id="timelineAreaSelectorMenu" role="listbox" aria-label="Switch area"></div>
+                        </div>
                         <div class="time-slots" id="timeHeader"></div>
                     </div>
 
@@ -2093,6 +2776,50 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
         return [...AREAS].sort(sortAreas);
     }
 
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, function(character) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;',
+            }[character];
+        });
+    }
+
+    function getActiveAreaLabel() {
+        if(activeAreaFilter === 'all') {
+            return 'Full View';
+        }
+
+        return getAreaById(activeAreaFilter)?.name || 'Area';
+    }
+
+    function updateTimelineLabelColumnWidth() {
+        if(!document.body) return;
+
+        const areaLabels = ['Full View', ...getSortedAreas().map(area => String(area.name || 'Area'))];
+        const measurer = document.createElement('span');
+        measurer.style.position = 'absolute';
+        measurer.style.visibility = 'hidden';
+        measurer.style.whiteSpace = 'nowrap';
+        measurer.style.fontFamily = 'var(--dm-font-sans)';
+        measurer.style.fontSize = '11.2px';
+        measurer.style.fontWeight = '600';
+        measurer.style.letterSpacing = '0';
+        document.body.appendChild(measurer);
+
+        const widestLabel = areaLabels.reduce((widest, areaLabel) => {
+            measurer.textContent = areaLabel;
+            return Math.max(widest, measurer.getBoundingClientRect().width);
+        }, 0);
+
+        measurer.remove();
+        const nextWidth = Math.ceil(Math.max(92, widestLabel + 28));
+        document.documentElement.style.setProperty('--timeline-label-column-width', `${nextWidth}px`);
+    }
+
     function getVisibleTables() {
         const sortedTables = [...TABLES].sort(sortTables);
         if(activeAreaFilter === 'all') {
@@ -2352,12 +3079,13 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
         const visibleTables = getVisibleTables();
         const rows = [];
         const tableTopMap = {};
+        const showAreaRows = activeAreaFilter === 'all';
         let activeAreaKey = null;
         let currentTop = 0;
 
         visibleTables.forEach(table => {
             const nextAreaKey = String(table.area_id || '');
-            if(nextAreaKey !== activeAreaKey) {
+            if(showAreaRows && nextAreaKey !== activeAreaKey) {
                 rows.push({
                     type: 'area',
                     area_id: table.area_id,
@@ -2376,9 +3104,6 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
             });
             currentTop += ROW_HEIGHT;
         });
-
-        rows.push({ type: 'add', top: currentTop });
-        currentTop += ROW_HEIGHT;
 
         return {
             visibleTables,
@@ -2402,9 +3127,69 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
         areaFilterBar.innerHTML = `
             <button type="button" class="area-filter-chip${activeAreaFilter === 'all' ? ' active' : ''}" onclick="setAreaFilter('all')">Full View<span class="area-filter-chip-count">${totalBookedPeople}</span></button>
             ${areaButtons}
-            <button type="button" class="area-filter-chip secondary area-filter-add-btn" onclick="openAreaDetails()" aria-label="Add area" title="Add area">+</button>
         `;
         bindAreaFilterDragHandlers();
+    }
+
+    function renderAreaHeaderSelector() {
+        const selector = document.getElementById('timelineAreaSelector');
+        const button = document.getElementById('timelineAreaSelectorButton');
+        const label = document.getElementById('timelineAreaSelectorLabel');
+        const menu = document.getElementById('timelineAreaSelectorMenu');
+        if(!selector || !button || !label || !menu) return;
+
+        updateTimelineLabelColumnWidth();
+        const activeLabel = getActiveAreaLabel();
+        label.textContent = activeLabel;
+        button.title = `Switch area: ${activeLabel}`;
+
+        const optionMarkup = [
+            {
+                area_id: 'all',
+                name: 'Full View',
+                count: getBookedPeopleCountForArea('all'),
+            },
+            ...getSortedAreas().map(area => ({
+                area_id: String(area.area_id),
+                name: area.name,
+                count: getBookedPeopleCountForArea(area.area_id),
+            })),
+        ].map(area => {
+            const isActive = String(activeAreaFilter) === String(area.area_id);
+            return `<button type="button" class="area-header-option${isActive ? ' active' : ''}" role="option" aria-selected="${isActive ? 'true' : 'false'}" data-area-id="${escapeHtml(area.area_id)}" onclick="selectAreaFromHeader(this.dataset.areaId)">
+                <span>${escapeHtml(area.name)}</span>
+                <span class="area-header-option-count">${Number(area.count || 0)}</span>
+            </button>`;
+        }).join('');
+
+        menu.innerHTML = optionMarkup;
+
+        if(selector.dataset.areaSelectorBound === '1') return;
+        selector.dataset.areaSelectorBound = '1';
+
+        let closeTimer = null;
+        const setExpanded = expanded => {
+            window.clearTimeout(closeTimer);
+            selector.classList.toggle('is-open', expanded);
+            button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        };
+        const closeWithDelay = () => {
+            window.clearTimeout(closeTimer);
+            closeTimer = window.setTimeout(() => setExpanded(false), 220);
+        };
+
+        selector.addEventListener('mouseenter', () => setExpanded(true));
+        selector.addEventListener('mouseleave', closeWithDelay);
+        selector.addEventListener('focusin', () => setExpanded(true));
+        selector.addEventListener('focusout', event => {
+            if(!selector.contains(event.relatedTarget)) {
+                closeWithDelay();
+            }
+        });
+    }
+
+    function selectAreaFromHeader(areaId) {
+        setAreaFilter(areaId);
     }
 
     function handleAreaChipClick(areaId) {
@@ -3930,13 +4715,13 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
             `<div class="time-slot">${formatDisplayTime(time)}</div>`
         ).join('');
 
-        renderAreaFilters();
+        renderAreaHeaderSelector();
 
         // Render table labels (y-axis)
         const tableLabels = document.getElementById('tableLabels');
         tableLabels.innerHTML = layout.rows.map(row => {
             if(row.type === 'area') {
-                return `<div class="table-label area-label-row">${row.area_name}</div>`;
+                return `<div class="table-label area-label-row area-label-link" data-area-id="${escapeHtml(row.area_id)}" onclick="selectAreaFromHeader(this.dataset.areaId)" title="View ${escapeHtml(row.area_name)}">${escapeHtml(row.area_name)}</div>`;
             }
             if(row.type === 'table') {
                 return `<div class="table-label clickable" onclick="openTableDetails(${row.table.table_id})" title="Edit table details">
@@ -3945,9 +4730,7 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
                     </span>
                 </div>`;
             }
-            const areaIdAttr = row.area_id ? ` data-area-id="${row.area_id}"` : '';
-            const addTitle = row.area_name ? `Add table to ${row.area_name}` : 'Add table';
-            return `<div class="table-label add-table-row"><button type="button" class="add-table-inline-btn" data-add-table-trigger="true"${areaIdAttr} title="${addTitle}">+</button></div>`;
+            return '';
         }).join('');
 
         // Populate booking list on left
@@ -3970,7 +4753,7 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
 
         layout.rows.forEach(row => {
             if(row.type === 'area') {
-                gridHTML += `<div class="area-divider-row" data-area-name="${row.area_name.replace(/"/g, '&quot;')}">${timeSlots.map(() => `<div class="area-divider-cell"></div>`).join('')}</div>`;
+                gridHTML += `<div class="area-divider-row">${timeSlots.map(() => `<div class="area-divider-cell"></div>`).join('')}</div>`;
                 return;
             }
 
@@ -3988,7 +4771,7 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
                 return;
             }
 
-            gridHTML += `<div class="table-row add-table-row" aria-hidden="true">${timeSlots.map(() => `<div class="time-cell"></div>`).join('')}</div>`;
+            return;
         });
 
         bookingHTML = BOOKING_DATA
@@ -4002,7 +4785,6 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
         timelineGrid.style.minHeight = `${layout.totalHeight}px`;
 
         bindBookingDragHandlers();
-        bindAddTableButton();
         setCurrentTimeLine();
     }
 
