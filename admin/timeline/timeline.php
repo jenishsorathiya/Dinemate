@@ -99,11 +99,11 @@ unset($booking);
 $bookingsJson = json_encode($bookings);
 $prefillAdminBookingJson = json_encode($prefillAdminBooking, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 
-$adminPageTitle = 'Events';
+$adminPageTitle = 'Timeline';
 $adminPageIcon = 'fa-calendar-days';
 $adminNotificationCount = (int) $bookingStats['total_bookings'];
 $adminProfileName = $_SESSION['name'] ?? 'Admin';
-$adminSidebarActive = 'events';
+$adminSidebarActive = 'timeline';
 $adminSidebarPathPrefix = '../';
 ?>
 
@@ -148,8 +148,6 @@ $adminSidebarPathPrefix = '../';
         .timeline-embedded-container {
             width: 100%;
             min-height: 100vh;
-            padding-left: 0;
-            padding-right: 0;
         }
 
         body.timeline-embedded .content {
@@ -1401,20 +1399,6 @@ $adminSidebarPathPrefix = '../';
             background: var(--dm-surface-muted);
         }
 
-        .area-divider-row::after {
-            content: attr(data-area-name);
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--dm-text-muted);
-            pointer-events: none;
-        }
-
         .area-divider-cell {
             min-width: 80px;
             border-right: 1px solid var(--dm-border);
@@ -1735,17 +1719,28 @@ $adminSidebarPathPrefix = '../';
             --dm-primary-hover: #084fc0;
             --dm-primary-text: #ffffff;
             --dm-primary-soft: #eef4ff;
+            --dm-primary-soft-text: #0b5ed7;
             --dm-danger-bg: #fee2e2;
+            --dm-danger-border: #fecaca;
             --dm-danger-text: #b91c1c;
+            --dm-pending-bg: #fef3c7;
+            --dm-pending-text: #b45309;
+            --dm-warning-border: #fde68a;
             --dm-confirmed-bg: #dcfce7;
             --dm-confirmed-text: #15803d;
+            --dm-success-border: #bbf7d0;
+            --dm-success-strong: #16a34a;
             --dm-neutral-bg: #eef2f7;
+            --dm-neutral-border: #e3e8f0;
             --dm-neutral-text: #64748b;
+            --dm-info-text: #0b5ed7;
+            --dm-info-strong: #0b5ed7;
+            --dm-standby-bg: #fff3e1;
             --dm-font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             --dm-shadow-sm: 0 4.8px 14.4px rgba(15, 23, 42, 0.03);
             --dm-shadow-md: 0 14px 32px rgba(15, 23, 42, 0.12);
             --timeline-row-height: 40px;
-            --timeline-label-column-width: 92px;
+            --timeline-label-column-width: 132px;
         }
 
         body {
@@ -1756,14 +1751,14 @@ $adminSidebarPathPrefix = '../';
             line-height: 1.4;
         }
 
-        .container-fluid,
-        .content {
+        .container-fluid {
             background: var(--dm-bg);
         }
 
         .content {
             gap: 14.4px;
             padding: 14.4px;
+            background: var(--dm-bg);
         }
 
         body.timeline-embedded,
@@ -1772,14 +1767,8 @@ $adminSidebarPathPrefix = '../';
             background: var(--dm-surface);
         }
 
-        body.timeline-embedded .timeline-embedded-container {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        body.timeline-embedded .content {
-            gap: 0;
-            padding: 0;
+        body.timeline-embedded .timeline-toolbar {
+            padding: 10px 12px;
         }
 
         .left-panel,
@@ -1823,21 +1812,21 @@ $adminSidebarPathPrefix = '../';
             letter-spacing: 0;
         }
 
-        .today-button,
-        .timeline-date-nav,
-        .timeline-date-picker-trigger {
+        .today-button {
+            min-height: 28px;
+            padding: 0 9px;
             border: 1px solid var(--dm-border);
             border-radius: 6.4px;
             background: var(--dm-surface);
             color: var(--dm-text);
             font-size: 10.4px;
             font-weight: 700;
-            box-shadow: none;
         }
 
-        .today-button {
-            min-height: 28px;
-            padding: 0 9px;
+        .today-button:hover {
+            border-color: var(--dm-primary);
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
         }
 
         .timeline-date-nav,
@@ -1845,9 +1834,13 @@ $adminSidebarPathPrefix = '../';
             width: 28px;
             min-width: 28px;
             height: 28px;
+            border: 1px solid var(--dm-border);
+            border-radius: 6.4px;
+            background: var(--dm-surface);
+            color: var(--dm-text);
+            font-size: 10.4px;
         }
 
-        .today-button:hover,
         .timeline-date-nav:hover,
         .timeline-date-picker-trigger:hover {
             border-color: var(--dm-primary);
@@ -1995,6 +1988,12 @@ $adminSidebarPathPrefix = '../';
             color: var(--dm-danger-text);
         }
 
+        .booking-modal-danger:hover,
+        .booking-modal-danger-small:hover {
+            background: #fecaca;
+            color: var(--dm-danger-text);
+        }
+
         .stats-card {
             margin-top: 10px;
             border-radius: 8px;
@@ -2017,21 +2016,110 @@ $adminSidebarPathPrefix = '../';
             background: var(--dm-surface);
         }
 
-        body.timeline-embedded .timeline-area {
+        .timeline-area {
+            border-radius: 11.2px;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        .timeline-toolbar {
+            width: 132px;
+            flex: 0 0 132px;
+            align-items: stretch;
+            padding: 10px;
+            border-right: 1px solid var(--dm-border);
+            border-bottom: 0;
+            background: var(--dm-surface-muted);
+            overflow: hidden;
+        }
+
+        .area-filter-bar {
+            flex: 1;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 8px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .area-filter-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .area-filter-chip {
             width: 100%;
-            border-radius: 0;
+            min-height: 40px;
+            padding: 0 12.8px;
             border: 0;
+            border-radius: 9.6px;
+            background: transparent;
+            color: var(--dm-text-muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12.8px;
+            font-size: 11.2px;
+            font-weight: 600;
+            transform: none;
+            box-shadow: none;
+            transition: background 160ms ease, color 160ms ease;
+        }
+
+        .area-filter-chip:hover {
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
+            transform: none;
+        }
+
+        .area-filter-chip.active {
+            background: var(--dm-primary-soft);
+            color: var(--dm-primary);
             box-shadow: none;
         }
 
-        .timeline-area {
-            border-radius: 11.2px;
-            flex-direction: column;
-            overflow: hidden;
+        .area-filter-chip.secondary {
+            background: transparent;
+            color: var(--dm-text-muted);
+        }
+
+        .add-table-inline-btn {
+            width: 30.4px;
+            height: 30.4px;
+            border-radius: 6.4px;
+            background: var(--dm-primary);
+            color: var(--dm-primary-text);
+            box-shadow: none;
+            font-size: 15px;
+        }
+
+        body.timeline-embedded .timeline-toolbar {
+            width: 124px;
+            flex-basis: 124px;
+            padding: 8px;
+            border-right: 1px solid var(--dm-border);
+            border-bottom: 0;
         }
 
         .timeline-scroll-wrapper {
             min-width: 0;
+        }
+
+        .area-filter-chip-count {
+            min-width: auto;
+            height: auto;
+            margin-left: 6px;
+            padding: 0;
+            border-radius: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: inherit;
+            font-size: 11.2px;
+            font-weight: 600;
+            opacity: 0.72;
         }
 
         .time-header {
@@ -2066,21 +2154,16 @@ $adminSidebarPathPrefix = '../';
             left: 0;
             z-index: 30;
             overflow: visible;
-            padding: 0;
-            background: var(--dm-primary-soft);
-            align-items: stretch;
-            justify-content: stretch;
+            padding: 0 6px;
         }
 
         .area-header-button {
             width: 100%;
             min-width: 0;
-            height: 100%;
-            min-height: 40px;
-            padding: 0 10px;
+            height: 32px;
+            padding: 0 6px;
             border: 0;
-            border-radius: 0 !important;
-            margin: 0;
+            border-radius: 8px;
             background: var(--dm-primary-soft);
             color: var(--dm-primary);
             display: inline-flex;
@@ -2119,7 +2202,7 @@ $adminSidebarPathPrefix = '../';
         .area-header-menu {
             position: absolute;
             top: calc(100% + 6px);
-            left: 0;
+            left: 6px;
             width: max(156px, var(--timeline-label-column-width));
             max-height: 240px;
             padding: 6px;
@@ -2182,12 +2265,6 @@ $adminSidebarPathPrefix = '../';
             opacity: 0.72;
             font-size: 10.4px;
             font-weight: 600;
-        }
-
-        .time-header-spacer,
-        .time-slot,
-        .table-labels {
-            background: var(--dm-surface-soft);
         }
 
         .table-label {
@@ -2321,6 +2398,14 @@ $adminSidebarPathPrefix = '../';
             box-shadow: 0 0 0 2px var(--dm-surface);
         }
 
+        .booking-placement-dot.not-placed {
+            background: #f59e0b;
+        }
+
+        .booking-placement-dot.placed {
+            background: #16a34a;
+        }
+
         .current-time-line,
         .current-time-line::before {
             background: var(--dm-primary);
@@ -2402,10 +2487,44 @@ $adminSidebarPathPrefix = '../';
             font-weight: 700;
         }
 
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dm-surface-muted);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: var(--dm-border-strong);
+        }
+
         @media (max-width: 900px) {
             .timeline-area,
             body.timeline-embedded .timeline-area {
                 flex-direction: column;
+            }
+
+            .timeline-toolbar,
+            body.timeline-embedded .timeline-toolbar {
+                width: 100%;
+                flex: 0 0 auto;
+                border-right: 0;
+                border-bottom: 1px solid var(--dm-border);
+            }
+
+            .area-filter-bar {
+                flex-direction: row;
+                align-items: center;
+                overflow-x: auto;
+                overflow-y: hidden;
+            }
+
+            .area-filter-chip {
+                width: auto;
+                flex: 0 0 auto;
             }
         }
     </style>
@@ -2816,7 +2935,7 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
         }, 0);
 
         measurer.remove();
-        const nextWidth = Math.ceil(Math.max(92, widestLabel + 28));
+        const nextWidth = Math.ceil(Math.max(132, widestLabel + 44));
         document.documentElement.style.setProperty('--timeline-label-column-width', `${nextWidth}px`);
     }
 
