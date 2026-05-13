@@ -243,8 +243,8 @@ $adminSidebarIsActive = static function (string $key) use ($adminSidebarActive):
             <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/bookings-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('bookings'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fa fa-clipboard-list"></i><span class="nav-label">Bookings</span>
             </a>
-            <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/home.php?mode=requests'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('requests'), ENT_QUOTES, 'UTF-8'); ?>">
-                <i class="fa fa-inbox"></i><span class="nav-label">Requests</span>
+            <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/admin_inbox.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('inbox'), ENT_QUOTES, 'UTF-8'); ?>">
+                <i class="fa fa-inbox"></i><span class="nav-label">Inbox</span>
             </a>
             <a href="<?php echo htmlspecialchars($adminSidebarLink('pages/bookings-management.php?type=function'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo htmlspecialchars($adminSidebarIsActive('functions'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fa fa-calendar-check"></i><span class="nav-label">Functions</span>

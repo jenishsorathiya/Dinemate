@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -r 'require_once '\\\\''config/db.php'\\\\''; $tables = $pdo->query\\('\\\\''SHOW TABLES'\\\\''\\)->fetchAll\\(PDO::FETCH_COLUMN\\); echo implode\\(\"\\\\n\", $tables\\);')",
+      "Bash(php -r ' *)",
+      "Bash(dir admin *)"
+    ]
+  }
+}

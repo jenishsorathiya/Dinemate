@@ -737,14 +737,14 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                         <span>Home</span>
                     </a>
 
-                    <a class="sidebar-link" href="bookings-management.php">
+                    <a class="sidebar-link" href="admin_bookings.php">
                         <i class="bi bi-calendar-check" aria-hidden="true"></i>
                         <span>Bookings</span>
                     </a>
 
-                    <a class="sidebar-link" href="home.php?mode=requests">
+                    <a class="sidebar-link" href="admin_inbox.php">
                         <i class="bi bi-inbox" aria-hidden="true"></i>
-                        <span>Requests</span>
+                        <span>Inbox</span>
                     </a>
 
                     <a class="sidebar-link" href="bookings-management.php?type=function">
@@ -821,7 +821,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                         <span>Add Booking</span>
                     </a>
 
-                    <a class="icon-btn notification-btn" href="home.php?mode=requests" aria-label="Notifications">
+                    <a class="icon-btn notification-btn" href="admin_inbox.php" aria-label="Notifications">
                         <i class="bi bi-bell-fill" aria-hidden="true"></i>
                         <?php if ($pendingBookingsCount > 0): ?>
                             <span class="notification-badge"><?php echo htmlspecialchars((string) min($pendingBookingsCount, 99), ENT_QUOTES, 'UTF-8'); ?></span>
