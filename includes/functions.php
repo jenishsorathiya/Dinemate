@@ -1325,5 +1325,285 @@ function logout() {
     }
     session_destroy();
 }
+
+// ============================================================================
+// Inbox helpers
+// ============================================================================
+
+function ensureInboxMessagesTable(PDO $pdo): void {
+    static $checked = false;
+    if ($checked) {
+        return;
+    }
+    $checked = true;
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS inbox_messages (
+        inbox_id        INT             NOT NULL AUTO_INCREMENT,
+        type            ENUM('new_booking','booking_change','cancellation','function_enquiry','guest_message') NOT NULL,
+        folder          ENUM('requests','unassigned','waitlist','archived') NOT NULL DEFAULT 'requests',
+        status          ENUM('open','waiting','confirmed','declined','resolved') NOT NULL DEFAULT 'open',
+        booking_id      INT             DEFAULT NULL,
+        user_id         INT             DEFAULT NULL,
+        guest_name      VARCHAR(100)    DEFAULT NULL,
+        guest_email     VARCHAR(150)    DEFAULT NULL,
+        guest_phone     VARCHAR(30)     DEFAULT NULL,
+        party_size      INT             DEFAULT NULL,
+        subject         VARCHAR(160)    DEFAULT NULL,
+        preview         VARCHAR(240)    DEFAULT NULL,
+        message         TEXT            DEFAULT NULL,
+        staff_notes     TEXT            DEFAULT NULL,
+        is_read         TINYINT(1)      NOT NULL DEFAULT 0,
+        received_at     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        last_action_at  TIMESTAMP       NULL     DEFAULT NULL,
+        PRIMARY KEY (inbox_id),
+        INDEX idx_inbox_folder_received (folder, status, received_at),
+        INDEX idx_inbox_booking (booking_id),
+        INDEX idx_inbox_user (user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    syncInboxFromBookings($pdo);
+}
+
+function syncInboxFromBookings(PDO $pdo): void {
+    $stmt = $pdo->query("
+        SELECT
+            b.booking_id,
+            b.user_id,
+            b.status,
+            b.booking_type,
+            b.booking_date,
+            b.start_time,
+            b.requested_start_time,
+            b.requested_end_time,
+            b.number_of_guests,
+            b.special_request,
+            b.table_id,
+            b.created_at,
+            COALESCE(NULLIF(b.customer_name_override, ''), NULLIF(b.customer_name, ''), u.name, 'Guest') AS guest_name,
+            COALESCE(NULLIF(b.customer_email, ''), u.email, '')                                          AS guest_email,
+            COALESCE(NULLIF(b.customer_phone, ''), u.phone, '')                                          AS guest_phone,
+            (SELECT COUNT(*) FROM booking_table_assignments bta WHERE bta.booking_id = b.booking_id)     AS assignment_count
+        FROM bookings b
+        LEFT JOIN users u ON u.user_id = b.user_id
+        WHERE NOT EXISTS (SELECT 1 FROM inbox_messages im WHERE im.booking_id = b.booking_id)
+        ORDER BY b.created_at DESC, b.booking_id DESC
+        LIMIT 500
+    ");
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    if (empty($rows)) {
+        return;
+    }
+
+    $insert = $pdo->prepare("
+        INSERT INTO inbox_messages
+            (type, folder, status, booking_id, user_id, guest_name, guest_email, guest_phone,
+             party_size, subject, preview, message, received_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+
+    foreach ($rows as $row) {
+        $info = classifyBookingForInbox($row);
+        if ($info === null) {
+            continue;
+        }
+        $insert->execute([
+            $info['type'],
+            $info['folder'],
+            $info['status'],
+            (int) $row['booking_id'],
+            !empty($row['user_id']) ? (int) $row['user_id'] : null,
+            (string) $row['guest_name'],
+            (string) $row['guest_email'],
+            (string) $row['guest_phone'],
+            (int) $row['number_of_guests'],
+            $info['subject'],
+            $info['preview'],
+            $info['message'],
+            $row['created_at'] ?: date('Y-m-d H:i:s'),
+        ]);
+    }
+}
+
+function classifyBookingForInbox(array $row): ?array {
+    $status = strtolower((string) ($row['status'] ?? ''));
+    $bookingType = strtolower((string) ($row['booking_type'] ?? 'normal'));
+    $hasTable = !empty($row['table_id']) || (int) ($row['assignment_count'] ?? 0) > 0;
+    $special = trim((string) ($row['special_request'] ?? ''));
+    $dateLabel = !empty($row['booking_date']) ? date('D, j M Y', strtotime($row['booking_date'])) : '';
+    $name = trim((string) ($row['guest_name'] ?? 'Guest'));
+
+    if ($status === 'cancelled') {
+        return [
+            'type' => 'cancellation',
+            'folder' => 'requests',
+            'status' => 'open',
+            'subject' => 'Cancellation Request',
+            'preview' => $special !== '' ? $special : ('Unable to make ' . ($dateLabel ?: 'this booking')),
+            'message' => $special,
+        ];
+    }
+
+    $requestedStart = (string) ($row['requested_start_time'] ?? '');
+    $currentStart   = (string) ($row['start_time'] ?? '');
+    if ($requestedStart !== '' && $requestedStart !== $currentStart) {
+        $requested = date('g:i A', strtotime($requestedStart));
+        return [
+            'type' => 'booking_change',
+            'folder' => 'requests',
+            'status' => 'open',
+            'subject' => 'Booking Change',
+            'preview' => 'Change time to ' . $requested,
+            'message' => $special !== '' ? $special : ('Customer requested a new time of ' . $requested . '.'),
+        ];
+    }
+
+    if ($bookingType === 'function') {
+        return [
+            'type' => 'function_enquiry',
+            'folder' => $status === 'pending' ? 'requests' : 'waitlist',
+            'status' => $status === 'pending' ? 'open' : 'waiting',
+            'subject' => 'Function Enquiry',
+            'preview' => $special !== '' ? $special : ('Function for ' . (int) $row['number_of_guests'] . ' guests'),
+            'message' => $special !== '' ? $special : 'Function enquiry — please review and respond.',
+        ];
+    }
+
+    if ($status === 'pending') {
+        return [
+            'type' => 'new_booking',
+            'folder' => 'requests',
+            'status' => 'open',
+            'subject' => 'New Booking Request',
+            'preview' => $dateLabel !== '' ? ('Dinner on ' . $dateLabel) : ('Booking for ' . (int) $row['number_of_guests'] . ' guests'),
+            'message' => $special,
+        ];
+    }
+
+    if (!$hasTable) {
+        return [
+            'type' => 'new_booking',
+            'folder' => 'unassigned',
+            'status' => 'waiting',
+            'subject' => 'Unassigned Booking',
+            'preview' => 'No table assigned yet — ' . ($dateLabel ?: 'review now'),
+            'message' => $special,
+        ];
+    }
+
+    return null;
+}
+
+function getInboxFolderCounts(PDO $pdo): array {
+    $stmt = $pdo->query("
+        SELECT im.folder, COUNT(*) AS total
+        FROM inbox_messages im
+        LEFT JOIN bookings b ON b.booking_id = im.booking_id
+        WHERE im.folder <> 'archived'
+          AND (b.booking_date IS NULL OR b.booking_date >= CURDATE())
+        GROUP BY im.folder
+    ");
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    $counts = ['requests' => 0, 'unassigned' => 0, 'waitlist' => 0];
+    foreach ($rows as $row) {
+        $folder = (string) $row['folder'];
+        if (isset($counts[$folder])) {
+            $counts[$folder] = (int) $row['total'];
+        }
+    }
+    return $counts;
+}
+
+function inboxTypeMeta(string $type): array {
+    return match ($type) {
+        'new_booking'     => ['icon' => 'bi-envelope',        'tone' => 'blue',   'label' => 'New Booking Request'],
+        'booking_change'  => ['icon' => 'bi-arrow-repeat',    'tone' => 'amber',  'label' => 'Booking Change'],
+        'cancellation'    => ['icon' => 'bi-x-circle',        'tone' => 'red',    'label' => 'Cancellation Request'],
+        'function_enquiry'=> ['icon' => 'bi-people',          'tone' => 'purple', 'label' => 'Function Enquiry'],
+        'guest_message'   => ['icon' => 'bi-chat-left-text',  'tone' => 'green',  'label' => 'Guest Message'],
+        default           => ['icon' => 'bi-envelope',        'tone' => 'blue',   'label' => 'Message'],
+    };
+}
+
+function inboxChipForBookingType(string $bookingType): string {
+    return match (strtolower($bookingType)) {
+        'function' => 'Function',
+        'trivia'   => 'Trivia',
+        default    => 'Trivia',
+    };
+}
+
+function inboxFormatRelativeTime(?string $datetime): string {
+    if (empty($datetime)) {
+        return '';
+    }
+    $ts = strtotime($datetime);
+    if ($ts === false) {
+        return '';
+    }
+    $diff = time() - $ts;
+    if ($diff < 60)          return 'just now';
+    if ($diff < 3600)        return floor($diff / 60) . 'm ago';
+    if ($diff < 86400)       return floor($diff / 3600) . 'h ago';
+    if ($diff < 86400 * 30)  return floor($diff / 86400) . 'd ago';
+    return date('j M', $ts);
+}
+
+function inboxAreaAvailability(PDO $pdo, string $bookingDate, string $startTime, string $endTime): array {
+    $startTime = $startTime !== '' ? $startTime : '18:00:00';
+    $endTime   = $endTime   !== '' ? $endTime   : '20:00:00';
+
+    $areasStmt = $pdo->query("
+        SELECT a.area_id, a.name,
+               (SELECT COUNT(*) FROM restaurant_tables rt WHERE rt.area_id = a.area_id AND rt.status = 'available' AND rt.reservable = 1) AS total_tables
+        FROM table_areas a
+        WHERE a.is_active = 1
+        ORDER BY a.display_order ASC, a.name ASC
+    ");
+    $areas = $areasStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    $busyStmt = $pdo->prepare("
+        SELECT rt.area_id, COUNT(DISTINCT b.table_id) AS busy_tables
+        FROM bookings b
+        INNER JOIN restaurant_tables rt ON rt.table_id = b.table_id
+        WHERE b.booking_date = ?
+          AND b.status IN ('pending','confirmed')
+          AND (b.start_time < ? AND b.end_time > ?)
+        GROUP BY rt.area_id
+    ");
+    $busyStmt->execute([$bookingDate ?: date('Y-m-d'), $endTime, $startTime]);
+    $busyMap = [];
+    foreach ($busyStmt->fetchAll(PDO::FETCH_ASSOC) ?: [] as $row) {
+        $busyMap[(int) $row['area_id']] = (int) $row['busy_tables'];
+    }
+
+    $result = [];
+    foreach ($areas as $area) {
+        $total = (int) $area['total_tables'];
+        $busy  = $busyMap[(int) $area['area_id']] ?? 0;
+        $free  = max(0, $total - $busy);
+
+        if ($total === 0) {
+            $state = 'unavailable';
+            $label = 'Unavailable';
+        } elseif ($free === 0) {
+            $state = 'full';
+            $label = 'Full';
+        } else {
+            $state = 'available';
+            $label = $free . ' table' . ($free === 1 ? '' : 's') . ' available';
+        }
+
+        $result[] = [
+            'area_id' => (int) $area['area_id'],
+            'name'    => (string) $area['name'],
+            'state'   => $state,
+            'label'   => $label,
+            'free'    => $free,
+            'total'   => $total,
+        ];
+    }
+    return $result;
+}
 ?>
 

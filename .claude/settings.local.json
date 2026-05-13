@@ -3,7 +3,19 @@
     "allow": [
       "Bash(php -r 'require_once '\\\\''config/db.php'\\\\''; $tables = $pdo->query\\('\\\\''SHOW TABLES'\\\\''\\)->fetchAll\\(PDO::FETCH_COLUMN\\); echo implode\\(\"\\\\n\", $tables\\);')",
       "Bash(php -r ' *)",
-      "Bash(dir admin *)"
+      "Bash(dir admin *)",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -h localhost Dinemate -e \"SOURCE c:/xampp/htdocs/Dinemate/database/migrations/add_inbox_messages_table.sql;\")",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -h localhost Dinemate -e \"DESCRIBE inbox_messages;\")",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -h localhost Dinemate -e \"SELECT booking_id, status, booking_type, table_id, customer_name, booking_date, number_of_guests FROM bookings ORDER BY booking_id DESC LIMIT 10;\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" -r \"session_start\\(\\); `$_SESSION['user_id']=1; `$_SESSION['role']='admin'; require 'C:/xampp/htdocs/Dinemate/config/db.php'; require 'C:/xampp/htdocs/Dinemate/includes/functions.php'; ensureInboxMessagesTable\\(`$pdo\\); `$counts = getInboxFolderCounts\\(`$pdo\\); echo 'Inbox folder counts: ' . json_encode\\(`$counts\\) . PHP_EOL;\")",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -h localhost Dinemate -e \"TRUNCATE TABLE inbox_messages;\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" -r \"session_start\\(\\); `$_SESSION['user_id']=1; `$_SESSION['role']='admin'; require 'C:/xampp/htdocs/Dinemate/config/db.php'; require 'C:/xampp/htdocs/Dinemate/includes/functions.php'; syncInboxFromBookings\\(`$pdo\\); echo json_encode\\(getInboxFolderCounts\\(`$pdo\\)\\) . PHP_EOL;\")",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -h localhost Dinemate -e \"INSERT INTO inbox_messages \\(type, folder, status, guest_name, guest_email, guest_phone, party_size, subject, preview, message, received_at\\) VALUES \\('guest_message','requests','open','Lisa Tran','lisa.tran@email.com','0411 222 333',3,'Guest Message','Allergy information','Hi, please note that two of our guests have a severe peanut allergy. Could you confirm the kitchen can accommodate? Thanks.', NOW\\(\\) - INTERVAL 1 DAY\\), \\('guest_message','requests','waiting','Daniel Lee','daniel.lee@email.com','0488 555 999',8,'New Booking Request','Birthday dinner next Friday','Looking to book a birthday dinner for 8 people next Friday around 7pm. Any availability?', NOW\\(\\) - INTERVAL 3 DAY\\);\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" -r \"`$ctx = stream_context_create\\(['http' => ['method' => 'GET', 'header' => 'Cookie: testcookie=1', 'ignore_errors' => true]]\\); session_start\\(\\); echo 'session id: ' . session_id\\(\\);\")",
+      "PowerShell(Get-Process -Name httpd -ErrorAction SilentlyContinue)",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" -l \"C:\\\\xampp\\\\htdocs\\\\Dinemate\\\\admin\\\\pages\\\\admin_inbox.php\")",
+      "PowerShell(& \"C:\\\\xampp\\\\php\\\\php.exe\" -l \"C:\\\\xampp\\\\htdocs\\\\Dinemate\\\\admin\\\\pages\\\\inbox-action.php\")",
+      "Bash(\"/c/xampp/php/php.exe\" /tmp/check_inbox.php)"
     ]
   }
 }
