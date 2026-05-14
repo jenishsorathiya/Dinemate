@@ -1362,6 +1362,7 @@ function ensureInboxMessagesTable(PDO $pdo): void {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
     syncInboxFromBookings($pdo);
+    normalizeInboxFolders($pdo);
 }
 
 function syncInboxFromBookings(PDO $pdo): void {
@@ -1457,11 +1458,11 @@ function classifyBookingForInbox(array $row): ?array {
         ];
     }
 
-    if ($bookingType === 'function') {
+    if ($bookingType === 'function' && $status === 'pending') {
         return [
             'type' => 'function_enquiry',
-            'folder' => $status === 'pending' ? 'requests' : 'waitlist',
-            'status' => $status === 'pending' ? 'open' : 'waiting',
+            'folder' => 'requests',
+            'status' => 'open',
             'subject' => 'Function Enquiry',
             'preview' => $special !== '' ? $special : ('Function for ' . (int) $row['number_of_guests'] . ' guests'),
             'message' => $special !== '' ? $special : 'Function enquiry — please review and respond.',
@@ -1481,16 +1482,70 @@ function classifyBookingForInbox(array $row): ?array {
 
     if (!$hasTable) {
         return [
-            'type' => 'new_booking',
+            'type' => $bookingType === 'function' ? 'function_enquiry' : 'new_booking',
             'folder' => 'unassigned',
             'status' => 'waiting',
-            'subject' => 'Unassigned Booking',
+            'subject' => $bookingType === 'function' ? 'Unassigned Function Booking' : 'Unassigned Booking',
             'preview' => 'No table assigned yet — ' . ($dateLabel ?: 'review now'),
             'message' => $special,
         ];
     }
 
     return null;
+}
+
+function normalizeInboxFolders(PDO $pdo): void {
+    $assignmentJoin = "
+        LEFT JOIN bookings b ON b.booking_id = im.booking_id
+        LEFT JOIN (
+            SELECT booking_id, COUNT(*) AS assignment_count
+            FROM booking_table_assignments
+            GROUP BY booking_id
+        ) assigned ON assigned.booking_id = b.booking_id
+    ";
+
+    $pdo->exec("
+        UPDATE inbox_messages im
+        {$assignmentJoin}
+        SET
+            im.folder = CASE
+                WHEN b.booking_id IS NULL THEN 'requests'
+                WHEN LOWER(COALESCE(b.status, '')) = 'pending' THEN 'requests'
+                WHEN b.table_id IS NULL AND COALESCE(assigned.assignment_count, 0) = 0 THEN 'unassigned'
+                ELSE 'archived'
+            END,
+            im.status = CASE
+                WHEN b.booking_id IS NULL THEN im.status
+                WHEN LOWER(COALESCE(b.status, '')) = 'pending' THEN 'open'
+                WHEN b.table_id IS NULL AND COALESCE(assigned.assignment_count, 0) = 0 THEN 'waiting'
+                ELSE 'resolved'
+            END
+        WHERE im.folder = 'waitlist'
+          AND im.type = 'function_enquiry'
+          AND im.last_action_at IS NULL
+    ");
+
+    $pdo->exec("
+        UPDATE inbox_messages im
+        {$assignmentJoin}
+        SET im.folder = 'archived',
+            im.status = 'resolved'
+        WHERE im.folder = 'unassigned'
+          AND b.booking_id IS NOT NULL
+          AND (b.table_id IS NOT NULL OR COALESCE(assigned.assignment_count, 0) > 0)
+    ");
+
+    $pdo->exec("
+        UPDATE inbox_messages im
+        {$assignmentJoin}
+        SET im.folder = 'unassigned',
+            im.status = 'waiting'
+        WHERE im.folder = 'requests'
+          AND im.type IN ('new_booking', 'function_enquiry')
+          AND LOWER(COALESCE(b.status, '')) = 'confirmed'
+          AND b.table_id IS NULL
+          AND COALESCE(assigned.assignment_count, 0) = 0
+    ");
 }
 
 function getInboxFolderCounts(PDO $pdo): array {
