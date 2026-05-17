@@ -391,6 +391,21 @@ $formatMessageTime = static function (?string $time): string {
     return $ts ? date('g:i A', $ts) : 'Time TBC';
 };
 
+$formatInboxBookingType = static function (array $message): string {
+    $bookingType = normalizeBookingType($message['booking_type'] ?? 'normal');
+
+    if ($bookingType === 'trivia') {
+        return 'Trivia';
+    }
+
+    if ($bookingType === 'function') {
+        return 'Function';
+    }
+
+    $startTime = (string) ($message['start_time'] ?? '');
+    return $startTime >= '17:00:00' ? 'Dinner' : 'Lunch';
+};
+
 $statusBadgeMeta = static function (string $status): array {
     return match ($status) {
         'open'      => ['label' => 'Open',      'tone' => 'open'],
@@ -634,7 +649,7 @@ $statusBadgeMeta = static function (string $status): array {
                                     </li>
                                     <li>
                                         <i class="bi bi-grid" aria-hidden="true"></i>
-                                        <span><?php echo htmlspecialchars(ucfirst((string) ($selectedMessage['booking_type'] ?? 'Booking')), ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <span><?php echo htmlspecialchars($formatInboxBookingType($selectedMessage), ENT_QUOTES, 'UTF-8'); ?></span>
                                     </li>
                                 </ul>
                             </div>
@@ -793,7 +808,7 @@ $statusBadgeMeta = static function (string $status): array {
                                 </div>
                                 <div>
                                     <dt><i class="bi bi-grid" aria-hidden="true"></i> Type</dt>
-                                    <dd><?php echo htmlspecialchars(ucfirst((string) ($selectedMessage['booking_type'] ?? 'Booking')), ENT_QUOTES, 'UTF-8'); ?></dd>
+                                    <dd><?php echo htmlspecialchars($formatInboxBookingType($selectedMessage), ENT_QUOTES, 'UTF-8'); ?></dd>
                                 </div>
                             </dl>
                         </section>
@@ -838,6 +853,7 @@ $statusBadgeMeta = static function (string $status): array {
                                                     style="left: <?php echo (int) $zone['label_x']; ?>px; top: <?php echo (int) $zone['label_y']; ?>px;"
                                                     data-table-area-choice
                                                     data-table-area-id="<?php echo (int) $zone['area_id']; ?>"
+                                                    data-table-area-label="<?php echo htmlspecialchars((string) $zone['label'], ENT_QUOTES, 'UTF-8'); ?>"
                                                     aria-pressed="false"
                                                     title="Select all tables in <?php echo htmlspecialchars((string) $zone['label'], ENT_QUOTES, 'UTF-8'); ?>"
                                                 >
@@ -1074,6 +1090,49 @@ $statusBadgeMeta = static function (string $status): array {
 
     const getSelectedChoices = () => choices.filter((choice) => choice.classList.contains('is-selected') && !choice.disabled);
     const getSelectableAreaTables = (areaId) => choices.filter((choice) => choice.dataset.tableAreaId === areaId && !choice.disabled);
+    const getAreaLabel = (areaButton) => (areaButton.dataset.tableAreaLabel || areaButton.textContent || '').trim();
+
+    const getSelectionSummaryLabels = (selectedChoices) => {
+        const selectedSet = new Set(selectedChoices);
+        const coveredChoices = new Set();
+        const fullAreaLabels = [];
+        const summaryLabels = [];
+
+        areaChoices.forEach((areaButton) => {
+            const areaTables = getSelectableAreaTables(areaButton.dataset.tableAreaId || '');
+            if (areaTables.length === 0 || !areaTables.every((choice) => selectedSet.has(choice))) {
+                return;
+            }
+
+            areaTables.forEach((choice) => coveredChoices.add(choice));
+            const areaLabel = getAreaLabel(areaButton);
+            if (areaLabel !== '') {
+                fullAreaLabels.push(areaLabel);
+            }
+        });
+
+        if (fullAreaLabels.length > 0) {
+            const areaText = fullAreaLabels.length === 1
+                ? fullAreaLabels[0]
+                : fullAreaLabels.length === 2
+                    ? `${fullAreaLabels[0]} and ${fullAreaLabels[1]}`
+                    : `${fullAreaLabels.slice(0, -1).join(', ')} and ${fullAreaLabels[fullAreaLabels.length - 1]}`;
+            summaryLabels.push(`All ${areaText}`);
+        }
+
+        selectedChoices.forEach((choice) => {
+            if (coveredChoices.has(choice)) {
+                return;
+            }
+
+            const tableLabel = choice.dataset.tableLabel || '';
+            if (tableLabel !== '') {
+                summaryLabels.push(tableLabel);
+            }
+        });
+
+        return summaryLabels;
+    };
 
     const updateAreaSelectionState = () => {
         areaChoices.forEach((areaButton) => {
@@ -1103,6 +1162,7 @@ $statusBadgeMeta = static function (string $status): array {
         const selectedLabels = selectedChoices
             .map((choice) => choice.dataset.tableLabel || '')
             .filter(Boolean);
+        const summaryLabels = getSelectionSummaryLabels(selectedChoices);
 
         if (selectedInput) {
             selectedInput.value = selectedIds[0] || '';
@@ -1120,7 +1180,7 @@ $statusBadgeMeta = static function (string $status): array {
         }
 
         if (selectedLabel) {
-            selectedLabel.textContent = selectedLabels.length ? selectedLabels.join(', ') : 'No table assigned';
+            selectedLabel.textContent = summaryLabels.length ? summaryLabels.join(', ') : 'No table assigned';
         }
 
         if (selectedCount) {
