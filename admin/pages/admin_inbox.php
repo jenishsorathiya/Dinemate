@@ -39,6 +39,7 @@ $messageStmt = $pdo->prepare("
            b.status AS booking_status,
            b.table_id,
            b.special_request,
+           b.menu_items,
            (SELECT COUNT(*) FROM booking_table_assignments bta WHERE bta.booking_id = b.booking_id) AS assignment_count
     FROM inbox_messages im
     LEFT JOIN bookings b ON b.booking_id = im.booking_id
@@ -64,7 +65,7 @@ if ($selectedInboxId > 0) {
         $loadStmt = $pdo->prepare("
             SELECT im.*, b.booking_date, b.start_time, b.end_time,
                    b.number_of_guests AS booking_guests, b.booking_type,
-                   b.status AS booking_status, b.table_id, b.special_request
+                   b.status AS booking_status, b.table_id, b.special_request, b.menu_items
             FROM inbox_messages im
             LEFT JOIN bookings b ON b.booking_id = im.booking_id
             WHERE im.inbox_id = ?
@@ -709,6 +710,43 @@ $statusBadgeMeta = static function (string $status): array {
                             <div class="admin-inbox-message-bubble guest">
                                 <i class="bi bi-chat-left-text" aria-hidden="true"></i>
                                 <p><?php echo nl2br(htmlspecialchars((string) ($selectedMessage['message'] ?? $selectedMessage['preview'] ?? 'No additional message from the guest.'), ENT_QUOTES, 'UTF-8')); ?></p>
+                            </div>
+                        </section>
+
+                        <section class="admin-inbox-info-block" aria-labelledby="menu-items-title">
+                            <h3 id="menu-items-title">Selected Menu</h3>
+                            <div class="admin-inbox-message-bubble menu">
+                                <i class="bi bi-basket3" aria-hidden="true"></i>
+                                <div class="admin-inbox-message-menu">
+                                    <?php
+                                    $menuItems = [];
+                                    if (!empty($selectedMessage['menu_items'])) {
+                                        $decodedMenuData = json_decode((string) $selectedMessage['menu_items'], true);
+                                        if (is_array($decodedMenuData)) {
+                                            $menuItems = $decodedMenuData;
+                                        }
+                                    }
+                                    ?>
+
+                                    <?php if (empty($menuItems)): ?>
+                                        <p>No menu items selected.</p>
+                                    <?php else: ?>
+                                        <ul class="admin-inbox-menu-items">
+                                            <?php foreach ($menuItems as $menuItem): ?>
+                                                <?php
+                                                $itemName = htmlspecialchars(trim((string) ($menuItem['name'] ?? 'Menu item')), ENT_QUOTES, 'UTF-8');
+                                                $itemQty = max(0, (int) ($menuItem['qty'] ?? 0));
+                                                $itemPriceRaw = trim((string) ($menuItem['price'] ?? ''));
+                                                $itemPrice = $itemPriceRaw !== '' ? '$' . htmlspecialchars($itemPriceRaw, ENT_QUOTES, 'UTF-8') : 'Price unavailable';
+                                                ?>
+                                                <li>
+                                                    <strong><?php echo $itemName; ?></strong>
+                                                    <span><?php echo $itemQty; ?> × <?php echo $itemPrice; ?></span>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </section>
 

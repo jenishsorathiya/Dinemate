@@ -757,8 +757,12 @@ function ensureBookingRequestColumns($pdo) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN special_request TEXT DEFAULT NULL AFTER number_of_guests");
     }
 
+    if (!$pdo->query("SHOW COLUMNS FROM bookings LIKE 'menu_items'")->rowCount()) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN menu_items TEXT DEFAULT NULL AFTER special_request");
+    }
+
     if (!$bookingTypeColumn) {
-        $pdo->exec("ALTER TABLE bookings ADD COLUMN booking_type ENUM('normal', 'trivia', 'function') NOT NULL DEFAULT 'normal' AFTER special_request");
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN booking_type ENUM('normal', 'trivia', 'function') NOT NULL DEFAULT 'normal' AFTER menu_items");
     } else {
         $pdo->exec("UPDATE bookings SET booking_type = 'normal' WHERE booking_type IS NULL OR booking_type NOT IN ('normal', 'trivia', 'function')");
         $bookingType = strtolower((string) ($bookingTypeColumn['Type'] ?? ''));

@@ -259,7 +259,27 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCalendar();
     });
 
+    const bookingMenuItemsInput = document.getElementById('booking-menu-items');
+
+    const syncMenuItemsToForm = () => {
+        if (!bookingMenuItemsInput) {
+            return;
+        }
+
+        let cart = {};
+        try {
+            cart = JSON.parse(window.localStorage.getItem('dinemate_menu_cart') || '{}');
+        } catch (error) {
+            cart = {};
+        }
+
+        const items = Object.values(cart).filter((item) => item && Number(item.qty) > 0);
+        bookingMenuItemsInput.value = JSON.stringify(items);
+    };
+
     bookingForm.addEventListener('submit', function(event) {
+        syncMenuItemsToForm();
+
         if(!validateBookingStep()) {
             event.preventDefault();
             showBookingStep();

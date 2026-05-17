@@ -79,44 +79,78 @@ include __DIR__ . '/../includes/header.php';
             <p>Browse what is available today, then book a table when you are ready.</p>
         </div>
 
-        <?php foreach ($menuItems as $category => $items): ?>
-            <?php if (!empty($items)): ?>
-                <section class="menu-section">
-                    <h2 class="section-title"><?php echo htmlspecialchars($category, ENT_QUOTES, 'UTF-8'); ?></h2>
-                    <?php if ($category === 'Burgers'): ?>
-                        <p class="section-subtitle">Served on a milk bun with a choice of chips or salad.</p>
-                    <?php elseif ($category === 'Sides'): ?>
-                        <p class="section-subtitle">Built for sharing or adding to the table.</p>
-                    <?php elseif ($category === 'Kiddies'): ?>
-                        <p class="section-subtitle">Smaller plates for younger guests.</p>
-                    <?php endif; ?>
+        <div class="menu-grid">
+            <div class="menu-main">
+                <?php foreach ($menuItems as $category => $items): ?>
+                    <?php if (!empty($items)): ?>
+                        <section class="menu-section">
+                            <h2 class="section-title"><?php echo htmlspecialchars($category, ENT_QUOTES, 'UTF-8'); ?></h2>
+                            <?php if ($category === 'Burgers'): ?>
+                                <p class="section-subtitle">Served on a milk bun with a choice of chips or salad.</p>
+                            <?php elseif ($category === 'Sides'): ?>
+                                <p class="section-subtitle">Built for sharing or adding to the table.</p>
+                            <?php elseif ($category === 'Kiddies'): ?>
+                                <p class="section-subtitle">Smaller plates for younger guests.</p>
+                            <?php endif; ?>
 
-                    <div class="menu-cards">
-                        <?php foreach ($items as $item): ?>
-                            <article class="menu-card <?php echo ($category === 'House Specials') ? 'featured' : ''; ?>">
-                                <?php if (!empty($item['image'])): ?>
-                                    <div class="card-image">
-                                        <img src="<?php echo htmlspecialchars($resolveMenuImageUrl($item['image']), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>">
-                                    </div>
-                                <?php endif; ?>
-                                <div class="card-content">
-                                    <div class="card-header">
-                                        <h3><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></h3>
-                                        <span class="price">$<?php echo number_format((float) ($item['price'] ?: ($category === 'Sides' ? 11 : 0)), 2); ?></span>
-                                    </div>
-                                    <?php if (!empty($item['description'])): ?>
-                                        <p class="description"><?php echo htmlspecialchars($item['description'], ENT_QUOTES, 'UTF-8'); ?></p>
-                                    <?php endif; ?>
-                                    <?php if (!empty($item['dietary_info'])): ?>
-                                        <span class="badge"><?php echo htmlspecialchars($item['dietary_info'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <?php endif; ?>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
+                            <div class="menu-cards">
+                                <?php foreach ($items as $item): ?>
+                                    <article class="menu-card <?php echo ($category === 'House Specials') ? 'featured' : ''; ?>">
+                                        <?php if (!empty($item['image'])): ?>
+                                            <div class="card-image">
+                                                <img src="<?php echo htmlspecialchars($resolveMenuImageUrl($item['image']), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>">
+                                            </div>
+                                        <?php endif; ?>
+                                        <div class="card-content">
+                                            <div class="card-header">
+                                                <h3><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                                                <span class="price">$<?php echo number_format((float) ($item['price'] ?: ($category === 'Sides' ? 11 : 0)), 2); ?></span>
+                                            </div>
+                                            <?php if (!empty($item['description'])): ?>
+                                                <p class="description"><?php echo htmlspecialchars($item['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                            <?php endif; ?>
+                                            <?php if (!empty($item['dietary_info'])): ?>
+                                                <span class="badge"><?php echo htmlspecialchars($item['dietary_info'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <?php endif; ?>
+                                            <button type="button"
+                                                class="menu-card-add-btn"
+                                                data-menu-item-id="<?php echo htmlspecialchars((string) ($item['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-menu-item-name="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-menu-item-price="<?php echo number_format((float) ($item['price'] ?: ($category === 'Sides' ? 11 : 0)), 2); ?>">
+                                                Add to cart
+                                            </button>
+                                        </div>
+                                    </article>
+                                <?php endforeach; ?>
+                            </div>
+                        </section>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+
+            <aside class="menu-sidebar" aria-label="Menu cart">
+                <div class="menu-cart" id="menuCart">
+                    <button type="button" class="menu-cart-toggle" id="menuCartToggle" aria-expanded="false">
+                        <span class="menu-cart-icon" aria-hidden="true"><i class="fa fa-shopping-basket"></i></span>
+                        <span class="menu-cart-title">Your cart</span>
+                        <span class="menu-cart-count" id="menuCartCount">0</span>
+                    </button>
+                    <div class="menu-cart-body hidden" id="menuCartBody">
+                        <div class="menu-cart-info">
+                            <p class="menu-cart-note">Choose dishes now, confirm your table later. Payment is handled at the restaurant.</p>
+                        </div>
+                        <ul class="menu-cart-items" id="menuCartItems">
+                            <li class="menu-cart-empty">No items yet.</li>
+                        </ul>
+                        <div class="menu-cart-footer">
+                            <span class="menu-cart-total-label">Total</span>
+                            <span class="menu-cart-total-value" id="menuCartTotal">$0.00</span>
+                        </div>
+                        <a class="guest-button guest-button-fullwidth" href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>">Book a Table</a>
                     </div>
-                </section>
-            <?php endif; ?>
-        <?php endforeach; ?>
+                </div>
+            </aside>
+        </div>
 
         <div class="menu-legend">
             <p><span class="badge-info">V</span> Vegan | <span class="badge-info">GF</span> Gluten Free</p>

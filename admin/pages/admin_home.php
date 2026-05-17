@@ -291,6 +291,7 @@ try {
             b.created_at,
             COALESCE(b.booking_type, 'normal') AS booking_type,
             b.special_request,
+            b.menu_items,
             COALESCE(NULLIF(b.customer_email, ''), u.email, '') AS customer_email,
             COALESCE(NULLIF(b.customer_phone, ''), u.phone, '') AS customer_phone,
             COALESCE(NULLIF(b.customer_name_override, ''), NULLIF(b.customer_name, ''), u.name, 'Guest') AS customer_name,
@@ -976,6 +977,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                 $tableText = $hasAssignedTable ? 'Table ' . $assignedTables : 'No table';
                                                 $areaText = trim((string) ($booking['assigned_area_names'] ?? 'Dining room'));
                                                 $noteText = trim((string) ($booking['special_request'] ?? ''));
+                                                $bookingMenuItemsJson = trim((string) ($booking['menu_items'] ?? ''));
                                                 $status = strtolower(trim((string) ($booking['status'] ?? 'confirmed')));
                                                 $statusLabel = getBookingStatusLabel($status);
                                                 ?>
@@ -997,6 +999,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                             data-booking-phone="<?php echo htmlspecialchars((string) ($booking['customer_phone'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
                                                             data-booking-email="<?php echo htmlspecialchars((string) ($booking['customer_email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
                                                             data-booking-notes="<?php echo htmlspecialchars($noteText, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-menu-items="<?php echo htmlspecialchars($bookingMenuItemsJson, ENT_QUOTES, 'UTF-8'); ?>"
                                                             data-booking-action-url="admin_bookings.php?booking_search=<?php echo urlencode((string) ($booking['booking_id'] ?? '')); ?>&booking_date_start=<?php echo urlencode((string) ($booking['booking_date'] ?? $selectedDate)); ?>&booking_date_end=<?php echo urlencode((string) ($booking['booking_date'] ?? $selectedDate)); ?>"
                                                         >
                                                             <span class="booking-table-guest-copy">
@@ -1195,6 +1198,14 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                                 'email' => $emailValue,
                                                                 'contact' => $phoneValue !== '' ? $phoneValue : $emailValue,
                                                                 'notes' => trim((string) ($booking['special_request'] ?? '')),
+                                                                'menuItems' => (function () use ($booking) {
+                                                                    $rawMenu = trim((string) ($booking['menu_items'] ?? ''));
+                                                                    if ($rawMenu === '') {
+                                                                        return [];
+                                                                    }
+                                                                    $decoded = json_decode($rawMenu, true);
+                                                                    return is_array($decoded) ? $decoded : [];
+                                                                })(),
                                                                 'status' => getBookingStatusLabel((string) ($booking['status'] ?? 'confirmed')),
                                                                 'url' => 'admin_bookings.php?booking_search=' . urlencode((string) ($booking['booking_id'] ?? '')) . '&booking_date_start=' . urlencode($bookingDate) . '&booking_date_end=' . urlencode($bookingDate),
                                                             ];
@@ -1278,6 +1289,11 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                     <p data-dashboard-detail-notes></p>
                                                 </div>
 
+                                                <div class="dashboard-floor-detail-menu" data-dashboard-detail-menu-wrap hidden>
+                                                    <span>Menu items</span>
+                                                    <div data-dashboard-detail-menu></div>
+                                                </div>
+
                                                 <div class="dashboard-floor-detail-actions">
                                                     <a class="outline-btn dashboard-floor-detail-action" href="admin_bookings.php?booking_date_start=<?php echo urlencode($selectedDate); ?>&booking_date_end=<?php echo urlencode($selectedDate); ?>" data-dashboard-detail-view>View Booking</a>
                                                     <a class="confirm-btn dashboard-floor-detail-action" href="admin_bookings.php?booking_date_start=<?php echo urlencode($selectedDate); ?>&booking_date_end=<?php echo urlencode($selectedDate); ?>" data-dashboard-detail-edit>Add Booking</a>
@@ -1340,6 +1356,10 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                     <span>Notes</span>
                     <p data-booking-detail-notes></p>
                 </div>
+                <div class="admin-modal-field-wide admin-booking-detail-menu" data-booking-detail-menu-wrap hidden>
+                    <span>Menu items</span>
+                    <div data-booking-detail-menu></div>
+                </div>
             </div>
 
             <footer class="admin-modal-actions">
@@ -1372,6 +1392,73 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 element.textContent = value || '-';
             }
         };
+        const renderBookingMenuItems = (items) => {
+            const container = bookingDetailModal?.querySelector('[data-booking-detail-menu]');
+            const wrap = bookingDetailModal?.querySelector('[data-booking-detail-menu-wrap]');
+            if (!container || !wrap) {
+                return;
+            }
+
+            container.innerHTML = '';
+            if (!Array.isArray(items) || items.length === 0) {
+                wrap.hidden = true;
+                return;
+            }
+
+            wrap.hidden = false;
+            const list = document.createElement('ul');
+            list.className = 'admin-booking-menu-items';
+
+            items.forEach((item) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'admin-booking-menu-item';
+
+                const label = document.createElement('span');
+                label.className = 'admin-booking-menu-item-name';
+                label.textContent = item.name || 'Menu item';
+
+                const meta = document.createElement('span');
+                meta.className = 'admin-booking-menu-item-meta';
+                meta.textContent = `${item.qty || 0} × ${item.price ? parseFloat(item.price).toFixed(2) : '0.00'}`;
+
+                listItem.append(label, meta);
+                list.appendChild(listItem);
+            });
+
+            container.appendChild(list);
+        };
+
+        const renderMenuItems = (container, items) => {
+            if (!container) {
+                return;
+            }
+
+            container.innerHTML = '';
+            if (!Array.isArray(items) || items.length === 0) {
+                return;
+            }
+
+            const list = document.createElement('ul');
+            list.className = 'admin-booking-menu-items';
+
+            items.forEach((item) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'admin-booking-menu-item';
+
+                const label = document.createElement('span');
+                label.className = 'admin-booking-menu-item-name';
+                label.textContent = item.name || 'Menu item';
+
+                const meta = document.createElement('span');
+                meta.className = 'admin-booking-menu-item-meta';
+                meta.textContent = `${item.qty || 0} × ${item.price ? parseFloat(item.price).toFixed(2) : '0.00'}`;
+
+                listItem.append(label, meta);
+                list.appendChild(listItem);
+            });
+
+            container.appendChild(list);
+        };
         const closeBookingDetailModal = () => {
             if (bookingDetailModal) {
                 bookingDetailModal.hidden = true;
@@ -1396,6 +1483,23 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             setBookingDetailText('[data-booking-detail-status]', bookingData.bookingStatus || '-');
             setBookingDetailText('[data-booking-detail-contact]', contactText);
             setBookingDetailText('[data-booking-detail-notes]', bookingData.bookingNotes || 'No notes recorded.');
+
+            const menuItems = (() => {
+                if (!bookingData.bookingMenuItems) {
+                    return [];
+                }
+
+                if (typeof bookingData.bookingMenuItems === 'string') {
+                    try {
+                        return JSON.parse(bookingData.bookingMenuItems);
+                    } catch (error) {
+                        return [];
+                    }
+                }
+
+                return Array.isArray(bookingData.bookingMenuItems) ? bookingData.bookingMenuItems : [];
+            })();
+            renderBookingMenuItems(menuItems);
 
             if (action) {
                 action.href = bookingData.bookingActionUrl || 'admin_bookings.php';
@@ -1459,6 +1563,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 bookingPhone: booking.customer_phone || '',
                 bookingEmail: booking.customer_email || '',
                 bookingNotes: booking.special_request || '',
+                bookingMenuItems: booking.menu_items || [],
                 bookingActionUrl: `admin_bookings.php?booking_search=${encodeURIComponent(booking.booking_id || '')}&booking_date_start=${encodeURIComponent(bookingDate)}&booking_date_end=${encodeURIComponent(bookingDate)}`,
             });
         });
@@ -1497,6 +1602,8 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             contacts: document.querySelector('[data-dashboard-detail-contacts]'),
             notesWrap: document.querySelector('[data-dashboard-detail-notes-wrap]'),
             notes: document.querySelector('[data-dashboard-detail-notes]'),
+            menuWrap: document.querySelector('[data-dashboard-detail-menu-wrap]'),
+            menu: document.querySelector('[data-dashboard-detail-menu]'),
             view: document.querySelector('[data-dashboard-detail-view]'),
             edit: document.querySelector('[data-dashboard-detail-edit]'),
             close: document.querySelector('[data-dashboard-floor-detail-close]'),
@@ -1609,6 +1716,9 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 if (dashboardFloorDetail.notesWrap) {
                     dashboardFloorDetail.notesWrap.hidden = true;
                 }
+                if (dashboardFloorDetail.menuWrap) {
+                    dashboardFloorDetail.menuWrap.hidden = true;
+                }
                 setDetailText(dashboardFloorDetail.notes, '');
                 setDetailLink(dashboardFloorDetail.view, 'tables-management.php', 'Manage Table');
                 setDetailLink(dashboardFloorDetail.edit, bookingsUrl, 'Add Booking');
@@ -1624,6 +1734,11 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             setDetailText(dashboardFloorDetail.name, booking.name || 'Guest');
             renderDashboardFloorContacts(booking.phone || '', booking.email || '', 'No contact details');
             setDetailText(dashboardFloorDetail.notes, booking.notes || '-');
+            if (dashboardFloorDetail.menuWrap && dashboardFloorDetail.menu) {
+                const menuItems = Array.isArray(booking.menuItems) ? booking.menuItems : [];
+                dashboardFloorDetail.menuWrap.hidden = menuItems.length === 0;
+                renderMenuItems(dashboardFloorDetail.menu, menuItems);
+            }
             setDetailLink(dashboardFloorDetail.view, booking.url || bookingsUrl, 'View Booking');
             setDetailLink(dashboardFloorDetail.edit, booking.url || bookingsUrl, 'Edit Booking');
         };

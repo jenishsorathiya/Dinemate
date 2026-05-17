@@ -404,6 +404,43 @@ body.admin-modal-open {
   grid-column: 1 / -1;
 }
 
+.admin-booking-detail-menu {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-booking-menu-items,
+.dashboard-floor-detail-menu ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-booking-menu-item,
+.dashboard-floor-detail-menu li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+}
+
+.admin-booking-menu-item-name,
+.dashboard-floor-detail-menu .booking-menu-item-name {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.admin-booking-menu-item-meta,
+.dashboard-floor-detail-menu .booking-menu-item-meta {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
 .admin-booking-detail-grid strong,
 .admin-booking-detail-grid p {
   margin: 0;
@@ -3170,6 +3207,28 @@ body.admin-modal-open {
   font-weight: 600;
 }
 
+.dashboard-floor-detail-menu {
+  padding-top: 2px;
+  display: grid;
+  gap: 5px;
+}
+
+.dashboard-floor-detail-menu[hidden] {
+  display: none;
+}
+
+.dashboard-floor-detail-menu span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dashboard-floor-detail-menu div {
+  color: #34466a;
+  font-size: 10.4px;
+  line-height: 1.45;
+}
+
 .dashboard-floor-detail-notes p {
   margin: 0;
   color: #34466a;
@@ -5325,6 +5384,37 @@ body.admin-inbox-modal-open {
   background: #fff7ed;
   color: #92400e;
   align-items: flex-start;
+}
+
+.admin-inbox-message-bubble.menu {
+  background: #eef2ff;
+  color: #3730a3;
+  align-items: flex-start;
+}
+
+.admin-inbox-menu-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-inbox-menu-items li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.16);
+  font-size: 12px;
+}
+
+.admin-inbox-menu-items li strong {
+  font-weight: 700;
 }
 
 .admin-inbox-message-bubble p {

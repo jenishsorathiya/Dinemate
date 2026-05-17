@@ -162,6 +162,7 @@ include '../includes/header.php';
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($bookingCsrfToken, ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="booking_date" id="booking-date" value="<?= htmlspecialchars($defaultBookingDate) ?>">
             <input type="hidden" name="end_time" id="end-time" value="13:00">
+            <input type="hidden" name="menu_items" id="booking-menu-items" value="">
 
             <div class="booking-layout">
                 <div class="booking-left-stack">

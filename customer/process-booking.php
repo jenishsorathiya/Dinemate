@@ -32,6 +32,35 @@ $date = sanitize($_POST['booking_date']);
 $start_time = sanitize($_POST['start_time']);
 $guests = intval($_POST['number_of_guests']);
 $special = isset($_POST['special_request']) ? sanitize($_POST['special_request']) : '';
+$menuItemsJson = trim((string) ($_POST['menu_items'] ?? ''));
+$menuItems = [];
+if ($menuItemsJson !== '') {
+    $decodedMenuItems = json_decode($menuItemsJson, true);
+    if (is_array($decodedMenuItems)) {
+        foreach ($decodedMenuItems as $menuItem) {
+            if (!is_array($menuItem)) {
+                continue;
+            }
+
+            $itemId = sanitize(trim((string) ($menuItem['id'] ?? '')));
+            $itemName = sanitize(trim((string) ($menuItem['name'] ?? '')));
+            $itemQty = intval($menuItem['qty'] ?? 0);
+            $itemPrice = floatval($menuItem['price'] ?? 0);
+
+            if ($itemId === '' || $itemName === '' || $itemQty < 1) {
+                continue;
+            }
+
+            $menuItems[] = [
+                'id' => $itemId,
+                'name' => $itemName,
+                'qty' => $itemQty,
+                'price' => number_format($itemPrice, 2, '.', ''),
+            ];
+        }
+    }
+}
+$menuItemsPayload = !empty($menuItems) ? json_encode(array_values($menuItems), JSON_UNESCAPED_UNICODE) : null;
 
 // Ensure booking is enabled
 if (!$bookingSettings['enable_online_bookings']) {
@@ -172,8 +201,8 @@ if ($bookingSettings['auto_table_assignment']) {
 
 $stmt = $pdo->prepare("
     INSERT INTO bookings 
-    (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, status, booking_source, created_by_user_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+    (user_id, customer_profile_id, customer_name, customer_phone, customer_email, guest_access_token, table_id, booking_date, start_time, end_time, requested_start_time, requested_end_time, number_of_guests, special_request, menu_items, status, booking_source, created_by_user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
 ");
 
 try {
@@ -194,6 +223,7 @@ try {
         $end_time,
         $guests,
         $special,
+        $menuItemsPayload,
         $bookingSource,
         $createdByUserId
     ]);
