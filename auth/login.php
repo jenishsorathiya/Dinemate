@@ -1,5 +1,6 @@
 <?php 
 session_start(); 
+require_once __DIR__ . '/../includes/functions.php';
 $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: time());
 ?>
 
@@ -233,25 +234,17 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 60px 40px;
+    padding: 0;
 }
 
 .auth-image-section::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 60%;
-    height: 150%;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(107,190,141,0.1)"/><circle cx="70" cy="30" r="25" fill="rgba(107,190,141,0.08)"/></svg>');
-    opacity: 0.5;
-}
-
-.auth-content {
-    position: relative;
-    z-index: 2;
-    color: white;
-    text-align: center;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
 }
 
 .auth-content h2 {
@@ -403,36 +396,7 @@ body {
         </div>
 
         <!-- Image Section -->
-        <div class="auth-image-section">
-            <div class="auth-content">
-                <h2>Dining Made Simple</h2>
-                <p>Experience the future of restaurant reservations</p>
-
-                <div class="auth-features">
-                    <div class="feature-item">
-                        <div class="feature-icon"><i class="fa fa-lightning"></i></div>
-                        <div class="feature-text">
-                            <h4>Instant Booking</h4>
-                            <p>Reserve your table in seconds</p>
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon"><i class="fa fa-calendar-check"></i></div>
-                        <div class="feature-text">
-                            <h4>Real-Time Updates</h4>
-                            <p>Get instant confirmation and reminders</p>
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon"><i class="fa fa-shield-alt"></i></div>
-                        <div class="feature-text">
-                            <h4>Secure & Private</h4>
-                            <p>Your data is always protected</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="auth-image-section"></div>
     </div>
 </div>
 

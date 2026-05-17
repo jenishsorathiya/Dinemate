@@ -50,6 +50,7 @@ try {
         $pdo->rollBack();
     }
 
+    error_log('Cancel booking failure: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Could not cancel booking']);
 }
