@@ -6,6 +6,7 @@ require_once "../../includes/functions.php";
 header('Content-Type: application/json');
 
 requireAdmin(['json' => true]);
+requireValidCsrfToken('admin_actions', ['json' => true]);
 
 ensureBookingRequestColumns($pdo);
 ensureBookingTableAssignmentsTable($pdo);

@@ -9,6 +9,7 @@ ensureBookingRequestColumns($pdo);
 ensureBookingTableAssignmentsTable($pdo);
 
 requireAdmin(['json' => true]);
+requireValidCsrfToken('admin_actions', ['json' => true]);
 
 $data = json_decode(file_get_contents('php://input'), true);
 

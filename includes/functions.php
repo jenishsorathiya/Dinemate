@@ -3,8 +3,41 @@ require_once __DIR__ . '/../config/notifications.php';
 
 // existing functions
 function redirect($location) {
+    $location = str_replace(["\r", "\n"], '', (string) $location);
     header("Location: $location");
     exit();
+}
+
+function sendSecurityHeaders(): void {
+    if (headers_sent()) {
+        return;
+    }
+
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+}
+
+function startAppSession(): void {
+    sendSecurityHeaders();
+
+    if (session_status() !== PHP_SESSION_NONE) {
+        return;
+    }
+
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['SERVER_PORT'] ?? null) === '443');
+
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+
+    session_start();
 }
 
 function appPath($path = '') {
@@ -24,8 +57,67 @@ function appPath($path = '') {
     return ($basePath !== '' ? $basePath : '') . '/' . ltrim($path, '/');
 }
 
+function assetUrl(string $path): string {
+    $normalizedPath = ltrim($path, '/');
+    $absolutePath = realpath(__DIR__ . '/../' . $normalizedPath);
+    $version = $absolutePath && is_file($absolutePath) ? (string) filemtime($absolutePath) : (string) time();
+
+    return appPath($normalizedPath) . '?v=' . rawurlencode($version);
+}
+
 function sanitize($data) {
     return htmlspecialchars(trim($data));
+}
+
+function csrfToken(string $key = 'default'): string {
+    startAppSession();
+
+    if (!isset($_SESSION['csrf_tokens']) || !is_array($_SESSION['csrf_tokens'])) {
+        $_SESSION['csrf_tokens'] = [];
+    }
+
+    if (empty($_SESSION['csrf_tokens'][$key]) || !is_string($_SESSION['csrf_tokens'][$key])) {
+        $_SESSION['csrf_tokens'][$key] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_tokens'][$key];
+}
+
+function csrfInput(string $key = 'default'): string {
+    return '<input type="hidden" name="csrf_token" value="' .
+        htmlspecialchars(csrfToken($key), ENT_QUOTES, 'UTF-8') .
+        '">';
+}
+
+function verifyCsrfToken(string $key = 'default', ?string $submittedToken = null): bool {
+    startAppSession();
+
+    $submittedToken ??= (string) ($_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''));
+    $expectedToken = $_SESSION['csrf_tokens'][$key] ?? '';
+
+    return is_string($expectedToken)
+        && $expectedToken !== ''
+        && $submittedToken !== ''
+        && hash_equals($expectedToken, $submittedToken);
+}
+
+function requireValidCsrfToken(string $key = 'default', array $options = []): void {
+    if (verifyCsrfToken($key)) {
+        return;
+    }
+
+    $jsonResponse = !empty($options['json']);
+    if ($jsonResponse) {
+        if (!headers_sent()) {
+            header('Content-Type: application/json');
+        }
+        http_response_code(419);
+        echo json_encode(['success' => false, 'error' => 'Security check failed. Please refresh and try again.']);
+        exit();
+    }
+
+    setFlashMessage('error', 'Security check failed. Please refresh and try again.');
+    redirect((string) ($options['redirect'] ?? appPath('public/index.php')));
 }
 
 function storeUserSession(array $user) {
@@ -599,6 +691,19 @@ function ensureBookingRequestColumns($pdo) {
     $userIdStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'user_id'");
     $userIdColumn = $userIdStmt->fetch(PDO::FETCH_ASSOC);
 
+    $tableIdStmt = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'table_id'");
+    $tableIdColumn = $tableIdStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$startTimeExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN start_time TIME NOT NULL DEFAULT '12:00:00' AFTER booking_date");
+        $startTimeExists = true;
+    }
+
+    if (!$endTimeExists) {
+        $pdo->exec("ALTER TABLE bookings ADD COLUMN end_time TIME NOT NULL DEFAULT '13:00:00' AFTER start_time");
+        $endTimeExists = true;
+    }
+
     if (!$requestedStartExists) {
         $pdo->exec("ALTER TABLE bookings ADD COLUMN requested_start_time TIME DEFAULT NULL AFTER end_time");
     }
@@ -684,6 +789,10 @@ function ensureBookingRequestColumns($pdo) {
 
     if ($userIdColumn && $userIdColumn['Null'] !== 'YES') {
         $pdo->exec("ALTER TABLE bookings MODIFY COLUMN user_id {$userIdColumn['Type']} NULL");
+    }
+
+    if ($tableIdColumn && $tableIdColumn['Null'] !== 'YES') {
+        $pdo->exec("ALTER TABLE bookings MODIFY COLUMN table_id {$tableIdColumn['Type']} NULL");
     }
 
     if ($startTimeExists) {

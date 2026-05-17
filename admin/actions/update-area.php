@@ -6,17 +6,19 @@ require_once "../../includes/functions.php";
 header('Content-Type: application/json');
 
 requireAdmin(['json' => true]);
+requireValidCsrfToken('admin_actions', ['json' => true]);
 
 ensureTableAreasSchema($pdo);
 
 $data = json_decode(file_get_contents('php://input'), true);
+$areaId = (int)($data['area_id'] ?? 0);
 $name = trim($data['name'] ?? '');
 $tableNumberStart = isset($data['table_number_start']) && $data['table_number_start'] !== '' ? (int)$data['table_number_start'] : null;
 $tableNumberEnd = isset($data['table_number_end']) && $data['table_number_end'] !== '' ? (int)$data['table_number_end'] : null;
 
-if($name === '') {
+if($areaId < 1 || $name === '') {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Area name is required']);
+    echo json_encode(['success' => false, 'error' => 'A valid area and name are required']);
     exit();
 }
 
@@ -45,26 +47,28 @@ if($tableNumberStart !== null && $tableNumberEnd !== null && $tableNumberEnd < $
 }
 
 try {
-    $existsStmt = $pdo->prepare("SELECT area_id FROM table_areas WHERE LOWER(name) = LOWER(?) LIMIT 1");
-    $existsStmt->execute([$name]);
-    $existingId = $existsStmt->fetchColumn();
+    $areaStmt = $pdo->prepare("SELECT area_id, display_order FROM table_areas WHERE area_id = ? AND is_active = 1");
+    $areaStmt->execute([$areaId]);
+    $existingArea = $areaStmt->fetch(PDO::FETCH_ASSOC);
 
-    if($existingId) {
+    if(!$existingArea) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Area not found']);
+        exit();
+    }
+
+    $duplicateStmt = $pdo->prepare("SELECT area_id FROM table_areas WHERE LOWER(name) = LOWER(?) AND area_id != ? LIMIT 1");
+    $duplicateStmt->execute([$name, $areaId]);
+    if($duplicateStmt->fetchColumn()) {
         http_response_code(409);
         echo json_encode(['success' => false, 'error' => 'An area with that name already exists']);
         exit();
     }
 
-    $displayOrder = (int)$pdo->query("SELECT COALESCE(MAX(display_order), 0) + 10 FROM table_areas")->fetchColumn();
-    if($displayOrder < 1) {
-        $displayOrder = 10;
-    }
-
     $pdo->beginTransaction();
 
-    $insertStmt = $pdo->prepare("INSERT INTO table_areas (name, display_order, table_number_start, table_number_end, is_active) VALUES (?, ?, ?, ?, 1)");
-    $insertStmt->execute([$name, $displayOrder, $tableNumberStart, $tableNumberEnd]);
-    $areaId = (int)$pdo->lastInsertId();
+    $updateStmt = $pdo->prepare("UPDATE table_areas SET name = ?, table_number_start = ?, table_number_end = ? WHERE area_id = ?");
+    $updateStmt->execute([$name, $tableNumberStart, $tableNumberEnd, $areaId]);
 
     $syncResult = syncAreaNumberedTables($pdo, $areaId, $tableNumberStart, $tableNumberEnd);
 
@@ -75,7 +79,7 @@ try {
         'area' => [
             'area_id' => $areaId,
             'name' => $name,
-            'display_order' => $displayOrder,
+            'display_order' => (int)$existingArea['display_order'],
             'table_number_start' => $tableNumberStart,
             'table_number_end' => $tableNumberEnd,
             'is_active' => 1,
@@ -89,6 +93,6 @@ try {
         $pdo->rollBack();
     }
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    error_log('Update area failed: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'Unable to update area. Please try again.']);
 }
-?>

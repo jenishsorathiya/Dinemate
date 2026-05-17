@@ -1,9 +1,7 @@
 <?php
 require_once __DIR__ . '/functions.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+startAppSession();
 
 $footerRole = getCurrentUserRole();
 $footerLinks = [
@@ -28,7 +26,6 @@ if (isLoggedIn() && $footerRole === 'customer') {
         ['label' => 'Admin Home', 'path' => 'admin/pages/admin_home.php'],
         ['label' => 'Bookings', 'path' => 'admin/pages/admin_bookings.php'],
         ['label' => 'Inbox', 'path' => 'admin/pages/admin_inbox.php'],
-        ['label' => 'Timeline', 'path' => 'admin/timeline/timeline.php'],
         ['label' => 'Tables Management', 'path' => 'admin/pages/tables-management.php'],
         ['label' => 'Menu Management', 'path' => 'admin/pages/menu-management.php'],
         ['label' => 'Logout', 'path' => 'auth/logout.php'],
@@ -41,7 +38,7 @@ if (isLoggedIn() && $footerRole === 'customer') {
             <div class="col-md-4 footer-brand">
                 <h4>DineMate</h4>
                 <p>Modern reservation support for Old Canberra Inn. Book faster, manage visits clearly, and keep dining service running smoothly.</p>
-                <button onclick="scrollTopPage()" class="back-top">↑ Back to Top</button>
+                <button type="button" class="back-top" data-scroll-top>↑ Back to Top</button>
             </div>
             <div class="col-md-4">
                 <h5>Site Map</h5>
@@ -68,12 +65,24 @@ if (isLoggedIn() && $footerRole === 'customer') {
     </div>
 </footer>
 
-<script>
-function scrollTopPage() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?php echo htmlspecialchars(assetUrl('assets/js/app.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
+<?php
+$extraFooterScripts = $extraFooterScripts ?? [];
+if (is_array($extraFooterScripts)) {
+    foreach ($extraFooterScripts as $script) {
+        $scriptPath = is_array($script) ? (string) ($script['src'] ?? '') : (string) $script;
+        $scriptType = is_array($script) ? trim((string) ($script['type'] ?? '')) : '';
+        if ($scriptPath === '') {
+            continue;
+        }
+        $scriptSrc = preg_match('#^(?:https?:)?//#i', $scriptPath) ? $scriptPath : assetUrl($scriptPath);
+        echo '<script src="' . htmlspecialchars($scriptSrc, ENT_QUOTES, 'UTF-8') . '"' .
+            ($scriptType !== '' ? ' type="' . htmlspecialchars($scriptType, ENT_QUOTES, 'UTF-8') . '"' : '') .
+            '></script>' . PHP_EOL;
+    }
+}
+?>
 </body>
 </html>
         

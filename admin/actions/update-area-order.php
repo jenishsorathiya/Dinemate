@@ -6,6 +6,7 @@ require_once "../../includes/functions.php";
 header('Content-Type: application/json');
 
 requireAdmin(['json' => true]);
+requireValidCsrfToken('admin_actions', ['json' => true]);
 
 ensureTableAreasSchema($pdo);
 
@@ -69,6 +70,6 @@ try {
     }
 
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    error_log('Update area order failed: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'Unable to update area order. Please try again.']);
 }
-?>

@@ -236,6 +236,16 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.navbar-toggler {
+    border-color: var(--dm-border-strong);
+    border-radius: var(--dm-radius-sm);
+    padding: 8px 10px;
+}
+
+.navbar-toggler:focus {
+    box-shadow: var(--dm-focus-ring);
+}
+
 h1,
 h2,
 h3,
@@ -243,7 +253,7 @@ h4,
 h5,
 h6 {
     color: var(--dm-text);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
 }
 
 h1 {
@@ -801,7 +811,7 @@ label,
     font-family: var(--dm-font-sans);
     font-size: 22px;
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
     text-decoration: none;
 }
 
@@ -971,6 +981,9 @@ label,
 }
 
 .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
     min-height: 100vh;
     padding: 20px 10px;
     border-right: 1px solid var(--dm-border);
@@ -979,6 +992,7 @@ label,
     flex-direction: column;
     justify-content: space-between;
     gap: 22px;
+    overflow-y: auto;
 }
 
 .sidebar-brand {
@@ -1006,6 +1020,7 @@ label,
 
 .sidebar-nav,
 .sidebar-footer {
+    margin-top: auto;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -1170,7 +1185,7 @@ label,
     font-size: 20px;
     line-height: 1.2;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
 }
 
 .page-subtitle {
@@ -1299,7 +1314,7 @@ label,
     color: var(--dm-text);
     font-size: 22px;
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
 }
 
 .app-stat-note {
@@ -1329,7 +1344,7 @@ label,
     color: var(--dm-text);
     font-size: 26px;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
 }
 
 .ui-kit-subtitle {
@@ -1392,7 +1407,7 @@ label,
     color: var(--dm-text);
     font-size: 24px;
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
 }
 
 .ui-stat-note {
@@ -2015,10 +2030,13 @@ label,
     }
 
     .sidebar {
+        position: static;
+        height: auto;
         min-height: auto;
         border-right: none;
         border-bottom: 1px solid var(--dm-border);
         padding: 12px;
+        overflow-y: visible;
     }
 
     .sidebar-nav {
@@ -2102,5 +2120,52 @@ label,
 
     .ui-stat-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ----------------------------------------------------------
+   9. Final responsive hardening
+   ---------------------------------------------------------- */
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+    min-width: 0;
+}
+
+.inline-action-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.inline-action-form button {
+    font: inherit;
+}
+
+@media (max-width: 640px) {
+    .booking-actions,
+    .hero-actions,
+    .profile-actions,
+    .mn-actions,
+    .fn-detail-actions {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    .booking-actions > *,
+    .hero-actions > *,
+    .profile-actions > *,
+    .mn-actions > *,
+    .fn-detail-actions > *,
+    .inline-action-form,
+    .inline-action-form button {
+        width: 100%;
     }
 }

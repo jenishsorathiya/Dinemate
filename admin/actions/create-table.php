@@ -8,6 +8,7 @@ header('Content-Type: application/json');
 ensureTableAreasSchema($pdo);
 
 requireAdmin(['json' => true]);
+requireValidCsrfToken('admin_actions', ['json' => true]);
 
 $normalizeTableShape = static function (string $value): string {
     $shape = strtolower(trim($value));
@@ -150,6 +151,6 @@ try {
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    error_log('Create table failed: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'Unable to create table. Please try again.']);
 }
-?>

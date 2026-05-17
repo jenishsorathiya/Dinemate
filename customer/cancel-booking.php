@@ -6,7 +6,14 @@ require_once "../includes/functions.php";
 requireCustomer();
 ensureBookingTableAssignmentsTable($pdo);
 
-$id = intval($_GET['id'] ?? 0);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+	setFlashMessage('error', 'Please use the cancel button from your bookings page.');
+	redirect(appPath('customer/my-bookings.php'));
+}
+
+requireValidCsrfToken('customer_booking_action', ['redirect' => appPath('customer/my-bookings.php')]);
+
+$id = intval($_POST['id'] ?? 0);
 
 if ($id < 1) {
 	redirect(appPath('customer/my-bookings.php'));

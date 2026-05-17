@@ -17,10 +17,7 @@ $successMessage = '';
 $booking = null;
 $existingReview = null;
 
-if (empty($_SESSION['rate_booking_csrf_token'])) {
-    $_SESSION['rate_booking_csrf_token'] = bin2hex(random_bytes(32));
-}
-$csrfToken = (string) $_SESSION['rate_booking_csrf_token'];
+$csrfToken = csrfToken('booking_review');
 
 if ($bookingId > 0) {
     $stmt = $pdo->prepare(
@@ -41,11 +38,10 @@ if ($booking) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
-    $submittedToken = (string) ($_POST['csrf_token'] ?? '');
     $rating = intval($_POST['rating'] ?? 0);
     $comment = trim((string) ($_POST['comment'] ?? ''));
 
-    if ($submittedToken === '' || !hash_equals($csrfToken, $submittedToken)) {
+    if (!verifyCsrfToken('booking_review')) {
         $errors[] = 'Your session expired. Please try again.';
     }
 
@@ -72,133 +68,13 @@ $bookingTime = $booking ? sprintf('%s - %s', date('g:i A', strtotime((string) ($
 $statusLabel = $booking ? getBookingStatusLabel(strtolower((string) ($booking['status'] ?? 'pending'))) : '';
 ?>
 
-<?php include "../includes/header.php"; ?>
+<?php
+$pageTitle = 'Rate Booking | DineMate';
+$extraStylesheets = ['assets/css/pages/customer-rate-booking.css'];
+$extraFooterScripts = ['assets/js/pages/customer-rate-booking.js'];
+include '../includes/header.php';
+?>
 
-<style>
-.rate-booking-shell {
-    margin: 118px auto 84px;
-    max-width: 940px;
-    padding: 0 20px;
-}
-
-.review-panel {
-    background: var(--dm-surface);
-    border: 1px solid var(--dm-border);
-    border-radius: 16px;
-    padding: 28px;
-    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
-}
-
-.review-panel h1 {
-    margin-top: 0;
-    font-size: 32px;
-}
-
-.review-panel p {
-    color: var(--dm-text-muted);
-    margin-bottom: 18px;
-}
-
-.review-meta {
-    display: grid;
-    gap: 14px;
-    margin-bottom: 22px;
-}
-
-.review-meta span {
-    color: var(--dm-text);
-    font-size: 14px;
-}
-
-.review-form {
-    display: grid;
-    gap: 20px;
-}
-
-.rating-options {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.rating-option {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-width: 54px;
-    height: 48px;
-    padding: 0 12px;
-    border: 1px solid var(--dm-border);
-    border-radius: 12px;
-    background: var(--dm-surface);
-    color: var(--dm-text);
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.rating-option input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.rating-option i {
-    font-size: 12px;
-}
-
-.rating-option:has(input:checked),
-.rating-option.selected,
-.rating-option:hover {
-    border-color: #4A7C59;
-    background: rgba(74, 124, 89, 0.1);
-}
-
-.review-comment {
-    width: 100%;
-    min-height: 140px;
-    padding: 14px;
-    border: 1px solid var(--dm-border);
-    border-radius: 12px;
-    background: var(--dm-surface);
-    color: var(--dm-text);
-    resize: vertical;
-    font-family: inherit;
-    font-size: 14px;
-}
-
-.review-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.review-actions .btn-primary-solid,
-.review-actions .btn-surface {
-    min-width: 160px;
-}
-
-.notification-box {
-    padding: 16px 20px;
-    border-radius: 12px;
-    border: 1px solid transparent;
-    margin-bottom: 20px;
-}
-
-.notification-box.success {
-    background: #ebf6ec;
-    border-color: #bbd9bc;
-    color: #2a5d2d;
-}
-
-.notification-box.error {
-    background: #fbeaea;
-    border-color: #ebb5b5;
-    color: #8b2727;
-}
-</style>
 
 <div class="rate-booking-shell">
     <div class="review-panel">
@@ -207,7 +83,7 @@ $statusLabel = $booking ? getBookingStatusLabel(strtolower((string) ($booking['s
 
         <?php if (!empty($errors)): ?>
             <div class="notification-box error">
-                <ul style="margin: 0; padding-left: 20px;">
+                <ul class="rating-error-list">
                     <?php foreach ($errors as $error): ?>
                         <li><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></li>
                     <?php endforeach; ?>
@@ -267,15 +143,5 @@ $statusLabel = $booking ? getBookingStatusLabel(strtolower((string) ($booking['s
         <?php endif; ?>
     </div>
 </div>
-
-<script>
-document.querySelectorAll('.rating-option input').forEach(function (input) {
-    input.addEventListener('change', function () {
-        document.querySelectorAll('.rating-option').forEach(function (option) {
-            option.classList.toggle('selected', Boolean(option.querySelector('input:checked')));
-        });
-    });
-});
-</script>
 
 <?php include "../includes/footer.php"; ?>

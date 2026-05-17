@@ -111,7 +111,7 @@ require_once __DIR__ . "/../includes/functions.php";
         </div>
         
         <div class="alert-box info-box">
-            <h5>❓ Unassigned bookings are not appearing in the admin timeline</h5>
+            <h5>❓ Unassigned bookings are not appearing in the admin workbench</h5>
             <ul>
                 <li>Verify that bookings have <code>start_time</code>, <code>end_time</code>, and <code>status</code> values (Run Auto-Fix)</li>
                 <li>Confirm new customer bookings are being created with <code>table_id = NULL</code></li>
@@ -140,7 +140,7 @@ require_once __DIR__ . "/../includes/functions.php";
             <ul class="check-list">
                 <li>Start time and end time for each booking</li>
                 <li>Customers submit unassigned booking requests</li>
-                <li>Admins drag pending bookings onto the timeline</li>
+                <li>Admins review pending bookings and assign tables from the admin workbench</li>
                 <li>Assignment confirms the booking and attaches a table</li>
             </ul>
         </div>

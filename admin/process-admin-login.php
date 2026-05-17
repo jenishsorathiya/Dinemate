@@ -1,12 +1,14 @@
 <?php
 require_once "../config/db.php";
 require_once "../includes/functions.php";
-session_start();
-
-// Prevent session fixation
-session_regenerate_id(true);
+startAppSession();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!verifyCsrfToken('admin_login')) {
+        $_SESSION['admin_error'] = 'Security check failed. Please refresh and try again.';
+        redirect(appPath('admin/admin-login.php'));
+    }
+
     // Input validation
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
         $_SESSION['admin_error'] = "Email and password are required";
@@ -54,11 +56,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Verify password using password_verify (preferred) + optional plain text fallback
         $password_valid = password_verify($password, $user['password']);
+        $legacy_plaintext_password = false;
         if (!$password_valid && $password === $user['password']) {
             $password_valid = true;
+            $legacy_plaintext_password = true;
         }
 
         if ($password_valid) {
+            if ($legacy_plaintext_password || password_needs_rehash((string) $user['password'], PASSWORD_DEFAULT)) {
+                $passwordUpdateStmt = $pdo->prepare("UPDATE users SET password = ? WHERE user_id = ?");
+                $passwordUpdateStmt->execute([password_hash($password, PASSWORD_DEFAULT), $user['user_id']]);
+            }
+
+            session_regenerate_id(true);
             storeUserSession($user);
             $_SESSION['admin_logged_in'] = true;
 

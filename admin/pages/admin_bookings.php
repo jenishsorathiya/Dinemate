@@ -565,10 +565,10 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 </div>
 
                 <div class="header-actions admin-bookings-actions" aria-label="Booking actions">
-                    <a class="primary-btn header-add-booking-btn" href="../timeline/timeline.php?date=<?php echo urlencode($todayDate); ?>#bookingList">
+                    <button class="primary-btn header-add-booking-btn" type="button" data-admin-booking-create-open>
                         <i class="bi bi-plus-lg" aria-hidden="true"></i>
                         <span>Add Booking</span>
-                    </a>
+                    </button>
 
                     <a class="icon-btn notification-btn" href="admin_inbox.php" aria-label="Notifications">
                         <i class="bi bi-bell-fill" aria-hidden="true"></i>
@@ -900,7 +900,12 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                 <span class="admin-booking-row-note<?php echo $noteText === '' ? ' is-empty' : ''; ?>" title="<?php echo htmlspecialchars($noteText, ENT_QUOTES, 'UTF-8'); ?>">
                                                     <?php echo htmlspecialchars($noteText !== '' ? $noteText : '-', ENT_QUOTES, 'UTF-8'); ?>
                                                 </span>
-                                                <a class="admin-bookings-action" href="../timeline/timeline.php?date=<?php echo urlencode((string) ($booking['booking_date'] ?? $todayDate)); ?>#bookingList" aria-label="Open booking">
+                                                <a class="admin-bookings-action" href="<?php echo htmlspecialchars($buildBookingUrl([
+                                                    'booking_search' => (string) ($booking['booking_id'] ?? ''),
+                                                    'booking_date_start' => (string) ($booking['booking_date'] ?? $todayDate),
+                                                    'booking_date_end' => (string) ($booking['booking_date'] ?? $todayDate),
+                                                    'page' => 1,
+                                                ]), ENT_QUOTES, 'UTF-8'); ?>" aria-label="Open booking">
                                                     <i class="bi bi-three-dots" aria-hidden="true"></i>
                                                 </a>
                                             </article>
@@ -921,6 +926,12 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             </div>
         </main>
     </div>
+    <?php
+    $adminBookingCreateDefaultDate = $todayDate;
+    $adminBookingCreateMinDate = $todayDate;
+    $adminBookingCreateEndpoint = '../actions/create-booking.php';
+    include __DIR__ . '/../partials/admin-booking-create-modal.php';
+    ?>
     <script>
         (() => {
             const dateFormat = new Intl.DateTimeFormat('en-AU', {

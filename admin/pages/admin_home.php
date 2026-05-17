@@ -27,7 +27,7 @@ if (!in_array($selectedCapacityService, ['all', 'lunch', 'dinner'], true)) {
 }
 $nextCapacityService = $selectedCapacityService === 'lunch' ? 'dinner' : 'lunch';
 $selectedCapacityLabel = $selectedCapacityService === 'all' ? 'All' : ucfirst($selectedCapacityService);
-$allowedDashboardTabs = ['bookings', 'trivia', 'functions', 'timeline', 'floor'];
+$allowedDashboardTabs = ['bookings', 'trivia', 'functions', 'floor'];
 $selectedDashboardTab = strtolower(trim((string) ($_GET['dashboard_tab'] ?? 'bookings')));
 if (!in_array($selectedDashboardTab, $allowedDashboardTabs, true)) {
     $selectedDashboardTab = 'bookings';
@@ -155,8 +155,6 @@ $dashboardUrl = static function (array $overrides = []) use ($selectedDate, $sel
 
     return 'admin_home.php?' . http_build_query($params);
 };
-$timelineEmbedUrl = '../timeline/timeline.php?date=' . urlencode($selectedDate) . '&embed=1';
-
 $dashboardTabs = [
     [
         'key' => 'bookings',
@@ -172,11 +170,6 @@ $dashboardTabs = [
         'key' => 'functions',
         'label' => 'Functions',
         'icon' => 'bi-cake2',
-    ],
-    [
-        'key' => 'timeline',
-        'label' => 'Timeline',
-        'icon' => 'bi-clock',
     ],
     [
         'key' => 'floor',
@@ -723,10 +716,10 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
 
                     <a class="secondary-btn" href="<?php echo htmlspecialchars($dashboardUrl(['date' => $todayDate]), ENT_QUOTES, 'UTF-8'); ?>">Today</a>
 
-                    <a class="primary-btn header-add-booking-btn" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList">
+                    <button class="primary-btn header-add-booking-btn" type="button" data-admin-booking-create-open>
                         <i class="bi bi-plus-lg" aria-hidden="true"></i>
                         <span>Add Booking</span>
-                    </a>
+                    </button>
 
                     <a class="icon-btn notification-btn" href="admin_inbox.php" aria-label="Notifications">
                         <i class="bi bi-bell-fill" aria-hidden="true"></i>
@@ -882,8 +875,21 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                             <button class="outline-btn" type="button" data-decline-request-id="<?php echo (int) ($requestBooking['booking_id'] ?? 0); ?>">Decline</button>
                                             <button class="confirm-btn" type="button" data-confirm-request-id="<?php echo (int) ($requestBooking['booking_id'] ?? 0); ?>">Confirm</button>
                                         <?php else: ?>
-                                            <a class="outline-btn" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>">View</a>
-                                            <a class="confirm-btn" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>">Assign</a>
+                                            <button
+                                                class="outline-btn"
+                                                type="button"
+                                                data-admin-booking-open
+                                                data-booking-id="<?php echo (int) ($requestBooking['booking_id'] ?? 0); ?>"
+                                                data-booking-name="<?php echo htmlspecialchars((string) ($requestBooking['customer_name'] ?? 'Guest'), ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-booking-date="<?php echo htmlspecialchars((string) ($requestBooking['booking_date'] ?? $selectedDate), ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-booking-time="<?php echo htmlspecialchars($formatRequestTime((string) ($requestBooking['booking_date'] ?? ''), (string) ($requestBooking['start_time'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-booking-guests="<?php echo (int) ($requestBooking['number_of_guests'] ?? 0); ?>"
+                                                data-booking-table="No table"
+                                                data-booking-status="<?php echo htmlspecialchars(getBookingStatusLabel((string) ($requestBooking['status'] ?? 'confirmed')), ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-booking-notes="<?php echo htmlspecialchars($requestNote, ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-booking-action-url="admin_bookings.php?status_view=needs_action&booking_search=<?php echo urlencode((string) ($requestBooking['booking_id'] ?? '')); ?>"
+                                            >View</button>
+                                            <a class="confirm-btn" href="admin_bookings.php?status_view=needs_action&booking_search=<?php echo urlencode((string) ($requestBooking['booking_id'] ?? '')); ?>">Assign</a>
                                         <?php endif; ?>
                                     </div>
                                 </article>
@@ -970,11 +976,27 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                 <tr<?php echo $hasAssignedTable ? '' : ' class="is-missing-table"'; ?>>
                                                     <td class="booking-table-time"><?php echo htmlspecialchars($bookingTime, ENT_QUOTES, 'UTF-8'); ?></td>
                                                     <td>
-                                                        <a class="booking-table-guest" href="../timeline/timeline.php?date=<?php echo urlencode((string) ($booking['booking_date'] ?? $selectedDate)); ?>#bookingList">
+                                                        <button
+                                                            class="booking-table-guest"
+                                                            type="button"
+                                                            data-admin-booking-open
+                                                            data-booking-id="<?php echo (int) ($booking['booking_id'] ?? 0); ?>"
+                                                            data-booking-name="<?php echo htmlspecialchars($bookingName, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-date="<?php echo htmlspecialchars((string) ($booking['booking_date'] ?? $selectedDate), ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-time="<?php echo htmlspecialchars($bookingTime, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-guests="<?php echo (int) ($booking['number_of_guests'] ?? 0); ?>"
+                                                            data-booking-table="<?php echo htmlspecialchars($tableText, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-area="<?php echo htmlspecialchars($areaText, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-status="<?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-phone="<?php echo htmlspecialchars((string) ($booking['customer_phone'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-email="<?php echo htmlspecialchars((string) ($booking['customer_email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-notes="<?php echo htmlspecialchars($noteText, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-action-url="admin_bookings.php?booking_search=<?php echo urlencode((string) ($booking['booking_id'] ?? '')); ?>&booking_date_start=<?php echo urlencode((string) ($booking['booking_date'] ?? $selectedDate)); ?>&booking_date_end=<?php echo urlencode((string) ($booking['booking_date'] ?? $selectedDate)); ?>"
+                                                        >
                                                             <span class="booking-table-guest-copy">
                                                                 <strong><?php echo htmlspecialchars($bookingName, ENT_QUOTES, 'UTF-8'); ?></strong>
                                                             </span>
-                                                        </a>
+                                                        </button>
                                                     </td>
                                                     <td>
                                                         <span class="booking-table-assignment<?php echo $hasAssignedTable ? '' : ' is-missing'; ?>">
@@ -999,9 +1021,26 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                         </span>
                                                     </td>
                                                     <td class="booking-table-action-cell">
-                                                        <a class="booking-table-action" href="../timeline/timeline.php?date=<?php echo urlencode((string) ($booking['booking_date'] ?? $selectedDate)); ?>#bookingList" aria-label="Open booking">
+                                                        <button
+                                                            class="booking-table-action"
+                                                            type="button"
+                                                            aria-label="Open booking"
+                                                            data-admin-booking-open
+                                                            data-booking-id="<?php echo (int) ($booking['booking_id'] ?? 0); ?>"
+                                                            data-booking-name="<?php echo htmlspecialchars($bookingName, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-date="<?php echo htmlspecialchars((string) ($booking['booking_date'] ?? $selectedDate), ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-time="<?php echo htmlspecialchars($bookingTime, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-guests="<?php echo (int) ($booking['number_of_guests'] ?? 0); ?>"
+                                                            data-booking-table="<?php echo htmlspecialchars($tableText, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-area="<?php echo htmlspecialchars($areaText, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-status="<?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-phone="<?php echo htmlspecialchars((string) ($booking['customer_phone'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-email="<?php echo htmlspecialchars((string) ($booking['customer_email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-notes="<?php echo htmlspecialchars($noteText, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-booking-action-url="admin_bookings.php?booking_search=<?php echo urlencode((string) ($booking['booking_id'] ?? '')); ?>&booking_date_start=<?php echo urlencode((string) ($booking['booking_date'] ?? $selectedDate)); ?>&booking_date_end=<?php echo urlencode((string) ($booking['booking_date'] ?? $selectedDate)); ?>"
+                                                        >
                                                             <i class="bi bi-chevron-down" aria-hidden="true"></i>
-                                                        </a>
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -1021,7 +1060,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                         $headsUpIcon = (string) ($headsUpItem['icon'] ?? 'bi-info-circle');
                                         $headsUpAction = (string) ($headsUpItem['action'] ?? 'Open day');
                                         ?>
-                                        <a class="booking-heads-up-item <?php echo htmlspecialchars($headsUpTone, ENT_QUOTES, 'UTF-8'); ?>" href="../timeline/timeline.php?date=<?php echo urlencode($headsUpBookingDate); ?>#bookingList">
+                                        <a class="booking-heads-up-item <?php echo htmlspecialchars($headsUpTone, ENT_QUOTES, 'UTF-8'); ?>" href="admin_bookings.php?status_view=needs_action&booking_date_start=<?php echo urlencode($headsUpBookingDate); ?>&booking_date_end=<?php echo urlencode($headsUpBookingDate); ?>">
                                             <span class="booking-heads-up-item-icon"><i class="bi <?php echo htmlspecialchars($headsUpIcon, ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i></span>
                                             <span class="booking-heads-up-copy">
                                                 <strong><?php echo htmlspecialchars($headsUpTitle, ENT_QUOTES, 'UTF-8'); ?></strong>
@@ -1034,22 +1073,6 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                     <?php endforeach; ?>
                                 </section>
                             <?php endif; ?>
-                        </section>
-                    <?php elseif ($selectedDashboardTab === 'timeline'): ?>
-                        <section class="booking-timeline-panel card" aria-label="Timeline view">
-                            <div class="booking-table-head">
-                                <div>
-                                    <h2><?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?></h2>
-                                </div>
-                                <a class="icon-btn booking-table-expand-btn" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>" aria-label="Open full timeline" title="Open full timeline">
-                                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                                </a>
-                            </div>
-                            <iframe
-                                class="booking-timeline-frame"
-                                src="<?php echo htmlspecialchars($timelineEmbedUrl, ENT_QUOTES, 'UTF-8'); ?>"
-                                title="Timeline for <?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?>"
-                            ></iframe>
                         </section>
                     <?php elseif ($selectedDashboardTab === 'floor'): ?>
                         <section class="dashboard-floor-panel card" aria-label="Floor view">
@@ -1149,7 +1172,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                                 'contact' => $phoneValue !== '' ? $phoneValue : $emailValue,
                                                                 'notes' => trim((string) ($booking['special_request'] ?? '')),
                                                                 'status' => getBookingStatusLabel((string) ($booking['status'] ?? 'confirmed')),
-                                                                'url' => '../timeline/timeline.php?date=' . urlencode($bookingDate) . '#bookingList',
+                                                                'url' => 'admin_bookings.php?booking_search=' . urlencode((string) ($booking['booking_id'] ?? '')) . '&booking_date_start=' . urlencode($bookingDate) . '&booking_date_end=' . urlencode($bookingDate),
                                                             ];
                                                         }, $floorTableBookings);
 
@@ -1232,8 +1255,8 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                 </div>
 
                                                 <div class="dashboard-floor-detail-actions">
-                                                    <a class="outline-btn dashboard-floor-detail-action" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList" data-dashboard-detail-view>View Booking</a>
-                                                    <a class="confirm-btn dashboard-floor-detail-action" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList" data-dashboard-detail-edit>Edit Booking</a>
+                                                    <a class="outline-btn dashboard-floor-detail-action" href="admin_bookings.php?booking_date_start=<?php echo urlencode($selectedDate); ?>&booking_date_end=<?php echo urlencode($selectedDate); ?>" data-dashboard-detail-view>View Booking</a>
+                                                    <a class="confirm-btn dashboard-floor-detail-action" href="admin_bookings.php?booking_date_start=<?php echo urlencode($selectedDate); ?>&booking_date_end=<?php echo urlencode($selectedDate); ?>" data-dashboard-detail-edit>Add Booking</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -1245,6 +1268,64 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 </div>
             </section>
         </main>
+    </div>
+    <?php
+    $adminBookingCreateDefaultDate = $selectedDate;
+    $adminBookingCreateMinDate = $todayDate;
+    $adminBookingCreateEndpoint = '../actions/create-booking.php';
+    include __DIR__ . '/../partials/admin-booking-create-modal.php';
+    ?>
+    <div class="admin-modal" data-admin-booking-detail-modal hidden>
+        <div class="admin-modal-card admin-booking-detail-modal-card" role="dialog" aria-modal="true" aria-labelledby="admin-booking-detail-title">
+            <header class="admin-modal-head">
+                <div>
+                    <h2 id="admin-booking-detail-title" data-booking-detail-name>Booking</h2>
+                    <p data-booking-detail-subtitle></p>
+                </div>
+                <button class="icon-btn admin-modal-close" type="button" data-admin-modal-close aria-label="Close booking details">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div class="admin-booking-detail-grid">
+                <div>
+                    <span>Date</span>
+                    <strong data-booking-detail-date></strong>
+                </div>
+                <div>
+                    <span>Time</span>
+                    <strong data-booking-detail-time></strong>
+                </div>
+                <div>
+                    <span>Guests</span>
+                    <strong data-booking-detail-guests></strong>
+                </div>
+                <div>
+                    <span>Table</span>
+                    <strong data-booking-detail-table></strong>
+                </div>
+                <div>
+                    <span>Status</span>
+                    <strong data-booking-detail-status></strong>
+                </div>
+                <div>
+                    <span>Contact</span>
+                    <strong data-booking-detail-contact></strong>
+                </div>
+                <div class="admin-modal-field-wide">
+                    <span>Notes</span>
+                    <p data-booking-detail-notes></p>
+                </div>
+            </div>
+
+            <footer class="admin-modal-actions">
+                <button class="secondary-btn" type="button" data-admin-modal-close>Close</button>
+                <a class="primary-btn" href="admin_bookings.php" data-booking-detail-action>
+                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                    <span>Open in Bookings</span>
+                </a>
+            </footer>
+        </div>
     </div>
     <script>
         document.querySelectorAll('.date-btn input[type="date"]').forEach((input) => {
@@ -1367,7 +1448,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             const bookings = Array.isArray(payload.bookings) ? payload.bookings : [];
             const activeIndex = bookings[bookingIndex] ? bookingIndex : 0;
             const booking = bookings[activeIndex] || null;
-            const timelineUrl = '../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>#bookingList';
+            const bookingsUrl = 'admin_bookings.php?booking_date_start=<?php echo urlencode($selectedDate); ?>&booking_date_end=<?php echo urlencode($selectedDate); ?>';
 
             dashboardFloorButtons.forEach((tableButton) => {
                 tableButton.classList.toggle('is-selected', tableButton === button);
@@ -1408,7 +1489,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 }
                 setDetailText(dashboardFloorDetail.notes, '');
                 setDetailLink(dashboardFloorDetail.view, 'tables-management.php', 'Manage Table');
-                setDetailLink(dashboardFloorDetail.edit, timelineUrl, 'Add Booking');
+                setDetailLink(dashboardFloorDetail.edit, bookingsUrl, 'Add Booking');
                 return;
             }
 
@@ -1421,8 +1502,8 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             setDetailText(dashboardFloorDetail.name, booking.name || 'Guest');
             renderDashboardFloorContacts(booking.phone || '', booking.email || '', 'No contact details');
             setDetailText(dashboardFloorDetail.notes, booking.notes || '-');
-            setDetailLink(dashboardFloorDetail.view, booking.url || timelineUrl, 'View Booking');
-            setDetailLink(dashboardFloorDetail.edit, booking.url || timelineUrl, 'Edit Booking');
+            setDetailLink(dashboardFloorDetail.view, booking.url || bookingsUrl, 'View Booking');
+            setDetailLink(dashboardFloorDetail.edit, booking.url || bookingsUrl, 'Edit Booking');
         };
 
         dashboardFloorButtons.forEach((button) => {
@@ -1451,7 +1532,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 confirmButton.disabled = true;
 
                 try {
-                    const response = await fetch('../timeline/confirm-pending-booking.php', {
+                    const response = await fetch('../actions/confirm-pending-booking.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ booking_id: bookingId }),
@@ -1484,7 +1565,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                 declineButton.disabled = true;
 
                 try {
-                    const response = await fetch('../timeline/cancel-booking.php', {
+                    const response = await fetch('../actions/cancel-booking.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ booking_id: bookingId }),

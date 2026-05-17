@@ -38,9 +38,19 @@ if(!$booking){
 
 $error = "";
 $success = "";
+$modifyBookingCsrfToken = csrfToken('modify_booking');
+$modifyFlash = getFlashMessage();
+if ($modifyFlash) {
+    if (($modifyFlash['type'] ?? '') === 'error') {
+        $error = (string) ($modifyFlash['message'] ?? '');
+    } else {
+        $success = (string) ($modifyFlash['message'] ?? '');
+    }
+}
 
 /* 🔹 Handle Update */
 if($_SERVER["REQUEST_METHOD"] === "POST"){
+    requireValidCsrfToken('modify_booking', ['redirect' => appPath('customer/modify-booking.php?id=' . $booking_id)]);
 
     $date = sanitize($_POST['booking_date']);
     $start_time = sanitize($_POST['start_time']);
@@ -143,82 +153,12 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 }
 ?>
 
-<?php include "../includes/header.php"; ?>
+<?php
+$pageTitle = 'Modify Booking | DineMate';
+$extraStylesheets = ['assets/css/pages/customer-modify-booking.css'];
+include '../includes/header.php';
+?>
 
-<style>
-
-/* PAGE SPACING */
-
-.modify-wrapper{
-margin-top:120px;
-margin-bottom:80px;
-}
-
-/* CARD */
-
-.modify-card{
-background:var(--dm-surface);
-border:1px solid var(--dm-border);
-border-radius:10px;
-padding:34px;
-box-shadow:0 4px 16px rgba(15,23,42,0.06);
-}
-
-/* TITLE */
-
-.modify-title{
-font-weight:700;
-margin-bottom:25px;
-color:var(--dm-text);
-}
-
-/* LABEL */
-
-.form-label{
-font-weight:500;
-margin-bottom:6px;
-}
-
-/* INPUT */
-
-.modern-input{
-border-radius:8px;
-padding:12px 14px;
-border:1px solid var(--dm-border-strong);
-transition:0.2s;
-}
-
-.modern-input:focus{
-border-color:var(--dm-border-strong);
-box-shadow:var(--dm-focus-ring);
-}
-
-/* BUTTON */
-
-.btn-update{
-background:var(--dm-accent-dark);
-border:1px solid var(--dm-accent-dark);
-color:var(--dm-surface);
-padding:14px;
-border-radius:8px;
-font-weight:600;
-font-size:16px;
-transition:0.3s;
-}
-
-.btn-update:hover{
-background:var(--dm-accent-dark-hover);
-border-color:var(--dm-accent-dark-hover);
-}
-
-/* BACK BUTTON */
-
-.btn-back{
-border-radius:8px;
-padding:10px 18px;
-}
-
-</style>
 
 <div class="container modify-wrapper">
 
@@ -238,6 +178,7 @@ Modify Booking
 <?php endif; ?>
 
 <form method="POST">
+<input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($modifyBookingCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
 
 <div class="row">
 
@@ -303,7 +244,7 @@ max="<?php echo htmlspecialchars((string) $bookingSettings['max_party_size'], EN
 
 <div class="alert alert-info mb-0">
 <i class="fa fa-circle-info"></i>
-Any booking changes return the reservation to the unassigned queue so staff can place it back onto the timeline.
+Any booking changes return the reservation to the unassigned queue so staff can place it back onto the floor plan.
 </div>
 
 </div>

@@ -1,6 +1,6 @@
 <?php
-include __DIR__ . '/../includes/header.php';
-include __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 $resolveMenuImageUrl = static function ($imagePath): string {
     $path = trim((string) $imagePath);
@@ -29,183 +29,12 @@ foreach ($categories as $category) {
     $stmt->execute([$category]);
     $menuItems[$category] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+$pageTitle = 'Menu | DineMate';
+$extraStylesheets = ['assets/css/pages/menu.css'];
+include __DIR__ . '/../includes/header.php';
 ?>
 
-<style>
-.menu-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-    background-color: transparent;
-}
-
-.menu-header {
-    text-align: center;
-    margin-bottom: 50px;
-    padding: 30px 0;
-    border-bottom: 3px solid var(--dm-accent-dark);
-}
-
-.menu-header h1 {
-    font-size: 3em;
-    color: var(--dm-text);
-    margin: 0 0 10px 0;
-    font-weight: 700;
-    letter-spacing: 2px;
-}
-
-.menu-header p {
-    font-size: 1.2em;
-    color: var(--dm-text-muted);
-    margin: 0;
-    font-style: italic;
-}
-
-.menu-section {
-    margin-bottom: 60px;
-}
-
-.section-title {
-    font-size: 2.2em;
-    color: var(--dm-accent-dark);
-    text-align: center;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    position: relative;
-    padding-bottom: 15px;
-}
-
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 2px;
-    background-color: var(--dm-accent-dark);
-}
-
-.section-subtitle {
-    text-align: center;
-    color: var(--dm-text-muted);
-    font-style: italic;
-    margin: -5px 0 25px 0;
-}
-
-.menu-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-    margin-bottom: 20px;
-}
-
-.menu-card {
-    background: var(--dm-surface);
-    border: 1px solid var(--dm-border);
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(15,23,42,0.06);
-    overflow: hidden;
-}
-
-.menu-card.featured {
-    border-left: 3px solid var(--dm-accent-dark);
-    background: var(--dm-surface-muted);
-}
-
-.card-image {
-    height: 200px;
-    overflow: hidden;
-}
-
-.card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.card-content {
-    padding: 20px;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 10px;
-}
-
-.card-header h3 {
-    margin: 0;
-    color: var(--dm-text);
-    font-size: 1.3em;
-    flex: 1;
-    font-weight: 600;
-}
-
-.price {
-    color: var(--dm-accent-dark);
-    font-size: 1.4em;
-    font-weight: 700;
-    white-space: nowrap;
-    margin-left: 15px;
-}
-
-.description {
-    color: var(--dm-text-muted);
-    font-size: 0.95em;
-    margin: 8px 0 10px 0;
-    line-height: 1.4;
-}
-
-.badge {
-    display: inline-block;
-    background-color: var(--dm-border);
-    color: var(--dm-accent-dark);
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 0.75em;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-top: 8px;
-}
-
-.sauces-note {
-    text-align: center;
-    color: var(--dm-text-muted);
-    font-size: 0.95em;
-    margin-top: 15px;
-}
-
-.menu-legend {
-    text-align: center;
-    padding: 20px;
-    color: var(--dm-text-muted);
-    font-size: 0.95em;
-    border-top: 1px solid var(--dm-border);
-    margin-top: 40px;
-}
-
-.badge-info {
-    font-weight: 600;
-    color: var(--dm-accent-dark);
-}
-
-@media (max-width: 768px) {
-    .menu-header h1 {
-        font-size: 2em;
-    }
-
-    .section-title {
-        font-size: 1.6em;
-    }
-
-    .menu-cards {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
 
 <div class="menu-container">
     <div class="menu-header">

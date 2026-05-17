@@ -2,57 +2,23 @@
 require_once "../config/db.php";
 require_once "../includes/functions.php";
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+startAppSession();
 
-// Ensure start_time and end_time columns exist
 try {
     ensureBookingRequestColumns($pdo);
     ensureSettingsSchema($pdo);
     $bookingSettings = getBookingSettings($pdo);
-
-    // First, try to query the columns
-    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
-    $startTimeExists = $result->rowCount() > 0;
-    
-    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'end_time'");
-    $endTimeExists = $result->rowCount() > 0;
-    
-    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'special_request'");
-    $specialRequestExists = $result->rowCount() > 0;
-
-    $result = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'table_id'");
-    $tableIdColumn = $result->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$startTimeExists) {
-        $pdo->exec("ALTER TABLE bookings ADD COLUMN start_time TIME NOT NULL DEFAULT '12:00:00' AFTER booking_date");
-        error_log("Added start_time column to bookings table");
-    }
-    
-    if (!$endTimeExists) {
-        $pdo->exec("ALTER TABLE bookings ADD COLUMN end_time TIME NOT NULL DEFAULT '13:00:00' AFTER start_time");
-        error_log("Added end_time column to bookings table");
-    }
-    
-    if (!$specialRequestExists) {
-        $pdo->exec("ALTER TABLE bookings ADD COLUMN special_request TEXT DEFAULT NULL");
-        error_log("Added special_request column to bookings table");
-    }
-
-    if ($tableIdColumn && $tableIdColumn['Null'] !== 'YES') {
-        $pdo->exec("ALTER TABLE bookings MODIFY COLUMN table_id {$tableIdColumn['Type']} NULL");
-        error_log("Updated table_id column to allow NULL values");
-    }
 } catch(PDOException $e) {
     error_log('Column migration error: ' . $e->getMessage());
-    $_SESSION['error'] = 'Database error: ' . $e->getMessage();
+    $_SESSION['error'] = 'Booking service is temporarily unavailable. Please try again shortly.';
     redirect("book-table.php");
 }
 
 if($_SERVER["REQUEST_METHOD"] !== "POST"){
     redirect("book-table.php");
 }
+
+requireValidCsrfToken('booking', ['redirect' => appPath('customer/book-table.php')]);
 
 $user_id = (isLoggedIn() && getCurrentUserRole() === 'customer') ? (int) $_SESSION['user_id'] : null;
 $bookingSource = $user_id ? 'customer_account' : 'guest_web';
@@ -241,16 +207,7 @@ try {
     error_log('Booking insertion error: ' . $e->getMessage());
     error_log($e->getTraceAsString());
 
-    // If running on a local development machine, expose the DB error in the session
-    $isLocal = in_array($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1', ['127.0.0.1', '::1']) ||
-               (isset($_SERVER['SERVER_NAME']) && ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.0.0.1'));
-
-    if ($isLocal) {
-        // Provide the detailed error only on local dev to help debugging
-        $_SESSION['error'] = 'Error creating booking. DB error: ' . $e->getMessage();
-    } else {
-        $_SESSION['error'] = 'Error creating booking. Please try again.';
-    }
+    $_SESSION['error'] = 'Error creating booking. Please try again.';
 
     // Optional: write a concise message to a local log file for easier inspection
     $logLine = '[' . date('Y-m-d H:i:s') . '] Booking insertion error: ' . $e->getMessage() . "\n";

@@ -9,10 +9,21 @@ ensureBookingRequestColumns($pdo);
 $userId = (int) getCurrentUserId();
 $error = '';
 $success = '';
+$profileCsrfToken = csrfToken('customer_profile');
+$profileFlash = getFlashMessage();
+if ($profileFlash) {
+    if (($profileFlash['type'] ?? '') === 'error') {
+        $error = (string) ($profileFlash['message'] ?? '');
+    } else {
+        $success = (string) ($profileFlash['message'] ?? '');
+    }
+}
 
 $customerProfile = ensureCustomerProfileForUser($pdo, $userId);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireValidCsrfToken('customer_profile', ['redirect' => appPath('customer/profile.php')]);
+
     $action = trim((string) ($_POST['action'] ?? ''));
 
     if ($action === 'profile') {
@@ -148,182 +159,12 @@ foreach ($bookings as $booking) {
 $customerProfile = $customerProfile ?: [];
 ?>
 
-<?php include "../includes/header.php"; ?>
+<?php
+$pageTitle = 'Profile | DineMate';
+$extraStylesheets = ['assets/css/pages/customer-profile.css'];
+include '../includes/header.php';
+?>
 
-<style>
-.profile-wrapper {
-    margin-top: 118px;
-    margin-bottom: 84px;
-}
-
-.profile-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-    gap: 22px;
-}
-
-.profile-card,
-.profile-side-card {
-    background: var(--dm-surface);
-    border: 1px solid var(--dm-border);
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
-}
-
-.profile-card {
-    padding: 30px;
-}
-
-.profile-side-card {
-    padding: 24px;
-}
-
-.profile-header {
-    margin-bottom: 24px;
-}
-
-.profile-header h2,
-.profile-card h3,
-.profile-side-card h3 {
-    margin: 0;
-    color: var(--dm-text);
-}
-
-.profile-header p,
-.profile-side-card p {
-    margin: 10px 0 0;
-    color: var(--dm-text-muted);
-    font-size: 14px;
-}
-
-.profile-section {
-    margin-top: 28px;
-    padding-top: 24px;
-    border-top: 1px solid var(--dm-border);
-}
-
-.profile-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-
-.profile-field.full-width {
-    grid-column: 1 / -1;
-}
-
-.profile-field label {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--dm-text);
-    margin-bottom: 8px;
-}
-
-.profile-input,
-.profile-select,
-.profile-textarea {
-    width: 100%;
-    border: 1px solid var(--dm-border-strong);
-    border-radius: 8px;
-    padding: 13px 14px;
-    font: inherit;
-    color: var(--dm-text);
-    background: var(--dm-surface);
-}
-
-.profile-textarea {
-    min-height: 112px;
-    resize: vertical;
-}
-
-.profile-input:focus,
-.profile-select:focus,
-.profile-textarea:focus {
-    outline: none;
-    border-color: var(--dm-border-strong);
-    box-shadow: 0 0 0 4px rgba(29, 40, 64, 0.12);
-}
-
-.profile-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 22px;
-    flex-wrap: wrap;
-}
-
-.profile-btn {
-    border: none;
-    border-radius: 8px;
-    padding: 12px 18px;
-    font-weight: 700;
-}
-
-.profile-btn-primary {
-    background: var(--dm-accent-dark);
-    color: var(--dm-surface);
-    box-shadow: 0 4px 14px rgba(29, 40, 64, 0.16);
-}
-
-.profile-btn-secondary {
-    background: var(--dm-surface);
-    border: 1px solid var(--dm-border-strong);
-    color: var(--dm-text);
-}
-
-.toggle-row,
-.stats-list,
-.quick-links {
-    display: grid;
-    gap: 12px;
-}
-
-.toggle-item,
-.stat-item,
-.quick-link-card {
-    border: 1px solid var(--dm-border);
-    border-radius: 8px;
-    padding: 16px;
-    background: var(--dm-surface-muted);
-}
-
-.toggle-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.toggle-copy strong,
-.stat-item strong,
-.quick-link-card strong {
-    display: block;
-    color: var(--dm-text);
-}
-
-.toggle-copy span,
-.stat-item span,
-.quick-link-card span {
-    display: block;
-    margin-top: 6px;
-    color: var(--dm-text-muted);
-    font-size: 13px;
-}
-
-.quick-link-card a {
-    color: #1d4ed8;
-    text-decoration: none;
-    font-weight: 700;
-}
-
-@media (max-width: 991px) {
-    .profile-layout,
-    .profile-grid {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
 
 <div class="container profile-wrapper">
     <div class="profile-layout">
@@ -342,6 +183,7 @@ $customerProfile = $customerProfile ?: [];
             <?php endif; ?>
 
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($profileCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="profile">
 
                 <div class="profile-grid">
@@ -418,6 +260,7 @@ $customerProfile = $customerProfile ?: [];
                 <h3>Account Security</h3>
                 <p class="dm-mt-8 dm-muted">Change your password without leaving the customer portal.</p>
                 <form method="POST" class="dm-mt-18">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($profileCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="action" value="password">
                     <div class="profile-grid">
                         <div class="profile-field full-width">

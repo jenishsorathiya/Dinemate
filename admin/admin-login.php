@@ -1,9 +1,7 @@
 <?php
 require_once "../includes/functions.php";
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+startAppSession();
 
 if (isLoggedIn() && getCurrentUserRole() === 'admin') {
     redirect(appPath('admin/pages/admin_home.php'));
@@ -11,7 +9,7 @@ if (isLoggedIn() && getCurrentUserRole() === 'admin') {
 
 $error = $_SESSION['admin_error'] ?? '';
 unset($_SESSION['admin_error']);
-$appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: time());
+$adminLoginCsrfToken = csrfToken('admin_login');
 ?>
 <!DOCTYPE html>
 <html>
@@ -20,138 +18,10 @@ $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: tim
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="../assets/css/app.css?v=<?= htmlspecialchars($appCssVersion, ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="<?= htmlspecialchars(assetUrl('assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
+<link href="<?= htmlspecialchars(assetUrl('assets/css/pages/admin-login.css'), ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
 
-<style>
-body {
-    margin: 0;
-    font-family: var(--dm-font-sans);
-    background: var(--dm-bg);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.admin-container {
-    width: 100%;
-    max-width: 1050px;
-    display: flex;
-    border-radius: var(--dm-radius-lg);
-    overflow: hidden;
-    background: var(--dm-surface);
-    border: 1px solid var(--dm-border);
-    box-shadow: var(--dm-shadow-md);
-}
-
-.admin-left {
-    flex: 1;
-    padding: 56px;
-}
-
-.admin-left h2 {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--dm-text);
-    margin-bottom: 8px;
-}
-
-.admin-left p {
-    color: var(--dm-text-muted);
-    margin-bottom: 30px;
-}
-
-.form-control {
-    border-radius: var(--dm-radius-sm);
-    padding: 10px 12px;
-    border: 1px solid var(--dm-border-strong);
-    background: var(--dm-surface);
-    transition: 0.3s;
-}
-
-.form-control:focus {
-    background: var(--dm-surface);
-    box-shadow: var(--dm-focus-ring);
-    border-color: var(--dm-border-strong);
-}
-
-.btn-login {
-    background: var(--dm-accent-dark);
-    border: 1px solid var(--dm-accent-dark);
-    color: var(--dm-surface);
-    border-radius: var(--dm-radius-sm);
-    padding: 10px 14px;
-    font-weight: 600;
-    transition: background 0.18s ease;
-}
-
-.btn-login:hover {
-    background: var(--dm-accent-dark-hover);
-    border-color: var(--dm-accent-dark-hover);
-}
-
-.password-wrapper {
-    position: relative;
-}
-
-.eye {
-    position: absolute;
-    right: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 18px;
-    opacity: 0.6;
-}
-
-.eye:hover {
-    opacity: 1;
-}
-
-.admin-right {
-    flex: 1;
-    background: url("https://images.unsplash.com/photo-1559339352-11d035aa65de") center/cover no-repeat;
-    position: relative;
-}
-
-.admin-overlay {
-    position: absolute;
-    inset: 0;
-    background: var(--dm-overlay-auth);
-}
-
-@media (max-width: 991px) {
-    .admin-container {
-        flex-direction: column;
-        margin: 20px;
-    }
-
-    .admin-left {
-        padding: 28px;
-    }
-
-    .admin-right {
-        min-height: 240px;
-    }
-}
-
-.admin-text {
-    position: relative;
-    color: var(--dm-white);
-    z-index: 2;
-    padding: 40px;
-    bottom: 0;
-    position: absolute;
-}
-
-.admin-text h3 {
-    font-weight: 600;
-}
-
-.alert {
-    border-radius: var(--dm-radius-sm);
-}    
-</style>
 </head>
 <body>
 
@@ -163,10 +33,11 @@ body {
 <p>Access the DineMate management analytics panel.</p>
 
 <?php if($error): ?>
-<div class="alert alert-danger"><?= $error ?></div>
+<div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
 <?php endif; ?>
 
 <form method="POST" action="process-admin-login.php">
+<input type="hidden" name="csrf_token" value="<?= htmlspecialchars($adminLoginCsrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
 <div class="mb-3">
 <input type="email" name="email" class="form-control" placeholder="Admin Email" required>
@@ -176,7 +47,9 @@ body {
 
 <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
 
-<span class="eye" onclick="togglePassword()">👁</span>
+<button type="button" class="eye" data-toggle-password aria-label="Show password">
+<i class="fa-regular fa-eye"></i>
+</button>
 
 </div>
 
@@ -200,21 +73,9 @@ body {
 
 </div>
 
-<script>
-
-function togglePassword(){
-
-const pass=document.getElementById("password");
-
-if(pass.type==="password"){
-pass.type="text";
-}else{
-pass.type="password";
-}
-
-}
-
-</script>
+<script src="<?= htmlspecialchars(assetUrl('assets/js/pages/auth.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
 </body>
+
+</html>
 

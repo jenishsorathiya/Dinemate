@@ -9,6 +9,7 @@ ensureTableAreasSchema($pdo);
 ensureBookingTableAssignmentsTable($pdo);
 
 requireAdmin(['json' => true]);
+requireValidCsrfToken('admin_actions', ['json' => true]);
 
 $data = json_decode(file_get_contents('php://input'), true);
 $tableId = (int)($data['table_id'] ?? 0);
@@ -59,6 +60,6 @@ try {
     ]);
 } catch(PDOException $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    error_log('Delete table failed: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'Unable to delete table. Please try again.']);
 }
-?>

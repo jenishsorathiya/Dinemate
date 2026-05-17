@@ -1,14 +1,16 @@
 <?php
 require_once "../config/db.php";
 require_once "../includes/functions.php";
-session_start();
+startAppSession();
 
 ensureUserAccountSchema($pdo);
 
-// Prevent session fixation
-session_regenerate_id(true);
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!verifyCsrfToken('login')) {
+        $_SESSION['error'] = 'Security check failed. Please refresh and try again.';
+        redirect(appPath('auth/login.php'));
+    }
+
     // Input validation
     if (!isset($_POST['email']) || !isset($_POST['password'])) {
         $_SESSION['error'] = "Email and password are required";
@@ -51,10 +53,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($user) {
             // Try password_verify first (for hashed passwords)
             $password_valid = password_verify($password, $user['password']);
+            $legacy_plaintext_password = false;
             
             // Fallback to direct comparison for plain text passwords (legacy)
             if (!$password_valid && $password === $user['password']) {
                 $password_valid = true;
+                $legacy_plaintext_password = true;
             }
             
             if ($password_valid) {
@@ -64,6 +68,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     exit;
                 }
 
+                if ($legacy_plaintext_password || password_needs_rehash((string) $user['password'], PASSWORD_DEFAULT)) {
+                    $passwordUpdateStmt = $pdo->prepare("UPDATE users SET password = ? WHERE user_id = ?");
+                    $passwordUpdateStmt->execute([password_hash($password, PASSWORD_DEFAULT), $user['user_id']]);
+                }
+
+                session_regenerate_id(true);
                 storeUserSession($user);
 
                 // Optional: Log successful login (for audit trail)

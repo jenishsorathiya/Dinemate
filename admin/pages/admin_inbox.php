@@ -9,6 +9,7 @@ ensureTableAreasSchema($pdo);
 ensureInboxMessagesTable($pdo);
 
 $adminNewSidebarActive = 'inbox';
+$adminActionCsrfToken = csrfToken('admin_actions');
 
 $allowedFolders = ['requests', 'unassigned', 'waitlist'];
 $activeFolder = strtolower(trim((string) ($_GET['folder'] ?? 'requests')));
@@ -439,10 +440,10 @@ $statusBadgeMeta = static function (string $status): array {
         <header class="page-header admin-inbox-header">
             <h1 class="page-title">Inbox</h1>
             <div class="header-actions">
-                <a class="primary-btn" href="../timeline/timeline.php?date=<?php echo urlencode($todayDate); ?>#bookingList">
+                <button class="primary-btn" type="button" data-admin-booking-create-open>
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
                     <span>Add Booking</span>
-                </a>
+                </button>
                 <button type="button" class="icon-btn notification-btn" aria-label="Notifications">
                     <i class="bi bi-bell-fill" aria-hidden="true"></i>
                     <?php if ($totalInboxNotifications > 0): ?>
@@ -731,6 +732,7 @@ $statusBadgeMeta = static function (string $status): array {
 
                     <footer class="admin-inbox-detail-actions">
                         <form method="post" action="inbox-action.php" class="admin-inbox-action-form">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($adminActionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                             <input type="hidden" name="inbox_id" value="<?php echo (int) $selectedMessage['inbox_id']; ?>">
                             <input type="hidden" name="folder" value="<?php echo htmlspecialchars($activeFolder, ENT_QUOTES, 'UTF-8'); ?>">
 
@@ -769,6 +771,13 @@ $statusBadgeMeta = static function (string $status): array {
     </main>
 </div>
 
+<?php
+$adminBookingCreateDefaultDate = $todayDate;
+$adminBookingCreateMinDate = $todayDate;
+$adminBookingCreateEndpoint = '../actions/create-booking.php';
+include __DIR__ . '/../partials/admin-booking-create-modal.php';
+?>
+
 <?php if ($selectedBookingId > 0): ?>
     <div class="admin-inbox-table-modal" data-table-modal hidden>
         <div class="admin-inbox-table-modal-card" role="dialog" aria-modal="true" aria-labelledby="inbox-table-modal-title">
@@ -790,6 +799,7 @@ $statusBadgeMeta = static function (string $status): array {
             </header>
 
             <form method="post" action="inbox-action.php" class="admin-inbox-table-form" data-table-assign-form>
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($adminActionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="assign_table">
                 <input type="hidden" name="inbox_id" value="<?php echo (int) $selectedMessage['inbox_id']; ?>">
                 <input type="hidden" name="folder" value="<?php echo htmlspecialchars($activeFolder, ENT_QUOTES, 'UTF-8'); ?>">

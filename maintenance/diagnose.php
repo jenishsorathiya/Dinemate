@@ -179,7 +179,7 @@ try {
             <li>If database errors exist, check <code>config/db.php</code></li>
             <li>If columns are missing, run <code>auto-fix.php</code> to repair the schema</li>
             <li>If queries fail, check MySQL user permissions</li>
-            <li>Visit <a href="<?php echo htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>"><code>customer/book-table.php</code></a> and <a href="<?php echo htmlspecialchars(appPath('admin/timeline/timeline.php'), ENT_QUOTES, 'UTF-8'); ?>"><code>admin/timeline/timeline.php</code></a> to test the pending-booking flow</li>
+            <li>Visit <a href="<?php echo htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>"><code>customer/book-table.php</code></a> and <a href="<?php echo htmlspecialchars(appPath('admin/pages/admin_bookings.php'), ENT_QUOTES, 'UTF-8'); ?>"><code>admin/pages/admin_bookings.php</code></a> to test the pending-booking flow</li>
         </ul>
     </div>
 </body>

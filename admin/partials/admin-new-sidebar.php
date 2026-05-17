@@ -2,20 +2,14 @@
 $adminNewSidebarActive = $adminNewSidebarActive ?? '';
 $adminScriptPath = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
 $adminInPages = strpos($adminScriptPath, '/admin/pages/') !== false;
-$adminInTimeline = strpos($adminScriptPath, '/admin/timeline/') !== false;
 
-if ($adminInTimeline) {
-    $adminPagesPrefix = '../pages/';
-    $adminTimelinePrefix = '';
-} elseif ($adminInPages) {
+if ($adminInPages) {
     $adminPagesPrefix = '';
-    $adminTimelinePrefix = '../timeline/';
 } else {
     $adminPagesPrefix = 'pages/';
-    $adminTimelinePrefix = 'timeline/';
 }
 
-$adminAuthPrefix = ($adminInPages || $adminInTimeline) ? '../../' : '../';
+$adminAuthPrefix = $adminInPages ? '../../' : '../';
 $adminNewSidebarName = trim((string) ($_SESSION['name'] ?? 'Admin'));
 if ($adminNewSidebarName === '') {
     $adminNewSidebarName = 'Admin';
@@ -50,7 +44,6 @@ $adminNewSidebarItems = [
     ['key' => 'bookings', 'label' => 'Bookings', 'href' => $adminPagesPrefix . 'admin_bookings.php', 'icon' => 'bi-calendar-check'],
     ['key' => 'inbox', 'label' => 'Inbox', 'href' => $adminPagesPrefix . 'admin_inbox.php', 'icon' => 'bi-inbox'],
     ['key' => 'functions', 'label' => 'Functions', 'href' => $adminPagesPrefix . 'bookings-management.php', 'icon' => 'bi-calendar-event'],
-    ['key' => 'timeline', 'label' => 'Timeline', 'href' => $adminTimelinePrefix . 'timeline.php', 'icon' => 'bi-calendar3'],
     ['key' => 'tables', 'label' => 'Tables', 'href' => $adminPagesPrefix . 'tables-management.php', 'icon' => 'bi-grid-3x3-gap'],
     ['key' => 'menu', 'label' => 'Menu', 'href' => $adminPagesPrefix . 'menu-management.php', 'icon' => 'bi-menu-button-wide'],
     ['key' => 'guests', 'label' => 'Guests', 'href' => $adminPagesPrefix . 'customer-history.php', 'icon' => 'bi-people'],
@@ -99,3 +92,8 @@ $adminNewSidebarItems = [
         </a>
     </div>
 </aside>
+<?php
+$adminCsrfIncludeMeta = false;
+include __DIR__ . '/admin-csrf.php';
+unset($adminCsrfIncludeMeta);
+?>

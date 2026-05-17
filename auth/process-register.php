@@ -1,11 +1,15 @@
 <?php
 require_once "../config/db.php";
-session_start();
+require_once "../includes/functions.php";
 
-// Prevent session fixation
-session_regenerate_id(true);
+startAppSession();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!verifyCsrfToken('register')) {
+        $_SESSION['error'] = 'Security check failed. Please refresh and try again.';
+        redirect(appPath('auth/register.php'));
+    }
+
     // Input validation and sanitization
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -63,8 +67,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     /* CHECK PASSWORD STRENGTH */
-    if (strlen($password) < 6) {
-        $_SESSION['error'] = "Password must be at least 6 characters long";
+    if (strlen($password) < 8) {
+        $_SESSION['error'] = "Password must be at least 8 characters long";
         header("Location: register.php");
         exit;
     }

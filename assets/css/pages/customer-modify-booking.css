@@ -1,0 +1,70 @@
+/* PAGE SPACING */
+
+.modify-wrapper{
+margin-top:120px;
+margin-bottom:80px;
+}
+
+/* CARD */
+
+.modify-card{
+background:var(--dm-surface);
+border:1px solid var(--dm-border);
+border-radius:10px;
+padding:34px;
+box-shadow:0 4px 16px rgba(15,23,42,0.06);
+}
+
+/* TITLE */
+
+.modify-title{
+font-weight:700;
+margin-bottom:25px;
+color:var(--dm-text);
+}
+
+/* LABEL */
+
+.form-label{
+font-weight:500;
+margin-bottom:6px;
+}
+
+/* INPUT */
+
+.modern-input{
+border-radius:8px;
+padding:12px 14px;
+border:1px solid var(--dm-border-strong);
+transition:0.2s;
+}
+
+.modern-input:focus{
+border-color:var(--dm-border-strong);
+box-shadow:var(--dm-focus-ring);
+}
+
+/* BUTTON */
+
+.btn-update{
+background:var(--dm-accent-dark);
+border:1px solid var(--dm-accent-dark);
+color:var(--dm-surface);
+padding:14px;
+border-radius:8px;
+font-weight:600;
+font-size:16px;
+transition:0.3s;
+}
+
+.btn-update:hover{
+background:var(--dm-accent-dark-hover);
+border-color:var(--dm-accent-dark-hover);
+}
+
+/* BACK BUTTON */
+
+.btn-back{
+border-radius:8px;
+padding:10px 18px;
+}

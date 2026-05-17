@@ -23,101 +23,6 @@ $resolveMenuImageUrl = static function ($imagePath): string {
     return appPath($normalizedPath ?: $path);
 };
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $action = $_POST['action'];
-
-    if ($action === 'add') {
-        $imagePath = '';
-
-        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../../assets/images/menu/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-
-            $fileName = uniqid() . '_' . basename($_FILES['image']['name']);
-            $targetPath = $uploadDir . $fileName;
-
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-                $imagePath = 'assets/images/menu/' . $fileName;
-            }
-        }
-
-        $stmt = $pdo->prepare("
-            INSERT INTO menu_items (name, description, price, category, image, dietary_info, is_available)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([
-            $_POST['name'] ?? '',
-            $_POST['description'] ?? '',
-            $_POST['price'] ?? 0,
-            $_POST['category'] ?? '',
-            $imagePath,
-            $_POST['dietary_info'] ?? '',
-            isset($_POST['is_available']) ? 1 : 0,
-        ]);
-    } elseif ($action === 'edit') {
-        $itemId = (int) ($_POST['id'] ?? 0);
-        $imagePath = $_POST['current_image'] ?? '';
-
-        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../../assets/images/menu/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-
-            $fileName = uniqid() . '_' . basename($_FILES['image']['name']);
-            $targetPath = $uploadDir . $fileName;
-
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-                if (!empty($_POST['current_image'])) {
-                    $oldImagePath = __DIR__ . '/../../' . $_POST['current_image'];
-                    if (is_file($oldImagePath)) {
-                        unlink($oldImagePath);
-                    }
-                }
-
-                $imagePath = 'assets/images/menu/' . $fileName;
-            }
-        }
-
-        $stmt = $pdo->prepare("
-            UPDATE menu_items
-            SET name = ?, description = ?, price = ?, category = ?, image = ?, dietary_info = ?, is_available = ?
-            WHERE id = ?
-        ");
-        $stmt->execute([
-            $_POST['name'] ?? '',
-            $_POST['description'] ?? '',
-            $_POST['price'] ?? 0,
-            $_POST['category'] ?? '',
-            $imagePath,
-            $_POST['dietary_info'] ?? '',
-            isset($_POST['is_available']) ? 1 : 0,
-            $itemId,
-        ]);
-    } elseif ($action === 'delete') {
-        $itemId = (int) ($_POST['id'] ?? 0);
-
-        $imageStmt = $pdo->prepare("SELECT image FROM menu_items WHERE id = ?");
-        $imageStmt->execute([$itemId]);
-        $existingItem = $imageStmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!empty($existingItem['image'])) {
-            $imageFilePath = __DIR__ . '/../../' . $existingItem['image'];
-            if (is_file($imageFilePath)) {
-                unlink($imageFilePath);
-            }
-        }
-
-        $deleteStmt = $pdo->prepare("DELETE FROM menu_items WHERE id = ?");
-        $deleteStmt->execute([$itemId]);
-    }
-
-    header('Location: menu-management.php');
-    exit();
-}
-
 $categories = [
     'Entrees',
     'Mains',
@@ -127,6 +32,201 @@ $categories = [
     'Desserts',
     'Drinks',
 ];
+
+$menuCsrfToken = csrfToken('admin_actions');
+$menuUploadDir = __DIR__ . '/../../assets/images/menu/';
+$menuUploadPrefix = 'assets/images/menu/';
+
+$resolveStoredMenuImagePath = static function ($imagePath) use ($menuUploadDir): ?string {
+    $path = trim((string) $imagePath);
+    if ($path === '' || preg_match('#^(https?:)?//#i', $path) || stripos($path, 'data:') === 0) {
+        return null;
+    }
+
+    $normalizedPath = preg_replace('#^(?:\.\.?/)+#', '', $path);
+    if (strpos($normalizedPath, 'assets/images/menu/') !== 0) {
+        return null;
+    }
+
+    $uploadRoot = realpath($menuUploadDir);
+    $candidate = realpath(__DIR__ . '/../../' . $normalizedPath);
+    if (!$uploadRoot || !$candidate) {
+        return null;
+    }
+
+    $uploadRoot = rtrim(str_replace('\\', '/', $uploadRoot), '/') . '/';
+    $candidate = str_replace('\\', '/', $candidate);
+
+    return strpos($candidate, $uploadRoot) === 0 ? $candidate : null;
+};
+
+$handleMenuImageUpload = static function (array $file) use ($menuUploadDir, $menuUploadPrefix): array {
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        return ['', null];
+    }
+
+    if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+        return ['', 'Image upload failed. Please choose another file.'];
+    }
+
+    if (($file['size'] ?? 0) > 4 * 1024 * 1024) {
+        return ['', 'Image files must be 4 MB or smaller.'];
+    }
+
+    $tmpPath = (string) ($file['tmp_name'] ?? '');
+    $imageInfo = $tmpPath !== '' ? @getimagesize($tmpPath) : false;
+    $mimeType = is_array($imageInfo) ? (string) ($imageInfo['mime'] ?? '') : '';
+    $extensions = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/avif' => 'avif',
+    ];
+
+    if (!isset($extensions[$mimeType])) {
+        return ['', 'Please upload a JPG, PNG, WebP, or AVIF image.'];
+    }
+
+    if (!is_dir($menuUploadDir) && !mkdir($menuUploadDir, 0755, true)) {
+        return ['', 'Image upload directory could not be prepared.'];
+    }
+
+    $fileName = bin2hex(random_bytes(12)) . '.' . $extensions[$mimeType];
+    $targetPath = $menuUploadDir . $fileName;
+
+    if (!move_uploaded_file($tmpPath, $targetPath)) {
+        return ['', 'Image upload failed. Please try again.'];
+    }
+
+    return [$menuUploadPrefix . $fileName, null];
+};
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    requireValidCsrfToken('admin_actions', ['redirect' => appPath('admin/pages/menu-management.php')]);
+
+    $action = (string) $_POST['action'];
+    $redirectUrl = 'menu-management.php';
+
+    try {
+        if (in_array($action, ['add', 'edit'], true)) {
+            $itemId = (int) ($_POST['id'] ?? 0);
+            $name = trim((string) ($_POST['name'] ?? ''));
+            $description = trim((string) ($_POST['description'] ?? ''));
+            $price = (float) ($_POST['price'] ?? 0);
+            $category = trim((string) ($_POST['category'] ?? ''));
+            $dietaryInfo = trim((string) ($_POST['dietary_info'] ?? ''));
+            $isAvailable = isset($_POST['is_available']) ? 1 : 0;
+
+            if ($action === 'edit' && $itemId > 0) {
+                $redirectUrl = 'menu-management.php?edit=' . $itemId;
+            }
+
+            if ($name === '' || strlen($name) > 120) {
+                throw new RuntimeException('Dish name is required and must be 120 characters or fewer.');
+            }
+
+            if ($category === '' || !in_array($category, $categories, true)) {
+                throw new RuntimeException('Please choose a valid menu category.');
+            }
+
+            if ($price < 0 || $price > 9999) {
+                throw new RuntimeException('Please enter a valid price.');
+            }
+
+            if (strlen($description) > 1000 || strlen($dietaryInfo) > 180) {
+                throw new RuntimeException('Description or dietary information is too long.');
+            }
+
+            [$uploadedImagePath, $uploadError] = $handleMenuImageUpload($_FILES['image'] ?? []);
+            if ($uploadError !== null) {
+                throw new RuntimeException($uploadError);
+            }
+
+            if ($action === 'add') {
+                $stmt = $pdo->prepare("
+                    INSERT INTO menu_items (name, description, price, category, image, dietary_info, is_available)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $name,
+                    $description,
+                    $price,
+                    $category,
+                    $uploadedImagePath,
+                    $dietaryInfo,
+                    $isAvailable,
+                ]);
+                setFlashMessage('success', 'Menu item added.');
+            } else {
+                if ($itemId < 1) {
+                    throw new RuntimeException('Menu item not found.');
+                }
+
+                $imageStmt = $pdo->prepare("SELECT image FROM menu_items WHERE id = ?");
+                $imageStmt->execute([$itemId]);
+                $existingItem = $imageStmt->fetch(PDO::FETCH_ASSOC);
+                if (!$existingItem) {
+                    throw new RuntimeException('Menu item not found.');
+                }
+
+                $imagePath = $uploadedImagePath !== '' ? $uploadedImagePath : (string) ($existingItem['image'] ?? '');
+                $stmt = $pdo->prepare("
+                    UPDATE menu_items
+                    SET name = ?, description = ?, price = ?, category = ?, image = ?, dietary_info = ?, is_available = ?
+                    WHERE id = ?
+                ");
+                $stmt->execute([
+                    $name,
+                    $description,
+                    $price,
+                    $category,
+                    $imagePath,
+                    $dietaryInfo,
+                    $isAvailable,
+                    $itemId,
+                ]);
+
+                if ($uploadedImagePath !== '') {
+                    $oldImagePath = $resolveStoredMenuImagePath($existingItem['image'] ?? '');
+                    if ($oldImagePath && is_file($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+
+                setFlashMessage('success', 'Menu item updated.');
+                $redirectUrl = 'menu-management.php';
+            }
+        } elseif ($action === 'delete') {
+            $itemId = (int) ($_POST['id'] ?? 0);
+            if ($itemId < 1) {
+                throw new RuntimeException('Menu item not found.');
+            }
+
+            $imageStmt = $pdo->prepare("SELECT image FROM menu_items WHERE id = ?");
+            $imageStmt->execute([$itemId]);
+            $existingItem = $imageStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($existingItem) {
+                $imageFilePath = $resolveStoredMenuImagePath($existingItem['image'] ?? '');
+                if ($imageFilePath && is_file($imageFilePath)) {
+                    unlink($imageFilePath);
+                }
+            }
+
+            $deleteStmt = $pdo->prepare("DELETE FROM menu_items WHERE id = ?");
+            $deleteStmt->execute([$itemId]);
+            setFlashMessage('success', 'Menu item deleted.');
+        }
+    } catch (RuntimeException $e) {
+        setFlashMessage('error', $e->getMessage());
+    } catch (Throwable $e) {
+        error_log('Menu management action failed: ' . $e->getMessage());
+        setFlashMessage('error', 'Menu action failed. Please try again.');
+    }
+
+    header('Location: ' . $redirectUrl);
+    exit();
+}
 
 $editItem = null;
 if (isset($_GET['edit'])) {
@@ -153,6 +253,7 @@ foreach ($menuItemsRaw as $item) {
 $totalItems = count($menuItemsRaw);
 $availableItems = count(array_filter($menuItemsRaw, fn($item) => (int) $item['is_available'] === 1));
 $unavailableItems = $totalItems - $availableItems;
+$flash = getFlashMessage();
 
 $adminPageTitle = 'Menu';
 $adminPageIcon = 'fa-utensils';
@@ -165,523 +266,8 @@ $adminSidebarPathPrefix = '';
 <html lang="en">
 <head>
     <?php include __DIR__ . '/../partials/admin-head.php'; ?>
-    <style>
-        :root {
-            --mn-bg: var(--dm-bg);
-            --mn-surface: var(--dm-surface);
-            --mn-surface-muted: var(--dm-surface-muted);
-            --mn-line: var(--dm-border);
-            --mn-line-strong: var(--dm-border-strong);
-            --mn-text: var(--dm-text);
-            --mn-muted: var(--dm-text-muted);
-            --mn-soft: var(--dm-text-soft);
-            --mn-accent: var(--dm-accent-dark);
-            --mn-radius: var(--dm-radius-md);
-            --mn-radius-sm: var(--dm-radius-sm);
-            --mn-shadow: var(--dm-shadow-sm);
-            --mn-shadow-lg: var(--dm-shadow-md);
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            background: var(--mn-bg);
-            color: var(--mn-text);
-        }
-
-        .admin-container {
-            padding: 24px;
-        }
-
-        .mn-shell {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .mn-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .mn-header-copy h1 {
-            margin: 0;
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            color: var(--mn-text);
-        }
-
-        .mn-header-copy p {
-            margin: 6px 0 0;
-            color: var(--mn-muted);
-            font-size: 14px;
-        }
-
-        .mn-header-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .mn-stats {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .mn-stat {
-            background: var(--mn-surface);
-            border: 1px solid var(--mn-line);
-            border-radius: 12px;
-            box-shadow: var(--mn-shadow);
-            padding: 16px 18px;
-        }
-
-        .mn-stat-label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--mn-soft);
-        }
-
-        .mn-stat-value {
-            margin-top: 6px;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            color: var(--mn-text);
-        }
-
-        .mn-stat-note {
-            margin-top: 4px;
-            font-size: 12px;
-            color: var(--mn-muted);
-        }
-
-        .mn-toolbar {
-            background: var(--mn-surface);
-            border: 1px solid var(--mn-line);
-            border-radius: 12px;
-            box-shadow: var(--mn-shadow);
-            padding: 16px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .mn-toolbar-left,
-        .mn-toolbar-right {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .mn-search {
-            min-width: 260px;
-        }
-
-        .mn-select,
-        .mn-search-input {
-            height: 40px;
-            border-radius: 10px;
-            border: 1px solid var(--mn-line-strong);
-            background: var(--mn-surface);
-            color: var(--mn-text);
-            padding: 0 12px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.18s ease, box-shadow 0.18s ease;
-        }
-
-        .mn-select:focus,
-        .mn-search-input:focus {
-            border-color: var(--mn-accent);
-            box-shadow: var(--dm-focus-ring);
-        }
-
-        .mn-layout {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 360px;
-            gap: 20px;
-            align-items: start;
-        }
-
-        .mn-main {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .mn-panel {
-            background: var(--mn-surface);
-            border: 1px solid var(--mn-line);
-            border-radius: 14px;
-            box-shadow: var(--mn-shadow-lg);
-        }
-
-        .mn-panel-header {
-            padding: 18px 20px;
-            border-bottom: 1px solid var(--mn-line);
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .mn-panel-title-wrap h2,
-        .mn-panel-title-wrap h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--mn-text);
-        }
-
-        .mn-panel-title-wrap p {
-            margin: 4px 0 0;
-            color: var(--mn-muted);
-            font-size: 13px;
-        }
-
-        .mn-panel-body {
-            padding: 18px 20px 20px;
-        }
-
-        .mn-category-section {
-            display: none;
-        }
-
-        .mn-category-section.is-visible {
-            display: block;
-        }
-
-        .mn-category-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 14px;
-            flex-wrap: wrap;
-        }
-
-        .mn-category-title {
-            margin: 0;
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--mn-muted);
-        }
-
-        .mn-category-count {
-            font-size: 12px;
-            color: var(--mn-soft);
-        }
-
-        .mn-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 14px;
-        }
-
-        .mn-item {
-            display: flex;
-            flex-direction: column;
-            border: 1px solid var(--mn-line);
-            border-radius: 12px;
-            overflow: hidden;
-            background: var(--mn-surface);
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .mn-item:hover {
-            transform: translateY(-1px);
-            border-color: rgba(17, 24, 39, 0.14);
-            box-shadow: var(--mn-shadow);
-        }
-
-        .mn-item.is-hidden {
-            display: none;
-        }
-
-        .mn-item.unavailable {
-            opacity: 0.68;
-        }
-
-        .mn-item-image {
-            height: 160px;
-            background: var(--mn-surface-muted);
-            overflow: hidden;
-        }
-
-        .mn-item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .mn-item-image-placeholder {
-            width: 100%;
-            height: 100%;
-            display: grid;
-            place-items: center;
-            color: var(--mn-soft);
-            font-size: 13px;
-            background:
-                linear-gradient(180deg, rgba(0,0,0,0.015), rgba(0,0,0,0.03));
-        }
-
-        .mn-item-body {
-            padding: 14px 14px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex: 1;
-        }
-
-        .mn-item-head {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .mn-item-name {
-            margin: 0;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--mn-text);
-            line-height: 1.3;
-        }
-
-        .mn-price {
-            font-size: 15px;
-            font-weight: 700;
-            white-space: nowrap;
-            color: var(--mn-text);
-        }
-
-        .mn-description {
-            margin: 0;
-            color: var(--mn-muted);
-            font-size: 13px;
-            line-height: 1.5;
-            min-height: 38px;
-        }
-
-        .mn-meta {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .mn-chip {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 24px;
-            padding: 0 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 600;
-            background: var(--mn-surface-muted);
-            color: var(--mn-muted);
-            border: 1px solid rgba(17, 24, 39, 0.06);
-        }
-
-        .mn-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding-top: 2px;
-        }
-
-        .mn-empty {
-            background: var(--mn-surface);
-            border: 1px dashed var(--mn-line-strong);
-            border-radius: 12px;
-            padding: 28px 20px;
-            text-align: center;
-            color: var(--mn-muted);
-            font-size: 14px;
-        }
-
-        .mn-form-panel {
-            position: sticky;
-            top: 24px;
-        }
-
-        .mn-form {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .mn-form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .mn-form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .mn-form-group label {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--mn-muted);
-        }
-
-        .mn-form-group input,
-        .mn-form-group select,
-        .mn-form-group textarea {
-            width: 100%;
-            border-radius: 10px;
-            border: 1px solid var(--mn-line-strong);
-            background: var(--mn-surface);
-            color: var(--mn-text);
-            padding: 10px 12px;
-            font-size: 14px;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.18s ease, box-shadow 0.18s ease;
-        }
-
-        .mn-form-group input:focus,
-        .mn-form-group select:focus,
-        .mn-form-group textarea:focus {
-            border-color: var(--mn-accent);
-            box-shadow: var(--dm-focus-ring);
-        }
-
-        .mn-form-group textarea {
-            resize: vertical;
-            min-height: 108px;
-        }
-
-        .mn-current-image {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 8px;
-            padding: 10px;
-            border-radius: 10px;
-            background: var(--mn-surface-muted);
-            border: 1px solid var(--mn-line);
-        }
-
-        .mn-current-image img {
-            width: 56px;
-            height: 56px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid var(--mn-line);
-        }
-
-        .mn-current-image small {
-            display: block;
-            color: var(--mn-muted);
-            line-height: 1.4;
-        }
-
-        .mn-checkbox {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: var(--mn-text);
-            font-weight: 500;
-        }
-
-        .mn-form-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding-top: 4px;
-        }
-
-        .mn-helper {
-            color: var(--mn-muted);
-            font-size: 12px;
-            line-height: 1.5;
-        }
-
-        .mn-inline-note {
-            font-size: 12px;
-            color: var(--mn-muted);
-        }
-
-        @media (max-width: 1200px) {
-            .mn-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .mn-form-panel {
-                position: static;
-            }
-        }
-
-        @media (max-width: 900px) {
-            .mn-stats {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @media (max-width: 768px) {
-            .admin-container {
-                padding: 16px;
-            }
-
-            .mn-header {
-                align-items: stretch;
-            }
-
-            .mn-header-actions,
-            .mn-toolbar-left,
-            .mn-toolbar-right {
-                width: 100%;
-            }
-
-            .mn-search {
-                min-width: unset;
-                width: 100%;
-            }
-
-            .mn-search-input {
-                width: 100%;
-            }
-
-            .mn-form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .mn-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 560px) {
-            .mn-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
     <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(assetUrl('assets/css/pages/admin-menu.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body>
 
@@ -709,6 +295,12 @@ $adminSidebarPathPrefix = '';
                         <?php endif; ?>
                     </div>
                 </header>
+
+                <?php if ($flash): ?>
+                    <div class="admin-empty" role="status">
+                        <?php echo htmlspecialchars((string) ($flash['message'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
+                    </div>
+                <?php endif; ?>
 
                 <div class="admin-command-bar">
                     <div class="admin-command-group">
@@ -823,6 +415,7 @@ $adminSidebarPathPrefix = '';
                                                                 </a>
 
                                                                 <form method="POST" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($menuCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                                                     <input type="hidden" name="action" value="delete">
                                                                     <input type="hidden" name="id" value="<?php echo (int) $item['id']; ?>">
                                                                     <button type="submit" class="btn btn-sm btn-delete">
@@ -860,6 +453,7 @@ $adminSidebarPathPrefix = '';
 
                             <div class="admin-panel-body mn-panel-body">
                                 <form method="POST" enctype="multipart/form-data" class="mn-form">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($menuCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                     <input type="hidden" name="action" value="<?php echo $editItem ? 'edit' : 'add'; ?>">
 
                                     <?php if ($editItem): ?>

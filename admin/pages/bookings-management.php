@@ -36,6 +36,7 @@ function ensureFunctionBookingColumns(PDO $pdo): void {
     }
 }
 ensureFunctionBookingColumns($pdo);
+$functionCsrfToken = csrfToken('admin_actions');
 
 $checklistKeys = [
     'confirm_menu'       => 'Confirm menu',
@@ -71,6 +72,8 @@ function eventTypeLabel(?string $value): string {
 
 // Handle POST actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireValidCsrfToken('admin_actions', ['redirect' => appPath('admin/pages/bookings-management.php')]);
+
     $action = $_POST['action'] ?? '';
     $bookingId = (int) ($_POST['booking_id'] ?? 0);
 
@@ -154,7 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     } catch (Throwable $e) {
-        setFlashMessage('error', 'Action failed: ' . $e->getMessage());
+        error_log('Function booking action failed: ' . $e->getMessage());
+        setFlashMessage('error', 'Action failed. Please try again.');
     }
 
     $redirectTab = isset($_POST['tab']) ? '?tab=' . urlencode((string) $_POST['tab']) : '';
@@ -280,228 +284,7 @@ function fmtTime(string $time): string {
 <head>
     <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
-    <style>
-        :root {
-            --fn-bg: #f8fafc;
-            --fn-card: #ffffff;
-            --fn-border: #e5e7eb;
-            --fn-border-strong: #d1d5db;
-            --fn-text: #111827;
-            --fn-text-muted: #6b7280;
-            --fn-text-soft: #9ca3af;
-            --fn-blue: #2563eb;
-            --fn-blue-soft: #dbeafe;
-            --fn-green: #16a34a;
-            --fn-green-soft: #dcfce7;
-            --fn-amber: #d97706;
-            --fn-amber-soft: #fef3c7;
-            --fn-purple: #7c3aed;
-            --fn-purple-soft: #ede9fe;
-            --fn-rose: #dc2626;
-            --fn-rose-soft: #fee2e2;
-        }
-
-        body { background: var(--fn-bg); color: var(--fn-text); font-family: 'Inter', system-ui, sans-serif; }
-
-        .admin-layout { display: flex; min-height: 100vh; }
-        .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-
-        .fn-page { padding: 28px 36px 56px; max-width: 1500px; margin: 0 auto; width: 100%; }
-
-        .fn-topbar {
-            display: flex; align-items: flex-start; justify-content: space-between;
-            gap: 24px; margin-bottom: 22px;
-        }
-        .fn-topbar h1 { font-size: 26px; font-weight: 700; margin: 0 0 6px; }
-        .fn-topbar p { margin: 0; font-size: 14px; color: var(--fn-text-muted); }
-
-        .fn-new-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: var(--fn-blue); color: #fff; border: none;
-            padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 14px;
-            cursor: pointer; text-decoration: none;
-            transition: background 0.15s;
-        }
-        .fn-new-btn:hover { background: #1d4ed8; color: #fff; }
-
-        .fn-tabs {
-            display: flex; gap: 28px; border-bottom: 1px solid var(--fn-border);
-            margin-bottom: 22px;
-        }
-        .fn-tab {
-            position: relative; padding: 12px 0 14px; font-size: 14px; font-weight: 600;
-            color: var(--fn-text-muted); text-decoration: none; border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
-        }
-        .fn-tab.is-active { color: var(--fn-blue); border-bottom-color: var(--fn-blue); }
-        .fn-tab:hover { color: var(--fn-text); }
-        .fn-tab.is-active:hover { color: var(--fn-blue); }
-
-        .fn-grid {
-            display: grid; grid-template-columns: minmax(0, 1fr) minmax(440px, 1fr);
-            gap: 22px;
-            align-items: flex-start;
-        }
-
-        .fn-list { display: flex; flex-direction: column; gap: 14px; }
-
-        .fn-card {
-            background: var(--fn-card); border: 1px solid var(--fn-border);
-            border-radius: 12px; padding: 18px 20px;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            cursor: pointer;
-        }
-        .fn-card.is-selected {
-            border-color: var(--fn-blue);
-            box-shadow: 0 0 0 1px var(--fn-blue);
-        }
-        .fn-card-head {
-            display: flex; align-items: flex-start; justify-content: space-between;
-            gap: 16px; margin-bottom: 14px;
-        }
-        .fn-card-title { font-size: 16px; font-weight: 700; margin: 0; color: var(--fn-text); }
-        .fn-card-meta { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
-        .fn-card-meta-row { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--fn-text-muted); }
-        .fn-card-meta-row i { color: var(--fn-text-soft); font-size: 14px; width: 16px; text-align: center; }
-        .fn-card-meta-row strong { color: var(--fn-text); font-weight: 500; }
-
-        .fn-card-actions {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
-            margin-top: 16px;
-        }
-        .fn-btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 8px 10px; font-size: 13px; font-weight: 500;
-            border-radius: 8px; border: 1px solid var(--fn-border); background: #fff;
-            color: var(--fn-text); cursor: pointer; text-decoration: none;
-            transition: background 0.15s;
-        }
-        .fn-btn:hover { background: #f9fafb; color: var(--fn-text); }
-        .fn-btn-primary {
-            background: var(--fn-blue); color: #fff; border-color: var(--fn-blue);
-        }
-        .fn-btn-primary:hover { background: #1d4ed8; color: #fff; }
-        .fn-btn-success {
-            background: var(--fn-green); color: #fff; border-color: var(--fn-green);
-        }
-        .fn-btn-success:hover { background: #15803d; color: #fff; }
-
-        .fn-badge {
-            display: inline-flex; align-items: center; padding: 4px 10px;
-            border-radius: 999px; font-size: 12px; font-weight: 600;
-            flex-shrink: 0;
-        }
-        .badge-pending   { background: var(--fn-purple-soft); color: var(--fn-purple); }
-        .badge-setup     { background: var(--fn-amber-soft);  color: var(--fn-amber); }
-        .badge-confirmed { background: var(--fn-green-soft);  color: var(--fn-green); }
-        .badge-cancelled { background: var(--fn-rose-soft);   color: var(--fn-rose); }
-
-        .fn-detail {
-            background: var(--fn-card); border: 1px solid var(--fn-border);
-            border-radius: 12px; padding: 22px 24px;
-            position: sticky; top: 20px;
-        }
-        .fn-detail h2 { font-size: 16px; font-weight: 700; margin: 0 0 18px; color: var(--fn-text); }
-
-        .fn-detail-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px;
-            margin-bottom: 22px;
-        }
-        .fn-detail-row { display: flex; flex-direction: column; gap: 2px; }
-        .fn-detail-label { font-size: 12px; color: var(--fn-text-muted); font-weight: 500; }
-        .fn-detail-value { font-size: 14px; color: var(--fn-text); font-weight: 500; }
-
-        .fn-section { margin-top: 22px; }
-        .fn-section-title {
-            display: inline-flex; align-items: center; gap: 8px;
-            font-size: 14px; font-weight: 600; color: var(--fn-text); margin: 0 0 10px;
-        }
-        .fn-section-title i { color: var(--fn-text-muted); }
-
-        .fn-setup-box {
-            background: #fffbeb; border-left: 3px solid var(--fn-amber);
-            padding: 12px 16px; border-radius: 6px;
-            font-size: 13px; line-height: 1.7; color: var(--fn-text);
-        }
-        .fn-setup-box ul { margin: 0; padding-left: 18px; }
-        .fn-setup-box li { margin: 0; }
-        .fn-setup-empty { color: var(--fn-text-muted); font-style: italic; font-size: 13px; padding: 6px 0; }
-
-        .fn-notes-box {
-            background: #f1f5f9; padding: 14px 16px; border-radius: 8px;
-            font-size: 13px; line-height: 1.6; color: var(--fn-text); font-style: italic;
-        }
-
-        .fn-checklist {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px;
-            background: #f9fafb; padding: 14px 18px; border-radius: 8px;
-        }
-        .fn-check-item {
-            display: inline-flex; align-items: center; gap: 9px;
-            font-size: 13px; color: var(--fn-text); cursor: pointer;
-        }
-        .fn-check-item input[type="checkbox"] {
-            width: 16px; height: 16px; accent-color: var(--fn-blue); cursor: pointer; margin: 0;
-        }
-
-        .fn-detail-actions {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-            margin-top: 22px;
-        }
-        .fn-detail-actions .fn-btn { padding: 11px 12px; font-size: 13px; }
-
-        .fn-empty {
-            background: var(--fn-card); border: 1px dashed var(--fn-border-strong);
-            border-radius: 12px; padding: 60px 24px; text-align: center;
-            color: var(--fn-text-muted); font-size: 14px;
-        }
-        .fn-empty i { font-size: 36px; color: var(--fn-text-soft); display: block; margin-bottom: 12px; }
-
-        .fn-alert {
-            padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; font-size: 14px;
-        }
-        .fn-alert-success { background: var(--fn-green-soft); color: var(--fn-green); }
-        .fn-alert-error   { background: var(--fn-rose-soft);  color: var(--fn-rose); }
-        .fn-alert-warning { background: var(--fn-amber-soft); color: var(--fn-amber); }
-
-        /* Modal */
-        .fn-modal-backdrop {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55);
-            display: none; align-items: center; justify-content: center;
-            z-index: 1000;
-        }
-        .fn-modal-backdrop.is-open { display: flex; }
-        .fn-modal {
-            background: #fff; border-radius: 14px; padding: 28px;
-            width: min(620px, 92vw); max-height: 92vh; overflow-y: auto;
-            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
-        }
-        .fn-modal h3 { margin: 0 0 18px; font-size: 18px; font-weight: 700; }
-        .fn-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
-        .fn-form-group { display: flex; flex-direction: column; gap: 5px; }
-        .fn-form-group.full { grid-column: 1 / -1; }
-        .fn-form-group label { font-size: 12px; font-weight: 600; color: var(--fn-text-muted); }
-        .fn-form-group input, .fn-form-group select, .fn-form-group textarea {
-            padding: 9px 12px; border: 1px solid var(--fn-border-strong);
-            border-radius: 7px; font-size: 14px; font-family: inherit;
-            color: var(--fn-text); background: #fff;
-        }
-        .fn-form-group textarea { resize: vertical; min-height: 70px; }
-        .fn-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-
-        .inline-form { margin: 0; display: contents; }
-
-        @media (max-width: 1180px) {
-            .fn-grid { grid-template-columns: 1fr; }
-            .fn-detail { position: static; }
-        }
-        @media (max-width: 640px) {
-            .fn-page { padding: 18px; }
-            .fn-card-actions, .fn-detail-actions { grid-template-columns: 1fr; }
-            .fn-detail-grid, .fn-checklist, .fn-form-grid { grid-template-columns: 1fr; }
-            .fn-tabs { overflow-x: auto; }
-        }
-    </style>
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(assetUrl('assets/css/pages/admin-functions.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body>
 <div class="admin-layout">
@@ -594,6 +377,7 @@ function fmtTime(string $time): string {
                                 </button>
                                 <?php if (strtolower($fn['status']) !== 'confirmed'): ?>
                                     <form method="POST" class="inline-form" onsubmit="event.stopPropagation();">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($functionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                         <input type="hidden" name="action" value="mark_confirmed">
                                         <input type="hidden" name="booking_id" value="<?php echo (int) $fn['booking_id']; ?>">
                                         <input type="hidden" name="tab" value="<?php echo $activeTab; ?>">
@@ -705,6 +489,7 @@ function fmtTime(string $time): string {
                         <div class="fn-checklist">
                             <?php foreach ($checklistKeys as $key => $label): ?>
                                 <form method="POST" class="inline-form">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($functionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                     <input type="hidden" name="action" value="toggle_checklist">
                                     <input type="hidden" name="booking_id" value="<?php echo (int) $selectedFunction['booking_id']; ?>">
                                     <input type="hidden" name="checklist_key" value="<?php echo htmlspecialchars($key, ENT_QUOTES, 'UTF-8'); ?>">
@@ -723,6 +508,7 @@ function fmtTime(string $time): string {
                     <div class="fn-detail-actions">
                         <?php if (strtolower($selectedFunction['status']) !== 'confirmed'): ?>
                             <form method="POST" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($functionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="action" value="mark_confirmed">
                                 <input type="hidden" name="booking_id" value="<?php echo (int) $selectedFunction['booking_id']; ?>">
                                 <input type="hidden" name="tab" value="<?php echo $activeTab; ?>">
@@ -755,6 +541,7 @@ function fmtTime(string $time): string {
     <div class="fn-modal">
         <h3>New Function</h3>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($functionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
             <input type="hidden" name="action" value="create_function">
             <input type="hidden" name="tab" value="<?php echo $activeTab; ?>">
             <div class="fn-form-grid">
@@ -832,6 +619,7 @@ function fmtTime(string $time): string {
     <div class="fn-modal">
         <h3>Assign Area</h3>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($functionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
             <input type="hidden" name="action" value="update_area">
             <input type="hidden" name="booking_id" id="areaModalBookingId" value="">
             <input type="hidden" name="tab" value="<?php echo $activeTab; ?>">
@@ -858,6 +646,7 @@ function fmtTime(string $time): string {
     <div class="fn-modal">
         <h3>Edit Function</h3>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($functionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
             <input type="hidden" name="action" value="update_setup_notes">
             <input type="hidden" name="booking_id" value="<?php echo (int) $selectedFunction['booking_id']; ?>">
             <input type="hidden" name="tab" value="<?php echo $activeTab; ?>">

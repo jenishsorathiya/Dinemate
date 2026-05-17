@@ -23,3 +23,4 @@ $appCssVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/app.css') ?: 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="../../assets/css/app.css?v=<?= htmlspecialchars($appCssVersion, ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
+    <?php include __DIR__ . '/admin-csrf.php'; ?>

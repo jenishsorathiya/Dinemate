@@ -2,9 +2,7 @@
 require_once "../config/db.php";
 require_once "../includes/functions.php";
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+startAppSession();
 
 ensureBookingRequestColumns($pdo);
 
@@ -51,6 +49,12 @@ $tableLabel = $booking['table_number'] ? 'Table ' . $booking['table_number'] : '
 $statusLabel = getBookingStatusLabel($booking['status'] ?? 'pending');
 $sourceLabel = getBookingSourceLabel($booking['booking_source'] ?? '');
 $placementLabel = getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed');
+$qrData = "Reservation\n"
+    . "Table: " . $tableLabel . "\n"
+    . "Status: " . $statusLabel . "\n"
+    . "Date: " . (string) $booking['booking_date'] . "\n"
+    . "Time: " . (string) $booking['start_time'] . ' - ' . (string) $booking['end_time'] . "\n"
+    . "Guests: " . (string) $booking['number_of_guests'];
 $customerProfile = null;
 
 if ($isLoggedInCustomer) {
@@ -58,127 +62,16 @@ if ($isLoggedInCustomer) {
 }
 ?>
 
-<?php include "../includes/header.php"; ?>
-
-<!-- Confetti Library -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-<!-- QR Code Generator -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<style>
-
-.confirm-wrapper{
-margin-top:120px;
-margin-bottom:80px;
-}
-
-.confirm-card{
-background:var(--dm-surface);
-border:1px solid var(--dm-border);
-border-radius:10px;
-padding:36px;
-box-shadow:0 4px 16px rgba(15,23,42,0.06);
-text-align:center;
-max-width:700px;
-margin:auto;
-}
-
-/* Animated check icon */
-
-.success-icon{
-font-size:70px;
-color:var(--dm-success-strong);
-}
-
-/* Reservation ticket */
-
-.ticket{
-background:var(--dm-surface-muted);
-border:1px solid var(--dm-border);
-border-radius:10px;
-padding:20px;
-margin-top:25px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-flex-wrap:wrap;
-}
-
-.ticket-info{
-text-align:left;
-}
-
-.ticket-info p{
-margin-bottom:6px;
-font-size:15px;
-}
-
-.qr-box{
-padding:10px;
-background:var(--dm-surface);
-border:1px solid var(--dm-border);
-border-radius:8px;
-box-shadow:0 4px 12px rgba(15,23,42,0.05);
-}
-
-/* Button */
-
-.btn-bookings{
-background:var(--dm-accent-dark);
-border:1px solid var(--dm-accent-dark);
-color:var(--dm-surface);
-padding:14px;
-border-radius:8px;
-font-weight:600;
-margin-top:25px;
-}
-
-.btn-bookings:hover{
-background:var(--dm-accent-dark-hover);
-}
-
-.confirm-grid{
-display:grid;
-grid-template-columns:minmax(0,1.1fr) minmax(240px,0.9fr);
-gap:20px;
-margin-top:25px;
-text-align:left;
-}
-
-.confirm-side{
-border:1px solid var(--dm-border);
-border-radius:10px;
-padding:18px;
-background:var(--dm-surface-muted);
-}
-
-.confirm-side h4{
-margin:0 0 12px;
-font-size:18px;
-color:var(--dm-text);
-}
-
-.confirm-side p{
-font-size:14px;
-color:var(--dm-text-muted);
-margin-bottom:10px;
-}
-
-.confirm-links{
-display:flex;
-gap:12px;
-flex-wrap:wrap;
-margin-top:18px;
-}
-
-@media (max-width: 767px){
-.confirm-grid{
-grid-template-columns:1fr;
-}
-}
-
-</style>
+<?php
+$pageTitle = 'Booking Confirmation | DineMate';
+$extraStylesheets = ['assets/css/pages/customer-confirmation.css'];
+$extraFooterScripts = [
+    'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
+    'assets/js/pages/customer-confirmation.js',
+];
+include '../includes/header.php';
+?>
 
 <div class="container confirm-wrapper">
 
@@ -214,7 +107,7 @@ Your request has been saved. A table will be assigned by the admin team.
 <?php endif; ?>
 </div>
 <div class="qr-box">
-<div id="qr"></div>
+<div id="qr" data-reservation-qr="<?php echo htmlspecialchars($qrData, ENT_QUOTES, 'UTF-8'); ?>"></div>
 </div>
 </div>
 
@@ -255,39 +148,6 @@ Book Another Reservation
 
 </div>
 
-<script>
-
-/* Confetti animation */
-
-confetti({
-particleCount:120,
-spread:70,
-origin:{ y:0.6 }
-});
-
-
-/* Generate QR Code */
-
-const qrData = `
-Reservation
-Table: <?= addslashes($tableLabel) ?>
-
-Status: <?= addslashes($statusLabel) ?>
-
-Date: <?= $booking['booking_date'] ?>
-
-Time: <?= $booking['start_time'] ?> - <?= $booking['end_time'] ?>
-
-Guests: <?= $booking['number_of_guests'] ?>
-`;
-
-new QRCode(document.getElementById("qr"),{
-text: qrData,
-width:120,
-height:120
-});
-
-</script>
 
 <?php include "../includes/footer.php"; ?>
 

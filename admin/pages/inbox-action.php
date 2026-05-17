@@ -3,6 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/config/db.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/Dinemate/includes/session-check.php";
 
 requireAdmin();
+requireValidCsrfToken('admin_actions', ['redirect' => appPath('admin/pages/admin_inbox.php')]);
 ensureBookingRequestColumns($pdo);
 ensureBookingTableAssignmentsTable($pdo);
 ensureTableAreasSchema($pdo);

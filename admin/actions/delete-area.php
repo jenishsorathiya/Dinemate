@@ -9,6 +9,7 @@ ensureTableAreasSchema($pdo);
 ensureBookingTableAssignmentsTable($pdo);
 
 requireAdmin(['json' => true]);
+requireValidCsrfToken('admin_actions', ['json' => true]);
 
 $data = json_decode(file_get_contents('php://input'), true);
 $areaId = (int)($data['area_id'] ?? 0);
@@ -87,6 +88,6 @@ try {
         $pdo->rollBack();
     }
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    error_log('Delete area failed: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'Unable to delete area. Please try again.']);
 }
-?>

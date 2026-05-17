@@ -367,57 +367,8 @@ $flash = getFlashMessage();
 <html lang="en">
 <head>
     <?php include __DIR__ . '/../partials/admin-head.php'; ?>
-    <style>
-        :root { --page-bg: var(--dm-bg); --surface: var(--dm-surface); --line: var(--dm-border); --text-main: var(--dm-text); --text-muted: var(--dm-text-muted); --shadow-soft: var(--dm-shadow-sm); --shadow-card: var(--dm-shadow-md); --primary: var(--dm-accent-dark); --accent: var(--dm-pending-text); --success: var(--dm-confirmed-text); --danger: var(--dm-danger-text); --warning: var(--dm-pending-text); }
-        body { margin: 0; font-family: var(--dm-font-sans); background: var(--dm-surface-muted); color: var(--text-main); }
-        .main { flex: 1; overflow-y: auto; padding: 28px; }
-        .page-shell { max-width: 1440px; margin: 0 auto; display: grid; gap: 22px; }
-        .hero-card, .panel-card, .stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-soft); }
-        .hero-card { padding: 18px 20px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); background: var(--dm-surface); }
-        .eyebrow { display: none; }
-        .hero-title { margin: 0; font-size: 22px; line-height: 1.05; letter-spacing: -0.01em; }
-        .hero-copy { margin: 12px 0 0; color: var(--text-muted); max-width: 820px; font-size: 14px; line-height: 1.5; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-        .stat-card { padding: 20px; }
-        .stat-label { color: var(--text-muted); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
-        .stat-value { margin-top: 8px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
-        .stat-meta { margin-top: 4px; color: var(--text-muted); font-size: 12px; }
-        .layout-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr); gap: 22px; align-items: start; }
-        .panel-card { padding: 24px; }
-        .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-        .panel-title { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0; }
-        .panel-subtitle { margin: 6px 0 0; color: var(--text-muted); font-size: 13px; }
-        .inline-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 4px; background: var(--dm-surface-muted); border: 1px solid var(--line); color: var(--dm-text-muted); font-size: 11px; font-weight: 600; }
-        .search-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; margin-bottom: 18px; }
-        .search-input { min-height: 36px; border-radius: 6px; border: 1px solid var(--line); background: var(--dm-surface-muted); padding: 7px 10px; }
-        .btn-primary-soft { border: 1px solid var(--primary); border-radius: 6px; min-height: 34px; padding: 0 12px; background: var(--primary); color: var(--dm-surface); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
-        .table-wrap { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--dm-surface); }
-        .table-custom { width: 100%; border-collapse: collapse; }
-        .table-custom thead th { background: var(--dm-surface-muted); color: var(--dm-text-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-        .table-custom tbody td { padding: 10px 14px; border-bottom: 1px solid var(--dm-border); vertical-align: top; }
-        .table-custom tbody tr:last-child td { border-bottom: 0; }
-        .table-custom tbody tr:hover { background: var(--dm-surface-muted); }
-        .profile-name { font-weight: 700; }
-        .profile-meta { display: block; margin-top: 6px; color: var(--text-muted); font-size: 12px; }
-        .tiny-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; background: var(--dm-neutral-bg); color: var(--dm-info-text); }
-        .history-list { display: grid; gap: 12px; }
-        .history-card { border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; background: var(--dm-surface-muted); }
-        .history-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-        .history-card-title { margin: 0; font-size: 15px; font-weight: 800; }
-        .history-card-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 10px; color: var(--text-muted); font-size: 13px; }
-        .history-card-note { margin-top: 10px; color: var(--text-muted); font-size: 12px; }
-        .empty-state { padding: 28px 18px; text-align: center; color: var(--text-muted); font-size: 14px; border: 1px dashed var(--line); border-radius: 8px; background: var(--dm-surface-muted); }
-        .form-select, .btn-surface { min-height: 36px; border-radius: 6px; border: 1px solid var(--line); background: var(--dm-surface-muted); padding: 7px 10px; color: var(--text-main); }
-        .form-control { min-height: 36px; border-radius: 6px; border: 1px solid var(--line); background: var(--dm-surface-muted); padding: 7px 10px; color: var(--text-main); }
-        textarea.form-control { min-height: 120px; resize: vertical; }
-        .btn-surface { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 6px; }
-        .link-form { display: grid; gap: 12px; margin-top: 16px; }
-        .link-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .alert { border-radius: 8px; border: 1px solid transparent; padding: 16px 18px; margin: 0; }
-        @media (max-width: 1200px) { .stats-grid, .layout-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .search-row { grid-template-columns: 1fr; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid var(--dm-border); } .table-custom tbody td { padding: 8px 0; border: 0; } }
-    </style>
     <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(assetUrl('assets/css/pages/admin-customer-history.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body>
 <div class="admin-layout">
@@ -546,18 +497,17 @@ $flash = getFlashMessage();
                                     </div>
                                     <div class="link-form">
                                         <div class="link-actions">
-                                            <a
-                                                href="../timeline/timeline.php?<?php echo htmlspecialchars(http_build_query([
-                                                    'date' => date('Y-m-d'),
-                                                    'prefill_customer_profile_id' => (int) $selectedProfile['customer_profile_id'],
-                                                    'prefill_customer_name' => (string) ($selectedProfile['name'] ?? ''),
-                                                    'prefill_customer_email' => (string) ($selectedProfile['email'] ?? ''),
-                                                    'prefill_customer_phone' => (string) ($selectedProfile['phone'] ?? ''),
-                                                ]), ENT_QUOTES, 'UTF-8'); ?>"
+                                            <button
+                                                type="button"
                                                 class="btn-primary-soft"
+                                                data-admin-booking-create-open
+                                                data-create-date="<?php echo htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-create-name="<?php echo htmlspecialchars((string) ($selectedProfile['name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-create-email="<?php echo htmlspecialchars((string) ($selectedProfile['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-create-phone="<?php echo htmlspecialchars((string) ($selectedProfile['phone'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
                                             >
                                                 <i class="fa-solid fa-calendar-plus"></i> Create Booking For This Customer
-                                            </a>
+                                            </button>
                                         </div>
                                         <?php if (!empty($selectedProfile['linked_user_id'])): ?>
                                             <form method="POST" class="link-actions">
@@ -681,6 +631,12 @@ $flash = getFlashMessage();
         </div>
     </div>
 </div>
+<?php
+$adminBookingCreateDefaultDate = date('Y-m-d');
+$adminBookingCreateMinDate = date('Y-m-d');
+$adminBookingCreateEndpoint = '../actions/create-booking.php';
+include __DIR__ . '/../partials/admin-booking-create-modal.php';
+?>
 </body>
 </html>
 

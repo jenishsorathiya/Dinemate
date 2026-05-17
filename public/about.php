@@ -1,196 +1,9 @@
-<?php include __DIR__ . "/../includes/header.php"; ?>
+<?php
+$pageTitle = 'About Old Canberra Inn | DineMate';
+$extraStylesheets = ['assets/css/pages/about.css'];
+include __DIR__ . '/../includes/header.php';
+?>
 
-<style>
-/* Page Header Hero */
-.page-hero {
-    background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%);
-    color: white;
-    padding: 120px 20px 80px;
-    text-align: center;
-    margin-top: 60px;
-}
-
-.page-hero h1 {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 700;
-    margin-bottom: 15px;
-}
-
-.page-hero p {
-    font-size: 18px;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-/* Section Styles */
-.section {
-    padding: 80px 0;
-}
-
-.section-header {
-    text-align: center;
-    margin-bottom: 60px;
-}
-
-.section-title {
-    font-size: clamp(28px, 6vw, 48px);
-    font-weight: 700;
-    color: var(--dm-text);
-    margin-bottom: 20px;
-}
-
-.section-subtitle {
-    font-size: 18px;
-    color: var(--dm-text-muted);
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-/* Story Card */
-.story-card {
-    background: var(--dm-surface);
-    border: 1px solid var(--dm-border);
-    border-radius: 12px;
-    padding: 50px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
-
-.story-card h3 {
-    font-size: 24px;
-    font-weight: 700;
-    color: #4A7C59;
-    margin-bottom: 20px;
-}
-
-.story-card p {
-    font-size: 16px;
-    color: var(--dm-text-muted);
-    line-height: 1.8;
-    margin-bottom: 15px;
-}
-
-.story-card strong {
-    color: var(--dm-text);
-}
-
-/* Value Cards Grid */
-.value-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    margin-top: 50px;
-}
-
-.value-card {
-    background: var(--dm-surface);
-    border: 1px solid var(--dm-border);
-    border-radius: 12px;
-    padding: 40px 30px;
-    text-align: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
-
-.value-card:hover {
-    border-color: #4A7C59;
-    box-shadow: 0 12px 32px rgba(107, 190, 141, 0.15);
-    transform: translateY(-8px);
-}
-
-.value-card-icon {
-    font-size: 48px;
-    color: #4A7C59;
-    margin-bottom: 20px;
-}
-
-.value-card h3 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: var(--dm-text);
-}
-
-.value-card p {
-    color: var(--dm-text-muted);
-    font-size: 16px;
-    line-height: 1.6;
-}
-
-/* Timeline/History Section */
-.timeline-item {
-    display: flex;
-    gap: 30px;
-    margin-bottom: 50px;
-}
-
-.timeline-date {
-    min-width: 120px;
-    font-size: 24px;
-    font-weight: 700;
-    color: #4A7C59;
-}
-
-.timeline-content h4 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: var(--dm-text);
-}
-
-.timeline-content p {
-    color: var(--dm-text-muted);
-    line-height: 1.6;
-}
-
-/* Image styling */
-.img-fluid-custom {
-    border-radius: 12px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-    width: 100%;
-}
-
-/* Stats Section */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 30px;
-    margin-top: 50px;
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-number {
-    font-size: 36px;
-    font-weight: 700;
-    color: #4A7C59;
-    margin-bottom: 10px;
-}
-
-.stat-label {
-    font-size: 16px;
-    color: var(--dm-text-muted);
-}
-
-@media (max-width: 767px) {
-    .page-hero {
-        padding: 80px 20px 60px;
-    }
-
-    .story-card {
-        padding: 30px;
-    }
-
-    .section {
-        padding: 50px 0;
-    }
-
-    .timeline-item {
-        flex-direction: column;
-        gap: 15px;
-    }
-}
-</style>
 
 <!-- PAGE HERO -->
 <section class="page-hero">
@@ -218,7 +31,7 @@
 </section>
 
 <!-- OUR VALUES SECTION -->
-<section class="section" style="background: var(--dm-surface-muted);">
+<section class="section section-muted">
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Why Choose Old Canberra Inn</h2>
@@ -294,11 +107,11 @@
 </section>
 
 <!-- CTA SECTION -->
-<section style="background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%); color: white; text-align: center; padding: 80px 20px; border-radius: 16px; margin: 80px 0;">
+<section class="page-cta">
     <div class="container">
-        <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 20px; color: white;">Ready to Join Us?</h2>
-        <p style="font-size: 18px; margin-bottom: 40px; color: rgba(255, 255, 255, 0.9);">Reserve your table now and experience the Old Canberra Inn difference</p>
-        <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" style="background: #2C3E50; color: white; border: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block;">
+        <h2 class="page-cta-title">Ready to Join Us?</h2>
+        <p class="page-cta-copy">Reserve your table now and experience the Old Canberra Inn difference</p>
+        <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" class="page-cta-button">
             <i class="fa fa-calendar-check"></i> Reserve Your Table
         </a>
     </div>

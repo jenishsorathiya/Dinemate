@@ -1,9 +1,7 @@
 <?php
 require_once __DIR__ . '/functions.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+startAppSession();
 
 $documentRootPath = realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: '';
 $projectRootPath = realpath(__DIR__ . '/..') ?: '';
@@ -41,33 +39,40 @@ $isActivePath = static function (array $paths) use ($relativeRequestPath): bool 
 
 $isLoggedInUser = isLoggedIn();
 $currentUserRole = getCurrentUserRole();
-$appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: time());
+$pageTitle = trim((string) ($pageTitle ?? 'DineMate | Old Canberra Inn'));
+if ($pageTitle === '') {
+    $pageTitle = 'DineMate | Old Canberra Inn';
+}
+
+$extraStylesheets = $extraStylesheets ?? [];
+if (!is_array($extraStylesheets)) {
+    $extraStylesheets = [];
+}
+
+$extraHeadHtml = (string) ($extraHeadHtml ?? '');
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DineMate | Old Canberra Inn</title>
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo htmlspecialchars($navUrl('assets/css/app.css') . '?v=' . $appCssVersion, ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
-    <style>
-        body {
-            font-family: var(--dm-font-sans);
+    <link href="<?php echo htmlspecialchars(assetUrl('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
+    <?php foreach ($extraStylesheets as $stylesheet): ?>
+        <?php
+        $stylesheetPath = is_array($stylesheet) ? (string) ($stylesheet['href'] ?? '') : (string) $stylesheet;
+        $stylesheetMedia = is_array($stylesheet) ? trim((string) ($stylesheet['media'] ?? '')) : '';
+        if ($stylesheetPath === '') {
+            continue;
         }
-
-        .navbar-toggler {
-            border-color: var(--dm-border-strong);
-            border-radius: var(--dm-radius-sm);
-            padding: 8px 10px;
-        }
-
-        .navbar-toggler:focus {
-            box-shadow: var(--dm-focus-ring);
-        }
-    </style>
+        $stylesheetHref = preg_match('#^(?:https?:)?//#i', $stylesheetPath) ? $stylesheetPath : assetUrl($stylesheetPath);
+        ?>
+        <link href="<?php echo htmlspecialchars($stylesheetHref, ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet"<?php echo $stylesheetMedia !== '' ? ' media="' . htmlspecialchars($stylesheetMedia, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
+    <?php endforeach; ?>
+    <?php echo $extraHeadHtml; ?>
 </head>
 <body>
 
@@ -83,7 +88,6 @@ $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: tim
                     <a href="<?php echo htmlspecialchars($navUrl('admin/pages/admin_home.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/admin_home.php']) ? 'is-active' : ''; ?>">Admin Home</a>
                     <a href="<?php echo htmlspecialchars($navUrl('admin/pages/admin_bookings.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/admin_bookings.php']) ? 'is-active' : ''; ?>">Bookings</a>
                     <a href="<?php echo htmlspecialchars($navUrl('admin/pages/admin_inbox.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/admin_inbox.php']) ? 'is-active' : ''; ?>">Inbox</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('admin/timeline/timeline.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/timeline/timeline.php']) ? 'is-active' : ''; ?>">Timeline</a>
                     <a href="<?php echo htmlspecialchars($navUrl('admin/pages/tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/tables-management.php']) ? 'is-active' : ''; ?>">Tables Management</a>
                     <a href="<?php echo htmlspecialchars($navUrl('admin/pages/menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/menu-management.php']) ? 'is-active' : ''; ?>">Menu Management</a>
                     <a href="<?php echo htmlspecialchars($navUrl('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-logout">Logout</a>
