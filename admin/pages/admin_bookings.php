@@ -570,12 +570,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                         <span>Add Booking</span>
                     </button>
 
-                    <a class="icon-btn notification-btn" href="admin_inbox.php" aria-label="Notifications">
-                        <i class="bi bi-bell-fill" aria-hidden="true"></i>
-                        <?php if ($pendingBookingsCount > 0): ?>
-                            <span class="notification-badge"><?php echo htmlspecialchars((string) min($pendingBookingsCount, 99), ENT_QUOTES, 'UTF-8'); ?></span>
-                        <?php endif; ?>
-                    </a>
+                    <?php include __DIR__ . '/../partials/admin-notification-dropdown.php'; ?>
                 </div>
             </header>
 

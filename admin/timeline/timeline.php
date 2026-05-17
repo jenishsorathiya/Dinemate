@@ -1662,27 +1662,45 @@ $adminSidebarPathPrefix = '../';
 
         .current-time-line {
             position: absolute;
-            width: 3px;
+            width: 2px;
             background: var(--dm-primary);
             top: 0;
-            bottom: 0;
-            z-index: 24;
-            opacity: 0.9;
-            box-shadow: 0 0 0 1px var(--dm-surface), 0 0 14px rgba(44, 62, 80, 0.22);
+            z-index: 35;
+            opacity: 1;
+            box-shadow: 0 0 0 1px var(--dm-surface), 0 0 16px rgba(11, 94, 215, 0.22);
             pointer-events: none;
         }
 
         .current-time-line::before {
             content: '';
             position: absolute;
-            top: -6px;
+            top: -5px;
             left: 50%;
-            width: 11px;
-            height: 11px;
+            width: 10px;
+            height: 10px;
             transform: translateX(-50%);
             border-radius: 999px;
             background: var(--dm-primary);
             box-shadow: 0 0 0 2px var(--dm-surface);
+        }
+
+        .current-time-line::after {
+            content: attr(data-time-label);
+            position: sticky;
+            top: 8px;
+            left: 8px;
+            display: inline-flex;
+            width: max-content;
+            transform: translateX(8px);
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: var(--dm-primary);
+            color: var(--dm-primary-text);
+            font-size: 10px;
+            line-height: 1;
+            font-weight: 800;
+            box-shadow: var(--dm-shadow-sm);
+            white-space: nowrap;
         }
 
         /* SCROLLBAR STYLING */
@@ -2415,7 +2433,7 @@ $adminSidebarPathPrefix = '../';
 
         .current-time-line {
             width: 2px;
-            box-shadow: none;
+            box-shadow: 0 0 0 1px var(--dm-surface), 0 0 14px rgba(11, 94, 215, 0.18);
         }
 
         .modal-backdrop-custom {
@@ -5504,18 +5522,25 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
         }
 
         const now = new Date();
+        if(SELECTED_DATE !== formatLocalDate(now)) {
+            return;
+        }
+
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         const timelineStartMinutes = START_HOUR * 60;
         const timelineEndMinutes = (END_HOUR + 1) * 60;
 
-        if (currentMinutes < timelineStartMinutes || currentMinutes > timelineEndMinutes) {
+        if (currentMinutes < timelineStartMinutes || currentMinutes >= timelineEndMinutes) {
             return;
         }
 
         const position = ((currentMinutes - timelineStartMinutes) / INTERVAL_MINS) * CELL_WIDTH;
+        const visibleHeight = Math.max(timelineGrid.scrollHeight, timelineGrid.offsetHeight, parseInt(timelineGrid.style.minHeight, 10) || 0);
         const line = document.createElement('div');
         line.className = 'current-time-line';
-        line.style.left = `${Math.max(0, position)}px`;
+        line.dataset.timeLabel = `Now ${formatDisplayTime(`${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`)}`;
+        line.style.left = `${Math.max(0, Math.round(position))}px`;
+        line.style.height = `${visibleHeight}px`;
         timelineGrid.appendChild(line);
     }
 </script>
