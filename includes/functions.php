@@ -44,7 +44,7 @@ function consumeRedirectUrl() {
 
 function getDefaultRedirectForRole($role) {
     if ($role === 'admin') {
-        return appPath('admin/timeline/timeline.php');
+        return appPath('admin/pages/admin_home.php');
     }
 
     if ($role === 'customer') {
@@ -1584,7 +1584,7 @@ function inboxChipForBookingType(string $bookingType): string {
     return match (strtolower($bookingType)) {
         'function' => 'Function',
         'trivia'   => 'Trivia',
-        default    => 'Trivia',
+        default    => 'Booking',
     };
 }
 

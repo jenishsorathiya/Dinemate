@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (isLoggedIn() && getCurrentUserRole() === 'admin') {
-    redirect(appPath('admin/pages/analytics.php'));
+    redirect(appPath('admin/pages/admin_home.php'));
 }
 
 $error = $_SESSION['admin_error'] ?? '';
@@ -19,13 +19,13 @@ $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: tim
 <title>DineMate Admin Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="../assets/css/app.css?v=<?= htmlspecialchars($appCssVersion, ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
 
 <style>
 body {
     margin: 0;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--dm-font-sans);
     background: var(--dm-bg);
     min-height: 100vh;
     display: flex;

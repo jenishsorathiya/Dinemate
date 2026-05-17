@@ -1,4 +1,55 @@
-<?php include __DIR__ . "/../includes/header.php"; ?>
+<?php
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+$contactFlash = null;
+$contactForm = [
+    'name' => '',
+    'email' => '',
+    'phone' => '',
+    'subject' => '',
+    'message' => '',
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    foreach ($contactForm as $field => $value) {
+        $contactForm[$field] = trim((string) ($_POST[$field] ?? ''));
+    }
+
+    if ($contactForm['name'] === '' || $contactForm['email'] === '' || $contactForm['subject'] === '' || $contactForm['message'] === '') {
+        $contactFlash = ['type' => 'danger', 'message' => 'Please complete the required fields.'];
+    } elseif (!filter_var($contactForm['email'], FILTER_VALIDATE_EMAIL)) {
+        $contactFlash = ['type' => 'danger', 'message' => 'Please enter a valid email address.'];
+    } else {
+        try {
+            ensureInboxMessagesTable($pdo);
+            $insertMessage = $pdo->prepare("
+                INSERT INTO inbox_messages
+                    (type, folder, status, guest_name, guest_email, guest_phone, subject, preview, message, received_at)
+                VALUES
+                    ('guest_message', 'requests', 'open', ?, ?, ?, ?, ?, ?, NOW())
+            ");
+            $preview = substr($contactForm['message'], 0, 220);
+            $insertMessage->execute([
+                $contactForm['name'],
+                $contactForm['email'],
+                $contactForm['phone'] !== '' ? $contactForm['phone'] : null,
+                $contactForm['subject'],
+                $preview,
+                $contactForm['message'],
+            ]);
+
+            $contactFlash = ['type' => 'success', 'message' => 'Thanks, your message has been sent to our team.'];
+            $contactForm = array_fill_keys(array_keys($contactForm), '');
+        } catch (Throwable $contactError) {
+            error_log('Contact form error: ' . $contactError->getMessage());
+            $contactFlash = ['type' => 'danger', 'message' => 'We could not send your message right now. Please try again shortly.'];
+        }
+    }
+}
+
+include __DIR__ . "/../includes/header.php";
+?>
 
 <style>
 /* Page Header Hero */
@@ -253,18 +304,24 @@
             <div class="col-lg-7">
                 <div class="contact-form-card">
                     <h2>Send us a Message</h2>
-                    <form method="POST" action="#">
+                    <?php if ($contactFlash): ?>
+                        <div class="alert alert-<?php echo htmlspecialchars($contactFlash['type'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($contactFlash['message'], ENT_QUOTES, 'UTF-8'); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" action="<?php echo htmlspecialchars(appPath('public/contact.php'), ENT_QUOTES, 'UTF-8'); ?>">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="name">Full Name *</label>
-                                    <input type="text" id="name" name="name" required>
+                                    <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($contactForm['name'], ENT_QUOTES, 'UTF-8'); ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="email">Email Address *</label>
-                                    <input type="email" id="email" name="email" required>
+                                    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($contactForm['email'], ENT_QUOTES, 'UTF-8'); ?>" required>
                                 </div>
                             </div>
                         </div>
@@ -273,20 +330,20 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="phone">Phone Number</label>
-                                    <input type="tel" id="phone" name="phone">
+                                    <input type="tel" id="phone" name="phone" value="<?php echo htmlspecialchars($contactForm['phone'], ENT_QUOTES, 'UTF-8'); ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="subject">Subject *</label>
-                                    <input type="text" id="subject" name="subject" required>
+                                    <input type="text" id="subject" name="subject" value="<?php echo htmlspecialchars($contactForm['subject'], ENT_QUOTES, 'UTF-8'); ?>" required>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label for="message">Message *</label>
-                            <textarea id="message" name="message" required></textarea>
+                            <textarea id="message" name="message" required><?php echo htmlspecialchars($contactForm['message'], ENT_QUOTES, 'UTF-8'); ?></textarea>
                         </div>
                         
                         <button type="submit" class="btn-submit">
@@ -365,15 +422,3 @@
 </section>
 
 <?php include __DIR__ . "/../includes/footer.php"; ?>
-
-</body>
-</html>
-
-
-
-
-
-
-
-
-

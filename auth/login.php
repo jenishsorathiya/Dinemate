@@ -10,7 +10,7 @@ $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: tim
 <title>DineMate | Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="../assets/css/app.css?v=<?= htmlspecialchars($appCssVersion, ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
@@ -22,7 +22,7 @@ $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: tim
 }
 
 body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--dm-font-sans);
     background: var(--dm-bg);
 }
 
@@ -95,7 +95,7 @@ body {
     border: 1px solid var(--dm-border);
     border-radius: 8px;
     font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--dm-font-sans);
     transition: all 0.3s ease;
 }
 
@@ -365,30 +365,14 @@ body {
                 </div>
 
                 <div class="form-footer">
-                    <label style="margin-bottom: 0;">
-                        <input type="checkbox" name="remember" style="margin-right: 5px;">
-                        Remember me
-                    </label>
-                    <a href="#">Forgot password?</a>
+                    <span></span>
+                    <a href="<?= appPath('public/contact.php') ?>">Need help?</a>
                 </div>
 
                 <button type="submit" class="btn-login">
                     <i class="fa fa-sign-in"></i> Sign In
                 </button>
             </form>
-
-            <div class="divider">
-                <span>OR</span>
-            </div>
-
-            <div class="social-buttons">
-                <button class="social-btn" onclick="showComingSoon()">
-                    <i class="fa-brands fa-google"></i> Google
-                </button>
-                <button class="social-btn" onclick="showComingSoon()">
-                    <i class="fa-brands fa-apple"></i> Apple
-                </button>
-            </div>
 
             <div class="auth-signup">
                 Don't have an account? <a href="<?= appPath('auth/register.php') ?>">Sign Up</a>
@@ -416,9 +400,6 @@ function togglePassword() {
     }
 }
 
-function showComingSoon() {
-    alert('Social login integration coming soon!');
-}
 </script>
 
 </body>

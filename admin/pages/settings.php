@@ -139,19 +139,24 @@ $adminSidebarPathPrefix = '';
             margin-top: 20px;
         }
     </style>
+    <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
 </head>
 <body>
     <div class="admin-layout">
         <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
-        <main class="admin-main">
-            <div class="settings-shell">
-                <div class="settings-header">
+        <main class="main-content admin-main">
+            <div class="admin-workspace">
+                <header class="admin-page-heading">
                     <div>
-                        <h1>Booking Settings</h1>
-                        <p class="page-subtitle">Control online booking behavior, party limits, and assignment options.</p>
+                        <p class="admin-page-kicker">Configuration</p>
+                        <h1 class="admin-page-title">Booking Settings</h1>
+                        <p class="admin-page-copy">Tune the customer booking flow, guest limits, default timing, and table assignment behavior.</p>
                     </div>
-                </div>
+                    <div class="admin-actions">
+                        <a class="secondary-btn" href="admin_bookings.php"><i class="bi bi-calendar-check"></i> View bookings</a>
+                    </div>
+                </header>
 
                 <?php if ($flashMessage): ?>
                     <div class="alert alert-<?php echo htmlspecialchars($flashMessage['type'], ENT_QUOTES, 'UTF-8'); ?>">
@@ -159,12 +164,17 @@ $adminSidebarPathPrefix = '';
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" class="settings-panel">
+                <form method="POST" class="admin-split-layout">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
 
-                    <div class="settings-section">
-                        <h2>Booking behavior</h2>
-                        <div class="settings-grid">
+                    <section class="admin-panel">
+                        <div class="admin-panel-header">
+                            <div>
+                                <h2 class="admin-panel-title">Customer Flow</h2>
+                                <p class="admin-panel-copy">Choose what guests can do before a booking reaches the admin queue.</p>
+                            </div>
+                        </div>
+                        <div class="admin-panel-body settings-grid">
                             <div class="setting-field">
                                 <label for="enable-online-bookings">Online bookings</label>
                                 <div class="setting-toggle">
@@ -201,11 +211,16 @@ $adminSidebarPathPrefix = '';
                                 <div class="field-description">If enabled, the system will select a matching available table when possible.</div>
                             </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="settings-section">
-                        <h2>Party size and timing</h2>
-                        <div class="settings-grid">
+                    <aside class="admin-panel">
+                        <div class="admin-panel-header">
+                            <div>
+                                <h2 class="admin-panel-title">Rules</h2>
+                                <p class="admin-panel-copy">These values feed the public booking form and admin-created reservations.</p>
+                            </div>
+                        </div>
+                        <div class="admin-panel-body admin-form-stack">
                             <div class="setting-field">
                                 <label for="min-party-size">Minimum party size</label>
                                 <input type="number" name="min_party_size" id="min-party-size" class="setting-input" min="1" value="<?php echo htmlspecialchars((string) $settings['min_party_size'], ENT_QUOTES, 'UTF-8'); ?>">
@@ -229,12 +244,12 @@ $adminSidebarPathPrefix = '';
                                 <input type="number" name="booking_duration_minutes" id="booking-duration-minutes" class="setting-input" min="30" value="<?php echo htmlspecialchars((string) $settings['booking_duration_minutes'], ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="field-description">Use this duration for new online bookings.</div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="settings-footer">
-                        <button type="submit" class="btn-primary-solid">Save Settings</button>
-                    </div>
+                            <div class="admin-inline-actions">
+                                <button type="submit" class="primary-btn"><i class="bi bi-check2-circle"></i> Save Settings</button>
+                            </div>
+                        </div>
+                    </aside>
                 </form>
             </div>
         </main>

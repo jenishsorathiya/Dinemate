@@ -681,6 +681,7 @@ $adminSidebarPathPrefix = '';
             }
         }
     </style>
+    <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
 </head>
 <body>
 
@@ -689,54 +690,28 @@ $adminSidebarPathPrefix = '';
 
     <div class="main-content">
         <div class="admin-container">
-            <div class="mn-shell">
+            <div class="mn-shell admin-workspace">
 
-                <div class="mn-header">
-                    <div class="mn-header-copy">
-                        <h1>Menu</h1>
-                        <p>Manage dishes, pricing, categories, and availability across your restaurant menu.</p>
+                <header class="admin-page-heading">
+                    <div>
+                        <p class="admin-page-kicker">Menu Operations</p>
+                        <h1 class="admin-page-title">Menu</h1>
+                        <p class="admin-page-copy">Keep the public menu accurate: update pricing, availability, categories, dietary tags, and item photography.</p>
                     </div>
 
-                    <div class="mn-header-actions">
-                        <a href="analytics.php" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Analytics
-                        </a>
+                    <div class="admin-actions">
+                        <span class="admin-chip is-success"><?php echo number_format($availableItems); ?> available</span>
+                        <span class="admin-chip <?php echo $unavailableItems > 0 ? 'is-warning' : ''; ?>"><?php echo number_format($unavailableItems); ?> unavailable</span>
                         <?php if ($editItem): ?>
-                            <a href="menu-management.php" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Add New Dish
+                            <a href="menu-management.php" class="primary-btn">
+                                <i class="bi bi-plus-lg"></i> Add New Dish
                             </a>
                         <?php endif; ?>
                     </div>
-                </div>
+                </header>
 
-                <div class="mn-stats">
-                    <div class="mn-stat">
-                        <div class="mn-stat-label">Total Items</div>
-                        <div class="mn-stat-value"><?php echo $totalItems; ?></div>
-                        <div class="mn-stat-note">All menu items currently listed</div>
-                    </div>
-
-                    <div class="mn-stat">
-                        <div class="mn-stat-label">Available</div>
-                        <div class="mn-stat-value"><?php echo $availableItems; ?></div>
-                        <div class="mn-stat-note">Currently visible for service</div>
-                    </div>
-
-                    <div class="mn-stat">
-                        <div class="mn-stat-label">Unavailable</div>
-                        <div class="mn-stat-value"><?php echo $unavailableItems; ?></div>
-                        <div class="mn-stat-note">Temporarily hidden or out of stock</div>
-                    </div>
-
-                    <div class="mn-stat">
-                        <div class="mn-stat-label">Categories</div>
-                        <div class="mn-stat-value"><?php echo count($categories); ?></div>
-                        <div class="mn-stat-note">Structured menu sections</div>
-                    </div>
-                </div>
-
-                <div class="mn-toolbar">
-                    <div class="mn-toolbar-left">
+                <div class="admin-command-bar">
+                    <div class="admin-command-group">
                         <div class="mn-search">
                             <input
                                 type="text"
@@ -762,24 +737,24 @@ $adminSidebarPathPrefix = '';
                         </select>
                     </div>
 
-                    <div class="mn-toolbar-right">
-                        <span class="mn-inline-note" id="resultsSummary">
-                            Showing <?php echo $totalItems; ?> items
+                    <div class="admin-command-group">
+                        <span class="admin-command-note" id="resultsSummary">
+                            Showing <?php echo number_format($totalItems); ?> items across <?php echo number_format(count($categories)); ?> categories
                         </span>
                     </div>
                 </div>
 
                 <div class="mn-layout">
                     <div class="mn-main">
-                        <div class="mn-panel">
-                            <div class="mn-panel-header">
+                        <div class="admin-panel mn-panel">
+                            <div class="admin-panel-header mn-panel-header">
                                 <div class="mn-panel-title-wrap">
-                                    <h2>Menu Items</h2>
-                                    <p>Browse items by category and quickly update availability, pricing, or dish details.</p>
+                                    <h2 class="admin-panel-title">Menu Items</h2>
+                                    <p class="admin-panel-copy">Searchable working list for service changes and dish maintenance.</p>
                                 </div>
                             </div>
 
-                            <div class="mn-panel-body">
+                            <div class="admin-panel-body mn-panel-body">
                                 <?php foreach ($menuItemsByCategory as $category => $items): ?>
                                     <section
                                         class="mn-category-section is-visible"
@@ -871,11 +846,11 @@ $adminSidebarPathPrefix = '';
                     </div>
 
                     <aside class="mn-form-panel">
-                        <div class="mn-panel">
-                            <div class="mn-panel-header">
+                        <div class="admin-panel mn-panel">
+                            <div class="admin-panel-header mn-panel-header">
                                 <div class="mn-panel-title-wrap">
-                                    <h3><?php echo $editItem ? 'Edit Dish' : 'New Dish'; ?></h3>
-                                    <p>
+                                    <h3 class="admin-panel-title"><?php echo $editItem ? 'Edit Dish' : 'New Dish'; ?></h3>
+                                    <p class="admin-panel-copy">
                                         <?php echo $editItem
                                             ? 'Update pricing, description, image, or availability for this dish.'
                                             : 'Add a new menu item with category, dietary details, and availability.'; ?>
@@ -883,7 +858,7 @@ $adminSidebarPathPrefix = '';
                                 </div>
                             </div>
 
-                            <div class="mn-panel-body">
+                            <div class="admin-panel-body mn-panel-body">
                                 <form method="POST" enctype="multipart/form-data" class="mn-form">
                                     <input type="hidden" name="action" value="<?php echo $editItem ? 'edit' : 'add'; ?>">
 

@@ -450,7 +450,7 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
     <style>
         :root { --users-bg: var(--dm-bg); --users-card: var(--dm-surface); --users-line: var(--dm-border); --users-text: var(--dm-text); --users-muted: var(--dm-text-muted); --users-shadow: var(--dm-shadow-md); --users-shadow-soft: var(--dm-shadow-sm); --users-primary: var(--dm-accent-dark); --users-accent: var(--dm-pending-text); --users-success: var(--dm-confirmed-text); --users-danger: var(--dm-danger-text); --users-warning: var(--dm-pending-text); }
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'DM Sans', sans-serif; background: var(--users-bg); color: var(--users-text); }
+        body { margin: 0; font-family: var(--dm-font-sans); background: var(--users-bg); color: var(--users-text); }
         .main { flex: 1; overflow-y: auto; padding: 28px; }
         .users-shell { max-width: 1400px; margin: 0 auto; display: grid; gap: 22px; }
         .hero-card, .panel-card, .stat-card { background: var(--users-card); border: 1px solid var(--users-line); border-radius: 12px; box-shadow: var(--users-shadow-soft); }
@@ -531,42 +531,46 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
         @media (max-width: 1200px) { .stats-grid, .table-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .content-grid, .hero-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .form-grid, .table-toolbar { grid-template-columns: 1fr; } .panel-heading, .results-footer { align-items: flex-start; flex-direction: column; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid var(--dm-border); } .table-custom tbody td { padding: 8px 0; border: 0; } }
     </style>
-    
+    <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
 </head>
 <body>
 <div class="admin-layout">
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
     <div class="main-content">
         <div class="main">
-            <div class="users-shell">
-                <section class="hero-card">
-                    <div class="hero-grid">
-                        <div>
-                            <div class="eyebrow"><i class="fa-solid fa-user-shield"></i> Account Management</div>
-                            <h1 class="hero-title">Manage Registered User Accounts</h1>
-                            <p class="hero-copy">View and manage customer and admin accounts.</p>
-                        </div>
-                        <div class="hero-note-card"><strong><?php echo number_format($totalUsers); ?></strong><span>Registered customer and admin accounts.</span></div>
+            <div class="admin-workspace users-shell">
+                <header class="admin-page-heading">
+                    <div>
+                        <p class="admin-page-kicker">Access Control</p>
+                        <h1 class="admin-page-title">Users</h1>
+                        <p class="admin-page-copy">Create staff accounts, review customer history, and protect accounts that already have bookings attached.</p>
                     </div>
-                </section>
+                    <div class="admin-actions">
+                        <span class="admin-chip is-primary"><?php echo number_format($adminCount); ?> admins</span>
+                        <span class="admin-chip"><?php echo number_format($customerCount); ?> customers</span>
+                        <span class="admin-chip is-success"><?php echo number_format($usersWithBookings); ?> with bookings</span>
+                    </div>
+                </header>
 
                 <?php if ($flash): ?>
                     <div class="alert alert-<?php echo htmlspecialchars($flash['type'] === 'error' ? 'danger' : $flash['type'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8'); ?></div>
                 <?php endif; ?>
 
-                <section class="stats-grid">
-                    <article class="stat-card"><div class="stat-label">Registered</div><div class="stat-value"><?php echo number_format($totalUsers); ?></div><div class="stat-meta">All registered accounts.</div></article>
-                    <article class="stat-card"><div class="stat-label">Customers</div><div class="stat-value"><?php echo number_format($customerCount); ?></div><div class="stat-meta">Registered customers.</div></article>
-                    <article class="stat-card"><div class="stat-label">Admins</div><div class="stat-value"><?php echo number_format($adminCount); ?></div><div class="stat-meta">Administrator accounts.</div></article>
-                    <article class="stat-card"><div class="stat-label">With Bookings</div><div class="stat-value"><?php echo number_format($usersWithBookings); ?></div><div class="stat-meta">Accounts with booking history.</div></article>
-                    <article class="stat-card"><div class="stat-label">Last 30 Days</div><div class="stat-value"><?php echo number_format($recentUsers); ?></div><div class="stat-meta">Recent registrations.</div></article>
-                </section>
+                <div class="admin-command-bar">
+                    <div class="admin-command-group">
+                        <span class="admin-command-note"><?php echo number_format($totalUsers); ?> registered accounts</span>
+                        <span class="admin-command-note"><?php echo number_format($recentUsers); ?> joined in the last 30 days</span>
+                    </div>
+                    <div class="admin-command-group">
+                        <a class="secondary-btn" href="#add-user-form"><i class="bi bi-person-plus"></i> New account</a>
+                    </div>
+                </div>
 
-                <section class="content-grid">
-                    <article class="panel-card" id="add-user-form">
-                        <div class="panel-heading">
-                            <div><h2 class="panel-title">Add New User</h2><p class="panel-subtitle">Create a customer or admin account.</p></div>
-                            <span class="inline-chip"><i class="fa-solid fa-lock"></i> Secure password storage</span>
+                <section class="admin-split-layout content-grid">
+                    <article class="admin-panel panel-card" id="add-user-form">
+                        <div class="admin-panel-header panel-heading">
+                            <div><h2 class="admin-panel-title panel-title">Add User</h2><p class="admin-panel-copy panel-subtitle">Create a customer or admin account.</p></div>
+                            <span class="admin-chip is-primary"><i class="fa-solid fa-lock"></i> Hashed passwords</span>
                         </div>
 
                         <?php if (!empty($addUserErrors)): ?>
@@ -587,10 +591,10 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                         </form>
                     </article>
 
-                    <article class="panel-card">
-                        <div class="panel-heading">
-                            <div><h2 class="panel-title">Registered Users</h2><p class="panel-subtitle">Search, filter, and manage user accounts.</p></div>
-                            <span class="inline-chip"><i class="fa-solid fa-users"></i> <?php echo number_format($totalUsers); ?> visible accounts</span>
+                    <article class="admin-panel panel-card">
+                        <div class="admin-panel-header panel-heading">
+                            <div><h2 class="admin-panel-title panel-title">Account Directory</h2><p class="admin-panel-copy panel-subtitle">Search, filter, and manage user access.</p></div>
+                            <span class="admin-chip"><i class="fa-solid fa-users"></i> <?php echo number_format($totalUsers); ?> visible accounts</span>
                         </div>
 
                         <div class="table-toolbar">

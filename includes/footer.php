@@ -25,8 +25,10 @@ if (isLoggedIn() && $footerRole === 'customer') {
     ];
 } elseif (isLoggedIn() && $footerRole === 'admin') {
     $footerLinks = [
+        ['label' => 'Admin Home', 'path' => 'admin/pages/admin_home.php'],
+        ['label' => 'Bookings', 'path' => 'admin/pages/admin_bookings.php'],
+        ['label' => 'Inbox', 'path' => 'admin/pages/admin_inbox.php'],
         ['label' => 'Timeline', 'path' => 'admin/timeline/timeline.php'],
-        ['label' => 'Bookings Management', 'path' => 'admin/pages/bookings-management.php'],
         ['label' => 'Tables Management', 'path' => 'admin/pages/tables-management.php'],
         ['label' => 'Menu Management', 'path' => 'admin/pages/menu-management.php'],
         ['label' => 'Logout', 'path' => 'auth/logout.php'],
@@ -39,12 +41,6 @@ if (isLoggedIn() && $footerRole === 'customer') {
             <div class="col-md-4 footer-brand">
                 <h4>DineMate</h4>
                 <p>Modern reservation support for Old Canberra Inn. Book faster, manage visits clearly, and keep dining service running smoothly.</p>
-                <div class="social-icons">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
-                </div>
                 <button onclick="scrollTopPage()" class="back-top">↑ Back to Top</button>
             </div>
             <div class="col-md-4">
@@ -60,9 +56,9 @@ if (isLoggedIn() && $footerRole === 'customer') {
             <div class="col-md-4">
                 <h5>Legal</h5>
                 <ul>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Restaurant Policies</a></li>
+                    <li><a href="<?php echo htmlspecialchars(appPath('public/privacy.php'), ENT_QUOTES, 'UTF-8'); ?>">Privacy Policy</a></li>
+                    <li><a href="<?php echo htmlspecialchars(appPath('public/terms.php'), ENT_QUOTES, 'UTF-8'); ?>">Terms of Service</a></li>
+                    <li><a href="<?php echo htmlspecialchars(appPath('public/policies.php'), ENT_QUOTES, 'UTF-8'); ?>">Restaurant Policies</a></li>
                 </ul>
             </div>
         </div>

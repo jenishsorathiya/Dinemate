@@ -50,7 +50,7 @@ $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: tim
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="<?php echo htmlspecialchars($navUrl('assets/css/app.css') . '?v=' . $appCssVersion, ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <style>
@@ -80,8 +80,10 @@ $appCssVersion = (string) (@filemtime(__DIR__ . '/../assets/css/app.css') ?: tim
         <div class="collapse navbar-collapse justify-content-end" id="navMenu">
             <div class="nav-links">
                 <?php if($isLoggedInUser && $currentUserRole === 'admin'): ?>
+                    <a href="<?php echo htmlspecialchars($navUrl('admin/pages/admin_home.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/admin_home.php']) ? 'is-active' : ''; ?>">Admin Home</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('admin/pages/admin_bookings.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/admin_bookings.php']) ? 'is-active' : ''; ?>">Bookings</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('admin/pages/admin_inbox.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/admin_inbox.php']) ? 'is-active' : ''; ?>">Inbox</a>
                     <a href="<?php echo htmlspecialchars($navUrl('admin/timeline/timeline.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/timeline/timeline.php']) ? 'is-active' : ''; ?>">Timeline</a>
-                    <a href="<?php echo htmlspecialchars($navUrl('admin/pages/bookings-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/bookings-management.php']) ? 'is-active' : ''; ?>">Bookings Management</a>
                     <a href="<?php echo htmlspecialchars($navUrl('admin/pages/tables-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/tables-management.php']) ? 'is-active' : ''; ?>">Tables Management</a>
                     <a href="<?php echo htmlspecialchars($navUrl('admin/pages/menu-management.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['admin/pages/menu-management.php']) ? 'is-active' : ''; ?>">Menu Management</a>
                     <a href="<?php echo htmlspecialchars($navUrl('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-logout">Logout</a>

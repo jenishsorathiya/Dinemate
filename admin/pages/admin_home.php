@@ -7,6 +7,7 @@ ensureBookingRequestColumns($pdo);
 ensureBookingTableAssignmentsTable($pdo);
 ensureTableAreasSchema($pdo);
 
+$adminNewSidebarActive = 'home';
 $todayDate = date('Y-m-d');
 $selectedDate = $_GET['date'] ?? $todayDate;
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selectedDate) || strtotime($selectedDate) === false) {
@@ -680,35 +681,6 @@ $formatBookingTableTime = static function (?string $timeValue): string {
     return $timestamp ? date('g:i A', $timestamp) : 'Time TBC';
 };
 
-$adminName = trim((string) ($_SESSION['name'] ?? 'Admin'));
-if ($adminName === '') {
-    $adminName = 'Admin';
-}
-
-$getInitials = static function (string $name): string {
-    $parts = preg_split('/\s+/', trim($name));
-    $letters = '';
-
-    foreach ($parts ?: [] as $part) {
-        if ($part !== '') {
-            $letters .= strtoupper(substr($part, 0, 1));
-        }
-
-        if (strlen($letters) >= 2) {
-            break;
-        }
-    }
-
-    if (strlen($letters) < 2) {
-        $compactName = preg_replace('/[^A-Za-z0-9]/', '', $name);
-        if (is_string($compactName) && strlen($compactName) >= 2) {
-            $letters = strtoupper(substr($compactName, 0, 2));
-        }
-    }
-
-    return $letters !== '' ? $letters : 'AD';
-};
-
 $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?: time());
 ?>
 <!DOCTYPE html>
@@ -722,72 +694,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
 </head>
 <body>
     <div class="app-shell">
-        <aside class="sidebar" aria-label="Admin sidebar">
-            <div>
-                <a class="sidebar-brand" href="admin_home.php" aria-label="Old Canberra Inn admin home">
-                    <div class="brand-icon">
-                        <i class="bi bi-bank" aria-hidden="true"></i>
-                    </div>
-                    <span>Old Canberra Inn</span>
-                </a>
-
-                <nav class="sidebar-nav" aria-label="Primary navigation">
-                    <a class="sidebar-link active" href="admin_home.php" aria-current="page">
-                        <i class="bi bi-house" aria-hidden="true"></i>
-                        <span>Home</span>
-                    </a>
-
-                    <a class="sidebar-link" href="admin_bookings.php">
-                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
-                        <span>Bookings</span>
-                    </a>
-
-                    <a class="sidebar-link" href="admin_inbox.php">
-                        <i class="bi bi-inbox" aria-hidden="true"></i>
-                        <span>Inbox</span>
-                    </a>
-
-                    <a class="sidebar-link" href="bookings-management.php?type=function">
-                        <i class="bi bi-calendar-event" aria-hidden="true"></i>
-                        <span>Functions</span>
-                    </a>
-
-                    <a class="sidebar-link" href="../timeline/timeline.php">
-                        <i class="bi bi-calendar3" aria-hidden="true"></i>
-                        <span>Events</span>
-                    </a>
-
-                    <a class="sidebar-link" href="menu-management.php">
-                        <i class="bi bi-menu-button-wide" aria-hidden="true"></i>
-                        <span>Menu</span>
-                    </a>
-
-                    <a class="sidebar-link" href="customer-history.php">
-                        <i class="bi bi-people" aria-hidden="true"></i>
-                        <span>Guests</span>
-                    </a>
-
-                    <a class="sidebar-link" href="analytics.php">
-                        <i class="bi bi-bar-chart" aria-hidden="true"></i>
-                        <span>Report</span>
-                    </a>
-
-                    <a class="sidebar-link" href="settings.php">
-                        <i class="bi bi-gear" aria-hidden="true"></i>
-                        <span>Settings</span>
-                    </a>
-                </nav>
-            </div>
-
-            <div class="sidebar-profile">
-                <div class="profile-avatar"><?php echo htmlspecialchars($getInitials($adminName), ENT_QUOTES, 'UTF-8'); ?></div>
-                <div class="profile-text">
-                    <strong><?php echo htmlspecialchars($adminName, ENT_QUOTES, 'UTF-8'); ?></strong>
-                    <span>Old Canberra Inn</span>
-                </div>
-                <i class="bi bi-chevron-down" aria-hidden="true"></i>
-            </div>
-        </aside>
+        <?php include __DIR__ . '/../partials/admin-new-sidebar.php'; ?>
 
         <main class="main-content">
             <header class="page-header">
@@ -984,7 +891,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                         <?php endif; ?>
                     </div>
 
-                    <a href="home.php?mode=requests&request_view=<?php echo urlencode($selectedRequestPanel); ?>&date=<?php echo urlencode($selectedDate); ?>" class="view-link">
+                    <a href="admin_bookings.php?status_view=needs_action&booking_date_start=<?php echo urlencode($selectedDate); ?>&booking_date_end=<?php echo urlencode($selectedDate); ?>" class="view-link">
                         View all <?php echo htmlspecialchars(strtolower($selectedRequestPanelLabel), ENT_QUOTES, 'UTF-8'); ?>
                         <i class="bi bi-arrow-right" aria-hidden="true"></i>
                     </a>

@@ -239,7 +239,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             min-height: 100vh;
             background: var(--analytics-bg);
             color: var(--analytics-text);
-            font-family: 'DM Sans', sans-serif;
+            font-family: var(--dm-font-sans);
         }
 
         .admin-layout {
@@ -1149,7 +1149,7 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
             }
         }
     </style>
-
+    <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
 </head>
 <body>
 <div class="admin-layout">
@@ -1157,28 +1157,24 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
     <div class="main-content">
         <main class="analytics-main">
-            <div class="analytics-shell">
-                <section class="analytics-hero">
+            <div class="admin-workspace analytics-shell">
+                <header class="admin-page-heading">
                     <div>
-                        <p class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> Premium operations overview</p>
-                        <h1 class="hero-title">Analytics</h1>
-                        <p class="hero-subtitle">Booking, table, and customer performance.</p>
+                        <p class="admin-page-kicker">Reporting</p>
+                        <h1 class="admin-page-title">Analytics</h1>
+                        <p class="admin-page-copy">Review booking demand, table use, guest behavior, cancellations, and operational recommendations.</p>
                     </div>
-                    <div class="hero-overview">
-                        <div class="hero-mini-card">
-                            <div class="hero-mini-label">Live focus</div>
-                            <div class="hero-mini-value" id="heroFocusValue">Friday dinner</div>
-                            <div class="hero-mini-note" id="heroFocusNote">Strong outdoor demand with compact party sizes.</div>
-                        </div>
-                        <div class="hero-mini-card">
-                            <div class="hero-mini-label">Top zone</div>
-                            <div class="hero-mini-value" id="heroZoneValue">Outdoor</div>
-                            <div class="hero-mini-note" id="heroZoneNote">Highest occupancy and strongest booking demand this period.</div>
-                        </div>
+                    <div class="admin-actions">
+                        <span class="admin-chip is-primary"><span id="heroFocusValue">Friday dinner</span></span>
+                        <span class="admin-chip"><span id="heroZoneValue">Outdoor</span></span>
                     </div>
-                </section>
+                    <span id="heroFocusNote" class="dm-sr-only">Strong outdoor demand with compact party sizes.</span>
+                    <span id="heroZoneNote" class="dm-sr-only">Highest occupancy and strongest booking demand this period.</span>
+                </header>
 
-                <?php echo $adminTopbarCenterContent; ?>
+                <div class="admin-command-bar">
+                    <?php echo $adminTopbarCenterContent; ?>
+                </div>
 
                 <section class="empty-state-shell" id="globalEmptyState" hidden>
                     <div>
@@ -1189,45 +1185,19 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
                 </section>
 
                 <div class="analytics-content" id="analyticsContent">
-                    <section class="analytics-section">
-                        <div class="section-heading">
-                            <div class="section-title-wrap">
-                                <h2>KPI Summary</h2>
-                                <p>Key booking and occupancy metrics.</p>
+                    <section class="admin-panel analytics-section">
+                        <div class="admin-panel-header">
+                            <div>
+                                <h2 class="admin-panel-title">Service Brief</h2>
+                                <p class="admin-panel-copy" id="kpiSectionNote">Comparing the selected period against the previous one.</p>
                             </div>
-                            <div class="section-note" id="kpiSectionNote">Comparing the selected period against the previous one.</div>
                         </div>
-                        <div class="kpi-grid">
-                            <article class="kpi-card">
-                                <div class="kpi-label">Total Bookings</div>
-                                <div class="kpi-value" id="kpiTotalBookings">0</div>
-                                <div class="kpi-trend" id="kpiTotalTrend">No comparison</div>
-                                <div class="kpi-meta">Bookings in the selected period.</div>
-                            </article>
-                            <article class="kpi-card">
-                                <div class="kpi-label">Occupancy Rate</div>
-                                <div class="kpi-value" id="kpiOccupancyRate">0%</div>
-                                <div class="kpi-trend" id="kpiOccupancyTrend">Average table fill rate</div>
-                                <div class="kpi-meta">Average table fill rate.</div>
-                            </article>
-                            <article class="kpi-card">
-                                <div class="kpi-label">Average Party Size</div>
-                                <div class="kpi-value" id="kpiAvgPartySize">0 guests</div>
-                                <div class="kpi-trend" id="kpiAvgPartyTrend">Guest mix</div>
-                                <div class="kpi-meta">Average guest count per active booking.</div>
-                            </article>
-                            <article class="kpi-card">
-                                <div class="kpi-label">No-show Rate</div>
-                                <div class="kpi-value" id="kpiNoShowRate">0%</div>
-                                <div class="kpi-trend" id="kpiNoShowTrend">Lower is better</div>
-                                <div class="kpi-meta">Recorded no-show rate.</div>
-                            </article>
-                            <article class="kpi-card">
-                                <div class="kpi-label">Average Dwell Time</div>
-                                <div class="kpi-value" id="kpiDwellTime">0m</div>
-                                <div class="kpi-trend" id="kpiDwellTrend">Table use duration</div>
-                                <div class="kpi-meta">Average table use duration.</div>
-                            </article>
+                        <div class="admin-panel-body admin-summary-list">
+                            <div class="admin-summary-item"><span>Total bookings</span><strong id="kpiTotalBookings">0</strong><small id="kpiTotalTrend">No comparison</small></div>
+                            <div class="admin-summary-item"><span>Occupancy rate</span><strong id="kpiOccupancyRate">0%</strong><small id="kpiOccupancyTrend">Average table fill rate</small></div>
+                            <div class="admin-summary-item"><span>Average party size</span><strong id="kpiAvgPartySize">0 guests</strong><small id="kpiAvgPartyTrend">Guest mix</small></div>
+                            <div class="admin-summary-item"><span>No-show rate</span><strong id="kpiNoShowRate">0%</strong><small id="kpiNoShowTrend">Lower is better</small></div>
+                            <div class="admin-summary-item"><span>Average dwell time</span><strong id="kpiDwellTime">0m</strong><small id="kpiDwellTrend">Table use duration</small></div>
                         </div>
                     </section>
 
@@ -1432,7 +1402,7 @@ const cardTextPlugin = {
         ctx.save();
         ctx.textAlign = 'center';
         ctx.fillStyle = 'var(--dm-text-soft)';
-        ctx.font = '600 13px DM Sans';
+        ctx.font = '600 13px Inter';
         ctx.fillText('No data for this selection', (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2);
         ctx.restore();
     }

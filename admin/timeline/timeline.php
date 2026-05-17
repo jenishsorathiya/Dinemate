@@ -119,7 +119,7 @@ $adminSidebarPathPrefix = '../';
         }
 
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: var(--dm-font-sans);
             background: var(--dm-surface-muted);
         }
 
@@ -2528,6 +2528,7 @@ $adminSidebarPathPrefix = '../';
             }
         }
     </style>
+    <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
 </head>
 <body class="<?php echo $isEmbeddedTimeline ? 'timeline-embedded' : ''; ?>">
 
@@ -2542,10 +2543,10 @@ $adminSidebarPathPrefix = '../';
         <!-- CONTENT -->
         <div class="content">
             <!-- LEFT PANEL -->
-            <div class="left-panel">
+            <div class="admin-panel left-panel">
                 <!-- BOOKINGS LIST -->
                 <div class="tables-section">
-                    <div class="timeline-panel-tools">
+                    <div class="admin-panel timeline-panel-tools">
                         <div class="timeline-date-card">
                             <div class="timeline-date-year" id="timelineDateYear"><?php echo htmlspecialchars($selectedYearDisplay); ?></div>
                             <div class="timeline-date-primary" id="timelineDatePrimary"><?php echo htmlspecialchars($selectedShortDateDisplay); ?></div>
@@ -2560,7 +2561,7 @@ $adminSidebarPathPrefix = '../';
                             <input type="date" id="dateInput" value="<?php echo $selectedDate; ?>" onchange="changeDate()">
                         </div>
                     </div>
-                    <div class="booking-list-tabs">
+                    <div class="admin-command-bar booking-list-tabs">
                         <button type="button" class="booking-list-tab pending-span active" id="pendingTabBtn" onclick="switchBookingListTab('pending')">Pending</button>
                         <div class="booking-list-tabs-row">
                             <button type="button" class="booking-list-tab" id="standbyTabBtn" onclick="switchBookingListTab('standby')">Standby</button>
@@ -2569,7 +2570,7 @@ $adminSidebarPathPrefix = '../';
                     </div>
                     <div class="booking-list" id="bookingList"></div>
                     <div class="left-panel-footer">
-                        <div class="stats-card">
+                        <div class="admin-summary-list stats-card">
                             <div class="stats-list">
                                 <div class="stats-item">
                                     <span class="stats-item-label">Total</span>
@@ -5459,7 +5460,7 @@ include __DIR__ . '/../../includes/components/booking-editing-modal.php';
 
     function navigateTimelineDate(dateValue) {
         if (TIMELINE_EMBEDDED && window.parent && window.parent !== window) {
-            const parentUrl = new URL('../pages/home.php', window.location.href);
+            const parentUrl = new URL('../pages/admin_home.php', window.location.href);
             parentUrl.searchParams.set('date', dateValue);
             parentUrl.searchParams.set('view', 'timeline');
             window.parent.location.href = parentUrl.toString();

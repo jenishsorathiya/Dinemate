@@ -400,7 +400,7 @@ $adminSidebarPathPrefix = '';
             min-height: 100%;
             background: var(--bg);
             color: var(--text);
-            font-family: 'DM Sans', sans-serif;
+            font-family: var(--dm-font-sans);
         }
 
         body {
@@ -414,28 +414,28 @@ $adminSidebarPathPrefix = '';
         }
 
         .visual-shell {
-            display: flex;
+            display: grid;
+            grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
             min-height: 100vh;
             width: 100%;
-            max-width: 100vw;
-            overflow-x: clip;
+            max-width: none;
+            overflow-x: hidden;
         }
 
         .main-content {
-            flex: 1;
             min-width: 0;
-            width: calc(100vw - 96px);
-            max-width: calc(100vw - 96px);
+            width: auto;
+            max-width: none;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
         }
 
         .visual-main {
-            width: min(100%, 1240px);
-            padding: 16px;
+            width: 100%;
+            padding: 20px;
             max-width: 100%;
-            margin: 0 auto;
+            margin: 0;
         }
 
         .page-stack,
@@ -469,15 +469,21 @@ $adminSidebarPathPrefix = '';
 
         .page-title {
             margin: 0;
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.04em;
+            color: var(--text);
+            font-size: 20px;
+            line-height: 1.2;
+            font-weight: 700;
+            letter-spacing: -0.01em;
         }
 
         .page-subtitle {
-            margin: 6px 0 0;
+            margin: 4px 0 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             color: var(--muted);
-            font-size: 13px;
+            font-size: 12px;
+            font-weight: 500;
         }
 
         .header-actions {
@@ -490,25 +496,43 @@ $adminSidebarPathPrefix = '';
             min-width: 0;
         }
 
-        .button {
-            height: 40px;
-            border-radius: 12px;
+        .button,
+        .primary-btn,
+        .secondary-btn {
+            min-height: 40px;
+            border-radius: 10px;
             padding: 0 16px;
             border: 1px solid var(--line);
             background: var(--dm-surface);
             color: var(--text);
-            font-size: 14px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             cursor: pointer;
-            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-            box-shadow: var(--shadow-soft);
+            transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
         }
 
-        .button:hover {
-            transform: translateY(-1px);
+        .button:hover,
+        .secondary-btn:hover {
+            border-color: var(--dm-border-strong);
+            background: #f8fafc;
+            color: var(--text);
+        }
+
+        .primary-btn {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .primary-btn:hover {
+            background: var(--dm-accent-dark);
+            border-color: var(--dm-accent-dark);
+            color: #ffffff;
+            opacity: 0.92;
         }
 
         .button-primary {
@@ -1976,6 +2000,7 @@ $adminSidebarPathPrefix = '';
             }
         }
     </style>
+    <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
 </head>
 <body>
     <div class="visual-shell">
@@ -1984,25 +2009,32 @@ $adminSidebarPathPrefix = '';
         <div class="main-content">
             <main class="visual-main">
                 <div class="page-stack">
-                <header class="page-header">
+                <header class="admin-page-heading page-header">
                     <div>
-                        <h1 class="page-title">Table Operations</h1>
-                        <p class="page-subtitle">Manage venue layout and table settings.</p>
+                        <p class="admin-page-kicker">Floor Plan</p>
+                        <h1 class="admin-page-title page-title">Table Operations</h1>
+                        <p class="admin-page-copy page-subtitle">Maintain venue areas, table inventory, reservable capacity, and the interactive seating map.</p>
                     </div>
-                    <div class="header-actions">
-                        <button class="button" id="headerAddTable" type="button"><i class="fa-solid fa-plus"></i> Add Table</button>
+                    <div class="admin-actions header-actions">
+                        <button class="primary-btn" id="headerAddTable" type="button">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            <span>Add Table</span>
+                        </button>
                     </div>
                 </header>
 
-                <section class="metrics-grid" id="metricsGrid"></section>
+                <section class="admin-command-bar" id="metricsGrid"></section>
 
-                <section class="panel">
-                    <div class="section-head">
+                <section class="admin-panel panel">
+                    <div class="admin-panel-header section-head">
                         <div>
-                            <h2 class="section-title">Area Overview</h2>
-                            <p class="section-note">Review and manage venue areas.</p>
+                            <h2 class="admin-panel-title section-title">Area Overview</h2>
+                            <p class="admin-panel-copy section-note">Review and manage venue areas.</p>
                         </div>
-                        <button class="button button-ghost" id="addAreaButton" type="button"><i class="fa-solid fa-plus"></i> Add Area</button>
+                        <button class="secondary-btn" id="addAreaButton" type="button">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            <span>Add Area</span>
+                        </button>
                     </div>
                     <div class="area-overview-body">
                         <div class="area-overview-grid" id="areaOverviewGrid"></div>
@@ -2565,15 +2597,19 @@ $adminSidebarPathPrefix = '';
                 { label: 'Unassigned Tables', value: metrics.unassigned_tables, icon: 'fa-table-cells-large', tone: 'amber' },
             ];
 
-            metricGrid.innerHTML = cards.map((card) => `
-                <article class="metric-card">
-                    <div class="metric-icon ${card.tone}"><i class="fa-solid ${card.icon}"></i></div>
-                    <div>
-                        <p class="metric-label">${card.label}</p>
-                        <p class="metric-value">${card.value}</p>
-                    </div>
-                </article>
-            `).join('');
+            metricGrid.innerHTML = `
+                <div class="admin-command-group">
+                    ${cards.map((card) => `
+                        <span class="admin-chip ${card.tone === 'amber' && Number(card.value) > 0 ? 'is-warning' : 'is-primary'}">
+                            <i class="fa-solid ${card.icon}" aria-hidden="true"></i>
+                            ${card.value} ${card.label}
+                        </span>
+                    `).join('')}
+                </div>
+                <div class="admin-command-group">
+                    <span class="admin-command-note">Use Edit Layout to move tables, then Save Layout to sync the floor plan.</span>
+                </div>
+            `;
         }
 
         function renderAreaOverview() {

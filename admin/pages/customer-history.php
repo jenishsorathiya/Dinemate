@@ -369,7 +369,7 @@ $flash = getFlashMessage();
     <?php include __DIR__ . '/../partials/admin-head.php'; ?>
     <style>
         :root { --page-bg: var(--dm-bg); --surface: var(--dm-surface); --line: var(--dm-border); --text-main: var(--dm-text); --text-muted: var(--dm-text-muted); --shadow-soft: var(--dm-shadow-sm); --shadow-card: var(--dm-shadow-md); --primary: var(--dm-accent-dark); --accent: var(--dm-pending-text); --success: var(--dm-confirmed-text); --danger: var(--dm-danger-text); --warning: var(--dm-pending-text); }
-        body { margin: 0; font-family: 'DM Sans', sans-serif; background: var(--dm-surface-muted); color: var(--text-main); }
+        body { margin: 0; font-family: var(--dm-font-sans); background: var(--dm-surface-muted); color: var(--text-main); }
         .main { flex: 1; overflow-y: auto; padding: 28px; }
         .page-shell { max-width: 1440px; margin: 0 auto; display: grid; gap: 22px; }
         .hero-card, .panel-card, .stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-soft); }
@@ -417,75 +417,50 @@ $flash = getFlashMessage();
         @media (max-width: 1200px) { .stats-grid, .layout-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .main { padding: 18px; } .stats-grid, .search-row { grid-template-columns: 1fr; } .table-custom thead { display: none; } .table-custom, .table-custom tbody, .table-custom tr, .table-custom td { display: block; width: 100%; } .table-custom tbody tr { padding: 16px 16px 12px; border-bottom: 1px solid var(--dm-border); } .table-custom tbody td { padding: 8px 0; border: 0; } }
     </style>
-    
+    <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
 </head>
 <body>
 <div class="admin-layout">
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
     <div class="main-content">
         <div class="main">
-            <div class="page-shell">
+            <div class="admin-workspace page-shell">
                 <?php if ($flash): ?>
                     <div class="alert alert-<?php echo htmlspecialchars($flash['type'] === 'error' ? 'danger' : $flash['type'], ENT_QUOTES, 'UTF-8'); ?>">
                         <?php echo htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8'); ?>
                     </div>
                 <?php endif; ?>
 
-                <section class="hero-card">
-                    <div class="eyebrow"><i class="fa-solid fa-address-book"></i> Customer Profiles</div>
-                    <h1 class="hero-title">Customer Profiles</h1>
-                    <p class="hero-copy">View customer profiles and linked booking history.</p>
-                </section>
-
-                <section class="stats-grid">
-                    <article class="stat-card"><div class="stat-label">Profiles</div><div class="stat-value"><?php echo number_format($totalProfiles); ?></div><div class="stat-meta">Customer identities currently visible in search results.</div></article>
-                    <article class="stat-card"><div class="stat-label">Bookings</div><div class="stat-value"><?php echo number_format($totalBookingsAcrossProfiles); ?></div><div class="stat-meta">Bookings tied to the customer profiles in this result set.</div></article>
-                    <article class="stat-card"><div class="stat-label">With Account</div><div class="stat-value"><?php echo number_format($profilesWithLinkedAccounts); ?></div><div class="stat-meta">Profiles already linked to a registered DineMate user.</div></article>
-                    <article class="stat-card"><div class="stat-label">Total Spend</div><div class="stat-value">$<?php echo number_format($totalSpendAcrossProfiles, 2); ?></div><div class="stat-meta">Combined spend for currently visible customer profiles.</div></article>
-                    <article class="stat-card"><div class="stat-label">Admin Entered</div><div class="stat-value"><?php echo number_format($profilesWithAdminBookings); ?></div><div class="stat-meta">Profiles with at least one booking entered manually by admin.</div></article>
-                </section>
-
-                <section class="panel-card">
-                    <div class="panel-heading">
-                        <div><h2 class="panel-title">Top Customers by Spend</h2><p class="panel-subtitle">Highest food and beverage spend across customer profiles.</p></div>
+                <header class="admin-page-heading">
+                    <div>
+                        <p class="admin-page-kicker">Guest Records</p>
+                        <h1 class="admin-page-title">Guests</h1>
+                        <p class="admin-page-copy">Find repeat guests, link profiles to registered accounts, add internal notes, and merge duplicates safely.</p>
                     </div>
-                    <div class="table-wrap">
-                        <div class="table-responsive">
-                            <table class="table-custom">
-                                <thead>
-                                    <tr>
-                                        <th>Customer</th>
-                                        <th>Bookings</th>
-                                        <th>Spend</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($topSpenders)): ?>
-                                        <?php foreach ($topSpenders as $topCustomer): ?>
-                                            <tr>
-                                                <td>
-                                                    <div class="profile-name"><?php echo htmlspecialchars((string) $topCustomer['name'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                                    <span class="profile-meta"><?php echo htmlspecialchars((string) (($topCustomer['email'] ?? '') !== '' ? $topCustomer['email'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                    <span class="profile-meta"><?php echo htmlspecialchars((string) (($topCustomer['phone'] ?? '') !== '' ? $topCustomer['phone'] : '-'), ENT_QUOTES, 'UTF-8'); ?></span>
-                                                </td>
-                                                <td><span class="tiny-badge"><i class="fa-solid fa-calendar-check"></i><?php echo number_format((int) ($topCustomer['booking_count'] ?? 0)); ?></span></td>
-                                                <td>$<?php echo number_format((float) ($topCustomer['total_spend'] ?? 0.0), 2); ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr><td colspan="3"><div class="empty-state">No spend data available yet.</div></td></tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                    <div class="admin-actions">
+                        <span class="admin-chip"><?php echo number_format($totalProfiles); ?> profiles</span>
+                        <span class="admin-chip is-success"><?php echo number_format($profilesWithLinkedAccounts); ?> linked</span>
+                        <span class="admin-chip is-primary"><?php echo number_format($totalBookingsAcrossProfiles); ?> bookings</span>
+                    </div>
+                </header>
+
+                <div class="admin-command-bar">
+                    <div class="admin-command-group">
+                        <span class="admin-command-note">Visible profile spend: $<?php echo number_format($totalSpendAcrossProfiles, 2); ?></span>
+                        <span class="admin-command-note"><?php echo number_format($profilesWithAdminBookings); ?> profiles have admin-entered bookings</span>
+                    </div>
+                    <?php if (!empty($topSpenders[0])): ?>
+                        <div class="admin-command-group">
+                            <span class="admin-chip is-primary">Top guest: <?php echo htmlspecialchars((string) $topSpenders[0]['name'], ENT_QUOTES, 'UTF-8'); ?></span>
                         </div>
-                    </div>
-                </section>
+                    <?php endif; ?>
+                </div>
 
-                <section class="layout-grid">
-                    <article class="panel-card">
-                        <div class="panel-heading">
-                            <div><h2 class="panel-title">Customer Search</h2><p class="panel-subtitle">Search by name, email, or phone.</p></div>
-                            <span class="inline-chip"><i class="fa-solid fa-users-viewfinder"></i> <?php echo number_format($totalProfiles); ?> matches</span>
+                <section class="admin-split-layout layout-grid">
+                    <article class="admin-panel panel-card">
+                        <div class="admin-panel-header panel-heading">
+                            <div><h2 class="admin-panel-title panel-title">Guest Directory</h2><p class="admin-panel-copy panel-subtitle">Search by name, email, or phone.</p></div>
+                            <span class="admin-chip"><i class="fa-solid fa-users-viewfinder"></i> <?php echo number_format($totalProfiles); ?> matches</span>
                         </div>
 
                         <form method="GET" class="search-row">
@@ -542,11 +517,11 @@ $flash = getFlashMessage();
                         </div>
                     </article>
 
-                    <article class="panel-card">
-                        <div class="panel-heading">
+                    <article class="admin-panel panel-card">
+                        <div class="admin-panel-header panel-heading">
                             <div>
-                                <h2 class="panel-title"><?php echo $selectedProfile ? htmlspecialchars((string) $selectedProfile['name'], ENT_QUOTES, 'UTF-8') : 'Customer History'; ?></h2>
-                                <p class="panel-subtitle">
+                                <h2 class="admin-panel-title panel-title"><?php echo $selectedProfile ? htmlspecialchars((string) $selectedProfile['name'], ENT_QUOTES, 'UTF-8') : 'Customer History'; ?></h2>
+                                <p class="admin-panel-copy panel-subtitle">
                                     <?php if ($selectedProfile): ?>
                                         Booking history for this customer profile.
                                     <?php else: ?>
@@ -555,7 +530,7 @@ $flash = getFlashMessage();
                                 </p>
                             </div>
                             <?php if ($selectedProfile): ?>
-                                <span class="inline-chip"><i class="fa-solid fa-clock-rotate-left"></i> <?php echo number_format(count($selectedProfileBookings)); ?> bookings</span>
+                                <span class="admin-chip"><i class="fa-solid fa-clock-rotate-left"></i> <?php echo number_format(count($selectedProfileBookings)); ?> bookings</span>
                             <?php endif; ?>
                         </div>
 

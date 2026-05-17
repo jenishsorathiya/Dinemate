@@ -392,6 +392,10 @@ $formatMessageTime = static function (?string $time): string {
 };
 
 $formatInboxBookingType = static function (array $message): string {
+    if (empty($message['booking_id']) && ($message['type'] ?? '') === 'guest_message') {
+        return 'Message';
+    }
+
     $bookingType = normalizeBookingType($message['booking_type'] ?? 'normal');
 
     if ($bookingType === 'trivia') {
@@ -730,22 +734,33 @@ $statusBadgeMeta = static function (string $status): array {
                             <input type="hidden" name="inbox_id" value="<?php echo (int) $selectedMessage['inbox_id']; ?>">
                             <input type="hidden" name="folder" value="<?php echo htmlspecialchars($activeFolder, ENT_QUOTES, 'UTF-8'); ?>">
 
-                            <button type="submit" name="action" value="confirm" class="action-btn confirm">
-                                <i class="bi bi-check2" aria-hidden="true"></i>
-                                Confirm
-                            </button>
-                            <button type="submit" name="action" value="contact" class="action-btn contact">
-                                <i class="bi bi-envelope" aria-hidden="true"></i>
-                                Contact Guest
-                            </button>
-                            <button type="submit" name="action" value="waitlist" class="action-btn waitlist">
-                                <i class="bi bi-people" aria-hidden="true"></i>
-                                Waitlist
-                            </button>
-                            <button type="submit" name="action" value="decline" class="action-btn decline" data-confirm="Decline this request?">
-                                <i class="bi bi-x" aria-hidden="true"></i>
-                                Decline
-                            </button>
+                            <?php if (($selectedMessage['type'] ?? '') === 'guest_message' && $selectedBookingId <= 0): ?>
+                                <button type="submit" name="action" value="contact" class="action-btn confirm">
+                                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                                    Contact Guest
+                                </button>
+                                <button type="submit" name="action" value="archive" class="action-btn">
+                                    <i class="bi bi-archive" aria-hidden="true"></i>
+                                    Archive
+                                </button>
+                            <?php else: ?>
+                                <button type="submit" name="action" value="confirm" class="action-btn confirm">
+                                    <i class="bi bi-check2" aria-hidden="true"></i>
+                                    Confirm
+                                </button>
+                                <button type="submit" name="action" value="contact" class="action-btn contact">
+                                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                                    Contact Guest
+                                </button>
+                                <button type="submit" name="action" value="waitlist" class="action-btn waitlist">
+                                    <i class="bi bi-people" aria-hidden="true"></i>
+                                    Waitlist
+                                </button>
+                                <button type="submit" name="action" value="decline" class="action-btn decline" data-confirm="Decline this request?">
+                                    <i class="bi bi-x" aria-hidden="true"></i>
+                                    Decline
+                                </button>
+                            <?php endif; ?>
                         </form>
                     </footer>
                 <?php endif; ?>

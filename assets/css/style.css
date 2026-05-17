@@ -184,6 +184,21 @@ select {
   font-size: 12px;
 }
 
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-logout {
+  color: var(--danger-text);
+}
+
+.sidebar-logout:hover {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
 .main-content {
   min-width: 0;
   padding: 20px;
@@ -3702,6 +3717,10 @@ body {
 
   .sidebar-nav {
     margin-top: 0;
+    flex-direction: row;
+  }
+
+  .sidebar-footer {
     flex-direction: row;
   }
 
