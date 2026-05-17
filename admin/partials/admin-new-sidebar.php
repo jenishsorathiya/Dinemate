@@ -1,40 +1,11 @@
 <?php
 $adminNewSidebarActive = $adminNewSidebarActive ?? '';
-$adminNewSidebarName = trim((string) ($_SESSION['name'] ?? 'Admin'));
-if ($adminNewSidebarName === '') {
-    $adminNewSidebarName = 'Admin';
-}
-
 $adminBuildPath = static function (string $path): string {
     return function_exists('appPath') ? appPath($path) : '/' . ltrim($path, '/');
 };
 
 $adminPagePath = static function (string $page) use ($adminBuildPath): string {
     return $adminBuildPath('admin/pages/' . ltrim($page, '/'));
-};
-
-$adminNewSidebarInitials = static function (string $name): string {
-    $parts = preg_split('/\s+/', trim($name));
-    $letters = '';
-
-    foreach ($parts ?: [] as $part) {
-        if ($part !== '') {
-            $letters .= strtoupper(substr($part, 0, 1));
-        }
-
-        if (strlen($letters) >= 2) {
-            break;
-        }
-    }
-
-    if (strlen($letters) < 2) {
-        $compactName = preg_replace('/[^A-Za-z0-9]/', '', $name);
-        if (is_string($compactName) && strlen($compactName) >= 2) {
-            $letters = strtoupper(substr($compactName, 0, 2));
-        }
-    }
-
-    return $letters !== '' ? $letters : 'AD';
 };
 
 $adminNewSidebarItems = [
@@ -76,14 +47,6 @@ $adminNewSidebarItems = [
     </div>
 
     <div class="sidebar-footer">
-        <div class="sidebar-profile">
-            <div class="profile-avatar"><?php echo htmlspecialchars($adminNewSidebarInitials($adminNewSidebarName), ENT_QUOTES, 'UTF-8'); ?></div>
-            <div class="profile-text">
-                <strong><?php echo htmlspecialchars($adminNewSidebarName, ENT_QUOTES, 'UTF-8'); ?></strong>
-                <span>Old Canberra Inn</span>
-            </div>
-            <i class="bi bi-chevron-down" aria-hidden="true"></i>
-        </div>
         <a class="sidebar-link sidebar-logout" href="<?php echo htmlspecialchars($adminBuildPath('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
             <span>Logout</span>
