@@ -4,6 +4,7 @@ $adminSidebarActive = $adminSidebarActive ?? '';
 $adminNewSidebarActive = match ($adminSidebarActive) {
     'events', 'timeline' => 'timeline',
     'requests' => 'inbox',
+    'booking-reviews' => 'reviews',
     default => $adminSidebarActive,
 };
 

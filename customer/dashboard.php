@@ -5,6 +5,7 @@ require_once "../includes/session-check.php";
 
 requireCustomer();
 ensureBookingRequestColumns($pdo);
+ensureBookingReviewsSchema($pdo);
 ensureSettingsSchema($pdo);
 $bookingSettings = getBookingSettings($pdo);
 
@@ -386,6 +387,9 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                     <?php endif; ?>
                     <a class="btn-portal-secondary" href="my-bookings.php"><i class="fa fa-clock-rotate-left"></i> View Booking History</a>
                     <a class="btn-portal-secondary" href="profile.php"><i class="fa fa-user-gear"></i> Update Profile</a>
+                    <?php if (!empty($lastCompletedBooking) && empty($lastCompletedBooking['review_rating'])): ?>
+                        <a class="btn-portal-secondary" href="rate-booking.php?id=<?php echo (int) $lastCompletedBooking['booking_id']; ?>"><i class="fa fa-star"></i> Rate Last Visit</a>
+                    <?php endif; ?>
                 </div>
             </div>
             <aside class="hero-focus">
@@ -551,6 +555,11 @@ $notes = trim((string) ($customerProfile['notes'] ?? ''));
                                 <div class="hero-actions dm-mt-12">
                                     <span class="history-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                     <span class="history-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Unassigned'; ?></span>
+                                    <?php if (strtolower((string) ($booking['status'] ?? '')) === 'completed' && empty($booking['review_rating'])): ?>
+                                        <a class="btn-portal-secondary" href="rate-booking.php?id=<?php echo (int) $booking['booking_id']; ?>"><i class="fa fa-star"></i> Rate Experience</a>
+                                    <?php elseif (!empty($booking['review_rating'])): ?>
+                                        <span class="history-chip"><i class="fa fa-star"></i> Rated <?php echo (int) $booking['review_rating']; ?>/5</span>
+                                    <?php endif; ?>
                                     <a class="btn-portal-secondary" href="<?php echo htmlspecialchars($rebookUrl, ENT_QUOTES, 'UTF-8'); ?>"><i class="fa fa-repeat"></i> Rebook</a>
                                 </div>
                             </div>

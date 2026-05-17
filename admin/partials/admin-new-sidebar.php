@@ -54,6 +54,7 @@ $adminNewSidebarItems = [
     ['key' => 'tables', 'label' => 'Tables', 'href' => $adminPagesPrefix . 'tables-management.php', 'icon' => 'bi-grid-3x3-gap'],
     ['key' => 'menu', 'label' => 'Menu', 'href' => $adminPagesPrefix . 'menu-management.php', 'icon' => 'bi-menu-button-wide'],
     ['key' => 'guests', 'label' => 'Guests', 'href' => $adminPagesPrefix . 'customer-history.php', 'icon' => 'bi-people'],
+    ['key' => 'reviews', 'label' => 'Reviews', 'href' => $adminPagesPrefix . 'admin_booking_reviews.php', 'icon' => 'bi-star'],
     ['key' => 'users', 'label' => 'Users', 'href' => $adminPagesPrefix . 'manage-users.php', 'icon' => 'bi-person-gear'],
     ['key' => 'report', 'label' => 'Report', 'href' => $adminPagesPrefix . 'analytics.php', 'icon' => 'bi-bar-chart'],
     ['key' => 'settings', 'label' => 'Settings', 'href' => $adminPagesPrefix . 'settings.php', 'icon' => 'bi-gear'],
