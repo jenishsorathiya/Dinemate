@@ -907,7 +907,7 @@ function sendEmail(string $to, string $subject, string $bodyHtml): bool {
     $headers[] = 'From: ' . $from;
     $headers[] = 'Reply-To: ' . $from;
 
-    $ok = mail($to, $subject, $bodyHtml, implode("\r\n", $headers));
+    $ok = @mail($to, $subject, $bodyHtml, implode("\r\n", $headers));
     if (!$ok) {
         error_log("Email send failed to {$to} with subject {$subject}");
     }
