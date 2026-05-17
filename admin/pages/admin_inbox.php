@@ -445,12 +445,7 @@ $statusBadgeMeta = static function (string $status): array {
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
                     <span>Add Booking</span>
                 </button>
-                <button type="button" class="icon-btn notification-btn" aria-label="Notifications">
-                    <i class="bi bi-bell-fill" aria-hidden="true"></i>
-                    <?php if ($totalInboxNotifications > 0): ?>
-                        <span class="notification-badge"><?php echo htmlspecialchars((string) min($totalInboxNotifications, 99), ENT_QUOTES, 'UTF-8'); ?></span>
-                    <?php endif; ?>
-                </button>
+                <?php include __DIR__ . '/../partials/admin-notification-dropdown.php'; ?>
             </div>
         </header>
 

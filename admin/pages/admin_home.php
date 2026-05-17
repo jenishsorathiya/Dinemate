@@ -8,6 +8,7 @@ ensureBookingTableAssignmentsTable($pdo);
 ensureTableAreasSchema($pdo);
 
 $adminNewSidebarActive = 'home';
+$adminActionCsrfToken = csrfToken('admin_actions');
 $todayDate = date('Y-m-d');
 $selectedDate = $_GET['date'] ?? $todayDate;
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selectedDate) || strtotime($selectedDate) === false) {
@@ -27,6 +28,8 @@ if (!in_array($selectedCapacityService, ['all', 'lunch', 'dinner'], true)) {
 }
 $nextCapacityService = $selectedCapacityService === 'lunch' ? 'dinner' : 'lunch';
 $selectedCapacityLabel = $selectedCapacityService === 'all' ? 'All' : ucfirst($selectedCapacityService);
+$adminHomeFlash = $_SESSION['admin_home_flash'] ?? null;
+unset($_SESSION['admin_home_flash']);
 $allowedDashboardTabs = ['bookings', 'trivia', 'functions', 'timeline', 'floor'];
 $selectedDashboardTab = strtolower(trim((string) ($_GET['dashboard_tab'] ?? 'bookings')));
 if (!in_array($selectedDashboardTab, $allowedDashboardTabs, true)) {
@@ -671,6 +674,104 @@ $buildDashboardFloorTables = static function (array $tables, array $bookingsByTa
 };
 
 $dashboardFloorTables = $buildDashboardFloorTables($dashboardFloorTableRows, $dashboardFloorBookingsByTableId);
+$dashboardTableAssignmentTables = $buildDashboardFloorTables($dashboardFloorTableRows, []);
+
+$bookingAssignmentConflictRows = [];
+try {
+    $bookingAssignmentConflictStmt = $pdo->prepare("
+        SELECT
+            b.booking_id,
+            b.start_time,
+            b.end_time,
+            b.number_of_guests,
+            b.special_request,
+            COALESCE(NULLIF(b.customer_name_override, ''), NULLIF(b.customer_name, ''), u.name, 'Guest') AS customer_name,
+            COALESCE(
+                GROUP_CONCAT(DISTINCT assigned_tables.table_id ORDER BY assigned_tables.table_number + 0, assigned_tables.table_number SEPARATOR ','),
+                direct_table.table_id
+            ) AS assigned_table_ids
+        FROM bookings b
+        LEFT JOIN users u ON b.user_id = u.user_id
+        LEFT JOIN booking_table_assignments bta ON b.booking_id = bta.booking_id
+        LEFT JOIN restaurant_tables assigned_tables ON bta.table_id = assigned_tables.table_id
+        LEFT JOIN restaurant_tables direct_table ON b.table_id = direct_table.table_id
+        WHERE b.booking_date = ?
+          AND b.status IN ('pending', 'confirmed')
+        GROUP BY b.booking_id
+    ");
+    $bookingAssignmentConflictStmt->execute([$selectedDate]);
+    $bookingAssignmentConflictRows = $bookingAssignmentConflictStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+} catch (Throwable $bookingAssignmentConflictError) {
+    $bookingAssignmentConflictRows = [];
+}
+
+$assignmentConflictRowsByBookingId = [];
+foreach ($bookingAssignmentConflictRows as $conflictRow) {
+    $conflictBookingId = (int) ($conflictRow['booking_id'] ?? 0);
+    if ($conflictBookingId > 0) {
+        $assignmentConflictRowsByBookingId[$conflictBookingId] = $conflictRow;
+    }
+}
+
+$formatDashboardAssignmentTime = static function (?string $timeValue): string {
+    $timestamp = strtotime((string) $timeValue);
+    return $timestamp ? date('g:i A', $timestamp) : 'Time TBC';
+};
+
+$dashboardTableAssignmentBookings = [];
+foreach ($bookingTableRows as $bookingTableRow) {
+    $bookingId = (int) ($bookingTableRow['booking_id'] ?? 0);
+    if ($bookingId < 1) {
+        continue;
+    }
+
+    $bookingDate = (string) ($bookingTableRow['booking_date'] ?? $selectedDate);
+    $bookingDateTimestamp = strtotime($bookingDate);
+    $selectedTableIds = array_values(array_filter(array_map('intval', explode(',', (string) ($bookingTableRow['assigned_table_ids'] ?? '')))));
+    $bookingStart = (string) ($bookingTableRow['start_time'] ?? '18:00:00');
+    $bookingEnd = (string) ($bookingTableRow['end_time'] ?? '20:00:00');
+    $bookingConflicts = [];
+
+    foreach ($assignmentConflictRowsByBookingId as $conflictBookingId => $conflictRow) {
+        if ($conflictBookingId === $bookingId) {
+            continue;
+        }
+
+        $conflictStart = (string) ($conflictRow['start_time'] ?? '');
+        $conflictEnd = (string) ($conflictRow['end_time'] ?? '');
+        if ($conflictStart === '' || $conflictEnd === '' || !($conflictStart < $bookingEnd && $conflictEnd > $bookingStart)) {
+            continue;
+        }
+
+        $conflictTableIds = array_values(array_filter(array_map('intval', explode(',', (string) ($conflictRow['assigned_table_ids'] ?? '')))));
+        foreach ($conflictTableIds as $conflictTableId) {
+            $bookingConflicts[(string) $conflictTableId] = [
+                'name' => (string) ($conflictRow['customer_name'] ?? 'Guest'),
+                'time' => $formatDashboardAssignmentTime($conflictRow['start_time'] ?? null),
+                'guests' => (int) ($conflictRow['number_of_guests'] ?? 0),
+                'notes' => trim((string) ($conflictRow['special_request'] ?? '')),
+            ];
+        }
+    }
+
+    $dashboardTableAssignmentBookings[(string) $bookingId] = [
+        'id' => $bookingId,
+        'name' => (string) ($bookingTableRow['customer_name'] ?? 'Guest'),
+        'date' => $bookingDateTimestamp ? date('D, j M Y', $bookingDateTimestamp) : $bookingDate,
+        'time' => $formatDashboardAssignmentTime($bookingTableRow['start_time'] ?? null),
+        'time_range' => $formatDashboardAssignmentTime($bookingTableRow['start_time'] ?? null) . ' - ' . $formatDashboardAssignmentTime($bookingTableRow['end_time'] ?? null),
+        'guests' => (int) ($bookingTableRow['number_of_guests'] ?? 0),
+        'type' => inboxChipForBookingType((string) ($bookingTableRow['booking_type'] ?? 'normal')),
+        'selected_table_ids' => $selectedTableIds,
+        'conflicts' => $bookingConflicts,
+    ];
+}
+
+$dashboardTableAssignmentPayloadJson = json_encode(
+    ['bookings' => $dashboardTableAssignmentBookings],
+    JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+);
+$dashboardTableAssignmentPayloadJson = $dashboardTableAssignmentPayloadJson !== false ? $dashboardTableAssignmentPayloadJson : '{"bookings":{}}';
 
 $formatMoney = static function (float $amount): string {
     return '$' . number_format($amount, 0);
@@ -728,12 +829,7 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                         <span>Add Booking</span>
                     </button>
 
-                    <a class="icon-btn notification-btn" href="admin_inbox.php" aria-label="Notifications">
-                        <i class="bi bi-bell-fill" aria-hidden="true"></i>
-                        <?php if ($pendingBookingsCount > 0): ?>
-                            <span class="notification-badge"><?php echo htmlspecialchars((string) min($pendingBookingsCount, 99), ENT_QUOTES, 'UTF-8'); ?></span>
-                        <?php endif; ?>
-                    </a>
+                    <?php include __DIR__ . '/../partials/admin-notification-dropdown.php'; ?>
 
                 </div>
             </header>
@@ -896,7 +992,11 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                                 data-booking-notes="<?php echo htmlspecialchars($requestNote, ENT_QUOTES, 'UTF-8'); ?>"
                                                 data-booking-action-url="admin_bookings.php?status_view=needs_action&booking_search=<?php echo urlencode((string) ($requestBooking['booking_id'] ?? '')); ?>"
                                             >View</button>
-                                            <a class="confirm-btn" href="admin_bookings.php?status_view=needs_action&booking_search=<?php echo urlencode((string) ($requestBooking['booking_id'] ?? '')); ?>">Assign</a>
+                                            <?php if (isset($dashboardTableAssignmentBookings[(string) ($requestBooking['booking_id'] ?? '')])): ?>
+                                                <button class="confirm-btn" type="button" data-home-table-assign-open data-booking-id="<?php echo (int) ($requestBooking['booking_id'] ?? 0); ?>">Assign</button>
+                                            <?php else: ?>
+                                                <a class="confirm-btn" href="admin_bookings.php?status_view=needs_action&booking_search=<?php echo urlencode((string) ($requestBooking['booking_id'] ?? '')); ?>">Assign</a>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 </article>
@@ -1371,6 +1471,181 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             </footer>
         </div>
     </div>
+
+    <div class="admin-inbox-table-modal" data-home-table-assignment-modal hidden>
+        <div class="admin-inbox-table-modal-card" role="dialog" aria-modal="true" aria-labelledby="home-table-assignment-title">
+            <header class="admin-inbox-table-modal-head">
+                <div>
+                    <h2 id="home-table-assignment-title">Select Table</h2>
+                    <p>
+                        <span data-home-assignment-date><?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                        at
+                        <span data-home-assignment-time>Time TBC</span>
+                        for
+                        <span data-home-assignment-guests>0</span>
+                        guests
+                    </p>
+                </div>
+                <button type="button" class="icon-btn admin-inbox-table-modal-close" data-home-table-assignment-close aria-label="Close table selection">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <form method="post" action="../actions/update-booking-tables.php" class="admin-inbox-table-form" data-home-table-assignment-form>
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($adminActionCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="booking_id" value="" data-home-assignment-booking-id>
+                <input type="hidden" name="redirect_url" value="admin_home.php?date=<?php echo urlencode($selectedDate); ?>&dashboard_tab=floor&capacity_service=<?php echo urlencode($selectedCapacityService); ?>">
+                <input type="hidden" name="table_id" value="" data-table-selected-input>
+                <span data-table-selected-fields hidden></span>
+
+                <div class="admin-inbox-table-modal-body">
+                    <aside class="admin-inbox-table-modal-side" aria-label="Booking and selected table details">
+                        <section class="admin-inbox-table-modal-section">
+                            <h3>Booking Details</h3>
+                            <dl class="admin-inbox-table-modal-details">
+                                <div>
+                                    <dt><i class="bi bi-person" aria-hidden="true"></i> Guest</dt>
+                                    <dd data-home-assignment-name>Guest</dd>
+                                </div>
+                                <div>
+                                    <dt><i class="bi bi-calendar-event" aria-hidden="true"></i> Date</dt>
+                                    <dd data-home-assignment-detail-date><?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?></dd>
+                                </div>
+                                <div>
+                                    <dt><i class="bi bi-clock" aria-hidden="true"></i> Time</dt>
+                                    <dd data-home-assignment-detail-time>Time TBC</dd>
+                                </div>
+                                <div>
+                                    <dt><i class="bi bi-people" aria-hidden="true"></i> Guests</dt>
+                                    <dd data-home-assignment-detail-guests>0</dd>
+                                </div>
+                                <div>
+                                    <dt><i class="bi bi-grid" aria-hidden="true"></i> Type</dt>
+                                    <dd data-home-assignment-type>Booking</dd>
+                                </div>
+                            </dl>
+                        </section>
+
+                        <section class="admin-inbox-table-modal-section">
+                            <div class="admin-inbox-table-modal-section-head">
+                                <h3>Selected Tables</h3>
+                                <span data-table-selected-count>0</span>
+                            </div>
+                            <div class="admin-inbox-table-modal-summary">
+                                <span>Current selection</span>
+                                <strong data-table-selected-label>No table assigned</strong>
+                            </div>
+                            <p><span data-home-assignment-available-count>0</span> selectable for this time.</p>
+                        </section>
+                    </aside>
+
+                    <?php if (empty($dashboardTableAssignmentTables)): ?>
+                        <div class="admin-inbox-empty subtle">
+                            <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
+                            <strong>No tables available</strong>
+                            <span>Create tables first, then assign one here.</span>
+                        </div>
+                    <?php else: ?>
+                        <div class="booking-edit-floor-panel admin-inbox-floor-panel">
+                            <div class="home-floor-wrap">
+                                <div class="home-floor-viewport">
+                                    <div class="home-floor-stage">
+                                        <div class="home-floor-canvas" role="img" aria-label="Restaurant floor plan table selection">
+                                            <?php foreach ($dashboardFloorZones as $zone): ?>
+                                                <div
+                                                    class="home-floor-zone tone-<?php echo htmlspecialchars((string) $zone['tone'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                    style="left: <?php echo (int) $zone['x']; ?>px; top: <?php echo (int) $zone['y']; ?>px; width: <?php echo (int) $zone['width']; ?>px; height: <?php echo (int) $zone['height']; ?>px;"
+                                                    aria-hidden="true"
+                                                ></div>
+                                                <button
+                                                    type="button"
+                                                    class="home-floor-label tone-<?php echo htmlspecialchars((string) $zone['tone'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                    style="left: <?php echo (int) $zone['label_x']; ?>px; top: <?php echo (int) $zone['label_y']; ?>px;"
+                                                    data-table-area-choice
+                                                    data-table-area-id="<?php echo (int) $zone['area_id']; ?>"
+                                                    data-table-area-label="<?php echo htmlspecialchars((string) $zone['label'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                    aria-pressed="false"
+                                                    title="Select all tables in <?php echo htmlspecialchars((string) $zone['label'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                >
+                                                    <i class="bi <?php echo htmlspecialchars((string) ($zone['icon'] ?? 'bi-geo-alt'), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                                                    <span><?php echo htmlspecialchars((string) $zone['label'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                                </button>
+                                            <?php endforeach; ?>
+
+                                            <?php foreach ($dashboardTableAssignmentTables as $tableOption): ?>
+                                                <?php
+                                                $optionTableId = (int) ($tableOption['table_id'] ?? 0);
+                                                if ($optionTableId < 1 || $tableOption['layout_x'] === null || $tableOption['layout_y'] === null) {
+                                                    continue;
+                                                }
+
+                                                $tableNumber = (string) ($tableOption['table_number'] ?? '');
+                                                $tableDisplayNumber = preg_replace('/^T/i', '', $tableNumber);
+                                                $tableStatus = strtolower(trim((string) ($tableOption['status'] ?? 'available')));
+                                                $tableReservable = (int) ($tableOption['reservable'] ?? 1) === 1 && !in_array($tableStatus, ['inactive', 'disabled'], true);
+                                                $tableCapacity = (int) ($tableOption['capacity'] ?? 0);
+                                                $optionLabel = 'Table ' . $tableNumber . ' - ' . (string) ($tableOption['area_name'] ?? 'Dining Room');
+                                                ?>
+                                                <button
+                                                    type="button"
+                                                    class="home-floor-table tone-<?php echo htmlspecialchars((string) ($tableOption['tone'] ?? 'blue'), ENT_QUOTES, 'UTF-8'); ?><?php echo !$tableReservable ? ' is-unreservable' : ''; ?>"
+                                                    title="Table <?php echo htmlspecialchars($tableNumber, ENT_QUOTES, 'UTF-8'); ?>"
+                                                    style="left: <?php echo (int) $tableOption['layout_x']; ?>px; top: <?php echo (int) $tableOption['layout_y']; ?>px;"
+                                                    data-table-choice
+                                                    data-table-id="<?php echo $optionTableId; ?>"
+                                                    data-table-area-id="<?php echo (int) ($tableOption['area_id'] ?? 0); ?>"
+                                                    data-table-label="<?php echo htmlspecialchars($optionLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-table-number="<?php echo htmlspecialchars($tableNumber, ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-table-display-number="<?php echo htmlspecialchars($tableDisplayNumber, ENT_QUOTES, 'UTF-8'); ?>"
+                                                    data-table-capacity="<?php echo $tableCapacity; ?>"
+                                                    data-table-reservable="<?php echo $tableReservable ? '1' : '0'; ?>"
+                                                    aria-pressed="false"
+                                                >
+                                                    <span class="home-floor-table-shell">
+                                                        <span class="home-floor-table-card">
+                                                            <span class="home-floor-card-number"><?php echo htmlspecialchars($tableDisplayNumber, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                            <span class="home-floor-card-corner"><i class="bi bi-people-fill" aria-hidden="true"></i><?php echo number_format($tableCapacity); ?></span>
+                                                        </span>
+                                                    </span>
+                                                </button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <footer class="admin-inbox-table-modal-actions">
+                    <button type="button" class="action-btn table-clear-btn" data-table-clear>
+                        <i class="bi bi-x-circle" aria-hidden="true"></i>
+                        Clear Table
+                    </button>
+                    <button type="button" class="action-btn" data-home-table-assignment-close>Cancel</button>
+                    <button type="submit" class="action-btn confirm" data-table-submit>
+                        <i class="bi bi-check2" aria-hidden="true"></i>
+                        <span data-table-submit-text>Assign Table</span>
+                    </button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <script type="application/json" id="dashboard-table-assignment-data"><?php echo $dashboardTableAssignmentPayloadJson; ?></script>
+
+    <?php if ($adminHomeFlash): ?>
+        <div class="admin-toast-container" aria-live="polite" aria-atomic="true">
+            <div class="admin-toast" role="status" data-toast data-auto-dismiss="4000">
+                <span class="admin-toast-icon"><i class="bi bi-check-circle-fill" aria-hidden="true"></i></span>
+                <span class="admin-toast-message"><?php echo htmlspecialchars((string) $adminHomeFlash, ENT_QUOTES, 'UTF-8'); ?></span>
+                <button type="button" class="admin-toast-close" aria-label="Dismiss notification" data-toast-close>
+                    <i class="bi bi-x" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <script>
         document.querySelectorAll('.date-btn input[type="date"]').forEach((input) => {
             input.addEventListener('change', () => {
@@ -1568,6 +1843,355 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
             });
         });
 
+        const assignmentDataNode = document.getElementById('dashboard-table-assignment-data');
+        let dashboardTableAssignmentData = { bookings: {} };
+        if (assignmentDataNode) {
+            try {
+                dashboardTableAssignmentData = JSON.parse(assignmentDataNode.textContent || '{"bookings":{}}');
+            } catch (error) {
+                dashboardTableAssignmentData = { bookings: {} };
+            }
+        }
+
+        const tableAssignmentModal = document.querySelector('[data-home-table-assignment-modal]');
+        const tableAssignmentForm = tableAssignmentModal?.querySelector('[data-home-table-assignment-form]');
+        const tableAssignmentFields = {
+            bookingId: tableAssignmentModal?.querySelector('[data-home-assignment-booking-id]'),
+            date: tableAssignmentModal?.querySelector('[data-home-assignment-date]'),
+            time: tableAssignmentModal?.querySelector('[data-home-assignment-time]'),
+            guests: tableAssignmentModal?.querySelector('[data-home-assignment-guests]'),
+            name: tableAssignmentModal?.querySelector('[data-home-assignment-name]'),
+            detailDate: tableAssignmentModal?.querySelector('[data-home-assignment-detail-date]'),
+            detailTime: tableAssignmentModal?.querySelector('[data-home-assignment-detail-time]'),
+            detailGuests: tableAssignmentModal?.querySelector('[data-home-assignment-detail-guests]'),
+            type: tableAssignmentModal?.querySelector('[data-home-assignment-type]'),
+            availableCount: tableAssignmentModal?.querySelector('[data-home-assignment-available-count]'),
+            selectedInput: tableAssignmentModal?.querySelector('[data-table-selected-input]'),
+            selectedFields: tableAssignmentModal?.querySelector('[data-table-selected-fields]'),
+            selectedLabel: tableAssignmentModal?.querySelector('[data-table-selected-label]'),
+            selectedCount: tableAssignmentModal?.querySelector('[data-table-selected-count]'),
+            submitText: tableAssignmentModal?.querySelector('[data-table-submit-text]'),
+        };
+        const tableAssignmentChoices = tableAssignmentModal ? Array.from(tableAssignmentModal.querySelectorAll('[data-table-choice]')) : [];
+        const tableAssignmentAreaChoices = tableAssignmentModal ? Array.from(tableAssignmentModal.querySelectorAll('[data-table-area-choice]')) : [];
+        const tableAssignmentCloseButtons = tableAssignmentModal ? tableAssignmentModal.querySelectorAll('[data-home-table-assignment-close]') : [];
+        const tableAssignmentClearButton = tableAssignmentModal?.querySelector('[data-table-clear]');
+        const tableAssignmentFloorCanvas = tableAssignmentModal?.querySelector('.home-floor-canvas');
+        const tableAssignmentFloorStage = tableAssignmentModal?.querySelector('.home-floor-stage');
+        const tableAssignmentFloorViewport = tableAssignmentModal?.querySelector('.home-floor-viewport');
+        let lastTableAssignmentTrigger = null;
+
+        const setAssignmentText = (element, value) => {
+            if (element) {
+                element.textContent = value;
+            }
+        };
+
+        const updateAssignmentFloorLayoutScale = () => {
+            if (!tableAssignmentFloorCanvas || !tableAssignmentFloorViewport) {
+                return;
+            }
+
+            const layoutWidth = 860;
+            const layoutHeight = 600;
+            const viewportRect = tableAssignmentFloorViewport.getBoundingClientRect();
+            const availableWidth = Math.max(0, viewportRect.width - 2);
+            const availableHeight = Math.max(0, viewportRect.height - 2);
+            const rawScale = Math.min(1, availableWidth / layoutWidth, availableHeight / layoutHeight);
+            const scale = Number.isFinite(rawScale) && rawScale > 0 ? rawScale : 1;
+
+            tableAssignmentFloorCanvas.style.width = `${layoutWidth}px`;
+            tableAssignmentFloorCanvas.style.height = `${layoutHeight}px`;
+            tableAssignmentFloorCanvas.style.transform = scale < 1 ? `scale(${scale})` : '';
+
+            if (tableAssignmentFloorStage) {
+                tableAssignmentFloorStage.style.width = `${Math.ceil(layoutWidth * scale)}px`;
+                tableAssignmentFloorStage.style.height = `${Math.ceil(layoutHeight * scale)}px`;
+            }
+        };
+
+        const getSelectedAssignmentChoices = () => tableAssignmentChoices.filter((choice) => choice.classList.contains('is-selected') && !choice.disabled);
+        const getSelectableAssignmentAreaTables = (areaId) => tableAssignmentChoices.filter((choice) => choice.dataset.tableAreaId === areaId && !choice.disabled);
+        const getAssignmentAreaLabel = (areaButton) => (areaButton.dataset.tableAreaLabel || areaButton.textContent || '').trim();
+
+        const getAssignmentSummaryLabels = (selectedChoices) => {
+            const selectedSet = new Set(selectedChoices);
+            const coveredChoices = new Set();
+            const fullAreaLabels = [];
+            const summaryLabels = [];
+
+            tableAssignmentAreaChoices.forEach((areaButton) => {
+                const areaTables = getSelectableAssignmentAreaTables(areaButton.dataset.tableAreaId || '');
+                if (areaTables.length === 0 || !areaTables.every((choice) => selectedSet.has(choice))) {
+                    return;
+                }
+
+                areaTables.forEach((choice) => coveredChoices.add(choice));
+                const areaLabel = getAssignmentAreaLabel(areaButton);
+                if (areaLabel !== '') {
+                    fullAreaLabels.push(areaLabel);
+                }
+            });
+
+            if (fullAreaLabels.length > 0) {
+                const areaText = fullAreaLabels.length === 1
+                    ? fullAreaLabels[0]
+                    : fullAreaLabels.length === 2
+                        ? `${fullAreaLabels[0]} and ${fullAreaLabels[1]}`
+                        : `${fullAreaLabels.slice(0, -1).join(', ')} and ${fullAreaLabels[fullAreaLabels.length - 1]}`;
+                summaryLabels.push(`All ${areaText}`);
+            }
+
+            selectedChoices.forEach((choice) => {
+                if (!coveredChoices.has(choice) && choice.dataset.tableLabel) {
+                    summaryLabels.push(choice.dataset.tableLabel);
+                }
+            });
+
+            return summaryLabels;
+        };
+
+        const updateAssignmentAreaSelectionState = () => {
+            tableAssignmentAreaChoices.forEach((areaButton) => {
+                const areaTables = getSelectableAssignmentAreaTables(areaButton.dataset.tableAreaId || '');
+                const selectedAreaTables = areaTables.filter((choice) => choice.classList.contains('is-selected'));
+                const allSelected = areaTables.length > 0 && selectedAreaTables.length === areaTables.length;
+                const someSelected = selectedAreaTables.length > 0 && !allSelected;
+
+                areaButton.disabled = areaTables.length === 0;
+                areaButton.classList.toggle('is-selected', allSelected);
+                areaButton.classList.toggle('is-partial', someSelected);
+                areaButton.setAttribute('aria-pressed', allSelected ? 'true' : (someSelected ? 'mixed' : 'false'));
+                areaButton.title = areaTables.length === 0
+                    ? 'No selectable tables in this area'
+                    : allSelected
+                        ? 'Clear tables in this area'
+                        : 'Select all tables in this area';
+            });
+        };
+
+        const updateAssignmentSelectedTables = () => {
+            const selectedChoices = getSelectedAssignmentChoices();
+            const selectedIds = selectedChoices.map((choice) => choice.dataset.tableId || '').filter(Boolean);
+            const selectedLabels = selectedChoices.map((choice) => choice.dataset.tableLabel || '').filter(Boolean);
+            const summaryLabels = getAssignmentSummaryLabels(selectedChoices);
+
+            if (tableAssignmentFields.selectedInput) {
+                tableAssignmentFields.selectedInput.value = selectedIds[0] || '';
+            }
+
+            if (tableAssignmentFields.selectedFields) {
+                tableAssignmentFields.selectedFields.replaceChildren();
+                selectedIds.forEach((tableId) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'table_ids[]';
+                    input.value = tableId;
+                    tableAssignmentFields.selectedFields.appendChild(input);
+                });
+            }
+
+            setAssignmentText(tableAssignmentFields.selectedLabel, summaryLabels.length ? summaryLabels.join(', ') : 'No table assigned');
+            setAssignmentText(tableAssignmentFields.selectedCount, selectedLabels.length.toString());
+
+            if (tableAssignmentFields.submitText) {
+                tableAssignmentFields.submitText.textContent = selectedLabels.length > 1
+                    ? `Assign ${selectedLabels.length} Tables`
+                    : selectedLabels.length === 1
+                        ? 'Assign ' + selectedLabels[0].replace('Table ', 'T')
+                        : 'Assign Table';
+            }
+
+            updateAssignmentAreaSelectionState();
+        };
+
+        const renderAssignmentTableCard = (button, conflict = null) => {
+            const card = button.querySelector('.home-floor-table-card');
+            if (!card) {
+                return;
+            }
+
+            if (conflict) {
+                card.innerHTML = `
+                    <span class="home-floor-card-time"></span>
+                    <span class="home-floor-card-main"></span>
+                    ${conflict.notes ? '<span class="home-floor-card-note"></span>' : ''}
+                    <span class="home-floor-card-corner"><i class="bi bi-people-fill" aria-hidden="true"></i>${Number(conflict.guests || 0).toLocaleString()}</span>
+                `;
+                card.querySelector('.home-floor-card-time').textContent = conflict.time || 'Time TBC';
+                card.querySelector('.home-floor-card-main').textContent = conflict.name || 'Guest';
+                const note = card.querySelector('.home-floor-card-note');
+                if (note) {
+                    note.textContent = conflict.notes || '';
+                }
+                return;
+            }
+
+            card.innerHTML = `
+                <span class="home-floor-card-number"></span>
+                <span class="home-floor-card-corner"><i class="bi bi-people-fill" aria-hidden="true"></i>${Number(button.dataset.tableCapacity || 0).toLocaleString()}</span>
+            `;
+            card.querySelector('.home-floor-card-number').textContent = button.dataset.tableDisplayNumber || button.dataset.tableNumber || '';
+        };
+
+        const prepareAssignmentChoices = (booking) => {
+            const selectedIds = new Set((booking.selected_table_ids || []).map((value) => String(value)));
+            const conflicts = booking.conflicts || {};
+            let selectableCount = 0;
+
+            tableAssignmentChoices.forEach((button) => {
+                const tableId = button.dataset.tableId || '';
+                const isSelected = selectedIds.has(tableId);
+                const conflict = conflicts[tableId] || null;
+                const isReservable = button.dataset.tableReservable === '1';
+                const isBusy = Boolean(conflict) && !isSelected;
+                const isSelectable = !isBusy && (isReservable || isSelected);
+
+                button.disabled = !isSelectable;
+                button.classList.toggle('is-selected', isSelected);
+                button.classList.toggle('is-busy', isBusy);
+                button.classList.toggle('is-occupied', isBusy);
+                button.classList.toggle('is-unreservable', !isReservable);
+                button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+                button.title = isBusy
+                    ? `${button.dataset.tableLabel || 'Table'}: ${conflict.name || 'Guest'} at ${conflict.time || 'Time TBC'}`
+                    : button.dataset.tableLabel || 'Table';
+                renderAssignmentTableCard(button, isBusy ? conflict : null);
+
+                if (isSelectable) {
+                    selectableCount++;
+                }
+            });
+
+            setAssignmentText(tableAssignmentFields.availableCount, `${selectableCount.toLocaleString()} ${selectableCount === 1 ? 'table is' : 'tables are'}`);
+            updateAssignmentSelectedTables();
+        };
+
+        const openHomeTableAssignmentModal = (bookingId, trigger = null) => {
+            if (!tableAssignmentModal || !tableAssignmentForm) {
+                return false;
+            }
+
+            const booking = dashboardTableAssignmentData.bookings?.[String(bookingId)];
+            if (!booking) {
+                return false;
+            }
+
+            lastTableAssignmentTrigger = trigger;
+            if (tableAssignmentFields.bookingId) {
+                tableAssignmentFields.bookingId.value = String(booking.id || bookingId);
+            }
+
+            setAssignmentText(tableAssignmentFields.date, booking.date || '<?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?>');
+            setAssignmentText(tableAssignmentFields.time, booking.time || 'Time TBC');
+            setAssignmentText(tableAssignmentFields.guests, Number(booking.guests || 0).toLocaleString());
+            setAssignmentText(tableAssignmentFields.name, booking.name || 'Guest');
+            setAssignmentText(tableAssignmentFields.detailDate, booking.date || '<?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?>');
+            setAssignmentText(tableAssignmentFields.detailTime, booking.time_range || booking.time || 'Time TBC');
+            setAssignmentText(tableAssignmentFields.detailGuests, Number(booking.guests || 0).toLocaleString());
+            setAssignmentText(tableAssignmentFields.type, booking.type || 'Booking');
+
+            prepareAssignmentChoices(booking);
+            tableAssignmentModal.hidden = false;
+            document.body.classList.add('admin-inbox-modal-open');
+            window.requestAnimationFrame(updateAssignmentFloorLayoutScale);
+            const selected = tableAssignmentModal.querySelector('[data-table-choice].is-selected:not(:disabled)');
+            window.setTimeout(() => (selected || tableAssignmentModal.querySelector('[data-home-table-assignment-close]'))?.focus(), 0);
+            return true;
+        };
+
+        const closeHomeTableAssignmentModal = () => {
+            if (!tableAssignmentModal) {
+                return;
+            }
+
+            tableAssignmentModal.hidden = true;
+            document.body.classList.remove('admin-inbox-modal-open');
+            lastTableAssignmentTrigger?.focus?.();
+        };
+
+        tableAssignmentChoices.forEach((button) => {
+            button.addEventListener('click', () => {
+                if (button.disabled) {
+                    return;
+                }
+                const isSelected = button.classList.toggle('is-selected');
+                button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+                updateAssignmentSelectedTables();
+            });
+        });
+
+        tableAssignmentAreaChoices.forEach((areaButton) => {
+            areaButton.addEventListener('click', () => {
+                const areaTables = getSelectableAssignmentAreaTables(areaButton.dataset.tableAreaId || '');
+                if (areaTables.length === 0) {
+                    return;
+                }
+
+                const shouldSelect = !areaTables.every((choice) => choice.classList.contains('is-selected'));
+                areaTables.forEach((choice) => {
+                    choice.classList.toggle('is-selected', shouldSelect);
+                    choice.setAttribute('aria-pressed', shouldSelect ? 'true' : 'false');
+                });
+                updateAssignmentSelectedTables();
+            });
+        });
+
+        tableAssignmentClearButton?.addEventListener('click', () => {
+            tableAssignmentChoices.forEach((choice) => {
+                choice.classList.remove('is-selected');
+                choice.setAttribute('aria-pressed', 'false');
+            });
+            updateAssignmentSelectedTables();
+            if (tableAssignmentForm?.requestSubmit) {
+                tableAssignmentForm.requestSubmit();
+            } else {
+                tableAssignmentForm?.submit();
+            }
+        });
+
+        tableAssignmentCloseButtons.forEach((button) => {
+            button.addEventListener('click', closeHomeTableAssignmentModal);
+        });
+
+        tableAssignmentModal?.addEventListener('click', (event) => {
+            if (event.target === tableAssignmentModal) {
+                closeHomeTableAssignmentModal();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && tableAssignmentModal && !tableAssignmentModal.hidden) {
+                closeHomeTableAssignmentModal();
+            }
+        });
+
+        window.addEventListener('resize', updateAssignmentFloorLayoutScale);
+
+        document.querySelectorAll('[data-home-table-assign-open]').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (!openHomeTableAssignmentModal(button.dataset.bookingId, button)) {
+                    window.location.href = `admin_bookings.php?status_view=needs_action&booking_search=${encodeURIComponent(button.dataset.bookingId || '')}`;
+                }
+            });
+        });
+
+        document.querySelectorAll('[data-toast]').forEach((toast) => {
+            const dismiss = () => {
+                toast.classList.add('is-leaving');
+                window.setTimeout(() => toast.remove(), 220);
+            };
+
+            toast.querySelector('[data-toast-close]')?.addEventListener('click', dismiss);
+
+            const delay = parseInt(toast.dataset.autoDismiss || '0', 10);
+            if (delay > 0) {
+                window.setTimeout(dismiss, delay);
+            }
+
+            requestAnimationFrame(() => toast.classList.add('is-visible'));
+        });
+
         const resizeDashboardFloor = () => {
             const canvasWidth = 860;
             const canvasHeight = 600;
@@ -1744,7 +2368,17 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
         };
 
         dashboardFloorButtons.forEach((button) => {
-            button.addEventListener('click', () => renderDashboardFloorDetail(button));
+            button.addEventListener('click', () => {
+                const payload = getDashboardFloorPayload(button);
+                const bookings = Array.isArray(payload.bookings) ? payload.bookings : [];
+                const firstBookingId = bookings[0]?.id || 0;
+
+                if (firstBookingId && openHomeTableAssignmentModal(firstBookingId, button)) {
+                    return;
+                }
+
+                renderDashboardFloorDetail(button);
+            });
         });
 
         if (dashboardFloorDetail.close) {
