@@ -131,7 +131,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                     ]);
 
                     $pdo->commit();
-                    $success = "Booking request updated. Table assignment will be handled by staff.";
+                    $success = "Booking request updated. The restaurant team will confirm the new details.";
 
                     $stmt = $pdo->prepare("
                     SELECT * FROM bookings 
@@ -154,7 +154,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 ?>
 
 <?php
-$pageTitle = 'Modify Booking | DineMate';
+$pageTitle = 'Update Reservation | DineMate';
 $extraStylesheets = ['assets/css/pages/customer-modify-booking.css'];
 include '../includes/header.php';
 ?>
@@ -165,8 +165,8 @@ include '../includes/header.php';
 <div class="modify-card">
 
 <h3 class="modify-title text-center">
-<i class="fa fa-pen-to-square text-warning"></i>
-Modify Booking
+<i class="fa fa-pen-to-square"></i>
+Update Your Table Request
 </h3>
 
 <?php if($error): ?>
@@ -244,7 +244,7 @@ max="<?php echo htmlspecialchars((string) $bookingSettings['max_party_size'], EN
 
 <div class="alert alert-info mb-0">
 <i class="fa fa-circle-info"></i>
-Any booking changes return the reservation to the unassigned queue so staff can place it back onto the floor plan.
+Changes are sent to the restaurant team so they can confirm your updated reservation.
 </div>
 
 </div>
@@ -268,15 +268,15 @@ Any booking changes return the reservation to the unassigned queue so staff can 
 </div>
 
 <button class="btn btn-update w-100">
-<i class="fa fa-save"></i> Update Booking
+<i class="fa fa-save"></i> Save Changes
 </button>
 
 </form>
 
 <div class="text-center mt-4">
 
-<a href="my-bookings.php" class="btn btn-secondary btn-back">
-Back to My Bookings
+<a href="my-bookings.php" class="btn-back">
+Back to Reservations
 </a>
 
 </div>

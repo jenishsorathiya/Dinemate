@@ -194,7 +194,7 @@ body {
 
 /* Right Side - Image & Content */
 .auth-image-section {
-    background: url("../../images/showcase/canberra-interior-2.webp") center/cover no-repeat;
+    background: #244234;
     position: relative;
     overflow: hidden;
     display: flex;

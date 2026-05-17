@@ -1,6 +1,6 @@
 # DineMate UI/UX Audit
 
-Last updated: 2026-05-17
+Last updated: 2026-05-18
 
 ## Goal
 
@@ -12,8 +12,8 @@ Polish DineMate into a modern product demo for Old Canberra Inn: clear page cont
 - [x] Extract page-level inline CSS and JavaScript into `assets/css/pages` and `assets/js/pages`.
 - [x] Restore auth page imagery and fix admin sidebar/logout layout.
 - [x] Consolidate duplicate global design tokens in `assets/css/app.css`.
-- [x] Normalize landing page section hierarchy, copy, button contrast, and responsive hero imagery.
-- [x] Replace unsupported pricing/payment language with demo-safe plan actions.
+- [x] Remake public, auth, and customer-facing pages with the product-first guest experience system.
+- [x] Remove unsupported pricing/payment language and old timeline-first public copy.
 - [x] Improve customer dashboard labels, empty states, and booking workflow copy.
 - [ ] Replace remaining admin inline `onclick` handlers with delegated JavaScript.
 - [ ] Review admin table density, modal spacing, and responsive behavior page by page.
@@ -22,9 +22,9 @@ Polish DineMate into a modern product demo for Old Canberra Inn: clear page cont
 ## High-Impact Findings
 
 1. `assets/css/app.css` contains two `:root` token blocks. The second block overrides the intended Old Canberra Inn palette with a blue product palette, which makes pages drift visually.
-2. `assets/css/pages/landing.css` uses dark-section heading colors globally. On light landing sections this can make section titles and cards feel inconsistent or low-contrast.
-3. The landing page still uses generic SaaS language in places, including paid plan wording that is not backed by a payment feature. It should present demo-safe guest/member/group actions.
-4. Some customer-facing labels are grammatically rough, for example "Upcoming And Rebook" and "Make A Booking".
+2. The old landing/page-specific public CSS has been replaced by `assets/css/pages/guest-experience.css` for the new guest-facing redesign.
+3. Public pages now use product-first DineMate copy, same-page CTAs, and restaurant imagery instead of unsupported SaaS/pricing language.
+4. Customer-facing labels now use reservation language consistently across dashboard, booking, profile, confirmation, modify, and review flows.
 5. Product pages now mostly use external assets, but admin pages still contain some inline click handlers. That is acceptable for the current UI pass, but should be cleaned in the next structure/security pass.
 
 ## Current Page Groups

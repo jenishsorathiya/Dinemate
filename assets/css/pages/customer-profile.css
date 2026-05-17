@@ -159,7 +159,7 @@
 }
 
 .quick-link-card a {
-    color: #1d4ed8;
+    color: var(--guest-green, var(--dm-primary));
     text-decoration: none;
     font-weight: 700;
 }

@@ -50,6 +50,11 @@ if (!is_array($extraStylesheets)) {
 }
 
 $extraHeadHtml = (string) ($extraHeadHtml ?? '');
+$isGuestExperiencePage = (bool) preg_match('#^(public|customer)/#', $relativeRequestPath);
+$bodyClass = trim((string) ($bodyClass ?? ''));
+if ($isGuestExperiencePage && strpos($bodyClass, 'dm-guest') === false) {
+    $bodyClass = trim($bodyClass . ' dm-guest');
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -59,6 +64,9 @@ $extraHeadHtml = (string) ($extraHeadHtml ?? '');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php if ($isGuestExperiencePage): ?>
+        <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800;9..144,900&family=League+Spartan:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <?php endif; ?>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="<?php echo htmlspecialchars(assetUrl('assets/css/app.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
     <?php foreach ($extraStylesheets as $stylesheet): ?>
@@ -72,13 +80,19 @@ $extraHeadHtml = (string) ($extraHeadHtml ?? '');
         ?>
         <link href="<?php echo htmlspecialchars($stylesheetHref, ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet"<?php echo $stylesheetMedia !== '' ? ' media="' . htmlspecialchars($stylesheetMedia, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
     <?php endforeach; ?>
+    <?php if ($isGuestExperiencePage): ?>
+        <link href="<?php echo htmlspecialchars(assetUrl('assets/css/pages/guest-experience.css'), ENT_QUOTES, 'UTF-8'); ?>" rel="stylesheet">
+    <?php endif; ?>
     <?php echo $extraHeadHtml; ?>
 </head>
-<body>
+<body<?php echo $bodyClass !== '' ? ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
 
 <nav class="navbar navbar-modern navbar-expand-lg">
     <div class="container-fluid">
-        <a class="logo" href="<?php echo htmlspecialchars($navUrl('public/index.php'), ENT_QUOTES, 'UTF-8'); ?>">DineMate</a>
+        <a class="logo" href="<?php echo htmlspecialchars($navUrl('public/index.php'), ENT_QUOTES, 'UTF-8'); ?>">
+            <span>DineMate</span>
+            <small>Old Canberra Inn</small>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -98,7 +112,7 @@ $extraHeadHtml = (string) ($extraHeadHtml ?? '');
                     <a href="<?php echo htmlspecialchars($navUrl('customer/book-table.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-book <?php echo $isActivePath(['customer/book-table.php', 'customer/booking-confirmation.php']) ? 'is-active' : ''; ?>">
                         <i class="fa fa-calendar-check"></i> Book
                     </a>
-                    <a href="<?php echo htmlspecialchars($navUrl('customer/my-bookings.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['customer/my-bookings.php', 'customer/modify-booking.php']) ? 'is-active' : ''; ?>">My Bookings</a>
+                    <a href="<?php echo htmlspecialchars($navUrl('customer/my-bookings.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['customer/my-bookings.php', 'customer/modify-booking.php']) ? 'is-active' : ''; ?>">Reservations</a>
                     <a href="<?php echo htmlspecialchars($navUrl('customer/profile.php'), ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo $isActivePath(['customer/profile.php']) ? 'is-active' : ''; ?>">Profile</a>
                     <a href="<?php echo htmlspecialchars($navUrl('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-logout">Logout</a>
                 <?php else: ?>

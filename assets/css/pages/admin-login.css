@@ -89,7 +89,7 @@ body {
 
 .admin-right {
     flex: 1;
-    background: url("../../images/showcase/canberra-interior-2.webp") center/cover no-repeat;
+    background: url("../../images/editorial/admin-login-bg.jpg") center/cover no-repeat;
     position: relative;
 }
 

@@ -16,21 +16,23 @@ $registerCsrfToken = csrfToken('register');
 <title>DineMate | Register</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800;9..144,900&family=League+Spartan:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <link href="<?= htmlspecialchars(assetUrl('assets/css/app.css'), ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
 <link href="<?= htmlspecialchars(assetUrl('assets/css/pages/auth-register.css'), ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
+<link href="<?= htmlspecialchars(assetUrl('assets/css/pages/guest-experience.css'), ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
 
 </head>
 
-<body>
+<body class="dm-auth-page dm-register-page">
 
 <div class="auth-wrapper">
     <div class="auth-container">
         <!-- Form Section -->
         <div class="auth-form-section">
-            <h1>Create Account</h1>
-            <p>Join DineMate and start booking amazing dining experiences</p>
+            <p class="guest-section-kicker">Join DineMate</p>
+            <h1>Create your guest profile.</h1>
+            <p>Save details once, book faster next time, and keep your Old Canberra Inn visits organised.</p>
             
             <?php if(isset($_SESSION['error'])): ?>
                 <div class="alert alert-danger">
@@ -91,29 +93,29 @@ $registerCsrfToken = csrfToken('register');
         <!-- Image Section -->
         <div class="auth-image-section">
             <div class="auth-content">
-                <h2>Join the Community</h2>
-                <p>Experience dining reimagined</p>
+                <h2>A better return visit starts here.</h2>
+                <p>DineMate keeps your details ready, so the next visit is easier to plan.</p>
 
                 <div class="auth-benefits">
                     <div class="benefit-item">
                         <div class="benefit-icon"><i class="fa fa-user-check"></i></div>
                         <div class="benefit-text">
-                            <h4>Exclusive Access</h4>
-                            <p>Book member-only dining experiences</p>
+                            <h4>Saved preferences</h4>
+                            <p>Keep seating, dietary notes, and reminder settings ready.</p>
                         </div>
                     </div>
                     <div class="benefit-item">
                         <div class="benefit-icon"><i class="fa fa-award"></i></div>
                         <div class="benefit-text">
-                            <h4>Rewards Program</h4>
-                            <p>Earn points with every reservation</p>
+                            <h4>Booking history</h4>
+                            <p>Review past visits and rebook similar plans quickly.</p>
                         </div>
                     </div>
                     <div class="benefit-item">
                         <div class="benefit-icon"><i class="fa fa-bell"></i></div>
                         <div class="benefit-text">
-                            <h4>Priority Alerts</h4>
-                            <p>Get notified about special offers first</p>
+                            <h4>Post-visit reviews</h4>
+                            <p>Share feedback after completed reservations.</p>
                         </div>
                     </div>
                 </div>

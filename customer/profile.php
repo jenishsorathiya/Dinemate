@@ -170,8 +170,8 @@ include '../includes/header.php';
     <div class="profile-layout">
         <div class="profile-card">
             <div class="profile-header">
-                <h2><i class="fa fa-user text-warning"></i> Profile & Dining Preferences</h2>
-                <p>Keep your contact details, seating preferences, reminders, and password up to date.</p>
+                <h2><i class="fa fa-user"></i> Guest Profile</h2>
+                <p>Keep the details that make the next Old Canberra Inn visit easier: contact info, seating, notes, reminders, and password.</p>
             </div>
 
             <?php if ($error !== ''): ?>
@@ -243,7 +243,7 @@ include '../includes/header.php';
                         <label class="toggle-item">
                             <div class="toggle-copy">
                                 <strong>SMS reminders</strong>
-                                <span>Store my preference for text reminders when the restaurant starts sending them.</span>
+                                <span>Use my saved phone number for text reminders when available.</span>
                             </div>
                             <input type="checkbox" name="sms_reminders_enabled" value="1" <?php echo !empty($customerProfile['sms_reminders_enabled']) ? 'checked' : ''; ?>>
                         </label>
@@ -285,12 +285,12 @@ include '../includes/header.php';
 
         <aside class="profile-side-card">
             <h3>Profile Snapshot</h3>
-            <p>Profile and booking summary.</p>
+            <p>Your saved details and reservation summary.</p>
 
             <div class="stats-list dm-mt-18">
                 <div class="stat-item">
                     <strong>Completed Visits</strong>
-                    <span><?php echo number_format($completedCount); ?> completed bookings in your customer history.</span>
+                    <span><?php echo number_format($completedCount); ?> completed reservations in your history.</span>
                 </div>
                 <div class="stat-item">
                     <strong>Active Bookings</strong>
@@ -300,15 +300,11 @@ include '../includes/header.php';
                     <strong>Last Booking</strong>
                     <span><?php echo $lastBookingDate !== '' ? htmlspecialchars(date('j M Y', strtotime($lastBookingDate)), ENT_QUOTES, 'UTF-8') : 'None'; ?></span>
                 </div>
-                <div class="stat-item">
-                    <strong>Customer Profile ID</strong>
-                    <span><?php echo !empty($customerProfile['customer_profile_id']) ? '#' . (int) $customerProfile['customer_profile_id'] : 'Pending'; ?></span>
-                </div>
             </div>
 
             <div class="quick-links dm-mt-22">
                 <div class="quick-link-card">
-                    <strong>Booking History</strong>
+                    <strong>Reservation History</strong>
                     <span>Review previous reservations and rebook from history.</span>
                     <div class="dm-mt-12"><a href="my-bookings.php?view=past">View history</a></div>
                 </div>

@@ -45,7 +45,7 @@ if(!$booking){
     exit();
 }
 
-$tableLabel = $booking['table_number'] ? 'Table ' . $booking['table_number'] : 'To be assigned by staff';
+$tableLabel = $booking['table_number'] ? 'Table ' . $booking['table_number'] : 'To be confirmed';
 $statusLabel = getBookingStatusLabel($booking['status'] ?? 'pending');
 $sourceLabel = getBookingSourceLabel($booking['booking_source'] ?? '');
 $placementLabel = getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed');
@@ -81,12 +81,12 @@ include '../includes/header.php';
 <i class="fa fa-circle-check"></i>
 </div>
 
-<h3 class="text-success mt-2">
-Reservation Request Submitted
+<h3 class="mt-2">
+Your Table Request Is In
 </h3>
 
-<p class="text-muted">
-Your request has been saved. A table will be assigned by the admin team.
+<p>
+Your request has been saved in DineMate. The restaurant team will confirm the details for your visit.
 </p>
 
 <div class="confirm-grid">
@@ -94,8 +94,6 @@ Your request has been saved. A table will be assigned by the admin team.
 <div class="ticket-info">
 <p><strong>Table:</strong> <?= htmlspecialchars($tableLabel) ?></p>
 <p><strong>Status:</strong> <?= htmlspecialchars($statusLabel) ?></p>
-<p><strong>Source:</strong> <?= htmlspecialchars($sourceLabel) ?></p>
-<p><strong>Placed:</strong> <?= htmlspecialchars($placementLabel) ?></p>
 <p><strong>Name:</strong> <?= htmlspecialchars($booking['customer_name'] ?? '') ?></p>
 <p><strong>Email:</strong> <?= htmlspecialchars($booking['customer_email'] ?? '') ?></p>
 <p><strong>Phone:</strong> <?= htmlspecialchars($booking['customer_phone'] ?? '') ?></p>
@@ -112,18 +110,18 @@ Your request has been saved. A table will be assigned by the admin team.
 </div>
 
 <aside class="confirm-side">
-<h4>Booking Status</h4>
-<p>Your booking is available in your account for future updates.</p>
-<p>Table assignment and reservation-card placement are managed by staff.</p>
+<h4>What happens next</h4>
+<p>Your reservation is available in your account for future updates.</p>
+<p>If the restaurant needs to adjust anything, they will contact you using the details on this booking.</p>
 <?php if ($isLoggedInCustomer && $customerProfile): ?>
 <p><strong>Reminder preferences:</strong> <?= !empty($customerProfile['email_reminders_enabled']) ? 'Email reminders on' : 'Email reminders off'; ?>, <?= !empty($customerProfile['sms_reminders_enabled']) ? 'SMS reminders on' : 'SMS reminders off'; ?>.</p>
 <?php endif; ?>
 <div class="confirm-links">
 <?php if($isLoggedInCustomer): ?>
-<a href="dashboard.php" class="btn btn-outline-dark">Customer Dashboard</a>
-<a href="my-bookings.php" class="btn btn-outline-secondary">Booking History</a>
+<a href="dashboard.php" class="btn-surface">Customer Dashboard</a>
+<a href="my-bookings.php" class="btn-surface">Reservations</a>
 <?php else: ?>
-<a href="../auth/register.php" class="btn btn-outline-dark">Create Account</a>
+<a href="../auth/register.php" class="btn-surface">Create Account</a>
 <?php endif; ?>
 </div>
 </aside>
@@ -131,15 +129,15 @@ Your request has been saved. A table will be assigned by the admin team.
 
 <?php if($isLoggedInCustomer): ?>
 <div class="confirm-links">
-<a href="my-bookings.php" class="btn btn-bookings flex-fill">
-View My Bookings
+<a href="my-bookings.php" class="btn-bookings flex-fill">
+View Reservations
 </a>
-<a href="book-table.php?<?= htmlspecialchars(http_build_query(['rebook' => (int) $booking['booking_id'], 'date' => (string) $booking['booking_date'], 'time' => date('H:i', strtotime((string) $booking['start_time'])), 'guests' => (int) $booking['number_of_guests'], 'special' => (string) ($booking['special_request'] ?? '')]), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-secondary flex-fill">
+<a href="book-table.php?<?= htmlspecialchars(http_build_query(['rebook' => (int) $booking['booking_id'], 'date' => (string) $booking['booking_date'], 'time' => date('H:i', strtotime((string) $booking['start_time'])), 'guests' => (int) $booking['number_of_guests'], 'special' => (string) ($booking['special_request'] ?? '')]), ENT_QUOTES, 'UTF-8') ?>" class="btn-surface flex-fill">
 Book Similar Again
 </a>
 </div>
 <?php else: ?>
-<a href="book-table.php" class="btn btn-bookings w-100">
+<a href="book-table.php" class="btn-bookings w-100">
 Book Another Reservation
 </a>
 <?php endif; ?>

@@ -93,7 +93,7 @@ foreach ($bookings as $booking) {
 ?>
 
 <?php
-$pageTitle = 'My Bookings | DineMate';
+$pageTitle = 'Reservations | DineMate';
 $extraStylesheets = ['assets/css/pages/customer-bookings.css'];
 include '../includes/header.php';
 ?>
@@ -103,8 +103,8 @@ include '../includes/header.php';
     <div class="bookings-shell">
         <div class="bookings-hero">
             <div>
-                <h2><i class="fa fa-calendar-check text-warning"></i> My Reservations</h2>
-                <p>View upcoming plans, revisit past bookings, and manage eligible reservations.</p>
+                <h2><i class="fa fa-calendar-check"></i> Your Table Plans</h2>
+                <p>Upcoming reservations, past visits, quick rebooking, and review actions in one place.</p>
             </div>
             <div class="hero-actions">
                 <a href="dashboard.php" class="btn-surface"><i class="fa fa-gauge"></i> Dashboard</a>
@@ -123,7 +123,7 @@ include '../includes/header.php';
 
         <form method="GET" class="filter-row">
             <input type="hidden" name="view" value="<?php echo htmlspecialchars($view, ENT_QUOTES, 'UTF-8'); ?>">
-            <input type="search" name="q" class="filter-input" value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Search by date, table, note, or source...">
+            <input type="search" name="q" class="filter-input" value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Search by date, table, note, or status...">
             <select name="status" class="filter-select">
                 <option value="all">All statuses</option>
                 <?php foreach (getBookingStatuses() as $statusOption): ?>
@@ -167,8 +167,6 @@ include '../includes/header.php';
                         <div class="booking-chip-list">
                             <span class="booking-chip"><i class="fa fa-users"></i> <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</span>
                             <span class="booking-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Pending assignment'; ?></span>
-                            <span class="booking-chip"><i class="fa fa-location-dot"></i> <?php echo htmlspecialchars(getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed'), ENT_QUOTES, 'UTF-8'); ?></span>
-                            <span class="booking-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                         </div>
 
                         <div class="booking-details-list">
@@ -179,12 +177,6 @@ include '../includes/header.php';
                                 <div class="booking-detail"><strong>Review:</strong> Rated <?php echo (int) $booking['review_rating']; ?>/5<?php if (!empty($booking['review_comment'])): ?> - <?php echo htmlspecialchars((string) $booking['review_comment'], ENT_QUOTES, 'UTF-8'); ?><?php endif; ?></div>
                             <?php elseif ($status === 'completed'): ?>
                                 <div class="booking-detail booking-review-hint"><strong>Review pending:</strong> Add feedback for this completed visit.</div>
-                            <?php endif; ?>
-                            <?php if (($booking['booking_source'] ?? '') === 'admin_manual' && !empty($booking['created_by_name'])): ?>
-                                <div class="booking-detail"><strong>Entered by:</strong> <?php echo htmlspecialchars((string) $booking['created_by_name'], ENT_QUOTES, 'UTF-8'); ?> from the restaurant team.</div>
-                            <?php endif; ?>
-                            <?php if (($booking['booking_source'] ?? '') === 'guest_web'): ?>
-                                <div class="booking-detail"><strong>Linked booking:</strong> This reservation was made as a guest and is now attached to your customer history.</div>
                             <?php endif; ?>
                         </div>
 

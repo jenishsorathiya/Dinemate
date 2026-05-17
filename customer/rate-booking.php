@@ -78,8 +78,8 @@ include '../includes/header.php';
 
 <div class="rate-booking-shell">
     <div class="review-panel">
-        <h1>Rate Your Dining Experience</h1>
-        <p>Share your rating and comments for the completed reservation.</p>
+        <h1>Share Your Visit Notes</h1>
+        <p>Rate your visit and share anything you would like the restaurant team to know.</p>
 
         <?php if (!empty($errors)): ?>
             <div class="notification-box error">
@@ -132,14 +132,14 @@ include '../includes/header.php';
 
                 <div class="review-actions">
                     <button type="submit" class="btn-primary-solid"><i class="fa fa-star"></i> Submit Review</button>
-                    <a href="my-bookings.php" class="btn-surface">Back to My Bookings</a>
+                    <a href="my-bookings.php" class="btn-surface">Back to Reservations</a>
                 </div>
             </form>
         <?php else: ?>
             <div class="review-meta">
                 <span><strong>Review cannot be submitted for this booking.</strong></span>
             </div>
-            <a href="my-bookings.php" class="btn-primary-solid">Back to My Bookings</a>
+            <a href="my-bookings.php" class="btn-primary-solid">Back to Reservations</a>
         <?php endif; ?>
     </div>
 </div>

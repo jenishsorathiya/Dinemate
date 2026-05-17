@@ -6,18 +6,20 @@ startAppSession();
 $footerRole = getCurrentUserRole();
 $footerLinks = [
     ['label' => 'Home', 'path' => 'public/index.php'],
+    ['label' => 'Menu', 'path' => 'public/menu.php'],
+    ['label' => 'About', 'path' => 'public/about.php'],
     ['label' => 'Book a Table', 'path' => 'customer/book-table.php'],
     ['label' => 'Login', 'path' => 'auth/login.php'],
-    ['label' => 'Register', 'path' => 'auth/register.php'],
-    ['label' => 'Contact Us', 'path' => 'public/contact.php'],
+    ['label' => 'Contact', 'path' => 'public/contact.php'],
 ];
 
 if (isLoggedIn() && $footerRole === 'customer') {
     $footerLinks = [
         ['label' => 'Dashboard', 'path' => 'customer/dashboard.php'],
         ['label' => 'Home', 'path' => 'public/index.php'],
-        ['label' => 'Book', 'path' => 'customer/book-table.php'],
-        ['label' => 'My Bookings', 'path' => 'customer/my-bookings.php'],
+        ['label' => 'Menu', 'path' => 'public/menu.php'],
+        ['label' => 'Book a Table', 'path' => 'customer/book-table.php'],
+        ['label' => 'Reservations', 'path' => 'customer/my-bookings.php'],
         ['label' => 'Profile', 'path' => 'customer/profile.php'],
         ['label' => 'Logout', 'path' => 'auth/logout.php'],
     ];
@@ -37,7 +39,7 @@ if (isLoggedIn() && $footerRole === 'customer') {
         <div class="row">
             <div class="col-md-4 footer-brand">
                 <h4>DineMate</h4>
-                <p>Modern reservation support for Old Canberra Inn. Book faster, manage visits clearly, and keep dining service running smoothly.</p>
+                <p>Reserve a table at Old Canberra Inn, keep your plans close, and come back easily next time.</p>
                 <button type="button" class="back-top" data-scroll-top>↑ Back to Top</button>
             </div>
             <div class="col-md-4">

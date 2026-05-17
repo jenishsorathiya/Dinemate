@@ -184,7 +184,7 @@
     padding: 18px;
     display: grid;
     gap: 12px;
-    background: #f9fbfd;
+    background: var(--guest-paper, var(--dm-surface));
 }
 
 .reservation-card-top,

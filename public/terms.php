@@ -1,4 +1,7 @@
-<?php include __DIR__ . '/../includes/header.php'; ?>
+<?php
+$pageTitle = 'Terms | DineMate';
+include __DIR__ . '/../includes/header.php';
+?>
 
 <main class="dm-page-shell legal-page">
     <section class="dm-panel legal-panel">

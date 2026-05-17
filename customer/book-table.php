@@ -113,8 +113,8 @@ include '../includes/header.php';
     <div class="booking-stage">
         <div class="booking-topbar">
             <div class="booking-heading">
-                <h2>Book a Table</h2>
-                <p>Choose a date, time, and party size. Staff will review the request and confirm the table details.</p>
+                <h2>Start Your Table Request</h2>
+                <p>Choose your date, time, party size, and any notes for the restaurant team.</p>
             </div>
             <div class="booking-topbar-aside">
                 <div class="booking-progress" aria-label="Booking progress">
@@ -145,10 +145,10 @@ include '../includes/header.php';
         <?php endif; ?>
 
         <?php if (isset($_GET['rebook'])): ?>
-            <div class="booking-alert booking-alert-neutral">
-                <i class="fa fa-repeat"></i>
-                Previous booking details have been prefilled for review.
-            </div>
+                <div class="booking-alert booking-alert-neutral">
+                    <i class="fa fa-repeat"></i>
+                We have filled this in from a previous reservation. Check the details before sending.
+                </div>
         <?php endif; ?>
 
         <form
@@ -202,12 +202,12 @@ include '../includes/header.php';
                             <div class="booking-benefits-top">
                                 <span class="booking-benefits-icon"><i class="fa fa-user"></i></span>
                                 <div class="booking-benefits-copy">
-                                    <p class="booking-account-title">Unlock perks with an account.</p>
+                                    <p class="booking-account-title">Make return visits easier.</p>
                                 </div>
                             </div>
                             <ul class="booking-benefits-list">
-                                <li><i class="fa fa-circle"></i><span>Easily manage and update your bookings</span></li>
-                                <li><i class="fa fa-circle"></i><span>View your booking history.</span></li>
+                                <li><i class="fa fa-circle"></i><span>Manage and update eligible reservations</span></li>
+                                <li><i class="fa fa-circle"></i><span>See past visits and rebook faster</span></li>
                                 <li><i class="fa fa-circle"></i><span>Save dining preferences for future visits</span></li>
                             </ul>
                             <div class="booking-account-links">
@@ -227,7 +227,7 @@ include '../includes/header.php';
                             </div>
                             <span class="booking-card-pill">
                                 <i class="fa fa-clock"></i>
-                                <?php echo htmlspecialchars((int) $bookingDurationMinutes, ENT_QUOTES, 'UTF-8'); ?>-minute request
+                                <?php echo htmlspecialchars((int) $bookingDurationMinutes, ENT_QUOTES, 'UTF-8'); ?> minutes
                             </span>
                         </div>
 
@@ -284,7 +284,7 @@ include '../includes/header.php';
                             </div>
                             <span class="booking-card-pill">
                                 <i class="fa fa-circle-info"></i>
-                                Table assigned by staff
+                                We will confirm your table
                             </span>
                         </div>
 

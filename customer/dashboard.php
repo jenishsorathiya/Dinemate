@@ -79,12 +79,12 @@ include '../includes/header.php';
         <section class="dashboard-hero">
             <div class="hero-copy">
                 <h1>Welcome back, <?php echo htmlspecialchars((string) getCurrentUserName(), ENT_QUOTES, 'UTF-8'); ?></h1>
-                <p>Manage your bookings, profile, and dining preferences.</p>
+                <p>Your place for upcoming reservations, return visits, preferences, and feedback.</p>
                 <div class="hero-actions">
                     <?php if ($bookingSettings['enable_online_bookings']): ?>
                         <a class="btn-portal" href="book-table.php"><i class="fa fa-calendar-plus"></i> New Booking</a>
                     <?php endif; ?>
-                    <a class="btn-portal-secondary" href="my-bookings.php"><i class="fa fa-clock-rotate-left"></i> View Booking History</a>
+                    <a class="btn-portal-secondary" href="my-bookings.php"><i class="fa fa-clock-rotate-left"></i> View Reservations</a>
                     <a class="btn-portal-secondary" href="profile.php"><i class="fa fa-user-gear"></i> Update Profile</a>
                     <?php if (!empty($lastCompletedBooking) && empty($lastCompletedBooking['review_rating'])): ?>
                         <a class="btn-portal-secondary" href="rate-booking.php?id=<?php echo (int) $lastCompletedBooking['booking_id']; ?>"><i class="fa fa-star"></i> Rate Last Visit</a>
@@ -131,9 +131,9 @@ include '../includes/header.php';
                 <div class="metric-meta">Average guests per booking.</div>
             </article>
             <article class="metric-card">
-                <div class="metric-label">Shared History</div>
+                <div class="metric-label">Saved Visits</div>
                 <div class="metric-value"><?php echo number_format($guestHistoryCount + $adminCreatedCount); ?></div>
-                <div class="metric-meta">Bookings linked to your customer profile.</div>
+                <div class="metric-meta">Reservations saved to your profile.</div>
             </article>
         </section>
 
@@ -163,8 +163,6 @@ include '../includes/header.php';
                                 <div class="reservation-card-meta">
                                     <span class="reservation-meta-chip"><i class="fa fa-users"></i> <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</span>
                                     <span class="reservation-meta-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Pending assignment'; ?></span>
-                                    <span class="reservation-meta-chip"><i class="fa fa-location-dot"></i> <?php echo htmlspecialchars(getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed'), ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <span class="reservation-meta-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                 </div>
                                 <div class="hero-actions dm-mt-0">
                                     <?php if ($bookingSettings['allow_booking_modification']): ?>
@@ -187,8 +185,8 @@ include '../includes/header.php';
             <article class="dashboard-panel">
                 <div class="panel-heading">
                     <div>
-                        <h3>Customer Snapshot</h3>
-                        <p>Saved profile and booking preferences.</p>
+                        <h3>Guest Snapshot</h3>
+                        <p>Saved profile details and dining preferences.</p>
                     </div>
                 </div>
                 <div class="profile-grid">
@@ -201,12 +199,12 @@ include '../includes/header.php';
                         <span><?php echo htmlspecialchars($seatingPreference !== '' ? ucfirst(str_replace('_', ' ', $seatingPreference)) : 'No preference saved', ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <div class="profile-chip">
-                        <strong>Staff-created Bookings</strong>
-                        <span><?php echo number_format($adminCreatedCount); ?> in your history</span>
+                        <strong>Booked With Venue</strong>
+                        <span><?php echo number_format($adminCreatedCount); ?> saved reservations</span>
                     </div>
                     <div class="profile-chip">
                         <strong>Online Bookings</strong>
-                        <span><?php echo number_format($guestHistoryCount); ?> guest bookings linked to your profile</span>
+                        <span><?php echo number_format($guestHistoryCount); ?> reservations saved from DineMate</span>
                     </div>
                 </div>
 
@@ -256,7 +254,6 @@ include '../includes/header.php';
                                     </span>
                                 </div>
                                 <div class="hero-actions dm-mt-12">
-                                    <span class="history-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                     <span class="history-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Unassigned'; ?></span>
                                     <?php if (strtolower((string) ($booking['status'] ?? '')) === 'completed' && empty($booking['review_rating'])): ?>
                                         <a class="btn-portal-secondary" href="rate-booking.php?id=<?php echo (int) $booking['booking_id']; ?>"><i class="fa fa-star"></i> Rate Experience</a>

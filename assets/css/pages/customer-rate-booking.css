@@ -79,8 +79,8 @@
 .rating-option:has(input:checked),
 .rating-option.selected,
 .rating-option:hover {
-    border-color: #4A7C59;
-    background: rgba(74, 124, 89, 0.1);
+    border-color: var(--guest-green, var(--dm-primary));
+    background: rgba(36, 66, 52, 0.1);
 }
 
 .review-comment {

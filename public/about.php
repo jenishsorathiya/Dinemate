@@ -1,121 +1,98 @@
 <?php
-$pageTitle = 'About Old Canberra Inn | DineMate';
-$extraStylesheets = ['assets/css/pages/about.css'];
+$pageTitle = 'About DineMate | Old Canberra Inn';
 include __DIR__ . '/../includes/header.php';
 ?>
 
+<main class="guest-main">
+    <section class="guest-page-hero" style="--guest-hero-image: url('<?= htmlspecialchars(appPath('assets/images/editorial/dining-room.jpg'), ENT_QUOTES, 'UTF-8') ?>'); --guest-hero-position: center;">
+        <div class="guest-hero-inner">
+            <p class="guest-kicker">Our Story</p>
+            <h1 class="guest-page-title">Heritage pub, easier reservations.</h1>
+            <p class="guest-page-copy">DineMate helps guests plan a visit to Old Canberra Inn with less fuss and more confidence.</p>
+        </div>
+    </section>
 
-<!-- PAGE HERO -->
-<section class="page-hero">
-    <h1>About Old Canberra Inn</h1>
-    <p>A Heritage of Excellence, Modern Convenience</p>
-</section>
+    <section class="guest-section is-paper">
+        <div class="guest-container guest-content-band">
+            <div>
+                <p class="guest-section-kicker"><i class="fa fa-landmark"></i> Old Canberra Inn</p>
+                <h2 class="guest-section-title">Heritage stays at the centre.</h2>
+                <p class="guest-section-copy">Established in 1857, Old Canberra Inn is part of Canberra's social fabric: a place for relaxed meals, local drinks, and familiar faces.</p>
+                <p class="guest-section-copy">DineMate keeps the practical side simple, so guests can book, return, and keep their dining preferences close.</p>
+            </div>
+            <div class="guest-stat-list">
+                <article>
+                    <strong>1857</strong>
+                    <span>Heritage venue</span>
+                </article>
+                <article>
+                    <strong>Anytime</strong>
+                    <span>Online table requests</span>
+                </article>
+                <article>
+                    <strong>One place</strong>
+                    <span>Bookings, preferences, and reviews</span>
+                </article>
+            </div>
+        </div>
+    </section>
 
-<!-- OUR STORY SECTION -->
-<section class="section">
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6">
-                <div class="story-card">
-                    <h3><i class="fa fa-history"></i> Our Story</h3>
-                    <p>Established in <strong>1857</strong>, Old Canberra Inn stands as one of Canberra's most iconic heritage establishments. With over 160 years of history, we've been the heart of the community, serving locals and visitors with exceptional hospitality.</p>
-                    <p>From its early days as a gathering place for settlers and travelers, Old Canberra Inn has evolved into a beloved destination known for its <strong>authentic charm, premium dining, and vibrant atmosphere</strong>.</p>
-                    <p>Today, we blend our rich heritage with modern innovation. With DineMate, we've made reservations easier than ever—so you can spend less time booking and more time enjoying the experience.</p>
+    <section class="guest-section">
+        <div class="guest-container">
+            <div class="guest-section-heading">
+                <p class="guest-section-kicker">Why DineMate</p>
+                <h2 class="guest-section-title">A calmer way to plan a meal.</h2>
+                <p class="guest-section-copy">Whether it is a quick lunch, a family table, or a catch-up over drinks, DineMate helps you share the details that make the visit smoother.</p>
+            </div>
+            <div class="guest-grid-3">
+                <article class="guest-card">
+                    <div class="guest-card-icon"><i class="fa fa-chair"></i></div>
+                    <h3>Clear reservations</h3>
+                    <p>Your date, time, party size, and notes stay easy to find.</p>
+                </article>
+                <article class="guest-card">
+                    <div class="guest-card-icon"><i class="fa fa-address-card"></i></div>
+                    <h3>Guest profiles</h3>
+                    <p>Save contact details, seating preferences, dietary notes, and reminders for next time.</p>
+                </article>
+                <article class="guest-card">
+                    <div class="guest-card-icon"><i class="fa fa-comments"></i></div>
+                    <h3>Post-visit feedback</h3>
+                    <p>After your visit, leave a quick rating or note for the restaurant team.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="guest-section is-green">
+        <div class="guest-container guest-content-band">
+            <div>
+                <p class="guest-section-kicker">The DineMate Promise</p>
+                <h2 class="guest-section-title">Book without losing the feeling of the place.</h2>
+                <p class="guest-section-copy">The best restaurant plans should feel natural: choose a time, add the important details, and look forward to the meal.</p>
+                <div class="guest-action-row">
+                    <a class="guest-button" href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>">Book a Table</a>
+                    <a class="guest-button-outline" href="<?= htmlspecialchars(appPath('public/contact.php'), ENT_QUOTES, 'UTF-8') ?>">Contact Team</a>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <img src="<?= htmlspecialchars(appPath('assets/images/showcase/canberra-interior-2.webp'), ENT_QUOTES, 'UTF-8') ?>" class="img-fluid-custom" alt="Dining room inside Old Canberra Inn">
+            <div class="guest-proof-list is-inverted">
+                <article>
+                    <span><i class="fa fa-calendar-check"></i></span>
+                    <div>
+                        <h3>Clear table requests</h3>
+                        <p>Date, time, party size, and notes stay easy to understand.</p>
+                    </div>
+                </article>
+                <article>
+                    <span><i class="fa fa-heart"></i></span>
+                    <div>
+                        <h3>Thoughtful details</h3>
+                        <p>Guest preferences stay close without turning the experience into admin.</p>
+                    </div>
+                </article>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- OUR VALUES SECTION -->
-<section class="section section-muted">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Why Choose Old Canberra Inn</h2>
-            <p class="section-subtitle">Experience the perfect blend of heritage, quality, and modern convenience</p>
-        </div>
-        
-        <div class="value-cards">
-            <div class="value-card">
-                <div class="value-card-icon"><i class="fa fa-landmark"></i></div>
-                <h3>Authentic Heritage</h3>
-                <p>Over 160 years of history and tradition. A true Canberra landmark with genuine character.</p>
-            </div>
-            
-            <div class="value-card">
-                <div class="value-card-icon"><i class="fa fa-star"></i></div>
-                <h3>Quality Food & Drinks</h3>
-                <p>Carefully sourced ingredients, expert chefs, and craft beverages you'll love.</p>
-            </div>
-            
-            <div class="value-card">
-                <div class="value-card-icon"><i class="fa fa-handshake"></i></div>
-                <h3>Warm Hospitality</h3>
-                <p>Friendly staff, welcoming atmosphere, and service that makes you feel at home.</p>
-            </div>
-            
-            <div class="value-card">
-                <div class="value-card-icon"><i class="fa fa-calendar-check"></i></div>
-                <h3>Easy Booking</h3>
-                <p>Reserve your perfect table instantly with DineMate's seamless reservation system.</p>
-            </div>
-            
-            <div class="value-card">
-                <div class="value-card-icon"><i class="fa fa-music"></i></div>
-                <h3>Vibrant Events</h3>
-                <p>Live entertainment, special events, and community gatherings year-round.</p>
-            </div>
-            
-            <div class="value-card">
-                <div class="value-card-icon"><i class="fa fa-utensils"></i></div>
-                <h3>Diverse Menu</h3>
-                <p>Classic comfort food, innovative dishes, and something for every palate.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- BY THE NUMBERS SECTION -->
-<section class="section">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Our Numbers</h2>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-number">160+</div>
-                <div class="stat-label">Years of Heritage</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">1000+</div>
-                <div class="stat-label">Happy Diners Monthly</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">50+</div>
-                <div class="stat-label">Dining Spaces</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">24/7</div>
-                <div class="stat-label">Online Reservations</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- CTA SECTION -->
-<section class="page-cta">
-    <div class="container">
-        <h2 class="page-cta-title">Ready to Join Us?</h2>
-        <p class="page-cta-copy">Reserve your table now and experience the Old Canberra Inn difference</p>
-        <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" class="page-cta-button">
-            <i class="fa fa-calendar-check"></i> Reserve Your Table
-        </a>
-    </div>
-</section>
+    </section>
+</main>
 
 <?php include __DIR__ . "/../includes/footer.php"; ?>
-
