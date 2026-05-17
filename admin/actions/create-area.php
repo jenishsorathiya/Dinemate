@@ -10,7 +10,7 @@ requireValidCsrfToken('admin_actions', ['json' => true]);
 
 ensureTableAreasSchema($pdo);
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = readJsonRequestPayload(['json' => true]);
 $name = trim($data['name'] ?? '');
 $tableNumberStart = isset($data['table_number_start']) && $data['table_number_start'] !== '' ? (int)$data['table_number_start'] : null;
 $tableNumberEnd = isset($data['table_number_end']) && $data['table_number_end'] !== '' ? (int)$data['table_number_end'] : null;

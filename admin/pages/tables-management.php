@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_GET['action'] ?? '') === 'save_
     header('Content-Type: application/json');
     requireValidCsrfToken('admin_actions', ['json' => true]);
 
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = readJsonRequestPayload(['json' => true]);
     $payloadTables = isset($data['tables']) && is_array($data['tables']) ? $data['tables'] : [];
     $payloadAreas = isset($data['areas']) && is_array($data['areas']) ? $data['areas'] : [];
 
@@ -378,12 +378,12 @@ $adminSidebarPathPrefix = '';
 
         <div class="main-content">
             <main class="visual-main">
-                <div class="page-stack">
+                <div class="page-stack admin-ops">
                 <header class="admin-page-heading page-header">
                     <div>
-                        <p class="admin-page-kicker">Floor Plan</p>
+                        <p class="admin-page-kicker">Floor Control</p>
                         <h1 class="admin-page-title page-title">Table Operations</h1>
-                        <p class="admin-page-copy page-subtitle">Maintain venue areas, table inventory, reservable capacity, and the interactive seating map.</p>
+                        <p class="admin-page-copy page-subtitle">Maintain venue areas, reservable capacity, and the interactive seating map used by staff.</p>
                     </div>
                     <div class="admin-actions header-actions">
                         <button class="primary-btn" id="headerAddTable" type="button">

@@ -1,4 +1,19 @@
 body {
+    --dm-bg: #f6f8fb;
+    --dm-surface: #ffffff;
+    --dm-border: #e3e8f0;
+    --dm-border-strong: #cbd5e1;
+    --dm-text: #0f172a;
+    --dm-text-muted: #64748b;
+    --dm-accent-dark: #0b5ed7;
+    --dm-accent-dark-hover: #084fc0;
+    --dm-focus-ring: 0 0 0 4px rgba(11, 94, 215, 0.12);
+    --dm-radius-sm: 6.4px;
+    --dm-radius-lg: 11.2px;
+    --dm-shadow-md: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+body {
     margin: 0;
     font-family: var(--dm-font-sans);
     background: var(--dm-bg);

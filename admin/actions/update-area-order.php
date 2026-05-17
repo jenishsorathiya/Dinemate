@@ -10,7 +10,7 @@ requireValidCsrfToken('admin_actions', ['json' => true]);
 
 ensureTableAreasSchema($pdo);
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = readJsonRequestPayload(['json' => true]);
 $areaIds = $data['area_ids'] ?? null;
 
 if(!is_array($areaIds) || empty($areaIds)) {

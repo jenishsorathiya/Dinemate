@@ -1,0 +1,802 @@
+/* Shared operations layer for rebuilt admin pages.
+   Pages opt in with .admin-ops so Home, Bookings, and Inbox keep their existing layout. */
+
+.admin-ops {
+    --ops-bg: var(--bg);
+    --ops-surface: var(--surface);
+    --ops-surface-soft: var(--surface-soft);
+    --ops-surface-strong: var(--surface-muted);
+    --ops-border: var(--border);
+    --ops-border-strong: var(--border-strong);
+    --ops-text: var(--text-main);
+    --ops-muted: var(--text-muted);
+    --ops-soft: var(--text-soft);
+    --ops-primary: var(--primary);
+    --ops-primary-dark: var(--primary-hover);
+    --ops-primary-soft: var(--primary-soft);
+    --ops-success: var(--success-text);
+    --ops-success-soft: var(--success-bg);
+    --ops-warning: var(--warning-text);
+    --ops-warning-soft: var(--warning-bg);
+    --ops-danger: var(--danger-text);
+    --ops-danger-soft: var(--danger-bg);
+    --ops-shadow: var(--shadow-md);
+    --ops-shadow-soft: var(--shadow-sm);
+    width: 100%;
+    color: var(--ops-text);
+}
+
+.admin-ops,
+.admin-ops * {
+    letter-spacing: 0;
+}
+
+.admin-ops .admin-page-heading,
+.admin-ops.fn-page .fn-topbar,
+.admin-ops .reviews-header {
+    padding: 0 0 16px !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ops-border) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+    flex-wrap: wrap !important;
+}
+
+.admin-ops .admin-page-kicker,
+.admin-ops .page-kicker,
+.admin-ops .review-field label,
+.admin-ops .form-label,
+.admin-ops .setting-field label,
+.admin-ops .fn-form-group label,
+.admin-ops .mn-form-group label,
+.admin-ops .field label {
+    color: var(--ops-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.admin-ops .admin-page-title,
+.admin-ops .page-title,
+.admin-ops.fn-page .fn-topbar h1 {
+    color: var(--ops-text) !important;
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+}
+
+.admin-ops .admin-page-copy,
+.admin-ops .page-subtitle,
+.admin-ops.fn-page .fn-topbar p {
+    max-width: 780px;
+    color: var(--ops-muted) !important;
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+}
+
+.admin-ops .admin-command-bar,
+.admin-ops .review-summary-strip,
+.admin-ops .review-filters,
+.admin-ops .fn-tabs {
+    padding: 12px !important;
+    border: 1px solid var(--ops-border) !important;
+    border-radius: var(--radius-lg) !important;
+    background: var(--ops-surface) !important;
+    box-shadow: var(--ops-shadow-soft) !important;
+}
+
+.admin-ops .admin-panel,
+.admin-ops .panel,
+.admin-ops .review-detail-panel,
+.admin-ops .fn-detail,
+.admin-ops .fn-card,
+.admin-ops .mn-item,
+.admin-ops .history-card,
+.admin-ops .operation-card,
+.admin-ops .metric-card,
+.admin-ops .chart-card,
+.admin-ops .sub-stat,
+.admin-ops .customer-stat-card {
+    border: 1px solid var(--ops-border) !important;
+    border-radius: var(--radius-md) !important;
+    background: var(--ops-surface) !important;
+    box-shadow: var(--ops-shadow-soft) !important;
+}
+
+.admin-ops .admin-panel-header,
+.admin-ops .panel-heading,
+.admin-ops .section-head,
+.admin-ops .canvas-toolbar,
+.admin-ops .inventory-toolbar {
+    border-bottom: 1px solid var(--ops-border) !important;
+    background: var(--ops-surface) !important;
+}
+
+.admin-ops .admin-panel-title,
+.admin-ops .panel-title,
+.admin-ops .section-title,
+.admin-ops .card-title,
+.admin-ops .history-card-title,
+.admin-ops .fn-detail h2,
+.admin-ops .fn-card-title,
+.admin-ops .mn-item-name,
+.admin-ops .review-detail-name {
+    color: var(--ops-text) !important;
+    font-weight: 700 !important;
+}
+
+.admin-ops .admin-panel-copy,
+.admin-ops .panel-subtitle,
+.admin-ops .section-note,
+.admin-ops .card-subtitle,
+.admin-ops .history-card-note,
+.admin-ops .history-card-meta,
+.admin-ops .profile-meta,
+.admin-ops .user-meta,
+.admin-ops .mn-description,
+.admin-ops .review-muted,
+.admin-ops .review-card-copy,
+.admin-ops .field-description,
+.admin-ops .form-help {
+    color: var(--ops-muted) !important;
+}
+
+.admin-ops .admin-chip,
+.admin-ops .tiny-badge,
+.admin-ops .booking-badge,
+.admin-ops .review-meta-chip,
+.admin-ops .mn-chip,
+.admin-ops .range-pill,
+.admin-ops .status-tag,
+.admin-ops .fn-badge,
+.admin-ops .role-badge,
+.admin-ops .account-badge,
+.admin-ops .review-rating {
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+}
+
+.admin-ops .admin-chip,
+.admin-ops .tiny-badge,
+.admin-ops .review-meta-chip,
+.admin-ops .mn-chip,
+.admin-ops .range-pill {
+    border: 1px solid var(--ops-border) !important;
+    background: var(--ops-surface-strong) !important;
+    color: var(--ops-muted) !important;
+}
+
+.admin-ops .admin-chip.is-primary,
+.admin-ops .primary-soft,
+.admin-ops .role-admin {
+    border-color: rgba(11, 94, 215, 0.22) !important;
+    background: var(--ops-primary-soft) !important;
+    color: var(--ops-primary) !important;
+}
+
+.admin-ops .admin-chip.is-success,
+.admin-ops .status-tag.available,
+.admin-ops .account-badge.active,
+.admin-ops .badge-confirmed,
+.admin-ops .review-rating.positive {
+    border-color: rgba(21, 128, 61, 0.22) !important;
+    background: var(--ops-success-soft) !important;
+    color: var(--ops-success) !important;
+}
+
+.admin-ops .admin-chip.is-warning,
+.admin-ops .badge-setup,
+.admin-ops .badge-pending,
+.admin-ops .review-rating.mixed {
+    border-color: rgba(194, 65, 12, 0.22) !important;
+    background: var(--ops-warning-soft) !important;
+    color: var(--ops-warning) !important;
+}
+
+.admin-ops .admin-chip.is-danger,
+.admin-ops .status-tag.unavailable,
+.admin-ops .account-badge.disabled,
+.admin-ops .badge-cancelled,
+.admin-ops .review-rating.attention {
+    border-color: rgba(185, 28, 28, 0.22) !important;
+    background: var(--ops-danger-soft) !important;
+    color: var(--ops-danger) !important;
+}
+
+.admin-ops .primary-btn,
+.admin-ops .btn-primary,
+.admin-ops .btn-primary-soft,
+.admin-ops .btn-edit,
+.admin-ops .fn-new-btn,
+.admin-ops .fn-btn-primary,
+.admin-ops .button-primary,
+.admin-ops .button-accent,
+.admin-ops .admin-filter-apply {
+    min-height: 40px;
+    border: 1px solid var(--ops-primary) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--ops-primary) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+.admin-ops .primary-btn:hover,
+.admin-ops .btn-primary:hover,
+.admin-ops .btn-primary-soft:hover,
+.admin-ops .btn-edit:hover,
+.admin-ops .fn-new-btn:hover,
+.admin-ops .fn-btn-primary:hover,
+.admin-ops .button-primary:hover,
+.admin-ops .button-accent:hover,
+.admin-ops .admin-filter-apply:hover {
+    background: var(--ops-primary-dark) !important;
+    border-color: var(--ops-primary-dark) !important;
+    color: #fff !important;
+}
+
+.admin-ops .secondary-btn,
+.admin-ops .btn-secondary,
+.admin-ops .btn-surface,
+.admin-ops .btn-warning-soft,
+.admin-ops .btn-danger-soft,
+.admin-ops .btn-delete,
+.admin-ops .fn-btn,
+.admin-ops .button,
+.admin-ops .button-ghost,
+.admin-ops .mini-button,
+.admin-ops .overlay-chip,
+.admin-ops .analytics-range-chip,
+.admin-ops .admin-date-nav,
+.admin-ops .details-close,
+.admin-ops .btn-close,
+.admin-ops .icon-action,
+.admin-ops .page-pill {
+    min-height: 40px;
+    border: 1px solid var(--ops-border) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--ops-surface) !important;
+    color: var(--ops-text) !important;
+    box-shadow: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+.admin-ops .secondary-btn:hover,
+.admin-ops .btn-secondary:hover,
+.admin-ops .btn-surface:hover,
+.admin-ops .btn-warning-soft:hover,
+.admin-ops .btn-danger-soft:hover,
+.admin-ops .btn-delete:hover,
+.admin-ops .fn-btn:hover,
+.admin-ops .button:hover,
+.admin-ops .button-ghost:hover,
+.admin-ops .mini-button:hover,
+.admin-ops .overlay-chip:hover,
+.admin-ops .analytics-range-chip:hover,
+.admin-ops .admin-date-nav:hover,
+.admin-ops .details-close:hover,
+.admin-ops .btn-close:hover,
+.admin-ops .icon-action:hover,
+.admin-ops .page-pill:hover {
+    border-color: var(--ops-primary) !important;
+    background: var(--ops-primary-soft) !important;
+    color: var(--ops-primary-dark) !important;
+}
+
+.admin-ops .btn-danger-soft,
+.admin-ops .delete-btn,
+.admin-ops .btn-delete,
+.admin-ops .button-danger,
+.admin-ops .icon-action.delete {
+    border-color: rgba(185, 28, 28, 0.22) !important;
+    background: var(--ops-danger-soft) !important;
+    color: var(--ops-danger) !important;
+}
+
+.admin-ops .btn-warning-soft {
+    border-color: rgba(194, 65, 12, 0.22) !important;
+    background: var(--ops-warning-soft) !important;
+    color: var(--ops-warning) !important;
+}
+
+.admin-ops .button.button-primary,
+.admin-ops .button.button-accent,
+.admin-ops .analytics-range-chip.is-active {
+    border-color: var(--ops-primary) !important;
+    background: var(--ops-primary) !important;
+    color: #fff !important;
+}
+
+.admin-ops .button.button-primary:hover,
+.admin-ops .button.button-accent:hover,
+.admin-ops .analytics-range-chip.is-active:hover {
+    border-color: var(--ops-primary-dark) !important;
+    background: var(--ops-primary-dark) !important;
+    color: #fff !important;
+}
+
+.admin-ops .button.button-danger {
+    border-color: rgba(185, 28, 28, 0.22) !important;
+    background: var(--ops-danger-soft) !important;
+    color: var(--ops-danger) !important;
+}
+
+.admin-ops .button.button-danger:hover {
+    border-color: var(--ops-danger) !important;
+    background: var(--ops-danger) !important;
+    color: #fff !important;
+}
+
+.admin-ops .is-hidden {
+    display: none !important;
+}
+
+.admin-ops .mini-button,
+.admin-ops .overlay-chip,
+.admin-ops .admin-date-nav,
+.admin-ops .details-close,
+.admin-ops .btn-close,
+.admin-ops .icon-action,
+.admin-ops .page-pill.icon {
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+}
+
+.admin-ops .admin-actions,
+.admin-ops .header-actions,
+.admin-ops .modal-footer,
+.admin-ops .admin-modal-actions,
+.admin-ops .fn-modal-actions,
+.admin-ops .mn-form-actions,
+.admin-ops .canvas-toolbar-actions,
+.admin-ops .inventory-toolbar-right,
+.admin-ops .table-actions,
+.admin-ops .review-detail-actions {
+    gap: 8px !important;
+}
+
+.admin-ops input:not([type="checkbox"]):not([type="radio"]),
+.admin-ops select,
+.admin-ops textarea,
+.admin-ops .review-control,
+.admin-ops .setting-input,
+.admin-ops .form-control,
+.admin-ops .form-select,
+.admin-ops .mn-search-input,
+.admin-ops .mn-select,
+.admin-ops .search-input {
+    border: 1px solid var(--ops-border-strong) !important;
+    border-radius: var(--radius-sm) !important;
+    background: #fff !important;
+    color: var(--ops-text) !important;
+    font: inherit !important;
+    box-shadow: none !important;
+}
+
+.admin-ops input:not([type="checkbox"]):not([type="radio"]):focus,
+.admin-ops select:focus,
+.admin-ops textarea:focus,
+.admin-ops .review-control:focus,
+.admin-ops .setting-input:focus,
+.admin-ops .form-control:focus,
+.admin-ops .form-select:focus,
+.admin-ops .mn-search-input:focus,
+.admin-ops .mn-select:focus,
+.admin-ops .search-input:focus {
+    border-color: var(--ops-primary) !important;
+    outline: 3px solid rgba(11, 94, 215, 0.16) !important;
+}
+
+.admin-ops table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.admin-ops th {
+    background: var(--ops-surface-soft) !important;
+    color: #52627a !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: none;
+}
+
+.admin-ops td {
+    border-color: var(--ops-border) !important;
+    color: var(--ops-text) !important;
+}
+
+.admin-ops .ops-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+}
+
+.admin-ops .ops-metric {
+    min-height: 96px;
+    padding: 14px;
+    border: 1px solid var(--ops-border);
+    border-radius: var(--radius-md);
+    background: var(--ops-surface);
+    box-shadow: var(--ops-shadow-soft);
+    display: grid;
+    align-content: space-between;
+    gap: 10px;
+}
+
+.admin-ops .ops-metric span {
+    color: var(--ops-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.admin-ops .ops-metric strong {
+    color: var(--ops-text);
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 700;
+}
+
+.admin-ops .ops-metric small {
+    color: var(--ops-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.admin-ops .ops-control-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.admin-ops .ops-control-card {
+    padding: 16px;
+    border: 1px solid var(--ops-border);
+    border-radius: var(--radius-md);
+    background: var(--ops-surface-soft);
+    display: grid;
+    gap: 12px;
+}
+
+.admin-ops .ops-control-card.is-off {
+    background: var(--ops-danger-soft);
+    border-color: rgba(185, 28, 28, 0.22);
+}
+
+.admin-ops .ops-control-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.admin-ops .ops-control-title {
+    margin: 0;
+    color: var(--ops-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.admin-ops .ops-control-copy {
+    margin: 5px 0 0;
+    color: var(--ops-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.admin-ops .ops-toggle {
+    position: relative;
+    display: inline-flex;
+    width: 48px;
+    height: 28px;
+    flex: 0 0 auto;
+}
+
+.admin-ops .ops-toggle input {
+    position: absolute;
+    opacity: 0;
+}
+
+.admin-ops .ops-toggle span {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: var(--border-strong);
+    transition: background 0.16s ease;
+}
+
+.admin-ops .ops-toggle span::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(20, 32, 51, 0.24);
+    transition: transform 0.16s ease;
+}
+
+.admin-ops .ops-toggle input:checked + span {
+    background: var(--ops-primary);
+}
+
+.admin-ops .ops-toggle input:checked + span::after {
+    transform: translateX(20px);
+}
+
+.admin-ops .ops-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.admin-ops .ops-form-field {
+    display: grid;
+    gap: 7px;
+}
+
+.admin-ops .ops-form-field.is-wide {
+    grid-column: 1 / -1;
+}
+
+.admin-ops .ops-form-field small {
+    color: var(--ops-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.admin-ops .ops-page-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.admin-ops .ops-stack {
+    display: grid;
+    gap: 14px;
+}
+
+.admin-ops .ops-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-ops .ops-note-list {
+    display: grid;
+    gap: 10px;
+}
+
+.admin-ops .ops-note {
+    padding: 12px;
+    border: 1px solid var(--ops-border);
+    border-radius: var(--radius-sm);
+    background: var(--ops-surface-soft);
+    color: var(--ops-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.admin-ops .fn-page,
+.admin-ops.fn-page {
+    max-width: none !important;
+    padding: 20px !important;
+    display: grid;
+    gap: 16px;
+}
+
+.admin-ops .fn-tabs,
+.admin-ops.fn-page .fn-tabs {
+    gap: 8px !important;
+    border-bottom: 1px solid var(--ops-border) !important;
+    overflow-x: auto !important;
+}
+
+.admin-ops .fn-tab {
+    padding: 9px 14px !important;
+    border: 1px solid transparent !important;
+    border-radius: var(--radius-sm) !important;
+    flex: 0 0 auto;
+}
+
+.admin-ops .fn-tab.is-active {
+    border-color: var(--ops-primary) !important;
+    background: var(--ops-primary-soft) !important;
+    color: var(--ops-primary) !important;
+}
+
+.admin-ops .fn-tab span {
+    margin-left: 6px;
+    color: var(--ops-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.admin-ops .fn-grid {
+    grid-template-columns: minmax(360px, 0.88fr) minmax(420px, 1.12fr) !important;
+    gap: 16px !important;
+}
+
+.admin-ops .fn-card.is-selected,
+.admin-ops .review-card.is-selected {
+    border-color: var(--ops-primary) !important;
+    box-shadow: 0 0 0 2px rgba(11, 94, 215, 0.12), var(--ops-shadow-soft) !important;
+}
+
+.admin-ops .fn-detail {
+    top: 16px !important;
+}
+
+.admin-ops .fn-setup-box,
+.admin-ops .fn-notes-box,
+.admin-ops .fn-checklist,
+.admin-ops .review-comment-box,
+.admin-ops .review-info-cell {
+    border: 1px solid var(--ops-border) !important;
+    border-radius: 10px !important;
+    background: var(--ops-surface-soft) !important;
+    color: var(--ops-text) !important;
+}
+
+.admin-ops .mn-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 440px) !important;
+    gap: 16px !important;
+}
+
+.admin-ops .mn-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+}
+
+.admin-ops .mn-item {
+    overflow: hidden;
+}
+
+.admin-ops .mn-item-image {
+    border-radius: 10px !important;
+    background: var(--ops-surface-strong) !important;
+}
+
+.admin-ops .mn-price {
+    color: var(--ops-text) !important;
+}
+
+.admin-ops .mn-checkbox {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--ops-border);
+    border-radius: 10px;
+    background: var(--ops-surface-soft);
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    color: var(--ops-text) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+.admin-ops .mn-checkbox input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    accent-color: var(--ops-success);
+    flex: 0 0 auto;
+}
+
+.admin-ops .review-workbench {
+    grid-template-columns: minmax(320px, 440px) minmax(0, 1fr) !important;
+}
+
+.admin-ops .review-summary-pill {
+    min-height: 44px;
+}
+
+.admin-ops .review-avatar {
+    border-radius: var(--radius-sm) !important;
+    background: var(--ops-primary-soft) !important;
+    color: var(--ops-primary) !important;
+}
+
+.admin-ops .canvas-frame,
+.admin-ops .canvas-stage,
+.admin-ops .inventory-table-wrap,
+.admin-ops .table-wrap {
+    border-color: var(--ops-border) !important;
+    background: var(--ops-surface) !important;
+}
+
+.admin-ops .table-toolbar {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 1fr) repeat(3, minmax(150px, max-content)) !important;
+    gap: 12px !important;
+    align-items: center !important;
+}
+
+.admin-ops .toolbar-field {
+    min-width: 0;
+}
+
+.admin-ops .toolbar-field input {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 38px !important;
+}
+
+.admin-ops .modal-card,
+.admin-ops .fn-modal,
+.admin-ops .modal-content {
+    border: 1px solid var(--ops-border) !important;
+    border-radius: var(--radius-lg) !important;
+    background: var(--ops-surface) !important;
+}
+
+@media (max-width: 1180px) {
+    .admin-ops .ops-page-grid,
+    .admin-ops .fn-grid,
+    .admin-ops .mn-layout,
+    .admin-ops .review-workbench {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .admin-ops .fn-detail,
+    .admin-ops .review-detail-panel {
+        position: static !important;
+    }
+}
+
+@media (max-width: 760px) {
+    .admin-ops {
+        padding: 14px !important;
+    }
+
+    .admin-ops .admin-page-heading,
+    .admin-ops.fn-page .fn-topbar,
+    .admin-ops .reviews-header {
+        padding: 16px !important;
+    }
+
+    .admin-ops .ops-control-grid,
+    .admin-ops .ops-form-grid,
+    .admin-ops .table-toolbar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-ops .fn-tabs,
+    .admin-ops.fn-page .fn-tabs {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        overflow: visible !important;
+    }
+
+    .admin-ops .fn-tab {
+        justify-content: center;
+    }
+
+    .admin-ops .admin-actions,
+    .admin-ops .header-actions,
+    .admin-ops .ops-action-bar {
+        justify-content: flex-start;
+    }
+}

@@ -4,41 +4,113 @@
    page behavior. */
 
 :root {
-    --bg: var(--dm-bg);
-    --bg-soft: var(--dm-surface-soft, #fbfcfe);
-    --card: var(--dm-surface);
-    --line: var(--dm-border);
-    --text: var(--dm-text);
-    --muted: var(--dm-text-muted);
-    --primary: var(--dm-primary);
-    --primary-hover: var(--dm-primary-hover);
-    --surface: var(--dm-surface);
-    --surface-soft: var(--dm-surface-soft, #fbfcfe);
-    --surface-muted: var(--dm-surface-muted);
-    --text-main: var(--dm-text);
-    --text-muted: var(--dm-text-muted);
-    --text-soft: var(--dm-text-soft);
-    --border: var(--dm-border);
-    --border-soft: var(--dm-border-soft, #eef2f7);
-    --border-strong: var(--dm-border-strong);
-    --radius-sm: var(--dm-radius-sm);
-    --radius-md: var(--dm-radius-md);
-    --radius-lg: var(--dm-radius-lg);
-    --shadow-sm: var(--dm-shadow-sm);
-    --analytics-bg: var(--dm-bg);
-    --analytics-surface: var(--dm-surface);
-    --analytics-surface-strong: var(--dm-surface);
-    --analytics-line: var(--dm-border);
-    --analytics-text: var(--dm-text);
-    --analytics-muted: var(--dm-text-muted);
-    --analytics-soft: var(--dm-text-soft);
-    --analytics-shadow: var(--dm-shadow-md);
-    --analytics-shadow-soft: var(--dm-shadow-sm);
-    --analytics-gold: var(--dm-warning-strong);
-    --analytics-sage: var(--dm-success-strong);
-    --analytics-rose: var(--dm-danger-strong);
-    --analytics-blue: var(--dm-primary);
-    --analytics-ink: var(--dm-text);
+    --admin-primary: #0b5ed7;
+    --admin-primary-hover: #084fc0;
+    --admin-primary-soft: #eef4ff;
+    --bg: #f6f8fb;
+    --bg-soft: #fbfcfe;
+    --card: #ffffff;
+    --line: #e3e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: var(--admin-primary);
+    --primary-hover: var(--admin-primary-hover);
+    --primary-soft: var(--admin-primary-soft);
+    --surface: #ffffff;
+    --surface-soft: #fbfcfe;
+    --surface-muted: #fbfcfe;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-soft: #94a3b8;
+    --border: #e3e8f0;
+    --border-soft: #eef2f7;
+    --border-strong: #cbd5e1;
+    --radius-sm: 6.4px;
+    --radius-md: 8px;
+    --radius-lg: 11.2px;
+    --shadow-sm: 0 4.8px 14.4px rgba(15, 23, 42, 0.03);
+    --shadow-md: 0 18px 36px rgba(15, 23, 42, 0.08);
+    --success-bg: #dcfce7;
+    --success-text: #15803d;
+    --warning-bg: #fff3e1;
+    --warning-text: #c2410c;
+    --danger-bg: #fee2e2;
+    --danger-text: #b91c1c;
+    --neutral-bg: #eef2f7;
+    --neutral-text: #64748b;
+
+    --dm-bg: #f6f8fb;
+    --dm-surface: #ffffff;
+    --dm-surface-soft: #fbfcfe;
+    --dm-surface-muted: #fbfcfe;
+    --dm-border: #e3e8f0;
+    --dm-border-soft: #eef2f7;
+    --dm-border-strong: #cbd5e1;
+    --dm-text: #0f172a;
+    --dm-text-muted: #64748b;
+    --dm-text-soft: #94a3b8;
+    --dm-primary: var(--admin-primary);
+    --dm-primary-hover: var(--admin-primary-hover);
+    --dm-primary-soft: var(--admin-primary-soft);
+    --dm-primary-text: #ffffff;
+    --dm-primary-50: #f8fbff;
+    --dm-primary-100: var(--admin-primary-soft);
+    --dm-primary-200: #cfe0ff;
+    --dm-primary-300: #9fc3ff;
+    --dm-primary-400: #4c91f2;
+    --dm-primary-500: var(--admin-primary);
+    --dm-primary-600: var(--admin-primary-hover);
+    --dm-primary-700: #06439c;
+    --dm-primary-800: #053275;
+    --dm-primary-900: #03204c;
+    --dm-link: var(--admin-primary);
+    --dm-accent: var(--admin-primary);
+    --dm-accent-soft: var(--admin-primary-soft);
+    --dm-accent-dark: var(--admin-primary);
+    --dm-accent-dark-hover: var(--admin-primary-hover);
+    --dm-accent-gold: var(--admin-primary);
+    --dm-pending-bg: var(--warning-bg);
+    --dm-pending-text: var(--warning-text);
+    --dm-standby-bg: var(--warning-bg);
+    --dm-standby-text: var(--warning-text);
+    --dm-confirmed-bg: var(--success-bg);
+    --dm-confirmed-text: var(--success-text);
+    --dm-confirmed-border: rgba(21, 128, 61, 0.22);
+    --dm-danger-bg: var(--danger-bg);
+    --dm-danger-text: var(--danger-text);
+    --dm-neutral-bg: var(--neutral-bg);
+    --dm-neutral-text: var(--neutral-text);
+    --dm-neutral-border: var(--border);
+    --dm-info-text: var(--admin-primary);
+    --dm-info-strong: var(--admin-primary);
+    --dm-success-strong: var(--success-text);
+    --dm-danger-strong: var(--danger-text);
+    --dm-warning-strong: var(--warning-text);
+    --dm-success-border: rgba(21, 128, 61, 0.22);
+    --dm-danger-border: rgba(185, 28, 28, 0.22);
+    --dm-warning-border: rgba(194, 65, 12, 0.22);
+    --dm-white: #ffffff;
+    --dm-radius-sm: var(--radius-sm);
+    --dm-radius-md: var(--radius-md);
+    --dm-radius-lg: var(--radius-lg);
+    --dm-shadow-sm: var(--shadow-sm);
+    --dm-shadow-md: var(--shadow-md);
+    --dm-focus-ring: 0 0 0 4px rgba(11, 94, 215, 0.12);
+
+    --analytics-bg: var(--bg);
+    --analytics-surface: var(--surface);
+    --analytics-surface-strong: var(--surface);
+    --analytics-line: var(--border);
+    --analytics-text: var(--text-main);
+    --analytics-muted: var(--text-muted);
+    --analytics-soft: var(--text-soft);
+    --analytics-shadow: var(--shadow-md);
+    --analytics-shadow-soft: var(--shadow-sm);
+    --analytics-gold: var(--warning-text);
+    --analytics-sage: var(--success-text);
+    --analytics-rose: var(--danger-text);
+    --analytics-blue: var(--admin-primary);
+    --analytics-ink: var(--text-main);
 }
 
 html,
@@ -541,6 +613,7 @@ button,
 .mini-button,
 .overlay-chip,
 .today-button,
+.analytics-range-chip,
 .timeline-date-nav,
 .timeline-date-picker-trigger,
 .booking-list-tab,
@@ -550,6 +623,13 @@ button,
 .booking-modal-secondary-small,
 .booking-modal-success-small,
 .booking-modal-danger-small,
+.admin-date-nav,
+.admin-filter-apply,
+.admin-modal-close,
+.admin-inbox-table-modal-close,
+.dashboard-floor-detail-close,
+.details-close,
+.icon-action,
 .page-pill {
     border-radius: var(--dm-radius-sm) !important;
     font-family: var(--dm-font-sans) !important;
@@ -565,18 +645,28 @@ button,
 .home-button,
 .btn,
 .btn-surface,
+.btn-warning-soft,
+.btn-danger-soft,
+.btn-delete,
 .btn-workflow,
 .btn-link-workflow,
 .bm-btn-clear,
 .mini-button,
 .overlay-chip,
 .today-button,
+.analytics-range-chip,
 .timeline-date-nav,
 .timeline-date-picker-trigger,
 .booking-list-tab,
 .booking-modal-cancel,
 .booking-modal-secondary-small,
 .page-pill,
+.admin-date-nav,
+.admin-modal-close,
+.admin-inbox-table-modal-close,
+.dashboard-floor-detail-close,
+.details-close,
+.icon-action,
 .toolbar-action {
     min-height: 40px !important;
     border: 1px solid var(--dm-border) !important;
@@ -600,6 +690,7 @@ button,
 .booking-list-tab,
 .booking-modal-cancel,
 .booking-modal-secondary-small,
+.analytics-range-chip,
 .page-pill {
     padding: 0 14px !important;
 }
@@ -607,7 +698,14 @@ button,
 .mini-button,
 .overlay-chip,
 .timeline-date-nav,
-.timeline-date-picker-trigger {
+.timeline-date-picker-trigger,
+.admin-date-nav,
+.admin-modal-close,
+.admin-inbox-table-modal-close,
+.dashboard-floor-detail-close,
+.details-close,
+.icon-action,
+.page-pill.icon {
     width: 40px !important;
     min-width: 40px !important;
     padding: 0 !important;
@@ -617,17 +715,27 @@ button,
 .home-button:hover,
 .btn:hover,
 .btn-surface:hover,
+.btn-warning-soft:hover,
+.btn-danger-soft:hover,
+.btn-delete:hover,
 .btn-workflow:hover,
 .btn-link-workflow:hover,
 .bm-btn-clear:hover,
 .mini-button:hover,
 .overlay-chip:hover,
 .today-button:hover,
+.analytics-range-chip:hover,
 .timeline-date-nav:hover,
 .timeline-date-picker-trigger:hover,
 .booking-list-tab:hover,
 .booking-modal-cancel:hover,
 .booking-modal-secondary-small:hover,
+.admin-date-nav:hover,
+.admin-modal-close:hover,
+.admin-inbox-table-modal-close:hover,
+.dashboard-floor-detail-close:hover,
+.details-close:hover,
+.icon-action:hover,
 .page-pill:hover {
     border-color: var(--dm-border-strong) !important;
     background: #f8fafc !important;
@@ -645,6 +753,7 @@ button,
 .btn-primary-solid,
 .btn-edit,
 .bm-btn-apply,
+.admin-filter-apply,
 .btn-workflow.is-confirm,
 .btn-workflow.is-table-action,
 .btn-workflow.is-complete,
@@ -669,6 +778,7 @@ button,
 .btn-primary-solid:hover,
 .btn-edit:hover,
 .bm-btn-apply:hover,
+.admin-filter-apply:hover,
 .btn-workflow.is-confirm:hover,
 .btn-workflow.is-table-action:hover,
 .btn-workflow.is-complete:hover,
@@ -684,6 +794,7 @@ button,
 .btn-delete,
 .button-danger,
 .btn-danger-soft,
+.icon-action.delete,
 .btn-workflow.is-reject,
 .btn-workflow.is-no-show,
 .booking-modal-danger-small {
@@ -695,6 +806,7 @@ button,
 .btn-delete:hover,
 .button-danger:hover,
 .btn-danger-soft:hover,
+.icon-action.delete:hover,
 .btn-workflow.is-reject:hover,
 .btn-workflow.is-no-show:hover,
 .booking-modal-danger-small:hover {
@@ -709,11 +821,33 @@ button,
     color: var(--dm-pending-text) !important;
 }
 
+.is-hidden {
+    display: none !important;
+}
+
 .btn-secondary,
 .button-ghost {
     border-color: var(--dm-border) !important;
     background: var(--dm-surface) !important;
     color: var(--dm-text) !important;
+}
+
+.btn-close {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    border: 1px solid var(--dm-border) !important;
+    border-radius: var(--dm-radius-sm) !important;
+    background-color: var(--dm-surface) !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+}
+
+.btn-close:hover {
+    border-color: var(--dm-border-strong) !important;
+    background-color: #f8fafc !important;
 }
 
 input,
@@ -1087,7 +1221,14 @@ tbody tr:last-child td {
     border: 1px solid var(--dm-border) !important;
     border-radius: var(--dm-radius-md) !important;
     background: var(--dm-surface-muted) !important;
+}
+
+.canvas-stage {
     overflow: hidden !important;
+}
+
+.timeline-scroll-wrapper {
+    overflow: auto !important;
 }
 
 .canvas-frame,

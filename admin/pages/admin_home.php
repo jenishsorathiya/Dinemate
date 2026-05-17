@@ -27,7 +27,7 @@ if (!in_array($selectedCapacityService, ['all', 'lunch', 'dinner'], true)) {
 }
 $nextCapacityService = $selectedCapacityService === 'lunch' ? 'dinner' : 'lunch';
 $selectedCapacityLabel = $selectedCapacityService === 'all' ? 'All' : ucfirst($selectedCapacityService);
-$allowedDashboardTabs = ['bookings', 'trivia', 'functions', 'floor'];
+$allowedDashboardTabs = ['bookings', 'trivia', 'functions', 'timeline', 'floor'];
 $selectedDashboardTab = strtolower(trim((string) ($_GET['dashboard_tab'] ?? 'bookings')));
 if (!in_array($selectedDashboardTab, $allowedDashboardTabs, true)) {
     $selectedDashboardTab = 'bookings';
@@ -170,6 +170,11 @@ $dashboardTabs = [
         'key' => 'functions',
         'label' => 'Functions',
         'icon' => 'bi-cake2',
+    ],
+    [
+        'key' => 'timeline',
+        'label' => 'Timeline',
+        'icon' => 'bi-clock-history',
     ],
     [
         'key' => 'floor',
@@ -325,6 +330,7 @@ $dashboardTabCounts = [
     'bookings' => 0,
     'trivia' => 0,
     'functions' => 0,
+    'timeline' => $selectedBookingsCount,
 ];
 foreach ($bookingTableRows as $bookingTableRow) {
     $bookingType = normalizeBookingType($bookingTableRow['booking_type'] ?? 'normal');
@@ -1074,6 +1080,24 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                                 </section>
                             <?php endif; ?>
                         </section>
+                    <?php elseif ($selectedDashboardTab === 'timeline'): ?>
+                        <section class="booking-timeline-panel card" aria-label="Timeline view">
+                            <div class="booking-table-head">
+                                <div>
+                                    <h2><?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?></h2>
+                                </div>
+                                <a class="icon-btn booking-table-expand-btn" href="../timeline/timeline.php?date=<?php echo urlencode($selectedDate); ?>" aria-label="Open full timeline" title="Open full timeline">
+                                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                </a>
+                            </div>
+
+                            <iframe
+                                class="booking-timeline-frame"
+                                title="Timeline for <?php echo htmlspecialchars($dashboardDateLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                src="../timeline/timeline.php?embedded=1&date=<?php echo urlencode($selectedDate); ?>"
+                                loading="lazy"
+                            ></iframe>
+                        </section>
                     <?php elseif ($selectedDashboardTab === 'floor'): ?>
                         <section class="dashboard-floor-panel card" aria-label="Floor view">
                             <div class="booking-table-head">
@@ -1338,6 +1362,104 @@ $styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?:
                     params.set('request_panel', '<?php echo htmlspecialchars($selectedRequestPanel, ENT_QUOTES, 'UTF-8'); ?>');
                     window.location.href = `admin_home.php?${params.toString()}`;
                 }
+            });
+        });
+
+        const bookingDetailModal = document.querySelector('[data-admin-booking-detail-modal]');
+        const setBookingDetailText = (selector, value) => {
+            const element = bookingDetailModal?.querySelector(selector);
+            if (element) {
+                element.textContent = value || '-';
+            }
+        };
+        const closeBookingDetailModal = () => {
+            if (bookingDetailModal) {
+                bookingDetailModal.hidden = true;
+                document.body.classList.remove('admin-modal-open');
+            }
+        };
+        const openBookingDetailModal = (bookingData) => {
+            if (!bookingDetailModal) {
+                return;
+            }
+
+            const tableText = [bookingData.bookingTable, bookingData.bookingArea].filter(Boolean).join(' - ');
+            const contactText = bookingData.bookingPhone || bookingData.bookingEmail || '-';
+            const action = bookingDetailModal.querySelector('[data-booking-detail-action]');
+
+            setBookingDetailText('[data-booking-detail-name]', bookingData.bookingName || 'Booking');
+            setBookingDetailText('[data-booking-detail-subtitle]', bookingData.bookingId ? `Booking #${bookingData.bookingId}` : '');
+            setBookingDetailText('[data-booking-detail-date]', bookingData.bookingDate || '-');
+            setBookingDetailText('[data-booking-detail-time]', bookingData.bookingTime || '-');
+            setBookingDetailText('[data-booking-detail-guests]', bookingData.bookingGuests ? `${bookingData.bookingGuests} guests` : '-');
+            setBookingDetailText('[data-booking-detail-table]', tableText || '-');
+            setBookingDetailText('[data-booking-detail-status]', bookingData.bookingStatus || '-');
+            setBookingDetailText('[data-booking-detail-contact]', contactText);
+            setBookingDetailText('[data-booking-detail-notes]', bookingData.bookingNotes || 'No notes recorded.');
+
+            if (action) {
+                action.href = bookingData.bookingActionUrl || 'admin_bookings.php';
+            }
+
+            bookingDetailModal.hidden = false;
+            document.body.classList.add('admin-modal-open');
+        };
+
+        document.querySelectorAll('[data-admin-modal-close]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const modal = button.closest('.admin-modal');
+                if (modal === bookingDetailModal) {
+                    closeBookingDetailModal();
+                }
+            });
+        });
+
+        if (bookingDetailModal) {
+            bookingDetailModal.addEventListener('click', (event) => {
+                if (event.target === bookingDetailModal) {
+                    closeBookingDetailModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && bookingDetailModal && !bookingDetailModal.hidden) {
+                closeBookingDetailModal();
+            }
+        });
+
+        document.querySelectorAll('[data-admin-booking-open]').forEach((button) => {
+            button.addEventListener('click', () => {
+                openBookingDetailModal(button.dataset);
+            });
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin || !event.data || event.data.type !== 'dinemate:edit-booking') {
+                return;
+            }
+
+            const booking = event.data.booking || {};
+            const assignedTables = Array.isArray(booking.assigned_table_numbers)
+                ? booking.assigned_table_numbers.filter(Boolean).join(', ')
+                : (booking.assigned_table_numbers || booking.table_number || '');
+            const bookingDate = booking.booking_date || '<?php echo htmlspecialchars($selectedDate, ENT_QUOTES, 'UTF-8'); ?>';
+            const startTime = booking.start_time ? String(booking.start_time).slice(0, 5) : '';
+            const endTime = booking.end_time ? String(booking.end_time).slice(0, 5) : '';
+
+            openBookingDetailModal({
+                bookingId: booking.booking_id || '',
+                bookingName: booking.customer_name || 'Guest',
+                bookingDate,
+                bookingTime: [startTime, endTime].filter(Boolean).join(' - '),
+                bookingGuests: booking.number_of_guests || '',
+                bookingTable: assignedTables ? `Table ${assignedTables}` : 'No table',
+                bookingArea: '',
+                bookingStatus: booking.status || '',
+                bookingPhone: booking.customer_phone || '',
+                bookingEmail: booking.customer_email || '',
+                bookingNotes: booking.special_request || '',
+                bookingActionUrl: `admin_bookings.php?booking_search=${encodeURIComponent(booking.booking_id || '')}&booking_date_start=${encodeURIComponent(bookingDate)}&booking_date_end=${encodeURIComponent(bookingDate)}`,
             });
         });
 

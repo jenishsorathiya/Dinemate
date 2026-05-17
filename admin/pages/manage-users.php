@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'phone' => $payload['phone'],
                 'role' => $payload['role'],
             ];
-            $redirectToManageUsers('var(--dm-border-strong)-user-form');
+            $redirectToManageUsers('#add-user-form');
         }
 
         $stmt = $pdo->prepare("
@@ -455,12 +455,12 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
     <div class="main-content">
         <div class="main">
-            <div class="admin-workspace users-shell">
+            <div class="admin-workspace admin-ops users-shell">
                 <header class="admin-page-heading">
                     <div>
-                        <p class="admin-page-kicker">Access Control</p>
+                        <p class="admin-page-kicker">Account Desk</p>
                         <h1 class="admin-page-title">Users</h1>
-                        <p class="admin-page-copy">Create staff accounts, review customer history, and protect accounts that already have bookings attached.</p>
+                        <p class="admin-page-copy">Create accounts, manage roles, review booking history, and protect records tied to reservations.</p>
                     </div>
                     <div class="admin-actions">
                         <span class="admin-chip is-primary"><?php echo number_format($adminCount); ?> admins</span>
@@ -472,6 +472,29 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                 <?php if ($flash): ?>
                     <div class="alert alert-<?php echo htmlspecialchars($flash['type'] === 'error' ? 'danger' : $flash['type'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8'); ?></div>
                 <?php endif; ?>
+
+                <section class="ops-metric-grid" aria-label="User summary">
+                    <div class="ops-metric">
+                        <span>Registered</span>
+                        <strong><?php echo number_format($totalUsers); ?></strong>
+                        <small>Active directory records</small>
+                    </div>
+                    <div class="ops-metric">
+                        <span>Admins</span>
+                        <strong><?php echo number_format($adminCount); ?></strong>
+                        <small>Can access admin pages</small>
+                    </div>
+                    <div class="ops-metric">
+                        <span>Booking History</span>
+                        <strong><?php echo number_format($usersWithBookings); ?></strong>
+                        <small>Accounts linked to visits</small>
+                    </div>
+                    <div class="ops-metric">
+                        <span>New Accounts</span>
+                        <strong><?php echo number_format($recentUsers); ?></strong>
+                        <small>Joined in the last 30 days</small>
+                    </div>
+                </section>
 
                 <div class="admin-command-bar">
                     <div class="admin-command-group">

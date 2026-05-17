@@ -30,7 +30,7 @@ $normalizeTableShape = static function (string $value): string {
     return $aliases[$shape] ?? 'auto';
 };
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = readJsonRequestPayload(['json' => true]);
 
 $tableId = (int)($data['table_id'] ?? 0);
 $capacity = (int)($data['capacity'] ?? 0);

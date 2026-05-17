@@ -170,8 +170,8 @@ include '../includes/header.php';
     <div class="profile-layout">
         <div class="profile-card">
             <div class="profile-header">
-                <h2><i class="fa fa-user"></i> Guest Profile</h2>
-                <p>Keep the details that make the next Old Canberra Inn visit easier: contact info, seating, notes, reminders, and password.</p>
+                <h2>Your Details</h2>
+                <p>Keep your contact details, dining preferences, and reminders ready for the next visit.</p>
             </div>
 
             <?php if ($error !== ''): ?>
@@ -221,29 +221,29 @@ include '../includes/header.php';
                         </select>
                     </div>
                     <div class="profile-field full-width">
-                        <label for="dietaryNotes">Dietary Or Allergy Notes</label>
-                        <textarea class="profile-textarea" id="dietaryNotes" name="dietary_notes" placeholder="Share allergies, dietary preferences, mobility needs, pram space, or other dining notes."><?php echo htmlspecialchars((string) ($customerProfile['dietary_notes'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                        <label for="dietaryNotes">Dietary or Allergy Notes</label>
+                        <textarea class="profile-textarea" id="dietaryNotes" name="dietary_notes" placeholder="Allergies, dietary preferences, mobility needs, pram space, or anything helpful for the team."><?php echo htmlspecialchars((string) ($customerProfile['dietary_notes'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
                     </div>
                     <div class="profile-field full-width">
-                        <label for="customerNotes">Additional Booking Notes</label>
-                        <textarea class="profile-textarea" id="customerNotes" name="customer_notes" placeholder="Anything you want saved on your customer profile for future bookings."><?php echo htmlspecialchars((string) ($customerProfile['notes'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                        <label for="customerNotes">Visit Notes</label>
+                        <textarea class="profile-textarea" id="customerNotes" name="customer_notes" placeholder="A favourite area, regular occasion, accessibility note, or anything you often mention when booking."><?php echo htmlspecialchars((string) ($customerProfile['notes'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
                     </div>
                 </div>
 
                 <div class="profile-section">
-                    <h3>Reminder Preferences</h3>
+                    <h3>Reminders</h3>
                     <div class="toggle-row dm-mt-16">
                         <label class="toggle-item">
                             <div class="toggle-copy">
                                 <strong>Email reminders</strong>
-                                <span>Use my saved email address for booking reminders and confirmation follow-ups.</span>
+                                <span>Send reservation reminders and confirmation updates by email.</span>
                             </div>
                             <input type="checkbox" name="email_reminders_enabled" value="1" <?php echo !isset($customerProfile['email_reminders_enabled']) || (int) $customerProfile['email_reminders_enabled'] === 1 ? 'checked' : ''; ?>>
                         </label>
                         <label class="toggle-item">
                             <div class="toggle-copy">
                                 <strong>SMS reminders</strong>
-                                <span>Use my saved phone number for text reminders when available.</span>
+                                <span>Send text reminders to the phone number saved above.</span>
                             </div>
                             <input type="checkbox" name="sms_reminders_enabled" value="1" <?php echo !empty($customerProfile['sms_reminders_enabled']) ? 'checked' : ''; ?>>
                         </label>
@@ -251,14 +251,14 @@ include '../includes/header.php';
                 </div>
 
                 <div class="profile-actions">
-                    <a class="profile-btn profile-btn-secondary dm-no-underline" href="dashboard.php">Back To Dashboard</a>
+                    <a class="profile-btn profile-btn-secondary dm-no-underline" href="dashboard.php">Back to Dashboard</a>
                     <button type="submit" class="profile-btn profile-btn-primary">Save Profile</button>
                 </div>
             </form>
 
             <div class="profile-section">
                 <h3>Account Security</h3>
-                <p class="dm-mt-8 dm-muted">Change your password without leaving the customer portal.</p>
+                <p class="dm-mt-8 dm-muted">Update your password when you need a fresh sign-in.</p>
                 <form method="POST" class="dm-mt-18">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($profileCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="action" value="password">
@@ -284,32 +284,32 @@ include '../includes/header.php';
         </div>
 
         <aside class="profile-side-card">
-            <h3>Profile Snapshot</h3>
-            <p>Your saved details and reservation summary.</p>
+            <h3>At a Glance</h3>
+            <p>A quick view of your visit history and saved preferences.</p>
 
             <div class="stats-list dm-mt-18">
                 <div class="stat-item">
-                    <strong>Completed Visits</strong>
+                    <strong>Completed visits</strong>
                     <span><?php echo number_format($completedCount); ?> completed reservations in your history.</span>
                 </div>
                 <div class="stat-item">
-                    <strong>Active Bookings</strong>
+                    <strong>Active reservations</strong>
                     <span><?php echo number_format($pendingCount); ?> pending or confirmed reservations.</span>
                 </div>
                 <div class="stat-item">
-                    <strong>Last Booking</strong>
+                    <strong>Last booking</strong>
                     <span><?php echo $lastBookingDate !== '' ? htmlspecialchars(date('j M Y', strtotime($lastBookingDate)), ENT_QUOTES, 'UTF-8') : 'None'; ?></span>
                 </div>
             </div>
 
             <div class="quick-links dm-mt-22">
                 <div class="quick-link-card">
-                    <strong>Reservation History</strong>
+                    <strong>Reservation history</strong>
                     <span>Review previous reservations and rebook from history.</span>
                     <div class="dm-mt-12"><a href="my-bookings.php?view=past">View history</a></div>
                 </div>
                 <div class="quick-link-card">
-                    <strong>Current Reservations</strong>
+                    <strong>Upcoming reservations</strong>
                     <span>View and manage your upcoming bookings.</span>
                     <div class="dm-mt-12"><a href="dashboard.php">View dashboard</a></div>
                 </div>

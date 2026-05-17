@@ -120,6 +120,26 @@ function requireValidCsrfToken(string $key = 'default', array $options = []): vo
     redirect((string) ($options['redirect'] ?? appPath('public/index.php')));
 }
 
+function readJsonRequestPayload(array $options = []): array {
+    $rawPayload = file_get_contents('php://input');
+    $decodedPayload = json_decode($rawPayload !== false ? $rawPayload : '', true);
+
+    if (is_array($decodedPayload)) {
+        return $decodedPayload;
+    }
+
+    if (!empty($options['json'])) {
+        if (!headers_sent()) {
+            header('Content-Type: application/json');
+        }
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Invalid JSON request payload.']);
+        exit();
+    }
+
+    return [];
+}
+
 function storeUserSession(array $user) {
     $_SESSION['user_id'] = $user['user_id'];
     $_SESSION['role'] = $user['role'] ?? null;

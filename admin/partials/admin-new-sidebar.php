@@ -1,19 +1,17 @@
 <?php
 $adminNewSidebarActive = $adminNewSidebarActive ?? '';
-$adminScriptPath = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
-$adminInPages = strpos($adminScriptPath, '/admin/pages/') !== false;
-
-if ($adminInPages) {
-    $adminPagesPrefix = '';
-} else {
-    $adminPagesPrefix = 'pages/';
-}
-
-$adminAuthPrefix = $adminInPages ? '../../' : '../';
 $adminNewSidebarName = trim((string) ($_SESSION['name'] ?? 'Admin'));
 if ($adminNewSidebarName === '') {
     $adminNewSidebarName = 'Admin';
 }
+
+$adminBuildPath = static function (string $path): string {
+    return function_exists('appPath') ? appPath($path) : '/' . ltrim($path, '/');
+};
+
+$adminPagePath = static function (string $page) use ($adminBuildPath): string {
+    return $adminBuildPath('admin/pages/' . ltrim($page, '/'));
+};
 
 $adminNewSidebarInitials = static function (string $name): string {
     $parts = preg_split('/\s+/', trim($name));
@@ -40,22 +38,22 @@ $adminNewSidebarInitials = static function (string $name): string {
 };
 
 $adminNewSidebarItems = [
-    ['key' => 'home', 'label' => 'Home', 'href' => $adminPagesPrefix . 'admin_home.php', 'icon' => 'bi-house'],
-    ['key' => 'bookings', 'label' => 'Bookings', 'href' => $adminPagesPrefix . 'admin_bookings.php', 'icon' => 'bi-calendar-check'],
-    ['key' => 'inbox', 'label' => 'Inbox', 'href' => $adminPagesPrefix . 'admin_inbox.php', 'icon' => 'bi-inbox'],
-    ['key' => 'functions', 'label' => 'Functions', 'href' => $adminPagesPrefix . 'bookings-management.php', 'icon' => 'bi-calendar-event'],
-    ['key' => 'tables', 'label' => 'Tables', 'href' => $adminPagesPrefix . 'tables-management.php', 'icon' => 'bi-grid-3x3-gap'],
-    ['key' => 'menu', 'label' => 'Menu', 'href' => $adminPagesPrefix . 'menu-management.php', 'icon' => 'bi-menu-button-wide'],
-    ['key' => 'guests', 'label' => 'Guests', 'href' => $adminPagesPrefix . 'customer-history.php', 'icon' => 'bi-people'],
-    ['key' => 'reviews', 'label' => 'Reviews', 'href' => $adminPagesPrefix . 'admin_booking_reviews.php', 'icon' => 'bi-star'],
-    ['key' => 'users', 'label' => 'Users', 'href' => $adminPagesPrefix . 'manage-users.php', 'icon' => 'bi-person-gear'],
-    ['key' => 'report', 'label' => 'Report', 'href' => $adminPagesPrefix . 'analytics.php', 'icon' => 'bi-bar-chart'],
-    ['key' => 'settings', 'label' => 'Settings', 'href' => $adminPagesPrefix . 'settings.php', 'icon' => 'bi-gear'],
+    ['key' => 'home', 'label' => 'Home', 'href' => $adminPagePath('admin_home.php'), 'icon' => 'bi-house'],
+    ['key' => 'bookings', 'label' => 'Bookings', 'href' => $adminPagePath('admin_bookings.php'), 'icon' => 'bi-calendar-check'],
+    ['key' => 'inbox', 'label' => 'Inbox', 'href' => $adminPagePath('admin_inbox.php'), 'icon' => 'bi-inbox'],
+    ['key' => 'functions', 'label' => 'Functions', 'href' => $adminPagePath('bookings-management.php'), 'icon' => 'bi-calendar-event'],
+    ['key' => 'tables', 'label' => 'Tables', 'href' => $adminPagePath('tables-management.php'), 'icon' => 'bi-grid-3x3-gap'],
+    ['key' => 'menu', 'label' => 'Menu', 'href' => $adminPagePath('menu-management.php'), 'icon' => 'bi-menu-button-wide'],
+    ['key' => 'guests', 'label' => 'Guests', 'href' => $adminPagePath('customer-history.php'), 'icon' => 'bi-people'],
+    ['key' => 'reviews', 'label' => 'Reviews', 'href' => $adminPagePath('admin_booking_reviews.php'), 'icon' => 'bi-star'],
+    ['key' => 'users', 'label' => 'Users', 'href' => $adminPagePath('manage-users.php'), 'icon' => 'bi-person-gear'],
+    ['key' => 'report', 'label' => 'Report', 'href' => $adminPagePath('analytics.php'), 'icon' => 'bi-bar-chart'],
+    ['key' => 'settings', 'label' => 'Settings', 'href' => $adminPagePath('settings.php'), 'icon' => 'bi-gear'],
 ];
 ?>
 <aside class="sidebar" aria-label="Admin sidebar">
     <div>
-        <a class="sidebar-brand" href="<?php echo htmlspecialchars($adminPagesPrefix . 'admin_home.php', ENT_QUOTES, 'UTF-8'); ?>" aria-label="Old Canberra Inn admin home">
+        <a class="sidebar-brand" href="<?php echo htmlspecialchars($adminPagePath('admin_home.php'), ENT_QUOTES, 'UTF-8'); ?>" aria-label="Old Canberra Inn admin home">
             <div class="brand-icon">
                 <i class="bi bi-bank" aria-hidden="true"></i>
             </div>
@@ -86,7 +84,7 @@ $adminNewSidebarItems = [
             </div>
             <i class="bi bi-chevron-down" aria-hidden="true"></i>
         </div>
-        <a class="sidebar-link sidebar-logout" href="<?php echo htmlspecialchars($adminAuthPrefix . 'auth/logout.php', ENT_QUOTES, 'UTF-8'); ?>">
+        <a class="sidebar-link sidebar-logout" href="<?php echo htmlspecialchars($adminBuildPath('auth/logout.php'), ENT_QUOTES, 'UTF-8'); ?>">
             <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
             <span>Logout</span>
         </a>

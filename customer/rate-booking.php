@@ -66,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
 $bookingDate = $booking ? date('D, j M Y', strtotime((string) ($booking['booking_date'] ?? ''))) : '';
 $bookingTime = $booking ? sprintf('%s - %s', date('g:i A', strtotime((string) ($booking['start_time'] ?? '00:00:00'))), date('g:i A', strtotime((string) ($booking['end_time'] ?? '00:00:00')))) : '';
 $statusLabel = $booking ? getBookingStatusLabel(strtolower((string) ($booking['status'] ?? 'pending'))) : '';
+$isReviewEligible = $booking && strtolower((string) ($booking['status'] ?? '')) === 'completed';
 ?>
 
 <?php
@@ -77,9 +78,11 @@ include '../includes/header.php';
 
 
 <div class="rate-booking-shell">
-    <div class="review-panel">
-        <h1>Share Your Visit Notes</h1>
-        <p>Rate your visit and share anything you would like the restaurant team to know.</p>
+    <div class="review-layout">
+    <section class="review-panel">
+        <p class="guest-section-kicker">Visit review</p>
+        <h1>How was your visit?</h1>
+        <p>Leave a rating and a short note for the restaurant team.</p>
 
         <?php if (!empty($errors)): ?>
             <div class="notification-box error">
@@ -97,7 +100,7 @@ include '../includes/header.php';
             </div>
         <?php endif; ?>
 
-        <?php if ($booking): ?>
+        <?php if ($booking && $isReviewEligible): ?>
             <div class="review-meta">
                 <span><strong>Booking:</strong> <?php echo htmlspecialchars($bookingDate, ENT_QUOTES, 'UTF-8'); ?> at <?php echo htmlspecialchars($bookingTime, ENT_QUOTES, 'UTF-8'); ?></span>
                 <span><strong>Status:</strong> <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?></span>
@@ -126,12 +129,12 @@ include '../includes/header.php';
                 </div>
 
                 <div>
-                    <label for="comment"><strong>Comments</strong></label>
-                    <textarea id="comment" name="comment" class="review-comment" placeholder="Share what you enjoyed or what we can improve."><?php echo htmlspecialchars($existingReview['review_comment'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <label for="comment"><strong>Your note</strong></label>
+                    <textarea id="comment" name="comment" class="review-comment" placeholder="What did you enjoy? Anything the team should know for next time?"><?php echo htmlspecialchars($existingReview['review_comment'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
                 </div>
 
                 <div class="review-actions">
-                    <button type="submit" class="btn-primary-solid"><i class="fa fa-star"></i> Submit Review</button>
+                    <button type="submit" class="btn-primary-solid"><i class="fa fa-star"></i> Save Review</button>
                     <a href="my-bookings.php" class="btn-surface">Back to Reservations</a>
                 </div>
             </form>
@@ -141,6 +144,23 @@ include '../includes/header.php';
             </div>
             <a href="my-bookings.php" class="btn-primary-solid">Back to Reservations</a>
         <?php endif; ?>
+    </section>
+
+    <aside class="review-side-panel">
+        <h3>Review Details</h3>
+        <ul class="portal-side-list">
+            <li><i class="fa fa-calendar"></i><span><?php echo htmlspecialchars($bookingDate !== '' ? $bookingDate : 'Reservation unavailable', ENT_QUOTES, 'UTF-8'); ?></span></li>
+            <?php if ($bookingTime !== ''): ?>
+                <li><i class="fa fa-clock"></i><span><?php echo htmlspecialchars($bookingTime, ENT_QUOTES, 'UTF-8'); ?></span></li>
+            <?php endif; ?>
+            <?php if ($booking): ?>
+                <li><i class="fa fa-users"></i><span><?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</span></li>
+            <?php endif; ?>
+        </ul>
+        <div class="hint-card">
+            Your review helps the team understand what to keep doing well and what to improve.
+        </div>
+    </aside>
     </div>
 </div>
 

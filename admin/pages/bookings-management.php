@@ -291,7 +291,7 @@ function fmtTime(string $time): string {
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <div class="main-content">
-        <div class="fn-page">
+        <div class="fn-page admin-ops">
 
             <?php if ($flash): ?>
                 <div class="fn-alert fn-alert-<?php echo htmlspecialchars($flash['type'] === 'error' ? 'error' : ($flash['type'] === 'warning' ? 'warning' : 'success'), ENT_QUOTES, 'UTF-8'); ?>">
@@ -301,19 +301,43 @@ function fmtTime(string $time): string {
 
             <div class="fn-topbar">
                 <div>
+                    <p class="admin-page-kicker">Event Desk</p>
                     <h1>Functions</h1>
-                    <p>Manage group bookings, private events, trivia nights, and special setups.</p>
+                    <p>Plan group bookings from first enquiry through setup, confirmation, and service handover.</p>
                 </div>
                 <button type="button" class="fn-new-btn" onclick="document.getElementById('fnNewModal').classList.add('is-open')">
                     <i class="bi bi-plus-lg"></i> New Function
                 </button>
             </div>
 
+            <section class="ops-metric-grid" aria-label="Function summary">
+                <div class="ops-metric">
+                    <span>Upcoming</span>
+                    <strong><?php echo number_format($tabCounts['upcoming']); ?></strong>
+                    <small>Active function bookings</small>
+                </div>
+                <div class="ops-metric">
+                    <span>Setup Needed</span>
+                    <strong><?php echo number_format($tabCounts['setup']); ?></strong>
+                    <small>Area or card needs attention</small>
+                </div>
+                <div class="ops-metric">
+                    <span>Confirmed</span>
+                    <strong><?php echo number_format($tabCounts['confirmed']); ?></strong>
+                    <small>Ready for service prep</small>
+                </div>
+                <div class="ops-metric">
+                    <span>Pending Bookings</span>
+                    <strong><?php echo number_format($pendingRequestsCount); ?></strong>
+                    <small>Open reservation requests</small>
+                </div>
+            </section>
+
             <nav class="fn-tabs" aria-label="Function tabs">
                 <?php foreach (['upcoming' => 'Upcoming', 'setup' => 'Setup', 'confirmed' => 'Confirmed', 'done' => 'Done'] as $key => $label): ?>
                     <a class="fn-tab<?php echo $activeTab === $key ? ' is-active' : ''; ?>"
                        href="?tab=<?php echo $key; ?>">
-                        <?php echo $label; ?>
+                        <?php echo $label; ?> <span><?php echo number_format($tabCounts[$key] ?? 0); ?></span>
                     </a>
                 <?php endforeach; ?>
             </nav>
@@ -333,9 +357,7 @@ function fmtTime(string $time): string {
                             : (eventTypeLabel($fn['function_event_type']) . ' Event');
                         $isSelected = ((int) $fn['booking_id'] === $selectedFunctionId);
                     ?>
-                        <a class="fn-card<?php echo $isSelected ? ' is-selected' : ''; ?>"
-                           href="?tab=<?php echo $activeTab; ?>&function=<?php echo (int) $fn['booking_id']; ?>"
-                           style="text-decoration: none; color: inherit;">
+                        <article class="fn-card<?php echo $isSelected ? ' is-selected' : ''; ?>">
                             <div class="fn-card-head">
                                 <div>
                                     <h3 class="fn-card-title"><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h3>
@@ -391,7 +413,7 @@ function fmtTime(string $time): string {
                                     </span>
                                 <?php endif; ?>
                             </div>
-                        </a>
+                        </article>
                     <?php endforeach; ?>
                 </div>
 

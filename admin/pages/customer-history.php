@@ -375,7 +375,7 @@ $flash = getFlashMessage();
     <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
     <div class="main-content">
         <div class="main">
-            <div class="admin-workspace page-shell">
+            <div class="admin-workspace admin-ops page-shell">
                 <?php if ($flash): ?>
                     <div class="alert alert-<?php echo htmlspecialchars($flash['type'] === 'error' ? 'danger' : $flash['type'], ENT_QUOTES, 'UTF-8'); ?>">
                         <?php echo htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8'); ?>
@@ -384,9 +384,9 @@ $flash = getFlashMessage();
 
                 <header class="admin-page-heading">
                     <div>
-                        <p class="admin-page-kicker">Guest Records</p>
+                        <p class="admin-page-kicker">Guest Memory</p>
                         <h1 class="admin-page-title">Guests</h1>
-                        <p class="admin-page-copy">Find repeat guests, link profiles to registered accounts, add internal notes, and merge duplicates safely.</p>
+                        <p class="admin-page-copy">Keep guest profiles, account links, notes, and booking history clean for service follow-up.</p>
                     </div>
                     <div class="admin-actions">
                         <span class="admin-chip"><?php echo number_format($totalProfiles); ?> profiles</span>
@@ -394,6 +394,29 @@ $flash = getFlashMessage();
                         <span class="admin-chip is-primary"><?php echo number_format($totalBookingsAcrossProfiles); ?> bookings</span>
                     </div>
                 </header>
+
+                <section class="ops-metric-grid" aria-label="Guest summary">
+                    <div class="ops-metric">
+                        <span>Profiles</span>
+                        <strong><?php echo number_format($totalProfiles); ?></strong>
+                        <small>Visible customer records</small>
+                    </div>
+                    <div class="ops-metric">
+                        <span>Linked</span>
+                        <strong><?php echo number_format($profilesWithLinkedAccounts); ?></strong>
+                        <small>Connected to accounts</small>
+                    </div>
+                    <div class="ops-metric">
+                        <span>Bookings</span>
+                        <strong><?php echo number_format($totalBookingsAcrossProfiles); ?></strong>
+                        <small>Across visible profiles</small>
+                    </div>
+                    <div class="ops-metric">
+                        <span>Spend</span>
+                        <strong>$<?php echo number_format($totalSpendAcrossProfiles, 0); ?></strong>
+                        <small>Recorded profile spend</small>
+                    </div>
+                </section>
 
                 <div class="admin-command-bar">
                     <div class="admin-command-group">

@@ -8,6 +8,9 @@ ensureBookingRequestColumns($pdo);
 ensureCustomerProfilesSchema($pdo);
 ensureBookingReviewsSchema($pdo);
 
+$adminPageTitle = 'Reviews';
+$adminPageIcon = 'fa-star';
+$adminSidebarActive = 'reviews';
 $adminNewSidebarActive = 'reviews';
 
 $dateFrom = trim((string) ($_GET['date_from'] ?? ''));
@@ -210,29 +213,25 @@ if ($selectedReview !== null) {
     }
 }
 
-$styleVersion = (string) (@filemtime(__DIR__ . '/../../assets/css/style.css') ?: time());
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Booking Reviews | DineMate Admin</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/style.css?v=<?php echo htmlspecialchars($styleVersion, ENT_QUOTES, 'UTF-8'); ?>">
+    <?php include __DIR__ . '/../partials/admin-head.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-modernize.php'; ?>
     <link rel="stylesheet" href="<?php echo htmlspecialchars(assetUrl('assets/css/pages/admin-reviews.css'), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body>
 <div class="app-shell">
-    <?php include __DIR__ . '/../partials/admin-new-sidebar.php'; ?>
+    <?php include __DIR__ . '/../partials/admin-sidebar.php'; ?>
 
     <main class="main-content" aria-label="Booking reviews page">
-        <div class="reviews-shell">
+        <div class="reviews-shell admin-ops">
             <header class="page-header reviews-header">
                 <div>
-                    <h1 class="page-title">Booking Reviews</h1>
-                    <div class="page-subtitle">Read guest feedback, trace it back to the booking, and plan follow-up work.</div>
+                    <p class="admin-page-kicker">Guest Feedback</p>
+                    <h1 class="page-title">Reviews</h1>
+                    <div class="page-subtitle">Review ratings, booking context, and follow-up priorities from one workspace.</div>
                 </div>
                 <div class="header-actions">
                     <a class="secondary-btn" href="customer-history.php">

@@ -161,128 +161,78 @@ include '../includes/header.php';
 
 
 <div class="container modify-wrapper">
+    <div class="modify-layout">
+        <section class="modify-card">
+            <div class="portal-form-header">
+                <p class="guest-section-kicker">Reservation update</p>
+                <h3 class="modify-title">Change your table request.</h3>
+                <p>Adjust the date, arrival time, party size, or notes for this reservation.</p>
+            </div>
 
-<div class="modify-card">
+            <?php if($error): ?>
+                <div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
+            <?php endif; ?>
 
-<h3 class="modify-title text-center">
-<i class="fa fa-pen-to-square"></i>
-Update Your Table Request
-</h3>
+            <?php if($success): ?>
+                <div class="alert alert-success"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div>
+            <?php endif; ?>
 
-<?php if($error): ?>
-<div class="alert alert-danger"><?= $error ?></div>
-<?php endif; ?>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($modifyBookingCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
 
-<?php if($success): ?>
-<div class="alert alert-success"><?= $success ?></div>
-<?php endif; ?>
+                <div class="profile-grid">
+                    <div class="profile-field">
+                        <label for="bookingDate">Date</label>
+                        <input id="bookingDate" type="date" name="booking_date" class="form-control modern-input" value="<?= htmlspecialchars((string) $booking['booking_date'], ENT_QUOTES, 'UTF-8') ?>" required>
+                    </div>
 
-<form method="POST">
-<input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($modifyBookingCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                    <div class="profile-field">
+                        <label for="startTime">Arrival time</label>
+                        <input id="startTime" type="time" name="start_time" class="form-control modern-input" value="<?= htmlspecialchars(date('H:i', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8') ?>" required>
+                    </div>
 
-<div class="row">
+                    <div class="profile-field">
+                        <label for="endTime">End time</label>
+                        <input id="endTime" type="time" name="end_time" class="form-control modern-input" value="<?= htmlspecialchars(date('H:i', strtotime((string) $booking['end_time'])), ENT_QUOTES, 'UTF-8') ?>" required>
+                    </div>
 
-<div class="col-md-6 mb-4">
+                    <div class="profile-field">
+                        <label for="guestCount">Guests</label>
+                        <input id="guestCount" type="number" name="number_of_guests" class="form-control modern-input" value="<?= htmlspecialchars((string) $booking['number_of_guests'], ENT_QUOTES, 'UTF-8') ?>" required min="<?php echo htmlspecialchars((string) $bookingSettings['min_party_size'], ENT_QUOTES, 'UTF-8'); ?>" max="<?php echo htmlspecialchars((string) $bookingSettings['max_party_size'], ENT_QUOTES, 'UTF-8'); ?>">
+                    </div>
 
-<label class="form-label">
-<i class="fa fa-calendar"></i> Select Date
-</label>
+                    <?php if ($bookingSettings['allow_table_request']): ?>
+                        <div class="profile-field full-width">
+                            <label for="specialRequest">Notes for the team</label>
+                            <textarea id="specialRequest" name="special_request" class="form-control modern-input profile-textarea" rows="4" placeholder="Allergies, occasion, seating preference, pram space, or anything helpful."><?= htmlspecialchars((string) $booking['special_request'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                        </div>
+                    <?php else: ?>
+                        <input type="hidden" name="special_request" value="">
+                    <?php endif; ?>
+                </div>
 
-<input type="date"
-name="booking_date"
-class="form-control modern-input"
-value="<?= $booking['booking_date'] ?>"
-required>
+                <div class="profile-actions">
+                    <a href="my-bookings.php" class="profile-btn profile-btn-secondary dm-no-underline">Back to Reservations</a>
+                    <button class="profile-btn profile-btn-primary" type="submit">
+                        <i class="fa fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </section>
 
-</div>
-
-<div class="col-md-6 mb-4">
-
-<label class="form-label">
-<i class="fa fa-clock"></i> Start Time
-</label>
-
-<input type="time"
-name="start_time"
-class="form-control modern-input"
-value="<?= date('H:i', strtotime($booking['start_time'])) ?>"
-required>
-
-</div>
-
-<div class="col-md-6 mb-4">
-
-<label class="form-label">
-<i class="fa fa-hourglass-end"></i> End Time
-</label>
-
-<input type="time"
-name="end_time"
-class="form-control modern-input"
-value="<?= date('H:i', strtotime($booking['end_time'])) ?>"
-required>
-
-</div>
-
-<div class="col-md-6 mb-4">
-
-<label class="form-label">
-<i class="fa fa-users"></i> Number of Guests
-</label>
-
-<input type="number"
-name="number_of_guests"
-class="form-control modern-input"
-value="<?= $booking['number_of_guests'] ?>"
-required
-min="<?php echo htmlspecialchars((string) $bookingSettings['min_party_size'], ENT_QUOTES, 'UTF-8'); ?>"
-max="<?php echo htmlspecialchars((string) $bookingSettings['max_party_size'], ENT_QUOTES, 'UTF-8'); ?>">
-
-</div>
-
-<div class="col-12 mb-4">
-
-<div class="alert alert-info mb-0">
-<i class="fa fa-circle-info"></i>
-Changes are sent to the restaurant team so they can confirm your updated reservation.
-</div>
-
-</div>
-
-<div class="col-12 mb-4">
-
-<?php if ($bookingSettings['allow_table_request']): ?>
-    <label class="form-label">
-        <i class="fa fa-note-sticky"></i> Special Request
-    </label>
-
-    <textarea name="special_request"
-    class="form-control modern-input"
-    rows="3"><?= htmlspecialchars((string) $booking['special_request'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-<?php else: ?>
-    <input type="hidden" name="special_request" value="">
-<?php endif; ?>
-
-</div>
-
-</div>
-
-<button class="btn btn-update w-100">
-<i class="fa fa-save"></i> Save Changes
-</button>
-
-</form>
-
-<div class="text-center mt-4">
-
-<a href="my-bookings.php" class="btn-back">
-Back to Reservations
-</a>
-
-</div>
-
-</div>
-
+        <aside class="portal-side-panel">
+            <h3>Current Request</h3>
+            <ul class="portal-side-list">
+                <li><i class="fa fa-calendar"></i><span><?php echo htmlspecialchars(date('l, j F Y', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></span></li>
+                <li><i class="fa fa-clock"></i><span><?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8'); ?> to <?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></span></li>
+                <li><i class="fa fa-users"></i><span><?php echo (int) $booking['number_of_guests']; ?> guests</span></li>
+                <li><i class="fa fa-circle-info"></i><span><?php echo htmlspecialchars(getBookingStatusLabel($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?></span></li>
+            </ul>
+            <div class="hint-card">
+                Saved changes go back to the restaurant team for confirmation.
+            </div>
+        </aside>
+    </div>
 </div>
 
 <?php include "../includes/footer.php"; ?> 

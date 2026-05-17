@@ -81,12 +81,13 @@ include '../includes/header.php';
 <i class="fa fa-circle-check"></i>
 </div>
 
+<p class="guest-section-kicker dm-mt-16">Request received</p>
 <h3 class="mt-2">
-Your Table Request Is In
+Your table request is in.
 </h3>
 
 <p>
-Your request has been saved in DineMate. The restaurant team will confirm the details for your visit.
+We have saved the details below. The restaurant team will confirm your table before the visit.
 </p>
 
 <div class="confirm-grid">
@@ -111,14 +112,14 @@ Your request has been saved in DineMate. The restaurant team will confirm the de
 
 <aside class="confirm-side">
 <h4>What happens next</h4>
-<p>Your reservation is available in your account for future updates.</p>
-<p>If the restaurant needs to adjust anything, they will contact you using the details on this booking.</p>
+<p>Your reservation is available from your account whenever you want to check it.</p>
+<p>If anything needs to change, the team will use the contact details on this booking.</p>
 <?php if ($isLoggedInCustomer && $customerProfile): ?>
 <p><strong>Reminder preferences:</strong> <?= !empty($customerProfile['email_reminders_enabled']) ? 'Email reminders on' : 'Email reminders off'; ?>, <?= !empty($customerProfile['sms_reminders_enabled']) ? 'SMS reminders on' : 'SMS reminders off'; ?>.</p>
 <?php endif; ?>
 <div class="confirm-links">
 <?php if($isLoggedInCustomer): ?>
-<a href="dashboard.php" class="btn-surface">Customer Dashboard</a>
+<a href="dashboard.php" class="btn-surface">Dashboard</a>
 <a href="my-bookings.php" class="btn-surface">Reservations</a>
 <?php else: ?>
 <a href="../auth/register.php" class="btn-surface">Create Account</a>
@@ -133,12 +134,12 @@ Your request has been saved in DineMate. The restaurant team will confirm the de
 View Reservations
 </a>
 <a href="book-table.php?<?= htmlspecialchars(http_build_query(['rebook' => (int) $booking['booking_id'], 'date' => (string) $booking['booking_date'], 'time' => date('H:i', strtotime((string) $booking['start_time'])), 'guests' => (int) $booking['number_of_guests'], 'special' => (string) ($booking['special_request'] ?? '')]), ENT_QUOTES, 'UTF-8') ?>" class="btn-surface flex-fill">
-Book Similar Again
+Book Similar Table
 </a>
 </div>
 <?php else: ?>
 <a href="book-table.php" class="btn-bookings w-100">
-Book Another Reservation
+Book Another Table
 </a>
 <?php endif; ?>
 

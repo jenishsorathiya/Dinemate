@@ -11,7 +11,7 @@ ensureBookingTableAssignmentsTable($pdo);
 requireAdmin(['json' => true]);
 requireValidCsrfToken('admin_actions', ['json' => true]);
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = readJsonRequestPayload(['json' => true]);
 
 $name = trim($data['name'] ?? '');
 $customerProfileId = (int) ($data['customer_profile_id'] ?? 0);

@@ -78,21 +78,21 @@ include '../includes/header.php';
     <div class="dashboard-shell">
         <section class="dashboard-hero">
             <div class="hero-copy">
-                <h1>Welcome back, <?php echo htmlspecialchars((string) getCurrentUserName(), ENT_QUOTES, 'UTF-8'); ?></h1>
-                <p>Your place for upcoming reservations, return visits, preferences, and feedback.</p>
+                <h1>Welcome back, <?php echo htmlspecialchars((string) getCurrentUserName(), ENT_QUOTES, 'UTF-8'); ?>.</h1>
+                <p>Keep upcoming visits, saved details, and favourite return plans close.</p>
                 <div class="hero-actions">
                     <?php if ($bookingSettings['enable_online_bookings']): ?>
-                        <a class="btn-portal" href="book-table.php"><i class="fa fa-calendar-plus"></i> New Booking</a>
+                        <a class="btn-portal" href="book-table.php"><i class="fa fa-calendar-plus"></i> Book a Table</a>
                     <?php endif; ?>
-                    <a class="btn-portal-secondary" href="my-bookings.php"><i class="fa fa-clock-rotate-left"></i> View Reservations</a>
-                    <a class="btn-portal-secondary" href="profile.php"><i class="fa fa-user-gear"></i> Update Profile</a>
+                    <a class="btn-portal-secondary" href="my-bookings.php"><i class="fa fa-clock-rotate-left"></i> Reservations</a>
+                    <a class="btn-portal-secondary" href="profile.php"><i class="fa fa-user-gear"></i> Preferences</a>
                     <?php if (!empty($lastCompletedBooking) && empty($lastCompletedBooking['review_rating'])): ?>
-                        <a class="btn-portal-secondary" href="rate-booking.php?id=<?php echo (int) $lastCompletedBooking['booking_id']; ?>"><i class="fa fa-star"></i> Rate Last Visit</a>
+                        <a class="btn-portal-secondary" href="rate-booking.php?id=<?php echo (int) $lastCompletedBooking['booking_id']; ?>"><i class="fa fa-star"></i> Review Last Visit</a>
                     <?php endif; ?>
                 </div>
             </div>
             <aside class="hero-focus">
-                <div class="hero-focus-label">Next Up</div>
+                <div class="hero-focus-label">Next reservation</div>
                 <?php if ($nextBooking): ?>
                     <div class="hero-focus-title"><?php echo htmlspecialchars(date('D, j M', strtotime((string) $nextBooking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?> at <?php echo htmlspecialchars(date('g:i A', strtotime((string) $nextBooking['start_time'])), ENT_QUOTES, 'UTF-8'); ?></div>
                     <div class="hero-focus-meta">
@@ -106,9 +106,9 @@ include '../includes/header.php';
                         <?php endif; ?>
                     </div>
                 <?php else: ?>
-                    <div class="hero-focus-title">No upcoming bookings</div>
+                    <div class="hero-focus-title">Ready for a new visit?</div>
                     <div class="hero-focus-meta">
-                        <span>No upcoming reservations scheduled.</span>
+                        <span>Choose a date and we will keep the details ready here.</span>
                     </div>
                 <?php endif; ?>
             </aside>
@@ -116,24 +116,24 @@ include '../includes/header.php';
 
         <section class="metric-grid">
             <article class="metric-card">
-                <div class="metric-label">Completed Visits</div>
+                <div class="metric-label">Visits completed</div>
                 <div class="metric-value"><?php echo number_format($visitCount); ?></div>
-                <div class="metric-meta">Completed reservations in your history.</div>
+                <div class="metric-meta">Past meals saved to your account.</div>
             </article>
             <article class="metric-card">
-                <div class="metric-label">Upcoming</div>
+                <div class="metric-label">Upcoming tables</div>
                 <div class="metric-value"><?php echo number_format(count($upcomingBookings)); ?></div>
-                <div class="metric-meta">Pending and confirmed reservations.</div>
+                <div class="metric-meta">Reservations still ahead.</div>
             </article>
             <article class="metric-card">
-                <div class="metric-label">Average Party</div>
+                <div class="metric-label">Usual party size</div>
                 <div class="metric-value"><?php echo htmlspecialchars(number_format($averagePartySize, $averagePartySize == floor($averagePartySize) ? 0 : 1), ENT_QUOTES, 'UTF-8'); ?></div>
-                <div class="metric-meta">Average guests per booking.</div>
+                <div class="metric-meta">Average guests per completed visit.</div>
             </article>
             <article class="metric-card">
-                <div class="metric-label">Saved Visits</div>
+                <div class="metric-label">Saved plans</div>
                 <div class="metric-value"><?php echo number_format($guestHistoryCount + $adminCreatedCount); ?></div>
-                <div class="metric-meta">Reservations saved to your profile.</div>
+                <div class="metric-meta">Bookings attached to your profile.</div>
             </article>
         </section>
 
@@ -141,10 +141,10 @@ include '../includes/header.php';
             <article class="dashboard-panel">
                 <div class="panel-heading">
                     <div>
-                        <h2>Upcoming Reservations</h2>
-                        <p>Review your next bookings, make changes, or rebook a recent visit.</p>
+                        <h2>Coming Up</h2>
+                        <p>Your next reservations, table details, and quick changes.</p>
                     </div>
-                    <a class="btn-portal-secondary" href="my-bookings.php?view=upcoming">Open Reservations</a>
+                    <a class="btn-portal-secondary" href="my-bookings.php?view=upcoming">See All</a>
                 </div>
 
                 <?php if (!empty($upcomingBookings)): ?>
@@ -178,33 +178,33 @@ include '../includes/header.php';
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <div class="empty-state">No upcoming reservations yet. Start a new booking when you are ready to visit.</div>
+                    <div class="empty-state">No upcoming reservations yet. Book a table when your next visit is taking shape.</div>
                 <?php endif; ?>
             </article>
 
             <article class="dashboard-panel">
                 <div class="panel-heading">
                     <div>
-                        <h3>Guest Snapshot</h3>
-                        <p>Saved profile details and dining preferences.</p>
+                        <h3>Your Preferences</h3>
+                        <p>The details we keep ready for smoother return visits.</p>
                     </div>
                 </div>
                 <div class="profile-grid">
                     <div class="profile-chip">
-                        <strong>Preferred Time</strong>
+                        <strong>Preferred time</strong>
                         <span><?php echo htmlspecialchars($favouriteBookingTime !== '' ? ucfirst(str_replace('_', ' ', $favouriteBookingTime)) : 'Not set', ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <div class="profile-chip">
-                        <strong>Seating Preference</strong>
+                        <strong>Favourite seating</strong>
                         <span><?php echo htmlspecialchars($seatingPreference !== '' ? ucfirst(str_replace('_', ' ', $seatingPreference)) : 'No preference saved', ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <div class="profile-chip">
-                        <strong>Booked With Venue</strong>
-                        <span><?php echo number_format($adminCreatedCount); ?> saved reservations</span>
+                        <strong>Booked with the team</strong>
+                        <span><?php echo number_format($adminCreatedCount); ?> reservations saved for you</span>
                     </div>
                     <div class="profile-chip">
-                        <strong>Online Bookings</strong>
-                        <span><?php echo number_format($guestHistoryCount); ?> reservations saved from DineMate</span>
+                        <strong>Booked online</strong>
+                        <span><?php echo number_format($guestHistoryCount); ?> reservations made online</span>
                     </div>
                 </div>
 
@@ -225,10 +225,10 @@ include '../includes/header.php';
             <article class="dashboard-panel">
                 <div class="panel-heading">
                     <div>
-                        <h3>Recent Visit History</h3>
-                        <p>Recent visits, ratings, and quick rebooking actions.</p>
+                        <h3>Recent Visits</h3>
+                        <p>Past reservations, reviews, and easy rebooking.</p>
                     </div>
-                    <a class="btn-portal-secondary" href="my-bookings.php?view=past">See Full History</a>
+                    <a class="btn-portal-secondary" href="my-bookings.php?view=past">View History</a>
                 </div>
 
                 <?php if (!empty($recentHistory)): ?>
@@ -256,7 +256,7 @@ include '../includes/header.php';
                                 <div class="hero-actions dm-mt-12">
                                     <span class="history-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Unassigned'; ?></span>
                                     <?php if (strtolower((string) ($booking['status'] ?? '')) === 'completed' && empty($booking['review_rating'])): ?>
-                                        <a class="btn-portal-secondary" href="rate-booking.php?id=<?php echo (int) $booking['booking_id']; ?>"><i class="fa fa-star"></i> Rate Experience</a>
+                                        <a class="btn-portal-secondary" href="rate-booking.php?id=<?php echo (int) $booking['booking_id']; ?>"><i class="fa fa-star"></i> Review Visit</a>
                                     <?php elseif (!empty($booking['review_rating'])): ?>
                                         <span class="history-chip"><i class="fa fa-star"></i> Rated <?php echo (int) $booking['review_rating']; ?>/5</span>
                                     <?php endif; ?>
@@ -266,32 +266,32 @@ include '../includes/header.php';
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <div class="empty-state">Completed visits will appear here after your first reservation is finished.</div>
+                    <div class="empty-state">Past visits will appear here after your first completed reservation.</div>
                 <?php endif; ?>
             </article>
 
             <article class="dashboard-panel">
                 <div class="panel-heading">
                     <div>
-                        <h3>Loyalty Snapshot</h3>
-                        <p>Summary of your booking activity.</p>
+                        <h3>Visit Summary</h3>
+                        <p>A quick look at your account activity.</p>
                     </div>
                 </div>
                 <div class="mini-stat-list">
                     <div class="profile-chip">
-                        <strong>Last Completed Visit</strong>
+                        <strong>Last completed visit</strong>
                         <span><?php echo $lastCompletedBooking ? htmlspecialchars(date('j M Y', strtotime((string) $lastCompletedBooking['booking_date'])), ENT_QUOTES, 'UTF-8') : 'None'; ?></span>
                     </div>
                     <div class="profile-chip">
-                        <strong>Cancelled Bookings</strong>
-                        <span><?php echo number_format($cancelledCount); ?> cancelled in your booking history</span>
+                        <strong>Cancelled bookings</strong>
+                        <span><?php echo number_format($cancelledCount); ?> cancelled reservations</span>
                     </div>
                     <div class="profile-chip">
-                        <strong>No-shows</strong>
-                        <span><?php echo number_format($noShowCount); ?> marked no-show</span>
+                        <strong>Missed visits</strong>
+                        <span><?php echo number_format($noShowCount); ?> missed reservations</span>
                     </div>
                     <div class="profile-chip">
-                        <strong>Reminder Preferences</strong>
+                        <strong>Reminders</strong>
                         <span><?php echo !empty($customerProfile['email_reminders_enabled']) ? 'Email reminders on' : 'Email reminders off'; ?>, <?php echo !empty($customerProfile['sms_reminders_enabled']) ? 'SMS reminders on' : 'SMS reminders off'; ?></span>
                     </div>
                 </div>

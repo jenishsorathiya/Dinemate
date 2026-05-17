@@ -11,7 +11,7 @@ requireValidCsrfToken('admin_actions', ['json' => true]);
 ensureBookingRequestColumns($pdo);
 ensureBookingTableAssignmentsTable($pdo);
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = readJsonRequestPayload(['json' => true]);
 $bookingId = (int)($data['booking_id'] ?? 0);
 
 if($bookingId < 1) {

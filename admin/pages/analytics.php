@@ -221,12 +221,12 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
     <div class="main-content">
         <main class="analytics-main">
-            <div class="admin-workspace analytics-shell">
+            <div class="admin-workspace admin-ops analytics-shell">
                 <header class="admin-page-heading">
                     <div>
-                        <p class="admin-page-kicker">Reporting</p>
-                        <h1 class="admin-page-title">Analytics</h1>
-                        <p class="admin-page-copy">Review booking demand, table use, guest behavior, cancellations, and operational recommendations.</p>
+                        <p class="admin-page-kicker">Performance Desk</p>
+                        <h1 class="admin-page-title">Report</h1>
+                        <p class="admin-page-copy">Track demand, table use, customer mix, attendance risk, and service patterns for the selected period.</p>
                     </div>
                     <div class="admin-actions">
                         <span class="admin-chip is-primary"><span id="heroFocusValue">Friday dinner</span></span>
@@ -421,10 +421,10 @@ $adminTopbarCenterContent = str_replace('__AREA_OPTIONS__', $areaOptionsHtml, $f
 
 <script>
 const analyticsSource = {
-    today: <?php echo json_encode(date('Y-m-d')); ?>,
-    bookings: <?php echo json_encode($bookingRows, JSON_UNESCAPED_SLASHES); ?>,
-    tables: <?php echo json_encode($tableRows, JSON_UNESCAPED_SLASHES); ?>,
-    areas: <?php echo json_encode(array_values($areaOptions), JSON_UNESCAPED_SLASHES); ?>
+    today: <?php echo json_encode(date('Y-m-d'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+    bookings: <?php echo json_encode($bookingRows, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+    tables: <?php echo json_encode($tableRows, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+    areas: <?php echo json_encode(array_values($areaOptions), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>
 };
 
 const weekdayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];

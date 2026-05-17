@@ -103,12 +103,12 @@ include '../includes/header.php';
     <div class="bookings-shell">
         <div class="bookings-hero">
             <div>
-                <h2><i class="fa fa-calendar-check"></i> Your Table Plans</h2>
-                <p>Upcoming reservations, past visits, quick rebooking, and review actions in one place.</p>
+                <h2>Your Reservations</h2>
+                <p>See what is booked, revisit past plans, and book something similar when it feels right.</p>
             </div>
             <div class="hero-actions">
                 <a href="dashboard.php" class="btn-surface"><i class="fa fa-gauge"></i> Dashboard</a>
-                <a href="book-table.php" class="btn-primary-solid"><i class="fa fa-calendar-plus"></i> New Booking</a>
+                <a href="book-table.php" class="btn-primary-solid"><i class="fa fa-calendar-plus"></i> Book a Table</a>
             </div>
         </div>
 
@@ -123,7 +123,7 @@ include '../includes/header.php';
 
         <form method="GET" class="filter-row">
             <input type="hidden" name="view" value="<?php echo htmlspecialchars($view, ENT_QUOTES, 'UTF-8'); ?>">
-            <input type="search" name="q" class="filter-input" value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Search by date, table, note, or status...">
+            <input type="search" name="q" class="filter-input" value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Search date, table, note, or status">
             <select name="status" class="filter-select">
                 <option value="all">All statuses</option>
                 <?php foreach (getBookingStatuses() as $statusOption): ?>
@@ -132,11 +132,11 @@ include '../includes/header.php';
                     </option>
                 <?php endforeach; ?>
             </select>
-            <button type="submit" class="btn-surface dm-justify-center"><i class="fa fa-filter"></i> Apply Filters</button>
+            <button type="submit" class="btn-surface dm-justify-center"><i class="fa fa-filter"></i> Apply</button>
         </form>
 
         <div class="hint-card">
-            Pending and confirmed bookings can be rescheduled or cancelled when online changes are enabled.
+            Pending and confirmed reservations can be rescheduled or cancelled from this page.
         </div>
 
         <?php if (!empty($filteredBookings)): ?>
@@ -176,7 +176,7 @@ include '../includes/header.php';
                             <?php if (!empty($booking['review_rating'])): ?>
                                 <div class="booking-detail"><strong>Review:</strong> Rated <?php echo (int) $booking['review_rating']; ?>/5<?php if (!empty($booking['review_comment'])): ?> - <?php echo htmlspecialchars((string) $booking['review_comment'], ENT_QUOTES, 'UTF-8'); ?><?php endif; ?></div>
                             <?php elseif ($status === 'completed'): ?>
-                                <div class="booking-detail booking-review-hint"><strong>Review pending:</strong> Add feedback for this completed visit.</div>
+                                <div class="booking-detail booking-review-hint"><strong>Review ready:</strong> Share a quick note about this visit.</div>
                             <?php endif; ?>
                         </div>
 
@@ -190,7 +190,7 @@ include '../includes/header.php';
                                 </form>
                             <?php endif; ?>
                             <?php if ($status === 'completed' && empty($booking['review_rating'])): ?>
-                                <a href="rate-booking.php?id=<?php echo (int) $booking['booking_id']; ?>" class="btn-surface"><i class="fa fa-star"></i> Rate Experience</a>
+                                <a href="rate-booking.php?id=<?php echo (int) $booking['booking_id']; ?>" class="btn-surface"><i class="fa fa-star"></i> Review Visit</a>
                             <?php elseif (!empty($booking['review_rating'])): ?>
                                 <span class="rating-chip"><i class="fa fa-star"></i> Rated <?php echo (int) $booking['review_rating']; ?>/5</span>
                             <?php endif; ?>
@@ -202,7 +202,7 @@ include '../includes/header.php';
         <?php else: ?>
             <div class="empty-state">
                 <p>No reservations found.</p>
-                <a href="book-table.php" class="btn-primary-solid dm-mt-10"><i class="fa fa-calendar-plus"></i> Book Your Next Table</a>
+                <a href="book-table.php" class="btn-primary-solid dm-mt-10"><i class="fa fa-calendar-plus"></i> Book a Table</a>
             </div>
         <?php endif; ?>
     </div>

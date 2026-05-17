@@ -1,9 +1,10 @@
 (function () {
     if (typeof confetti === 'function') {
         confetti({
-            particleCount: 120,
-            spread: 70,
-            origin: { y: 0.6 },
+            particleCount: 36,
+            spread: 54,
+            scalar: 0.72,
+            origin: { y: 0.18 },
         });
     }
 

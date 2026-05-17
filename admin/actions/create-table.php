@@ -30,7 +30,7 @@ $normalizeTableShape = static function (string $value): string {
     return $aliases[$shape] ?? 'auto';
 };
 
-$data = json_decode(file_get_contents('php://input'), true);
+$data = readJsonRequestPayload(['json' => true]);
 
 $isAuto = isset($data['auto']) && $data['auto'] === true;
 $requestedAreaId = (int)($data['area_id'] ?? 0);

@@ -750,7 +750,7 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
 
 <script>
     (function () {
-        const modal = document.getElementById(<?php echo json_encode($bookingEditModalId); ?>);
+        const modal = document.getElementById(<?php echo json_encode($bookingEditModalId, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>);
 
         if (!modal) {
             return;
@@ -934,7 +934,7 @@ $bookingEditFooterClass = $bookingEditShowDelete ? 'booking-edit-footer' : 'book
         }, true);
 
         window.DineMateBookingEditModals = window.DineMateBookingEditModals || {};
-        window.DineMateBookingEditModals[<?php echo json_encode($bookingEditModalId); ?>] = {
+        window.DineMateBookingEditModals[<?php echo json_encode($bookingEditModalId, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>] = {
             getSelectedTableIds,
             setSelectedTableIds,
             updateTableSelectionState,

@@ -276,13 +276,13 @@ $adminSidebarPathPrefix = '';
 
     <div class="main-content">
         <div class="admin-container">
-            <div class="mn-shell admin-workspace">
+            <div class="mn-shell admin-workspace admin-ops">
 
                 <header class="admin-page-heading">
                     <div>
-                        <p class="admin-page-kicker">Menu Operations</p>
+                        <p class="admin-page-kicker">Menu Control</p>
                         <h1 class="admin-page-title">Menu</h1>
-                        <p class="admin-page-copy">Keep the public menu accurate: update pricing, availability, categories, dietary tags, and item photography.</p>
+                        <p class="admin-page-copy">Maintain dishes, pricing, availability, categories, dietary tags, and menu photography.</p>
                     </div>
 
                     <div class="admin-actions">
@@ -295,6 +295,24 @@ $adminSidebarPathPrefix = '';
                         <?php endif; ?>
                     </div>
                 </header>
+
+                <section class="ops-metric-grid" aria-label="Menu summary">
+                    <div class="ops-metric">
+                        <span>Total Items</span>
+                        <strong><?php echo number_format($totalItems); ?></strong>
+                        <small>Across <?php echo number_format(count($categories)); ?> sections</small>
+                    </div>
+                    <div class="ops-metric">
+                        <span>Available</span>
+                        <strong><?php echo number_format($availableItems); ?></strong>
+                        <small>Shown to guests</small>
+                    </div>
+                    <div class="ops-metric">
+                        <span>Paused</span>
+                        <strong><?php echo number_format($unavailableItems); ?></strong>
+                        <small>Hidden from ordering context</small>
+                    </div>
+                </section>
 
                 <?php if ($flash): ?>
                     <div class="admin-empty" role="status">
