@@ -234,7 +234,7 @@ body:not(.timeline-embedded) > .container-fluid a {
     font-size: 20px !important;
     line-height: 1.2 !important;
     font-weight: 700 !important;
-    letter-spacing: 0 !important;
+    letter-spacing: 0;
 }
 
 .page-subtitle,
@@ -256,7 +256,7 @@ body:not(.timeline-embedded) > .container-fluid a {
     font-size: 12px !important;
     font-weight: 500 !important;
     line-height: 1.45 !important;
-    letter-spacing: 0 !important;
+    letter-spacing: 0;
 }
 
 .hero-eyebrow,
@@ -424,7 +424,7 @@ body:not(.timeline-embedded) > .container-fluid a {
 .customer-stat-card strong,
 .operation-title {
     color: var(--dm-text) !important;
-    letter-spacing: 0 !important;
+    letter-spacing: 0;
 }
 
 .panel-title,
@@ -461,7 +461,7 @@ body:not(.timeline-embedded) > .container-fluid a {
     color: var(--dm-text-soft) !important;
     font-size: 11px !important;
     font-weight: 700 !important;
-    letter-spacing: 0.04em !important;
+    letter-spacing: 0;
     text-transform: uppercase !important;
 }
 
@@ -555,7 +555,7 @@ button,
     font-family: var(--dm-font-sans) !important;
     font-size: 12px !important;
     font-weight: 600 !important;
-    letter-spacing: 0 !important;
+    letter-spacing: 0;
     box-shadow: none !important;
     transform: none !important;
     text-decoration: none !important;
@@ -786,7 +786,7 @@ label,
     color: var(--dm-text) !important;
     font-size: 12px !important;
     font-weight: 700 !important;
-    letter-spacing: 0 !important;
+    letter-spacing: 0;
 }
 
 .form-help,
@@ -857,7 +857,7 @@ thead th,
     color: var(--dm-text-muted) !important;
     font-size: 11px !important;
     font-weight: 700 !important;
-    letter-spacing: 0.04em !important;
+    letter-spacing: 0;
     text-transform: uppercase !important;
     padding: 12px !important;
     white-space: nowrap;
@@ -906,7 +906,7 @@ tbody tr:last-child td {
     padding: 4px 9px !important;
     font-size: 11px !important;
     font-weight: 700 !important;
-    letter-spacing: 0 !important;
+    letter-spacing: 0;
     text-transform: none !important;
 }
 
@@ -1043,7 +1043,7 @@ tbody tr:last-child td {
     color: var(--dm-text) !important;
     font-size: 14px !important;
     font-weight: 700 !important;
-    letter-spacing: 0 !important;
+    letter-spacing: 0;
 }
 
 .mn-description,

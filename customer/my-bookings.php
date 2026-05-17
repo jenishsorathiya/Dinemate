@@ -104,7 +104,7 @@ include '../includes/header.php';
         <div class="bookings-hero">
             <div>
                 <h2><i class="fa fa-calendar-check text-warning"></i> My Reservations</h2>
-                <p>View, filter, and manage your reservations.</p>
+                <p>View upcoming plans, revisit past bookings, and manage eligible reservations.</p>
             </div>
             <div class="hero-actions">
                 <a href="dashboard.php" class="btn-surface"><i class="fa fa-gauge"></i> Dashboard</a>
@@ -136,7 +136,7 @@ include '../includes/header.php';
         </form>
 
         <div class="hint-card">
-            Active bookings can be rescheduled or cancelled.
+            Pending and confirmed bookings can be rescheduled or cancelled when online changes are enabled.
         </div>
 
         <?php if (!empty($filteredBookings)): ?>
@@ -181,10 +181,10 @@ include '../includes/header.php';
                                 <div class="booking-detail booking-review-hint"><strong>Review pending:</strong> Add feedback for this completed visit.</div>
                             <?php endif; ?>
                             <?php if (($booking['booking_source'] ?? '') === 'admin_manual' && !empty($booking['created_by_name'])): ?>
-                                <div class="booking-detail"><strong>Entered by:</strong> <?php echo htmlspecialchars((string) $booking['created_by_name'], ENT_QUOTES, 'UTF-8'); ?> from the admin side.</div>
+                                <div class="booking-detail"><strong>Entered by:</strong> <?php echo htmlspecialchars((string) $booking['created_by_name'], ENT_QUOTES, 'UTF-8'); ?> from the restaurant team.</div>
                             <?php endif; ?>
                             <?php if (($booking['booking_source'] ?? '') === 'guest_web'): ?>
-                                <div class="booking-detail"><strong>Guest continuity:</strong> This reservation was originally made without logging in and is now attached to your customer history.</div>
+                                <div class="booking-detail"><strong>Linked booking:</strong> This reservation was made as a guest and is now attached to your customer history.</div>
                             <?php endif; ?>
                         </div>
 

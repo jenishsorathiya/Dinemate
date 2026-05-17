@@ -13,7 +13,7 @@
 .profile-side-card {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 

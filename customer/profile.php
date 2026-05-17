@@ -170,8 +170,8 @@ include '../includes/header.php';
     <div class="profile-layout">
         <div class="profile-card">
             <div class="profile-header">
-                <h2><i class="fa fa-user text-warning"></i> My Profile And Preferences</h2>
-                <p>Manage your profile, preferences, and password.</p>
+                <h2><i class="fa fa-user text-warning"></i> Profile & Dining Preferences</h2>
+                <p>Keep your contact details, seating preferences, reminders, and password up to date.</p>
             </div>
 
             <?php if ($error !== ''): ?>

@@ -12,7 +12,7 @@
 .dashboard-panel {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 12px;
+    border-radius: 8px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
@@ -70,7 +70,7 @@
 }
 
 .hero-focus {
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--dm-text);
     color: var(--dm-surface-muted);
     padding: 22px;
@@ -81,7 +81,7 @@
 .hero-focus-label {
     color: rgba(255, 255, 255, 0.7);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     font-size: 12px;
     font-weight: 700;
 }
@@ -112,7 +112,7 @@
 .metric-card {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
@@ -120,7 +120,7 @@
 .metric-label {
     font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     color: var(--dm-text-muted);
     font-weight: 700;
 }
@@ -173,22 +173,22 @@
     font-size: 14px;
 }
 
-.booking-timeline {
+.reservation-list {
     display: grid;
     gap: 14px;
 }
 
-.timeline-card {
+.reservation-card {
     border: 1px solid var(--dm-border);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 18px;
     display: grid;
     gap: 12px;
     background: #f9fbfd;
 }
 
-.timeline-card-top,
-.timeline-card-meta,
+.reservation-card-top,
+.reservation-card-meta,
 .mini-stat-list,
 .history-list,
 .profile-notes {
@@ -196,18 +196,18 @@
     gap: 10px;
 }
 
-.timeline-card-top {
+.reservation-card-top {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
 }
 
-.timeline-card-title {
+.reservation-card-title {
     font-size: 19px;
     font-weight: 700;
     color: var(--dm-text);
 }
 
-.timeline-card-subtitle,
+.reservation-card-subtitle,
 .history-meta,
 .tiny-copy {
     color: var(--dm-text-muted);
@@ -216,11 +216,11 @@
 
 
 
-.timeline-card-meta {
+.reservation-card-meta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.timeline-meta-chip,
+.reservation-meta-chip,
 .history-chip {
     display: inline-flex;
     align-items: center;
@@ -259,7 +259,7 @@
 }
 
 .profile-chip {
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid var(--dm-border);
     background: var(--dm-surface-muted);
     padding: 14px;

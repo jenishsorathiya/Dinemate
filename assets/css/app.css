@@ -9,8 +9,10 @@
     /* Neutral */
     --dm-bg: #f8fafc;
     --dm-surface: #ffffff;
+    --dm-surface-soft: #fbfcfe;
     --dm-surface-muted: #f3f4f6;
     --dm-border: #e5e7eb;
+    --dm-border-soft: #eef2f7;
     --dm-border-strong: #d1d5db;
     --dm-white: #ffffff;
     --dm-black: #111827;
@@ -110,86 +112,8 @@
     --dm-space-4: 20px;
     --dm-space-5: 24px;
     --dm-space-6: 32px;
-}
 
-:root {
-    --dm-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --dm-bg: #f6f8fb;
-    --dm-surface: #ffffff;
-    --dm-surface-soft: #fbfcfe;
-    --dm-surface-muted: #fbfcfe;
-    --dm-border: #e3e8f0;
-    --dm-border-soft: #eef2f7;
-    --dm-border-strong: #cbd5e1;
-    --dm-text: #0f172a;
-    --dm-text-muted: #64748b;
-    --dm-text-soft: #94a3b8;
-    --dm-primary: #0b5ed7;
-    --dm-primary-hover: #084fc0;
-    --dm-primary-soft: #eef4ff;
-    --dm-primary-soft-text: #0b5ed7;
-    --dm-primary-text: #ffffff;
-    --dm-brand-accent: #0b5ed7;
-    --dm-accent: var(--dm-primary);
-    --dm-accent-soft: var(--dm-primary-soft);
-    --dm-accent-dark: #0f172a;
-    --dm-accent-dark-hover: #020617;
-    --dm-accent-gold: var(--dm-primary);
-    --dm-link: var(--dm-primary);
-    --dm-nav-bg: var(--dm-surface);
-    --dm-nav-text: var(--dm-text-muted);
-    --dm-nav-text-strong: var(--dm-text);
-    --dm-nav-border: var(--dm-border);
-    --dm-pending-bg: #fff3e1;
-    --dm-pending-text: #c2410c;
-    --dm-confirmed-bg: #dcfce7;
-    --dm-confirmed-text: #15803d;
-    --dm-confirmed-border: #bbf7d0;
-    --dm-standby-bg: #fff3e1;
-    --dm-standby-text: #c2410c;
-    --dm-danger-bg: #fee2e2;
-    --dm-danger-text: #b91c1c;
-    --dm-neutral-bg: #eef2f7;
-    --dm-neutral-text: #64748b;
-    --dm-info-text: #64748b;
-    --dm-info-strong: #0f172a;
-    --dm-success-strong: #15803d;
-    --dm-danger-strong: #b91c1c;
-    --dm-warning-strong: #c2410c;
-    --dm-danger-border: #fecaca;
-    --dm-warning-border: #fed7aa;
-    --dm-success-border: #bbf7d0;
-    --dm-neutral-border: #cbd5e1;
-    --dm-shadow-sm: 0 4.8px 14.4px rgba(15, 23, 42, 0.03);
-    --dm-shadow-md: 0 18px 36px rgba(15, 23, 42, 0.07);
-    --dm-focus-ring: 0 0 0 4px rgba(11, 94, 215, 0.14);
-    --dm-radius-xs: 6px;
-    --dm-radius-sm: 6.4px;
-    --dm-radius-md: 8px;
-    --dm-radius-lg: 11.2px;
     --sidebar-width: 216px;
-    --dm-spring-green-50: #f8fbff;
-    --dm-spring-green-100: #eef4ff;
-    --dm-spring-green-200: #dbeafe;
-    --dm-spring-green-300: #bfdbfe;
-    --dm-spring-green-400: #60a5fa;
-    --dm-spring-green-500: #0b5ed7;
-    --dm-spring-green-600: #084fc0;
-    --dm-spring-green-700: #063f9a;
-    --dm-spring-green-800: #073273;
-    --dm-spring-green-900: #082b5f;
-    --dm-spring-green-950: #061a3b;
-    --dm-primary-50: var(--dm-spring-green-50);
-    --dm-primary-100: var(--dm-spring-green-100);
-    --dm-primary-200: var(--dm-spring-green-200);
-    --dm-primary-300: var(--dm-spring-green-300);
-    --dm-primary-400: var(--dm-spring-green-400);
-    --dm-primary-500: var(--dm-spring-green-500);
-    --dm-primary-600: var(--dm-spring-green-600);
-    --dm-primary-700: var(--dm-spring-green-700);
-    --dm-primary-800: var(--dm-spring-green-800);
-    --dm-primary-900: var(--dm-spring-green-900);
-    --dm-primary-950: var(--dm-spring-green-950);
 
     /* New admin aliases used by assets/css/style.css */
     --bg: var(--dm-bg);
@@ -653,7 +577,7 @@ label,
     padding: 5px 10px;
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.03em;
+    letter-spacing: 0;
     line-height: 1.4;
     white-space: nowrap;
 }
@@ -760,7 +684,7 @@ label,
     color: var(--dm-text-soft);
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     text-transform: uppercase;
 }
 
@@ -1305,7 +1229,7 @@ label,
     color: var(--dm-text-soft);
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
     text-transform: uppercase;
 }
 
@@ -1398,7 +1322,7 @@ label,
     color: var(--dm-text-soft);
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     text-transform: uppercase;
 }
 

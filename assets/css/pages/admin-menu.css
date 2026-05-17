@@ -43,7 +43,7 @@
             margin: 0;
             font-size: 26px;
             font-weight: 700;
-            letter-spacing: -0.03em;
+            letter-spacing: 0;
             color: var(--mn-text);
         }
 
@@ -76,7 +76,7 @@
         .mn-stat-label {
             font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
             text-transform: uppercase;
             color: var(--mn-soft);
         }
@@ -85,7 +85,7 @@
             margin-top: 6px;
             font-size: 24px;
             font-weight: 700;
-            letter-spacing: -0.03em;
+            letter-spacing: 0;
             color: var(--mn-text);
         }
 
@@ -208,7 +208,7 @@
             margin: 0;
             font-size: 13px;
             font-weight: 700;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
             text-transform: uppercase;
             color: var(--mn-muted);
         }
@@ -374,7 +374,7 @@
         .mn-form-group label {
             font-size: 12px;
             font-weight: 700;
-            letter-spacing: 0.06em;
+            letter-spacing: 0;
             text-transform: uppercase;
             color: var(--mn-muted);
         }

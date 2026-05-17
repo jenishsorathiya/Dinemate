@@ -1,6 +1,6 @@
 /* Page Header Hero */
 .page-hero {
-    background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%);
+    background: var(--dm-overlay-hero), url("../../images/showcase/canberra-interior-1.webp") center / cover no-repeat;
     color: white;
     padding: 120px 20px 80px;
     text-align: center;
@@ -10,12 +10,15 @@
 .page-hero h1 {
     font-size: clamp(32px, 6vw, 56px);
     font-weight: 700;
+    color: #ffffff;
     margin-bottom: 15px;
+    text-shadow: 0 10px 28px rgba(0, 0, 0, 0.36);
 }
 
 .page-hero p {
     font-size: 18px;
     color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
 
 /* Section Styles */
@@ -50,7 +53,7 @@
 .contact-info-card {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 40px 30px;
     text-align: center;
     transition: all 0.3s ease;
@@ -86,7 +89,7 @@
 .contact-form-card {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 50px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
@@ -162,7 +165,7 @@
 
 .hours-card {
     border: 1px solid var(--dm-border);
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--dm-surface);
     padding: 40px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
@@ -189,8 +192,8 @@
 }
 
 .page-cta {
-    margin: 80px 0;
-    border-radius: 16px;
+    margin: 0;
+    border-radius: 0;
     padding: 80px 20px;
     background: linear-gradient(135deg, #2C3E50 0%, #1f2d3a 100%);
     color: white;
@@ -230,7 +233,7 @@
 .map-container {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }

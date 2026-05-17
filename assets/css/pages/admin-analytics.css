@@ -178,7 +178,7 @@
             margin: 0;
             font-size: clamp(20px, 2.8vw, 28px);
             line-height: 1.02;
-            letter-spacing: -0.02em;
+            letter-spacing: 0;
         }
 
         .hero-subtitle {
@@ -206,7 +206,7 @@
             font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
             color: var(--analytics-soft);
         }
 
@@ -214,7 +214,7 @@
             margin-top: 8px;
             font-size: 22px;
             font-weight: 700;
-            letter-spacing: -0.03em;
+            letter-spacing: 0;
             color: var(--analytics-ink);
         }
 
@@ -252,7 +252,7 @@
             margin: 0;
             font-size: 20px;
             font-weight: 800;
-            letter-spacing: -0.03em;
+            letter-spacing: 0;
         }
 
         .section-title-wrap p {
@@ -302,7 +302,7 @@
             color: var(--analytics-soft);
             font-size: 12px;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
             text-transform: uppercase;
         }
 
@@ -310,7 +310,7 @@
             margin-top: 12px;
             font-size: 26px;
             font-weight: 700;
-            letter-spacing: -0.03em;
+            letter-spacing: 0;
             color: var(--analytics-ink);
         }
 
@@ -374,7 +374,7 @@
             margin: 0;
             font-size: 18px;
             font-weight: 800;
-            letter-spacing: -0.03em;
+            letter-spacing: 0;
         }
 
         .card-subtitle {
@@ -444,14 +444,14 @@
             font-size: 12px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
         }
 
         .metric-pill-value {
             color: var(--analytics-ink);
             font-size: 20px;
             font-weight: 800;
-            letter-spacing: -0.03em;
+            letter-spacing: 0;
         }
 
         .utilisation-layout,
@@ -484,7 +484,7 @@
             font-size: 12px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
             color: var(--analytics-soft);
         }
 
@@ -615,7 +615,7 @@
             font-size: 12px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
         }
 
         .zone-name {
@@ -655,7 +655,7 @@
             font-size: 12px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
             color: rgba(244, 245, 240, 0.72);
         }
 
@@ -663,7 +663,7 @@
             margin-top: 10px;
             font-size: 28px;
             font-weight: 800;
-            letter-spacing: -0.04em;
+            letter-spacing: 0;
         }
 
         .top-zone-copy {
@@ -736,14 +736,14 @@
             color: var(--analytics-ink);
             font-size: 22px;
             font-weight: 800;
-            letter-spacing: -0.03em;
+            letter-spacing: 0;
         }
 
         .customer-stat-card span {
             color: var(--analytics-soft);
             font-size: 12px;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
             text-transform: uppercase;
         }
 
@@ -771,7 +771,7 @@
             color: var(--dm-text-muted);
             font-size: 11px;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0;
             text-transform: uppercase;
         }
 
@@ -779,7 +779,7 @@
             margin: 14px 0 8px;
             font-size: 16px;
             font-weight: 800;
-            letter-spacing: -0.02em;
+            letter-spacing: 0;
         }
 
         .operation-card p {
@@ -821,7 +821,7 @@
             margin: 0;
             font-size: 28px;
             font-weight: 800;
-            letter-spacing: -0.04em;
+            letter-spacing: 0;
         }
 
         .empty-state-shell p {

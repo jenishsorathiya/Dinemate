@@ -7,7 +7,7 @@
 .booking-stage {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 12px;
+    border-radius: 8px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
     padding: 28px;
 }
@@ -57,7 +57,7 @@
     font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
 }
 
 .booking-step-dot {
@@ -97,7 +97,7 @@
 .booking-calendar-panel {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
 }
@@ -228,14 +228,14 @@
     width: min(100%, 360px);
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 14px 16px;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .booking-account-card.is-benefits {
     width: 100%;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 14px 16px;
     background: var(--dm-surface);
 }
@@ -371,7 +371,7 @@
 .booking-step-card {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 24px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
@@ -434,7 +434,7 @@
     font-weight: 700;
     color: var(--dm-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
 }
 
 .booking-input,
@@ -526,7 +526,7 @@
     gap: 12px;
     margin-top: 6px;
     padding: 16px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--dm-surface-muted);
     border: 1px solid var(--dm-border);
 }
@@ -543,7 +543,7 @@
     font-weight: 700;
     color: var(--dm-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
 }
 
 .booking-summary-item span:last-child {
@@ -646,7 +646,7 @@
 
     .booking-stage {
         padding: 18px;
-        border-radius: 10px;
+        border-radius: 8px;
     }
 
     .booking-heading h2 {
@@ -659,7 +659,7 @@
 
     .booking-step-card {
         padding: 18px;
-        border-radius: 10px;
+        border-radius: 8px;
     }
 
     .booking-actions {

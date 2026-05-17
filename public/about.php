@@ -24,7 +24,7 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
             <div class="col-lg-6">
-                <img src="<?= htmlspecialchars(appPath('assets/images/showcase/canberra-interior-2.webp'), ENT_QUOTES, 'UTF-8') ?>" class="img-fluid-custom">
+                <img src="<?= htmlspecialchars(appPath('assets/images/showcase/canberra-interior-2.webp'), ENT_QUOTES, 'UTF-8') ?>" class="img-fluid-custom" alt="Dining room inside Old Canberra Inn">
             </div>
         </div>
     </div>
@@ -47,7 +47,7 @@ include __DIR__ . '/../includes/header.php';
             
             <div class="value-card">
                 <div class="value-card-icon"><i class="fa fa-star"></i></div>
-                <h3>Premium Quality</h3>
+                <h3>Quality Food & Drinks</h3>
                 <p>Carefully sourced ingredients, expert chefs, and craft beverages you'll love.</p>
             </div>
             
@@ -96,7 +96,7 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div class="stat-item">
                 <div class="stat-number">50+</div>
-                <div class="stat-label">Premium Tables</div>
+                <div class="stat-label">Dining Spaces</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number">24/7</div>

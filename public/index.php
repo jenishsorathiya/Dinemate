@@ -9,16 +9,16 @@ include __DIR__ . '/../includes/header.php';
 <section class="hero">
     <div class="hero-content">
         <div class="hero-tag">
-            <i class="fa fa-star"></i> Perfect Reservations, Every Time
+            <i class="fa fa-calendar-check"></i> Old Canberra Inn Reservations
         </div>
         
         <h1>
-            Discover <span class="hero-highlight">Exceptional Dining</span>
+            Book <span class="hero-highlight">Old Canberra Inn</span>
             <br>
-            On Your Terms
+            Without the Wait
         </h1>
         
-        <p>Book your ideal table in seconds. Skip the wait. Experience the dining you deserve.</p>
+        <p>Choose your date, time, and party size online, then manage every reservation from your DineMate account.</p>
         
         <div class="hero-buttons">
             <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn-primary-hero">
@@ -32,15 +32,15 @@ include __DIR__ . '/../includes/header.php';
         <div class="hero-stats">
             <div class="stat">
                 <div class="stat-number">50+</div>
-                <div class="stat-label">Premium Tables</div>
+                <div class="stat-label">Dining Spaces</div>
             </div>
             <div class="stat">
                 <div class="stat-number">1000+</div>
-                <div class="stat-label">Happy Diners</div>
+                <div class="stat-label">Guest Records</div>
             </div>
             <div class="stat">
                 <div class="stat-number">24/7</div>
-                <div class="stat-label">Booking Available</div>
+                <div class="stat-label">Online Requests</div>
             </div>
         </div>
     </div>
@@ -50,26 +50,26 @@ include __DIR__ . '/../includes/header.php';
 <section class="vibe-section">
     <div class="vibe-container">
         <div class="vibe-badge">
-            <i class="fa fa-gem"></i> Vibe
+            <i class="fa fa-landmark"></i> Heritage Dining
         </div>
-        <h2>Premium Restaurant / Fine Dining</h2>
-        <p>Experience elegance, sophistication, and impeccable service in an atmosphere designed for unforgettable moments.</p>
+        <h2>Historic character, modern reservations</h2>
+        <p>DineMate brings a cleaner booking experience to a Canberra landmark, helping guests reserve faster and staff manage service with confidence.</p>
         
         <div class="vibe-grid">
             <div class="vibe-item">
                 <div class="vibe-icon"><i class="fa fa-crown"></i></div>
-                <h3>Luxury Ambiance</h3>
-                <p>Carefully curated interiors and warm lighting create the perfect setting for any occasion.</p>
+                <h3>Warm Atmosphere</h3>
+                <p>Heritage interiors, relaxed service, and flexible spaces for casual meals, celebrations, and group dining.</p>
             </div>
             <div class="vibe-item">
                 <div class="vibe-icon"><i class="fa fa-wine-glass"></i></div>
-                <h3>Culinary Excellence</h3>
-                <p>Expertly crafted dishes prepared by our award-winning chefs using premium ingredients.</p>
+                <h3>Seasonal Menu</h3>
+                <p>Browse favourites before you book, from share plates and burgers to hearty Old Canberra Inn classics.</p>
             </div>
             <div class="vibe-item">
                 <div class="vibe-icon"><i class="fa fa-handshake"></i></div>
-                <h3>Attentive Service</h3>
-                <p>Our trained staff ensures every detail is perfect, from greeting to farewell.</p>
+                <h3>Staff Visibility</h3>
+                <p>Booking notes, dietary needs, and seating preferences are easier for the team to see before you arrive.</p>
             </div>
         </div>
     </div>
@@ -80,19 +80,19 @@ include __DIR__ . '/../includes/header.php';
     <div class="trust-content">
         <div class="trust-item">
             <div class="trust-icon"><i class="fa fa-bolt"></i></div>
-            <div class="trust-label">Instant Confirmation</div>
+            <div class="trust-label">Fast Booking Requests</div>
         </div>
         <div class="trust-item">
             <div class="trust-icon"><i class="fa fa-lock"></i></div>
-            <div class="trust-label">100% Secure</div>
+            <div class="trust-label">Secure Guest Forms</div>
         </div>
         <div class="trust-item">
             <div class="trust-icon"><i class="fa fa-headset"></i></div>
-            <div class="trust-label">24/7 Support</div>
+            <div class="trust-label">Staff-managed Updates</div>
         </div>
         <div class="trust-item">
             <div class="trust-icon"><i class="fa fa-award"></i></div>
-            <div class="trust-label">Premium Quality</div>
+            <div class="trust-label">Review After Your Visit</div>
         </div>
     </div>
 </section>
@@ -101,45 +101,45 @@ include __DIR__ . '/../includes/header.php';
 <section class="features-section">
     <div class="section-header">
         <div class="section-overline">Why DineMate</div>
-        <h2 class="section-title">The Smarter Way to Dine Out</h2>
-        <p class="section-description">Experience the convenience of modern restaurant reservations with features designed for you.</p>
+        <h2 class="section-title">A smoother booking journey</h2>
+        <p class="section-description">Everything guests need to reserve, update, review, and return to their favourite table.</p>
     </div>
 
     <div class="features-grid">
         <div class="feature-card">
             <div class="feature-icon"><i class="fa fa-search"></i></div>
-            <h3>Real-Time Availability</h3>
-            <p>See exactly which tables are available right now. No surprises, no waiting.</p>
+            <h3>Clear Availability</h3>
+            <p>Pick from open dates, service times, and party sizes without calling during a busy shift.</p>
         </div>
 
         <div class="feature-card">
             <div class="feature-icon"><i class="fa fa-rocket"></i></div>
-            <h3>Lightning Fast Booking</h3>
-            <p>Reserve your perfect table in under 60 seconds from anywhere.</p>
+            <h3>Fast Booking Flow</h3>
+            <p>Reserve in a few focused steps with a mobile-friendly calendar and simple guest details.</p>
         </div>
 
         <div class="feature-card">
             <div class="feature-icon"><i class="fa fa-bell"></i></div>
-            <h3>Smart Reminders</h3>
-            <p>Get timely notifications so you never miss or forget your reservation.</p>
+            <h3>Preference Notes</h3>
+            <p>Save dietary notes, seating preferences, and reminder settings for future bookings.</p>
         </div>
 
         <div class="feature-card">
             <div class="feature-icon"><i class="fa fa-mobile-alt"></i></div>
             <h3>Mobile First</h3>
-            <p>Manage bookings on the go with our fully responsive platform.</p>
+            <p>Book, reschedule, cancel, or review a visit comfortably from any screen size.</p>
         </div>
 
         <div class="feature-card">
             <div class="feature-icon"><i class="fa fa-users"></i></div>
             <h3>Group Friendly</h3>
-            <p>Easily book tables for any party size, from intimate dinners to celebrations.</p>
+            <p>Add party size and special requests so staff can prepare for celebrations and larger groups.</p>
         </div>
 
         <div class="feature-card">
             <div class="feature-icon"><i class="fa fa-star"></i></div>
-            <h3>Loyalty Rewards</h3>
-            <p>Earn points with every booking and unlock exclusive dining benefits.</p>
+            <h3>Visit History</h3>
+            <p>Keep upcoming reservations and past visits in one place, with quick rebooking when available.</p>
         </div>
     </div>
 </section>
@@ -148,26 +148,26 @@ include __DIR__ . '/../includes/header.php';
 <section class="showcase-section">
     <div class="showcase-wrapper">
         <div class="showcase-content">
-            <h2>Dining Made Simple</h2>
-            <p>DineMate transforms how you experience fine dining. Our intelligent reservation system puts you in control, offering instant bookings, real-time updates, and personalized recommendations.</p>
+            <h2>Dining made easier for guests and staff</h2>
+            <p>DineMate keeps the reservation process focused: guests can submit clear requests, and the restaurant team can manage those requests from the admin dashboard.</p>
 
             <ul class="showcase-list">
-                <li>One-click table reservations</li>
-                <li>Real-time availability updates</li>
-                <li>Instant booking confirmations</li>
-                <li>Flexible modification options</li>
-                <li>24/7 customer support</li>
-                <li>Member exclusive deals</li>
+                <li>Guided table reservation requests</li>
+                <li>Booking history and quick rebooking</li>
+                <li>Reschedule and cancellation actions</li>
+                <li>Saved dietary and seating preferences</li>
+                <li>Post-visit review flow</li>
+                <li>Admin tools for booking follow-up</li>
             </ul>
 
             <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn-primary-hero">
-                Start Booking Today
+                Book a Table
             </a>
         </div>
 
         <div class="showcase-image">
             <img src="<?= htmlspecialchars(appPath('assets/images/showcase/canberra-interior-1.webp'), ENT_QUOTES, 'UTF-8') ?>" alt="Canberra Inn Fine Dining Experience">
-            <div class="showcase-badge">⭐ Top Rated</div>
+            <div class="showcase-badge">Guest-ready flow</div>
         </div>
     </div>
 </section>
@@ -175,8 +175,8 @@ include __DIR__ . '/../includes/header.php';
 <!-- ============ TESTIMONIALS SECTION ============ -->
 <section class="testimonials-section">
     <div class="section-header">
-        <div class="section-overline">Customer Love</div>
-        <h2 class="section-title">What Our Diners Say</h2>
+        <div class="section-overline">Review Flow</div>
+        <h2 class="section-title">After the meal, feedback stays simple</h2>
     </div>
 
     <div class="testimonials-grid">
@@ -184,36 +184,36 @@ include __DIR__ . '/../includes/header.php';
             <div class="testimonial-header">
                 <div class="testimonial-avatar">JS</div>
                 <div>
-                    <h4>Jenish Sorathiya</h4>
-                    <div class="testimonial-role">Regular Guest</div>
+                    <h4>Rate your visit</h4>
+                    <div class="testimonial-role">Customer portal</div>
                 </div>
             </div>
             <div class="testimonial-stars">★★★★★</div>
-            <p class="testimonial-text">"DineMate made booking so easy! I used to spend 20 minutes on the phone, now it takes 30 seconds. Highly recommend!"</p>
+            <p class="testimonial-text">Guests can leave a star rating and short note after a completed booking, giving the restaurant useful context.</p>
         </div>
 
         <div class="testimonial-card">
             <div class="testimonial-header">
                 <div class="testimonial-avatar avatar-dark">SA</div>
                 <div>
-                    <h4>Sarah Anderson</h4>
-                    <div class="testimonial-role">Event Planner</div>
+                    <h4>Track service quality</h4>
+                    <div class="testimonial-role">Admin reviews</div>
                 </div>
             </div>
             <div class="testimonial-stars">★★★★★</div>
-            <p class="testimonial-text">"Perfect for managing group bookings. The platform is intuitive and their support team is fantastic!"</p>
+            <p class="testimonial-text">Staff can review recent feedback from the admin area and spot repeat issues or standout experiences.</p>
         </div>
 
         <div class="testimonial-card">
             <div class="testimonial-header">
                 <div class="testimonial-avatar avatar-dark">MJ</div>
                 <div>
-                    <h4>Michael Johnson</h4>
-                    <div class="testimonial-role">Food Enthusiast</div>
+                    <h4>Return with context</h4>
+                    <div class="testimonial-role">Guest history</div>
                 </div>
             </div>
             <div class="testimonial-stars">★★★★★</div>
-            <p class="testimonial-text">"Finally, a reservation app that actually works! No more awkward phone calls. Love the reminder notifications."</p>
+            <p class="testimonial-text">Customer profiles keep preferences, notes, and past bookings connected for a more thoughtful next visit.</p>
         </div>
     </div>
 
@@ -227,30 +227,30 @@ include __DIR__ . '/../includes/header.php';
 <!-- ============ PRICING SECTION ============ -->
 <section class="pricing-section">
     <div class="section-header">
-        <div class="section-overline">Pricing</div>
-        <h2 class="section-title">Simple, Transparent Plans</h2>
-        <p class="section-description">Choose the plan that works best for your dining lifestyle.</p>
+        <div class="section-overline">Booking Options</div>
+        <h2 class="section-title">Choose how you want to book</h2>
+        <p class="section-description">No payment is required in this demo. These options guide guests to the right next action.</p>
     </div>
 
     <div class="pricing-grid">
         <div class="pricing-card">
-            <h3>Basic</h3>
+            <h3>Guest Booking</h3>
             <div class="pricing-price">Free</div>
-            <div class="pricing-period">Forever</div>
+            <div class="pricing-period">No account required</div>
             <ul class="pricing-features">
-                <li>Unlimited reservations</li>
-                <li>Real-time availability</li>
-                <li>Email confirmations</li>
-                <li>Basic support</li>
-                <li>Mobile app access</li>
+                <li>Submit a reservation request</li>
+                <li>Add dietary or seating notes</li>
+                <li>Mobile-friendly booking form</li>
+                <li>Secure guest details</li>
+                <li>Contact the restaurant if plans change</li>
             </ul>
             <button
                 class="pricing-btn"
                 type="button"
                 data-plan-modal
-                data-plan-title="Basic"
-                data-plan-price="Free forever"
-                data-plan-copy="Best for guests who want fast reservations, booking changes, confirmations, and reminders."
+                data-plan-title="Guest Booking"
+                data-plan-price="Free booking request"
+                data-plan-copy="Best for a quick reservation when you do not need booking history or saved preferences."
                 data-plan-primary-label="Book a Table"
                 data-plan-primary-url="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>"
                 data-plan-secondary-label="Create Account"
@@ -260,54 +260,54 @@ include __DIR__ . '/../includes/header.php';
 
         <div class="pricing-card featured">
             <div class="pricing-badge">Most Popular</div>
-            <h3>Premium</h3>
-            <div class="pricing-price">$9.99</div>
-            <div class="pricing-period">per month</div>
+            <h3>Member Account</h3>
+            <div class="pricing-price">Free</div>
+            <div class="pricing-period">For returning guests</div>
             <ul class="pricing-features">
-                <li>Everything in Basic</li>
-                <li>Priority booking access</li>
-                <li>Exclusive member deals</li>
-                <li>Points & rewards program</li>
-                <li>Dedicated support</li>
-                <li>Monthly newsletter</li>
+                <li>Booking history and rebooking</li>
+                <li>Profile and preference management</li>
+                <li>Modify or cancel eligible bookings</li>
+                <li>Review completed visits</li>
+                <li>Reminder preferences</li>
+                <li>Saved contact details</li>
             </ul>
             <button
                 class="pricing-btn"
                 type="button"
                 data-plan-modal
-                data-plan-title="Premium"
-                data-plan-price="$9.99 per month"
-                data-plan-copy="For regular diners who want priority access, rewards, member offers, and dedicated support."
+                data-plan-title="Member Account"
+                data-plan-price="Free customer account"
+                data-plan-copy="For returning guests who want saved details, booking history, rebooking, and post-visit reviews."
                 data-plan-primary-label="Create Account"
                 data-plan-primary-url="<?= htmlspecialchars(appPath('auth/register.php'), ENT_QUOTES, 'UTF-8') ?>"
                 data-plan-secondary-label="Book First"
                 data-plan-secondary-url="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>"
-            >Try Premium</button>
+            >Create Account</button>
         </div>
 
         <div class="pricing-card">
-            <h3>Corporate</h3>
-            <div class="pricing-price">Custom</div>
-            <div class="pricing-period">Contact us</div>
+            <h3>Group Dining</h3>
+            <div class="pricing-price">Contact</div>
+            <div class="pricing-period">For larger occasions</div>
             <ul class="pricing-features">
-                <li>Everything in Premium</li>
-                <li>Bulk group bookings</li>
-                <li>Corporate branding</li>
-                <li>Advanced analytics</li>
-                <li>Custom integration</li>
+                <li>Celebrations and larger groups</li>
+                <li>Special requests and notes</li>
+                <li>Direct restaurant follow-up</li>
+                <li>Flexible seating discussion</li>
+                <li>Function enquiry support</li>
             </ul>
             <button
                 class="pricing-btn"
                 type="button"
                 data-plan-modal
-                data-plan-title="Corporate"
-                data-plan-price="Custom quote"
-                data-plan-copy="For teams, events, and group dining programs that need coordinated bookings and direct staff support."
-                data-plan-primary-label="Contact Sales"
+                data-plan-title="Group Dining"
+                data-plan-price="Contact the team"
+                data-plan-copy="For celebrations, teams, and larger groups that need direct staff follow-up before the visit."
+                data-plan-primary-label="Contact Team"
                 data-plan-primary-url="<?= htmlspecialchars(appPath('public/contact.php'), ENT_QUOTES, 'UTF-8') ?>"
                 data-plan-secondary-label="View Function Options"
                 data-plan-secondary-url="<?= htmlspecialchars(appPath('public/about.php'), ENT_QUOTES, 'UTF-8') ?>"
-            >Contact Sales</button>
+            >Contact Team</button>
         </div>
     </div>
 </section>
@@ -331,8 +331,8 @@ include __DIR__ . '/../includes/header.php';
 <!-- ============ CTA SECTION ============ -->
 <section class="cta-section">
     <div class="cta-content">
-        <h2>Ready to Transform Your Dining Experience?</h2>
-        <p>Join thousands of diners who've already discovered the DineMate difference. Book your first table today and save time for what really matters.</p>
+        <h2>Ready to reserve your table?</h2>
+        <p>Book online, save your preferences, and keep your plans easy to manage from the customer portal.</p>
         
         <div class="cta-buttons">
             <a href="<?= htmlspecialchars(appPath('customer/book-table.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn-cta-primary">
@@ -347,8 +347,8 @@ include __DIR__ . '/../includes/header.php';
 
 <!-- ============ FOOTER CTA ============ -->
 <section class="footer-cta">
-    <h2>Still Have Questions?</h2>
-    <p>Our team is here to help. Reach out to us anytime—we're available 24/7 to assist you.</p>
+    <h2>Need help with a booking?</h2>
+    <p>Send the team a message or browse the menu before choosing your table request.</p>
     
     <div class="footer-buttons">
         <a href="<?= htmlspecialchars(appPath('public/contact.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn-footer btn-footer-primary">

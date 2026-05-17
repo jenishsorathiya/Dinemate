@@ -5,12 +5,12 @@
         .hero-card, .panel-card, .stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-soft); }
         .hero-card { padding: 18px 20px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); background: var(--dm-surface); }
         .eyebrow { display: none; }
-        .hero-title { margin: 0; font-size: 22px; line-height: 1.05; letter-spacing: -0.01em; }
+        .hero-title { margin: 0; font-size: 22px; line-height: 1.05; letter-spacing: 0; }
         .hero-copy { margin: 12px 0 0; color: var(--text-muted); max-width: 820px; font-size: 14px; line-height: 1.5; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
         .stat-card { padding: 20px; }
-        .stat-label { color: var(--text-muted); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
-        .stat-value { margin-top: 8px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+        .stat-label { color: var(--text-muted); font-size: 12px; font-weight: 800; letter-spacing: 0; text-transform: uppercase; }
+        .stat-value { margin-top: 8px; font-size: 24px; font-weight: 700; letter-spacing: 0; }
         .stat-meta { margin-top: 4px; color: var(--text-muted); font-size: 12px; }
         .layout-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr); gap: 22px; align-items: start; }
         .panel-card { padding: 24px; }
@@ -23,7 +23,7 @@
         .btn-primary-soft { border: 1px solid var(--primary); border-radius: 6px; min-height: 34px; padding: 0 12px; background: var(--primary); color: var(--dm-surface); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
         .table-wrap { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--dm-surface); }
         .table-custom { width: 100%; border-collapse: collapse; }
-        .table-custom thead th { background: var(--dm-surface-muted); color: var(--dm-text-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+        .table-custom thead th { background: var(--dm-surface-muted); color: var(--dm-text-muted); font-size: 11px; font-weight: 700; letter-spacing: 0; text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
         .table-custom tbody td { padding: 10px 14px; border-bottom: 1px solid var(--dm-border); vertical-align: top; }
         .table-custom tbody tr:last-child td { border-bottom: 0; }
         .table-custom tbody tr:hover { background: var(--dm-surface-muted); }

@@ -7,7 +7,7 @@
 .review-panel {
     background: var(--dm-surface);
     border: 1px solid var(--dm-border);
-    border-radius: 16px;
+    border-radius: 8px;
     padding: 28px;
     box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
 }
@@ -58,7 +58,7 @@
     height: 48px;
     padding: 0 12px;
     border: 1px solid var(--dm-border);
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--dm-surface);
     color: var(--dm-text);
     font-weight: 700;
@@ -88,7 +88,7 @@
     min-height: 140px;
     padding: 14px;
     border: 1px solid var(--dm-border);
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--dm-surface);
     color: var(--dm-text);
     resize: vertical;
@@ -110,7 +110,7 @@
 
 .notification-box {
     padding: 16px 20px;
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px solid transparent;
     margin-bottom: 20px;
 }

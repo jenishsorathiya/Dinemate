@@ -113,7 +113,8 @@ include '../includes/header.php';
     <div class="booking-stage">
         <div class="booking-topbar">
             <div class="booking-heading">
-                <h2>Make A Booking</h2>
+                <h2>Book a Table</h2>
+                <p>Choose a date, time, and party size. Staff will review the request and confirm the table details.</p>
             </div>
             <div class="booking-topbar-aside">
                 <div class="booking-progress" aria-label="Booking progress">
@@ -207,7 +208,7 @@ include '../includes/header.php';
                             <ul class="booking-benefits-list">
                                 <li><i class="fa fa-circle"></i><span>Easily manage and update your bookings</span></li>
                                 <li><i class="fa fa-circle"></i><span>View your booking history.</span></li>
-                                <li><i class="fa fa-circle"></i><span>Receive exclusive offers and gift vouchers</span></li>
+                                <li><i class="fa fa-circle"></i><span>Save dining preferences for future visits</span></li>
                             </ul>
                             <div class="booking-account-links">
                                 <a class="booking-mini-btn" href="../auth/login.php">Log In</a>

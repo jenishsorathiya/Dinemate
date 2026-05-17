@@ -99,7 +99,7 @@ include __DIR__ . '/../includes/header.php';
             <!-- Contact Form -->
             <div class="col-lg-7">
                 <div class="contact-form-card">
-                    <h2>Send us a Message</h2>
+                    <h2>Send Us a Message</h2>
                     <?php if ($contactFlash): ?>
                         <div class="alert alert-<?php echo htmlspecialchars($contactFlash['type'], ENT_QUOTES, 'UTF-8'); ?>">
                             <?php echo htmlspecialchars($contactFlash['message'], ENT_QUOTES, 'UTF-8'); ?>

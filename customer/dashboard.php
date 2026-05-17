@@ -141,30 +141,30 @@ include '../includes/header.php';
             <article class="dashboard-panel">
                 <div class="panel-heading">
                     <div>
-                        <h2>Upcoming And Rebook</h2>
-                        <p>Manage upcoming reservations and rebook recent visits.</p>
+                        <h2>Upcoming Reservations</h2>
+                        <p>Review your next bookings, make changes, or rebook a recent visit.</p>
                     </div>
-                    <a class="btn-portal-secondary" href="my-bookings.php?view=upcoming">Open My Bookings</a>
+                    <a class="btn-portal-secondary" href="my-bookings.php?view=upcoming">Open Reservations</a>
                 </div>
 
                 <?php if (!empty($upcomingBookings)): ?>
-                    <div class="booking-timeline">
+                    <div class="reservation-list">
                         <?php foreach (array_slice($upcomingBookings, 0, 3) as $booking): ?>
-                            <article class="timeline-card">
-                                <div class="timeline-card-top">
+                            <article class="reservation-card">
+                                <div class="reservation-card-top">
                                     <div>
-                                        <div class="timeline-card-title"><?php echo htmlspecialchars(date('l, j F', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
-                                        <div class="timeline-card-subtitle"><?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8'); ?> to <?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="reservation-card-title"><?php echo htmlspecialchars(date('l, j F', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="reservation-card-subtitle"><?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8'); ?> to <?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['end_time'])), ENT_QUOTES, 'UTF-8'); ?></div>
                                     </div>
                                     <span class="status-tag <?php echo htmlspecialchars((string) ($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>">
                                         <?php echo htmlspecialchars(getBookingStatusLabel($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>
                                     </span>
                                 </div>
-                                <div class="timeline-card-meta">
-                                    <span class="timeline-meta-chip"><i class="fa fa-users"></i> <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</span>
-                                    <span class="timeline-meta-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Pending assignment'; ?></span>
-                                    <span class="timeline-meta-chip"><i class="fa fa-location-dot"></i> <?php echo htmlspecialchars(getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed'), ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <span class="timeline-meta-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
+                                <div class="reservation-card-meta">
+                                    <span class="reservation-meta-chip"><i class="fa fa-users"></i> <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</span>
+                                    <span class="reservation-meta-chip"><i class="fa fa-table-cells"></i> <?php echo !empty($booking['table_number']) ? 'Table ' . htmlspecialchars((string) $booking['table_number'], ENT_QUOTES, 'UTF-8') : 'Pending assignment'; ?></span>
+                                    <span class="reservation-meta-chip"><i class="fa fa-location-dot"></i> <?php echo htmlspecialchars(getBookingPlacementLabel($booking['reservation_card_status'] ?? 'not_placed'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <span class="reservation-meta-chip"><i class="fa fa-diagram-project"></i> <?php echo htmlspecialchars(getBookingSourceLabel($booking['booking_source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                 </div>
                                 <div class="hero-actions dm-mt-0">
                                     <?php if ($bookingSettings['allow_booking_modification']): ?>
@@ -180,7 +180,7 @@ include '../includes/header.php';
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <div class="empty-state">You do not have any active bookings.</div>
+                    <div class="empty-state">No upcoming reservations yet. Start a new booking when you are ready to visit.</div>
                 <?php endif; ?>
             </article>
 
@@ -201,11 +201,11 @@ include '../includes/header.php';
                         <span><?php echo htmlspecialchars($seatingPreference !== '' ? ucfirst(str_replace('_', ' ', $seatingPreference)) : 'No preference saved', ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <div class="profile-chip">
-                        <strong>Admin-entered Bookings</strong>
+                        <strong>Staff-created Bookings</strong>
                         <span><?php echo number_format($adminCreatedCount); ?> in your history</span>
                     </div>
                     <div class="profile-chip">
-                        <strong>Guest-Web Continuity</strong>
+                        <strong>Online Bookings</strong>
                         <span><?php echo number_format($guestHistoryCount); ?> guest bookings linked to your profile</span>
                     </div>
                 </div>
@@ -216,7 +216,7 @@ include '../includes/header.php';
                         <div class="tiny-copy dm-mt-8"><?php echo htmlspecialchars($dietaryNotes !== '' ? $dietaryNotes : 'None', ENT_QUOTES, 'UTF-8'); ?></div>
                     </div>
                     <div class="notes-card">
-                        <strong>Staff Notes</strong>
+                        <strong>Visit Notes</strong>
                         <div class="tiny-copy dm-mt-8"><?php echo htmlspecialchars($notes !== '' ? $notes : 'None', ENT_QUOTES, 'UTF-8'); ?></div>
                     </div>
                 </div>
@@ -228,7 +228,7 @@ include '../includes/header.php';
                 <div class="panel-heading">
                     <div>
                         <h3>Recent Visit History</h3>
-                        <p>Recent bookings and rebooking access.</p>
+                        <p>Recent visits, ratings, and quick rebooking actions.</p>
                     </div>
                     <a class="btn-portal-secondary" href="my-bookings.php?view=past">See Full History</a>
                 </div>
@@ -248,7 +248,7 @@ include '../includes/header.php';
                             <div class="history-item">
                                 <div class="history-row">
                                     <div>
-                                        <div class="timeline-card-title dm-text-md"><?php echo htmlspecialchars(date('D, j M Y', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="reservation-card-title dm-text-md"><?php echo htmlspecialchars(date('D, j M Y', strtotime((string) $booking['booking_date'])), ENT_QUOTES, 'UTF-8'); ?></div>
                                         <div class="history-meta"><?php echo htmlspecialchars(date('g:i A', strtotime((string) $booking['start_time'])), ENT_QUOTES, 'UTF-8'); ?>, <?php echo (int) ($booking['number_of_guests'] ?? 0); ?> guests</div>
                                     </div>
                                     <span class="status-tag <?php echo htmlspecialchars((string) ($booking['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>">
@@ -269,7 +269,7 @@ include '../includes/header.php';
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <div class="empty-state">Completed visits will appear here.</div>
+                    <div class="empty-state">Completed visits will appear here after your first reservation is finished.</div>
                 <?php endif; ?>
             </article>
 
