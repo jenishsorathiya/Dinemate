@@ -42,6 +42,7 @@ $adminNewSidebarItems = [
     ['key' => 'events', 'label' => 'Events', 'href' => 'admin_events.php', 'icon' => 'bi-calendar3'],
     ['key' => 'menu', 'label' => 'Menu', 'href' => 'admin_menu.php', 'icon' => 'bi-menu-button-wide'],
     ['key' => 'guests', 'label' => 'Guests', 'href' => 'admin_guests.php', 'icon' => 'bi-people'],
+    ['key' => 'reviews', 'label' => 'Reviews', 'href' => 'admin_booking_reviews.php', 'icon' => 'bi-star'],
     ['key' => 'report', 'label' => 'Report', 'href' => 'admin_report.php', 'icon' => 'bi-bar-chart'],
     ['key' => 'settings', 'label' => 'Settings', 'href' => 'admin_settings.php', 'icon' => 'bi-gear'],
 ];

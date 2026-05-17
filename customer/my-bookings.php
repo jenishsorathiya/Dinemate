@@ -4,8 +4,7 @@ require_once "../includes/functions.php";
 require_once "../includes/session-check.php";
 
 requireCustomer();
-ensureBookingRequestColumns($pdo);
-ensureSettingsSchema($pdo);
+ensureBookingRequestColumns($pdo);ensureBookingReviewsSchema($pdo);ensureSettingsSchema($pdo);
 $bookingSettings = getBookingSettings($pdo);
 
 $userId = (int) getCurrentUserId();
@@ -258,6 +257,30 @@ foreach ($bookings as $booking) {
     font-size: 13px;
 }
 
+.rating-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    background: rgba(243, 236, 255, 0.85);
+    border: 1px solid rgba(145, 74, 255, 0.22);
+    padding: 8px 12px;
+    color: #5b3d97;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.booking-review-hint {
+    width: 100%;
+    background: rgba(255, 246, 222, 0.96);
+    border-left: 4px solid rgba(255, 159, 67, 0.9);
+    color: var(--dm-text);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
 .booking-detail {
     width: 100%;
     color: var(--dm-text-muted);
@@ -368,6 +391,11 @@ foreach ($bookings as $booking) {
                             <?php if (!empty($booking['special_request'])): ?>
                                 <div class="booking-detail"><strong>Saved note:</strong> <?php echo htmlspecialchars((string) $booking['special_request'], ENT_QUOTES, 'UTF-8'); ?></div>
                             <?php endif; ?>
+                            <?php if (!empty($booking['review_rating'])): ?>
+                                <div class="booking-detail"><strong>Review:</strong> Rated <?php echo (int) $booking['review_rating']; ?>/5<?php if (!empty($booking['review_comment'])): ?> — <?php echo htmlspecialchars((string) $booking['review_comment'], ENT_QUOTES, 'UTF-8'); ?><?php endif; ?></div>
+                            <?php elseif ($status === 'completed'): ?>
+                                <div class="booking-detail booking-review-hint"><strong>Review pending:</strong> Add feedback for this completed visit before it’s archived.</div>
+                            <?php endif; ?>
                             <?php if (($booking['booking_source'] ?? '') === 'admin_manual' && !empty($booking['created_by_name'])): ?>
                                 <div class="booking-detail"><strong>Entered by:</strong> <?php echo htmlspecialchars((string) $booking['created_by_name'], ENT_QUOTES, 'UTF-8'); ?> from the admin side.</div>
                             <?php endif; ?>
@@ -380,6 +408,11 @@ foreach ($bookings as $booking) {
                             <?php if ($isEditable): ?>
                                 <a href="modify-booking.php?id=<?php echo (int) $booking['booking_id']; ?>" class="btn-surface"><i class="fa fa-pen"></i> Reschedule</a>
                                 <a href="cancel-booking.php?id=<?php echo (int) $booking['booking_id']; ?>" class="btn-surface" onclick="return confirm('Cancel this booking?');"><i class="fa fa-ban"></i> Cancel</a>
+                            <?php endif; ?>
+                            <?php if ($status === 'completed' && empty($booking['review_rating'])): ?>
+                                <a href="rate-booking.php?id=<?php echo (int) $booking['booking_id']; ?>" class="btn-surface"><i class="fa fa-star"></i> Rate Experience</a>
+                            <?php elseif (!empty($booking['review_rating'])): ?>
+                                <span class="rating-chip"><i class="fa fa-star"></i> Rated <?php echo (int) $booking['review_rating']; ?>/5</span>
                             <?php endif; ?>
                             <a href="<?php echo htmlspecialchars($rebookUrl, ENT_QUOTES, 'UTF-8'); ?>" class="btn-primary-solid"><i class="fa fa-repeat"></i> Rebook</a>
                         </div>

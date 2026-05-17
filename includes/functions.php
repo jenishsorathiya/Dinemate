@@ -465,12 +465,16 @@ function getCustomerPortalBookings($pdo, $userId) {
         SELECT
             b.*,
             t.table_number,
+            br.review_rating,
+            br.review_comment,
+            br.reviewed_at,
             cp.name AS profile_name,
             cp.email AS profile_email,
             cp.phone AS profile_phone,
             creator.name AS created_by_name
         FROM bookings b
         LEFT JOIN restaurant_tables t ON b.table_id = t.table_id
+        LEFT JOIN booking_reviews br ON br.booking_id = b.booking_id
         LEFT JOIN customer_profiles cp ON b.customer_profile_id = cp.customer_profile_id
         LEFT JOIN users creator ON b.created_by_user_id = creator.user_id
         WHERE b.user_id = ?
@@ -813,6 +817,35 @@ function ensureBookingTableAssignmentsTable($pdo) {
         FROM bookings
         WHERE table_id IS NOT NULL
     ");
+}
+
+function ensureBookingReviewsSchema($pdo) {
+    $reviewsStmt = $pdo->query("SHOW TABLES LIKE 'booking_reviews'");
+    if ($reviewsStmt->rowCount() === 0) {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS booking_reviews (
+            review_id INT NOT NULL AUTO_INCREMENT,
+            booking_id INT NOT NULL,
+            review_rating TINYINT NOT NULL,
+            review_comment TEXT DEFAULT NULL,
+            reviewed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (review_id),
+            UNIQUE KEY uq_booking_reviews_booking_id (booking_id),
+            KEY idx_booking_reviews_rating (review_rating),
+            KEY idx_booking_reviews_reviewed_at (reviewed_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    }
+}
+
+function getBookingReviewByBookingId($pdo, int $bookingId) {
+    $bookingId = max(0, $bookingId);
+    if ($bookingId < 1) {
+        return null;
+    }
+
+    $stmt = $pdo->prepare("SELECT * FROM booking_reviews WHERE booking_id = ? LIMIT 1");
+    $stmt->execute([$bookingId]);
+    $review = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $review ?: null;
 }
 
 function ensureSettingsSchema($pdo) {
