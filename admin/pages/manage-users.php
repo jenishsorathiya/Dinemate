@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlashMessage('success', 'User updated successfully.');
         $redirectToManageUsers();
     }
-    if (in_array($action, ['promote_user', 'demote_user', 'delete_user', 'disable_user', 'enable_user'], true)) {
+    if (in_array($action, ['promote_user', 'demote_user', 'disable_user', 'enable_user'], true)) {
         $userId = (int) ($_POST['user_id'] ?? 0);
         $targetUser = $findRegisteredUserById($pdo, $userId);
 
@@ -224,9 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($userId === $currentUserId) {
-            if ($action === 'delete_user') {
-                setFlashMessage('error', 'You cannot delete yourself.');
-            } elseif ($action === 'demote_user') {
+            if ($action === 'demote_user') {
                 setFlashMessage('error', 'You cannot demote yourself.');
             } elseif ($action === 'disable_user') {
                 setFlashMessage('error', 'You cannot disable your own account.');
@@ -280,20 +278,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setFlashMessage('success', 'User account enabled successfully.');
             $redirectToManageUsers();
         }
-
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE user_id = ?");
-        $stmt->execute([$userId]);
-        $bookingCount = (int) $stmt->fetchColumn();
-
-        if ($bookingCount > 0) {
-            setFlashMessage('warning', "Cannot delete user with {$bookingCount} existing booking(s). Delete bookings first.");
-            $redirectToManageUsers();
-        }
-
-        $stmt = $pdo->prepare("DELETE FROM users WHERE user_id = ?");
-        $stmt->execute([$userId]);
-        setFlashMessage('success', 'User deleted successfully.');
-        $redirectToManageUsers();
     }
 }
 
@@ -593,11 +577,6 @@ $userBookingHistoryJson = json_encode($userBookingHistory, JSON_HEX_TAG | JSON_H
                                                                 <form method="POST" action="" onsubmit="return confirm('Enable this user account?');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="enable_user"><input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>"><button type="submit" class="btn-primary-soft btn-table"><i class="fa-solid fa-user-check"></i> Enable</button></form>
                                                             <?php else: ?>
                                                                 <form method="POST" action="" onsubmit="return confirm('Disable this user account? They will not be able to log in.');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="disable_user"><input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>"><button type="submit" class="btn-warning-soft btn-table"><i class="fa-solid fa-user-slash"></i> Disable</button></form>
-                                                            <?php endif; ?>
-                                                            <?php if ($bookingCount === 0): ?>
-                                                                <form method="POST" action="" onsubmit="return confirm('Delete this user? This action cannot be undone.');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="delete_user"><input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>"><button type="submit" class="btn-danger-soft btn-table"><i class="fa-solid fa-trash"></i> Delete</button></form>
-                                                            <?php else: ?>
-                                                                <button type="button" class="btn-surface btn-table" disabled title="Cannot delete a user with bookings."><i class="fa-solid fa-lock"></i> Protected</button>
                                                             <?php endif; ?>
                                                         <?php endif; ?>
                                                     </div>
